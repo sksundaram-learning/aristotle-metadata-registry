@@ -8,6 +8,7 @@ import aristotle_mdr.perms as perms
 from django.test.utils import setup_test_environment
 setup_test_environment()
 from aristotle_mdr.tests import utils
+from aristotle_mdr.tests.utils import ManagedObjectVisibility
 #  Create your tests here.
 
 class SuperuserPermissions(TestCase):
