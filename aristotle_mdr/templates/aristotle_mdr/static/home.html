@@ -26,8 +26,8 @@
             </div>
             <div class="panel-body">
                 <a href="{% url 'aristotle:about' '11179'%}">What is ISO/IEC 11179?</a>
-                <a href="{% url 'aristotle:about' 'aristotle_mdr' %}">What is <em>Aristotle</em>?</a>
                 <a href="{% url 'aristotle:about' 'metadata_registry' %}">What a metadata registry?</a>
+                <a href="{% url 'aristotle:about' 'aristotle_mdr' %}">What is <em>Aristotle-MDR</em>?</a>
             </div>
         </div>
     </div>
@@ -48,7 +48,7 @@
     <div class="col-xs-12 col-sm-6 col-md-4 ">
         <div class="panel panel-default">
             <div class="panel-heading">
-                <h2 class="panel-title"><a href="about/getting_data">How can I get data?</a></h2>
+                <h2 class="panel-title"><a href="{% url 'aristotle:about' 'getting_data' %}">How can I get data?</a></h2>
             </div>
             <div class="panel-body">
                 <a href="#">What is a data dictionary?</a>
@@ -64,9 +64,9 @@
                 <h2 class="panel-title"><a href="">How can I add content?</a></h2>
             </div>
             <div class="panel-body">
-                {#<a href="{% url 'aristotle:about' 'workgroup' %}">What is a workgroup?</a>#}
-                <a href="#">What is a registration authority?</a>
+                <a href="{% url 'aristotle:about' 'workgroup' %}">What is a workgroup?</a>
                 <a href="{% url 'aristotle:help' 'how_does_content_become_visible' %}">How does content become visible?</a>
+                <a href="{% url 'aristotle:help' 'registry_roles' %}">What roles exist within a registry?</a>
             </div>
         </div>
     </div>
@@ -76,21 +76,20 @@
                 <h2 class="panel-title"><a href="{% url 'aristotle:about' 'metadata_standards' %}">About metadata standards</a></h2>
             </div>
             <div class="panel-body">
-                <a href="#">What makes metadata "standard"?</a>
+                <a href="{% url 'aristotle:about' 'what_makes_a_standard' %}">What makes metadata "standard"?</a>
                 <a href="{% url 'aristotle:help' 'versioning_content' %}">Versioning content</a>
-                <a href="#">Ipsum ipsum</a>
+                <a href="#">What is a registration authority?</a>
             </div>
         </div>
     </div>
     <div class="col-xs-12 col-sm-6 col-md-4 ">
         <div class="panel panel-default">
             <div class="panel-heading">
-                <h2 class="panel-title"><a href="">Lorum Lorum?</a></h2>
+                <h2 class="panel-title"><a href="{% url 'aristotle:help' 'index' %}">Need more help?</a></h2>
             </div>
             <div class="panel-body">
-                <a href="#">Ipsum</a>
-                <a href="#">Ipsum</a>
-                <a href="#">Ipsum</a>
+                <a href="{% url 'aristotle:about' 'all_items' %}">Help on all registry items</a>
+                <a href="http://aristotle-metadata-registry.rtfd.org/en/latest/">Documentation for programmers</a>
             </div>
         </div>
     </div>
