@@ -536,7 +536,7 @@ class RegistrationAuthorityViewPage(LoggedInViewUnmanagedPages,TestCase):
 
         s = models.Status.objects.create(
                 concept=self.item2,
-                registrationAuthority=self.item2,
+                registrationAuthority=self.item1,
                 registrationDate=timezone.now(),
                 state=models.STATES.standard
                 )
