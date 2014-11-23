@@ -108,7 +108,6 @@ def download(request,downloadType,iid=None):
     module_name = ""
     for d in downloadOpts:
         dt = d[0]
-        print d, dt, d[-1]
         if dt == downloadType:
             module_name = d[-1]
     if module_name:
@@ -122,7 +121,6 @@ def download(request,downloadType,iid=None):
         try:
             downloader = None
             # dangerous - we are really trusting the settings creators here.
-            # TODO: Make this safer
             exec("import %s.downloader as downloader"%module_name)
             return downloader.download(request,downloadType,item)
         except:
@@ -214,6 +212,9 @@ def objectclass(*args,**kwargs):
 
 def valuedomain(*args,**kwargs):
     return render_if_user_can_view(MDR.ValueDomain,*args,**kwargs)
+
+def conceptualdomain(*args,**kwargs):
+    return render_if_user_can_view(MDR.ConceptualDomain,*args,**kwargs)
 
 def property(*args,**kwargs):
     return render_if_user_can_view(MDR.Property,*args,**kwargs)

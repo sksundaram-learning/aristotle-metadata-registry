@@ -294,10 +294,10 @@ class AnonymousUserViewingThePages(TestCase):
         home = self.client.get("/item/%s"%item.id)
         self.assertEqual(home.status_code,200)
 
-class LoggedInViewPages(utils.LoggedInViewPages):
+class LoggedInViewConceptPages(utils.LoggedInViewPages):
     defaults = {}
     def setUp(self):
-        super(LoggedInViewPages, self).setUp()
+        super(LoggedInViewConceptPages, self).setUp()
 
         self.item1 = self.itemType.objects.create(name="OC1",workgroup=self.wg1,**self.defaults)
         self.item2 = self.itemType.objects.create(name="OC2",workgroup=self.wg2,**self.defaults)
@@ -324,7 +324,7 @@ class LoggedInViewPages(utils.LoggedInViewPages):
         response = self.client.get(self.get_page(self.item2))
         self.assertEqual(response.status_code,403)
 
-    def test_su_can_download_pdf(self):
+    def test_su_can_download_LoggedInViewConceptPages(self):
         self.login_superuser()
         response = self.client.get(reverse('aristotle:download',args=['pdf',self.item1.id]))
         self.assertEqual(response.status_code,200)
@@ -444,16 +444,25 @@ class LoggedInViewPages(utils.LoggedInViewPages):
 
 
 
-class ObjectClassViewPage(LoggedInViewPages,TestCase):
+class ObjectClassViewPage(LoggedInViewConceptPages,TestCase):
     url_name='objectClass'
     itemType=models.ObjectClass
-class PropertyViewPage(LoggedInViewPages,TestCase):
+class PropertyViewPage(LoggedInViewConceptPages,TestCase):
     url_name='property'
     itemType=models.Property
-class ValueDomainViewPage(LoggedInViewPages,TestCase):
+class ValueDomainViewPage(LoggedInViewConceptPages,TestCase):
     url_name='valueDomain'
     itemType=models.ValueDomain
-class GlossaryViewPage(LoggedInViewPages,TestCase):
+class ConceptualDomainViewPage(LoggedInViewConceptPages,TestCase):
+    url_name='conceptualDomain'
+    itemType=models.ConceptualDomain
+class DataElementConceptViewPage(LoggedInViewConceptPages,TestCase):
+    url_name='dataElementConcept'
+    itemType=models.DataElementConcept
+class DataElementViewPage(LoggedInViewConceptPages,TestCase):
+    url_name='dataElement'
+    itemType=models.DataElement
+class GlossaryViewPage(LoggedInViewConceptPages,TestCase):
     url_name='glossary'
     itemType=models.GlossaryItem
 
@@ -477,6 +486,28 @@ class GlossaryViewPage(LoggedInViewPages,TestCase):
         data = json.loads(str(response.content))
         self.assertEqual(len(data),1)
         self.assertEqual(data[0]['id'],gitem.id)
+
+class LoggedInViewUnmanagedPages(utils.LoggedInViewPages):
+    defaults = {}
+    def setUp(self):
+        super(LoggedInViewUnmanagedPages, self).setUp()
+
+        self.item1 = self.itemType.objects.create(name="OC1",**self.defaults)
+
+    def test_help_page_exists(self):
+        self.logout()
+        response = self.client.get(self.get_help_page())
+        self.assertRedirects(response,reverse("aristotle:about",args=[self.item1.help_name])) # This should redirect
+
+class RegistrationAuthorityViewPage(LoggedInViewUnmanagedPages,TestCase):
+    url_name='registrationAuthority'
+    itemType=models.RegistrationAuthority
+
+    def test_view_all_ras(self):
+        self.logout()
+        response = self.client.get(reverse('aristotle:allRegistrationAuthorities'))
+        self.assertTrue(response.status_code,200)
+
 
 class CustomConceptQuerySetTest(TestCase):
     def test_is_public(self):
