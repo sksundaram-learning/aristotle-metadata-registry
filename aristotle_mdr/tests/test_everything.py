@@ -525,6 +525,11 @@ class LoggedInViewUnmanagedPages(utils.LoggedInViewPages):
         response = self.client.get(self.get_help_page())
         self.assertRedirects(response,reverse("aristotle:about",args=[self.item1.help_name])) # This should redirect
 
+    def test_item_page_exists(self):
+        self.logout()
+        response = self.client.get(self.get_page(self.item1))
+        self.assertEqual(response.status_code,200)
+
 class RegistrationAuthorityViewPage(LoggedInViewUnmanagedPages,TestCase):
     url_name='registrationAuthority'
     itemType=models.RegistrationAuthority
