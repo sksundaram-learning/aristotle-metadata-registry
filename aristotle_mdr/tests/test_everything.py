@@ -324,6 +324,20 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         response = self.client.get(self.get_page(self.item2))
         self.assertEqual(response.status_code,403)
 
+    def test_viewer_can_view_related_packages(self):
+        self.login_viewer()
+        response = self.client.get(reverse('aristotle:itemPackages',args=[self.item1.id]))
+        self.assertEqual(response.status_code,200)
+        response = self.client.get(reverse('aristotle:itemPackages',args=[self.item2.id]))
+        self.assertEqual(response.status_code,403)
+
+    def test_anon_cannot_view_related_packages(self):
+        self.logout()
+        response = self.client.get(reverse('aristotle:itemPackages',args=[self.item1.id]))
+        self.assertEqual(response.status_code,302)
+        response = self.client.get(reverse('aristotle:itemPackages',args=[self.item2.id]))
+        self.assertEqual(response.status_code,302)
+
     def test_su_can_download_pdf(self):
         self.login_superuser()
         response = self.client.get(reverse('aristotle:download',args=['pdf',self.item1.id]))
@@ -447,6 +461,14 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
 class ObjectClassViewPage(LoggedInViewConceptPages,TestCase):
     url_name='objectClass'
     itemType=models.ObjectClass
+    def test_browse(self):
+        self.logout()
+        response = self.client.get(reverse('aristotle:browse'))
+        self.assertTrue(response.status_code,200)
+    def test_browse_oc(self):
+        self.logout()
+        response = self.client.get(reverse('aristotle:browse',args=[self.item1.id]))
+        self.assertTrue(response.status_code,200)
 class PropertyViewPage(LoggedInViewConceptPages,TestCase):
     url_name='property'
     itemType=models.Property
@@ -465,6 +487,11 @@ class DataElementViewPage(LoggedInViewConceptPages,TestCase):
 class GlossaryViewPage(LoggedInViewConceptPages,TestCase):
     url_name='glossary'
     itemType=models.GlossaryItem
+
+    def test_view_glossary(self):
+        self.logout()
+        response = self.client.get(reverse('aristotle:glossary'))
+        self.assertTrue(response.status_code,200)
 
     def test_glossary_ajax_list(self):
         import json
