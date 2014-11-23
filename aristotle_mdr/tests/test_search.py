@@ -67,9 +67,10 @@ class TestSearch(utils.LoggedInViewPages,TestCase):
         self.logout()
         response = self.client.get(reverse('aristotle:search')+"?q=xman")
         self.assertEqual(response.status_code,200)
-        self.assertEqual(len(response.context['page'].pages),int(len(self.item_xmen)//2))
+        # Add one as we a half empty page counts as an extra page
+        self.assertEqual(response.context['page'].paginator.num_pages,int(len(self.item_xmen)//2+1))
         response = self.client.get(reverse('aristotle:search')+"?q=xman&page=100") # deliberatly overshoot
-        self.assertEqual(response.status_code,200)
+        self.assertEqual(response.status_code,404)
 
     def test_registrar_search(self):
         self.logout()

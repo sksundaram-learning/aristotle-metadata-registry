@@ -276,6 +276,7 @@ class AnonymousUserViewingThePages(TestCase):
     def test_homepage(self):
         home = self.client.get("/")
         self.assertEqual(home.status_code,200)
+
     def test_visible_item(self):
         wg = models.Workgroup.objects.create(name="Setup WG")
         ra = models.RegistrationAuthority.objects.create(name="Test RA")
@@ -673,3 +674,4 @@ class RegistryCascadeTest(TestCase):
         self.assertEqual(self.vd.statuses.all()[0].state,state)
         self.assertEqual(self.dec.statuses.all()[0].state,state)
         self.assertEqual(self.de.statuses.all()[0].state,state)
+
