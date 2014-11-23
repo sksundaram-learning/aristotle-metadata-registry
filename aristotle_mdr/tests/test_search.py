@@ -6,6 +6,7 @@ import aristotle_mdr.tests.utils as utils
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
 from django.core.management import call_command
+from django.test.utils import override_settings
 
 from django.test.utils import setup_test_environment
 setup_test_environment()
@@ -52,6 +53,7 @@ class TestSearch(utils.LoggedInViewPages,TestCase):
         self.assertEqual(response.status_code,200)
         self.assertEqual(len(response.context['page'].object_list),0)
 
+    @override_settings(HAYSTACK_SEARCH_RESULTS_PER_PAGE = 20) # Supress paginating.
     def test_public_search(self):
         self.logout()
         response = self.client.get(reverse('aristotle:search')+"?q=xman")
@@ -59,6 +61,15 @@ class TestSearch(utils.LoggedInViewPages,TestCase):
         self.assertEqual(len(response.context['page'].object_list),len(self.item_xmen))
         for i in response.context['page'].object_list:
             self.assertTrue(i.object.is_public())
+
+    @override_settings(HAYSTACK_SEARCH_RESULTS_PER_PAGE = 2) # Supress paginating.
+    def test_public_search_paginating(self):
+        self.logout()
+        response = self.client.get(reverse('aristotle:search')+"?q=xman")
+        self.assertEqual(response.status_code,200)
+        self.assertEqual(len(response.context['page'].pages),int(len(self.item_xmen)//2))
+        response = self.client.get(reverse('aristotle:search')+"?q=xman&page=100") # deliberatly overshoot
+        self.assertEqual(response.status_code,200)
 
     def test_registrar_search(self):
         self.logout()
