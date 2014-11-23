@@ -638,10 +638,9 @@ class UnitOfMeasure(unmanagedObject):
     symbol =  models.CharField(max_length=20,blank=True)
 class DataType(concept):
     template = "aristotle_mdr/concepts/dataType.html"
-    pass
 
 class ConceptualDomain(concept):
-    pass
+    template = "aristotle_mdr/concepts/conceptualDomain.html"
 
 class RepresentationClass(unmanagedObject):
    pass

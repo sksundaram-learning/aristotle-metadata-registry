@@ -160,6 +160,8 @@ class WorkgroupMemberTests(utils.LoggedInViewPages,TestCase):
         self.assertEqual(response.status_code,200)
         response = self.client.get(reverse('aristotle:workgroupItems',args=[self.wg1.id]))
         self.assertEqual(response.status_code,200)
+        response = self.client.get(reverse('aristotle:workgroupItems',args=[self.wg1.id])+"?page=100") # deliberately overshoot
+        self.assertEqual(response.status_code,200)
 
         self.login_manager()
         response = self.client.get(reverse('aristotle:workgroup',args=[self.wg1.id]))

@@ -276,6 +276,7 @@ class AnonymousUserViewingThePages(TestCase):
     def test_homepage(self):
         home = self.client.get("/")
         self.assertEqual(home.status_code,200)
+
     def test_visible_item(self):
         wg = models.Workgroup.objects.create(name="Setup WG")
         ra = models.RegistrationAuthority.objects.create(name="Test RA")
@@ -294,10 +295,10 @@ class AnonymousUserViewingThePages(TestCase):
         home = self.client.get("/item/%s"%item.id)
         self.assertEqual(home.status_code,200)
 
-class LoggedInViewPages(utils.LoggedInViewPages):
+class LoggedInViewConceptPages(utils.LoggedInViewPages):
     defaults = {}
     def setUp(self):
-        super(LoggedInViewPages, self).setUp()
+        super(LoggedInViewConceptPages, self).setUp()
 
         self.item1 = self.itemType.objects.create(name="OC1",workgroup=self.wg1,**self.defaults)
         self.item2 = self.itemType.objects.create(name="OC2",workgroup=self.wg2,**self.defaults)
@@ -323,6 +324,20 @@ class LoggedInViewPages(utils.LoggedInViewPages):
         self.assertEqual(response.status_code,200)
         response = self.client.get(self.get_page(self.item2))
         self.assertEqual(response.status_code,403)
+
+    def test_viewer_can_view_related_packages(self):
+        self.login_viewer()
+        response = self.client.get(reverse('aristotle:itemPackages',args=[self.item1.id]))
+        self.assertEqual(response.status_code,200)
+        response = self.client.get(reverse('aristotle:itemPackages',args=[self.item2.id]))
+        self.assertEqual(response.status_code,403)
+
+    def test_anon_cannot_view_related_packages(self):
+        self.logout()
+        response = self.client.get(reverse('aristotle:itemPackages',args=[self.item1.id]))
+        self.assertEqual(response.status_code,302)
+        response = self.client.get(reverse('aristotle:itemPackages',args=[self.item2.id]))
+        self.assertEqual(response.status_code,302)
 
     def test_su_can_download_pdf(self):
         self.login_superuser()
@@ -444,18 +459,40 @@ class LoggedInViewPages(utils.LoggedInViewPages):
 
 
 
-class ObjectClassViewPage(LoggedInViewPages,TestCase):
+class ObjectClassViewPage(LoggedInViewConceptPages,TestCase):
     url_name='objectClass'
     itemType=models.ObjectClass
-class PropertyViewPage(LoggedInViewPages,TestCase):
+    def test_browse(self):
+        self.logout()
+        response = self.client.get(reverse('aristotle:browse'))
+        self.assertTrue(response.status_code,200)
+    def test_browse_oc(self):
+        self.logout()
+        response = self.client.get(reverse('aristotle:browse',args=[self.item1.id]))
+        self.assertTrue(response.status_code,200)
+class PropertyViewPage(LoggedInViewConceptPages,TestCase):
     url_name='property'
     itemType=models.Property
-class ValueDomainViewPage(LoggedInViewPages,TestCase):
+class ValueDomainViewPage(LoggedInViewConceptPages,TestCase):
     url_name='valueDomain'
     itemType=models.ValueDomain
-class GlossaryViewPage(LoggedInViewPages,TestCase):
+class ConceptualDomainViewPage(LoggedInViewConceptPages,TestCase):
+    url_name='conceptualDomain'
+    itemType=models.ConceptualDomain
+class DataElementConceptViewPage(LoggedInViewConceptPages,TestCase):
+    url_name='dataElementConcept'
+    itemType=models.DataElementConcept
+class DataElementViewPage(LoggedInViewConceptPages,TestCase):
+    url_name='dataElement'
+    itemType=models.DataElement
+class GlossaryViewPage(LoggedInViewConceptPages,TestCase):
     url_name='glossary'
     itemType=models.GlossaryItem
+
+    def test_view_glossary(self):
+        self.logout()
+        response = self.client.get(reverse('aristotle:glossary'))
+        self.assertTrue(response.status_code,200)
 
     def test_glossary_ajax_list(self):
         import json
@@ -477,6 +514,44 @@ class GlossaryViewPage(LoggedInViewPages,TestCase):
         data = json.loads(str(response.content))
         self.assertEqual(len(data),1)
         self.assertEqual(data[0]['id'],gitem.id)
+
+class LoggedInViewUnmanagedPages(utils.LoggedInViewPages):
+    defaults = {}
+    def setUp(self):
+        super(LoggedInViewUnmanagedPages, self).setUp()
+        self.item1 = self.itemType.objects.create(name="OC1",**self.defaults)
+
+    def test_help_page_exists(self):
+        self.logout()
+        response = self.client.get(self.get_help_page())
+        self.assertRedirects(response,reverse("aristotle:about",args=[self.item1.help_name])) # This should redirect
+
+    def test_item_page_exists(self):
+        self.logout()
+        response = self.client.get(self.get_page(self.item1))
+        self.assertEqual(response.status_code,200)
+
+class RegistrationAuthorityViewPage(LoggedInViewUnmanagedPages,TestCase):
+    url_name='registrationAuthority'
+    itemType=models.RegistrationAuthority
+
+    def setUp(self):
+        super(RegistrationAuthorityViewPage, self).setUp()
+
+        self.item2 = models.Package.objects.create(name="OC1",workgroup=self.wg1,**self.defaults)
+
+        s = models.Status.objects.create(
+                concept=self.item2,
+                registrationAuthority=self.item1,
+                registrationDate=timezone.now(),
+                state=models.STATES.standard
+                )
+
+    def test_view_all_ras(self):
+        self.logout()
+        response = self.client.get(reverse('aristotle:allRegistrationAuthorities'))
+        self.assertTrue(response.status_code,200)
+
 
 class CustomConceptQuerySetTest(TestCase):
     def test_is_public(self):
@@ -599,3 +674,4 @@ class RegistryCascadeTest(TestCase):
         self.assertEqual(self.vd.statuses.all()[0].state,state)
         self.assertEqual(self.dec.statuses.all()[0].state,state)
         self.assertEqual(self.de.statuses.all()[0].state,state)
+
