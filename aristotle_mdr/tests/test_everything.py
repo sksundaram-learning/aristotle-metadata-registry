@@ -324,7 +324,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         response = self.client.get(self.get_page(self.item2))
         self.assertEqual(response.status_code,403)
 
-    def test_su_can_download_LoggedInViewConceptPages(self):
+    def test_su_can_download_pdf(self):
         self.login_superuser()
         response = self.client.get(reverse('aristotle:download',args=['pdf',self.item1.id]))
         self.assertEqual(response.status_code,200)
@@ -491,7 +491,6 @@ class LoggedInViewUnmanagedPages(utils.LoggedInViewPages):
     defaults = {}
     def setUp(self):
         super(LoggedInViewUnmanagedPages, self).setUp()
-
         self.item1 = self.itemType.objects.create(name="OC1",**self.defaults)
 
     def test_help_page_exists(self):
@@ -502,6 +501,18 @@ class LoggedInViewUnmanagedPages(utils.LoggedInViewPages):
 class RegistrationAuthorityViewPage(LoggedInViewUnmanagedPages,TestCase):
     url_name='registrationAuthority'
     itemType=models.RegistrationAuthority
+
+    def setUp(self):
+        super(RegistrationAuthorityViewPage, self).setUp()
+
+        self.item2 = models.Package.objects.create(name="OC1",workgroup=self.wg1,**self.defaults)
+
+        s = models.Status.objects.create(
+                concept=self.item2,
+                registrationAuthority=self.item2,
+                registrationDate=timezone.now(),
+                state=models.STATES.standard
+                )
 
     def test_view_all_ras(self):
         self.logout()
