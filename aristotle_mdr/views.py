@@ -545,8 +545,22 @@ def glossaryById(*args,**kwargs):
 #    term = get_object_or_404(MDR.GlossaryItem,id=iid)
 #    return render(request,"aristotle_mdr/glossaryItem.html",{'item':term})
 
-def aboutThisSite(request):
-    return render(request,"aristotle_mdr/about_this_site.html")
+def about_all_items(request):
+
+    from django.conf import settings
+    aristotle_apps = getattr(settings, 'ARISTOTLE_SETTINGS', {}).get('CONTENT_EXTENSIONS',[])
+    aristotle_apps += ["aristotle_mdr"]
+
+    from django.contrib.contenttypes.models import ContentType
+    models = ContentType.objects.filter(app_label__in=aristotle_apps).all()
+    out = {}
+    for m in models:
+        if not m.model.startswith("_"):
+            app_models = out.get(m.app_label,[])
+            app_models.append(m.model_class())
+            out[m.app_label] = app_models
+
+    return render(request,"aristotle_mdr/static/all_items.html",{'models':out,})
 
 # creation tools
 
