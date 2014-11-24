@@ -276,6 +276,9 @@ class AnonymousUserViewingThePages(TestCase):
     def test_homepage(self):
         home = self.client.get("/")
         self.assertEqual(home.status_code,200)
+    def test_help_all_items(self):
+        response = self.client.get(reverse('aristotle:about_all_items'))
+        self.assertEqual(response.status_code,200)
     def test_visible_item(self):
         wg = models.Workgroup.objects.create(name="Setup WG")
         ra = models.RegistrationAuthority.objects.create(name="Test RA")

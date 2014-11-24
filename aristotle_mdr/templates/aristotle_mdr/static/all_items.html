@@ -1,0 +1,22 @@
+{% extends "aristotle_mdr/static/about_base.html" %}
+
+{% block title %}All Items{% endblock %}
+{% block item_name %}All Items{% endblock %}
+{% block breadcrumbs %}
+    <li><a href="#">About</a></li>
+    <li><a href="#">All Items</a></li>
+{% endblock %}
+{% block description %}
+<div>
+{% for app,app_models in models.items %}
+<h2>{{ app }}</h2>
+    <ul>
+    {% for m in app_models %}
+        {% if m.help_name %}
+        <li><a href="{% url 'aristotle:about' m.help_name %}">{{ m.get_verbose_name }}</a></li>
+        {% endif %}
+    {% endfor %}
+    </ul>
+{% endfor %}
+</div>
+{% endblock %}
