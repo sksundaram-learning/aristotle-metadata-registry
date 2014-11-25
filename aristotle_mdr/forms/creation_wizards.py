@@ -10,13 +10,25 @@ class ConceptForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         #TODO: Have tis throw a 'no user' error
         self.user = kwargs.pop('user', None)
+        first_load = kwargs.pop('first_load', None)
         super(ConceptForm, self).__init__(*args, **kwargs)
         if not self.user.is_superuser:
             self.fields['workgroup'].queryset = self.user.profile.myWorkgroups
+        self.fields['name'].widget = forms.widgets.TextInput()
 
-    pass
-#    userAware = forms.BooleanField()
-#
+    class Meta:
+        exclude = ['readyToReview','superseded_by','_is_public','_is_locked']
+
+class Concept_1_Search(forms.Form):
+    template = "aristotle_mdr/create/concept_wizard_1_search.html"
+    # Object class fields
+    name = forms.CharField(max_length=256)
+    description = forms.CharField(widget = forms.Textarea,required=False)
+
+class Concept_2_Results(forms.Form):
+    def __init__(self , similar=None, *args, **kwargs):
+        super(Concept_2_Results, self).__init__(*args, **kwargs)
+
 #    def __init__(self, *args, **kwargs):
 #        hasSimilarItems = kwargs.get('hasSimilarItems', False)
 #        if 'hasSimilarItems' in kwargs:
@@ -35,24 +47,20 @@ class ValueDomainForm(ConceptForm):
 class DataElementConceptForm(ConceptForm):
     template = "aristotle_mdr/create/dataElementConcept.html"
 
-    class Meta:
+    class Meta(ConceptForm.Meta):
         model = MDR.DataElementConcept
-        exclude = ['readyToReview','superseded_by']
 
 class PropertyForm(ConceptForm):
     template = "aristotle_mdr/create/property.html"
 
-    class Meta:
+    class Meta(ConceptForm.Meta):
         model = MDR.Property
-        exclude = ['readyToReview','superseded_by']
 
 class ObjectClassForm(ConceptForm):
     template = "aristotle_mdr/create/objectClass.html"
 
-    class Meta:
+    class Meta(ConceptForm.Meta):
         model = MDR.ObjectClass
-        exclude = ['readyToReview','superseded_by']
-
 
 class DEC_Initial_Search(forms.Form):
     template = "aristotle_mdr/create/dec_1_initial_search.html"

@@ -565,16 +565,16 @@ def about_all_items(request):
 # creation tools
 
 def createProperty(request):
-    return createManagedObject(request,MDRForms.PropertyForm)
+    return createManagedObject(request,MDRForms.wizards.PropertyForm)
 
 def createObjectclass(request):
-    return createManagedObject(request,MDRForms.ObjectClassForm)
+    return createManagedObject(request,MDRForms.wizards.ObjectClassForm)
 
 def createValueDomain(request):
-    return createManagedObject(request,MDRForms.ValueDomainForm)
+    return createManagedObject(request,MDRForms.wizards.ValueDomainForm)
 
 def createDataElementConcept(request):
-    return createManagedObject(request,MDRForms.DataElementConceptForm)
+    return createManagedObject(request,MDRForms.wizards.DataElementConceptForm)
 
 def createManagedObject(request,f):
     if request.user.is_anonymous():
@@ -584,7 +584,8 @@ def createManagedObject(request,f):
     initial = {'workgroup':request.user.profile.activeWorkgroup,
          #'name':request.user.username
          }
-    # What does the user want to clone? Technically this is the 'source' and we make the clone, but lets be pragmatic, not pedantic.
+    # What does the user want to clone? Technically this is the 'source' and we make the clone,
+    # but lets be pragmatic, not pedantic.
     clone = request.GET.get('clone',None)
     if clone is not None:
         clone = get_object_or_404(f.Meta.model,id=clone)
@@ -607,7 +608,8 @@ def createManagedObject(request,f):
                     )
 
                 similar = [o for o in similar if o.is_public]
-                import haystack.query.SearchQuerySet as SearchQuerySet
+                #import haystack.query.SearchQuerySet as SearchQuerySet
+                from aristotle_mdr.forms.search import PermissionSearchQuerySet as SearchQuerySet
                 similarName = SearchQuerySet().models(f.Meta.model).filter(name=form.cleaned_data['name'])
                 similarDesc = SearchQuerySet().models(f.Meta.model).filter(content=form.cleaned_data['description'])
                 similarSyns = SearchQuerySet().models(f.Meta.model).filter(content=form.cleaned_data['synonyms'])
@@ -645,7 +647,7 @@ def createManagedObject(request,f):
             form = frm( instance = supersede,initial=initial ) # An unbound form
         else:
             # We just want to make a new item
-            form = frm( initial = initial ) # An unbound form
+            form = frm( initial = initial,first_load=True ) # An unbound form
 
     return render(request, f.template, {
         'form': form,
@@ -655,25 +657,66 @@ def createManagedObject(request,f):
     })
 
 
-"""
-    Looks for items ot a given item type with the given search terms
-"""
-def findSimilar(itemType,name="",description="",synonyms=""):
-    import haystack.query.SearchQuerySet as SearchQuerySet
-    similar = SearchQuerySet().models(itemType).filter_or(
-            name=name,
-            content=description+" "+synonyms) #.filter(states="Standard")
-    return similar
-
-
-
-
 # wizards
 
 TEMPLATES = {
         "initial": "aristotle_mdr/create/dec_1_initial_search.html",
         "results": "aristotle_mdr/create/dec_2_search_results.html",
         }
+
+class ConceptWizard(SessionWizardView):
+    templates = {
+            "initial": "aristotle_mdr/create/concept_wizard_1_search.html",
+            "results": "aristotle_mdr/create/concept_wizard_2_results.html",
+            }
+    template_name = "aristotle_mdr/create/concept_wizard_wrapper.html"
+    form_list = [("initial", MDRForms.wizards.Concept_1_Search),
+                  ("results", MDRForms.wizards.Concept_2_Results),
+                 ]
+    def get_template_names(self):
+        return [self.templates[self.steps.current]]
+
+    def process_step(self,form):
+        if self.steps.current == 'initial':
+            self.search_terms = {
+                'name': form.cleaned_data['name'],
+                'description': form.cleaned_data['description'],
+            }
+
+    def get_form_kwargs(self, step):
+        # determine the step if not given
+        if step is None:
+            step = self.steps.current
+
+        if step == 'results':
+            return { 'similar': self.find_similar()}
+        return {}
+
+    def get_context_data(self, form, **kwargs):
+        context = super(ConceptWizard, self).get_context_data(form=form, **kwargs)
+        if self.steps.current == 'initial':
+            context.update({'test': "hello"})
+        if self.steps.current == 'results':
+            context.update({'results': self.find_similar()})
+        return context
+
+
+    """
+        Looks for items ot a given item type with the given search terms
+    """
+    def find_similar(self):
+        from haystack.query import SearchQuerySet as SearchQuerySet
+        similar = SearchQuerySet().models(self.model).filter(
+                name=self.search_terms['name'],
+                content=self.search_terms['description']) #.filter(states="Standard")
+        print self.model, self.search_terms['name']
+        print similar
+        return similar
+
+class ObjectClassWizard(ConceptWizard):
+    template_name = "aristotle_mdr/create/object_class_wrapper.html"
+    model = MDR.ObjectClass
+
 
 class DataElementConceptWizard(SessionWizardView):
     template_name = "aristotle_mdr/create/dec_template_wrapper.html"

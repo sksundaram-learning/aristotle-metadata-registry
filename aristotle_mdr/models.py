@@ -36,8 +36,8 @@ STATES = Choices (
 VERY_RECENTLY_SECONDS = 15
 
 class baseAristotleObject(TimeStampedModel):
-    name = models.TextField(help_text="The primary name used for human identification purposes.")
-    description = HTMLField(help_text="A rich text field for describing the metadata item.")
+    name = models.TextField(help_text=_("The primary name used for human identification purposes."))
+    description = HTMLField(_('definition'),help_text=_("A rich text field for describing the metadata item."))
     objects = InheritanceManager()
 
     class Meta:
