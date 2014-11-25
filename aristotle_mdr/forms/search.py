@@ -183,32 +183,27 @@ class PermissionSearchForm(TokenSearchForm):
     """
     mq=forms.ChoiceField(required=False,initial=QUICK_DATES.anytime,
         choices=QUICK_DATES,widget=BootstrapDropdownIntelligentDate)
+    mds = forms.DateField(required=False,label="Modified after date",
+        widget=DateTimePicker(options=datePickerOptions),)
+    mde = forms.DateField(required=False,label="Modified before date",
+        widget=DateTimePicker(options=datePickerOptions),)
 
-    mds = forms.DateField(required=False,
-        widget=DateTimePicker(options=datePickerOptions),
-        )
-    mde = forms.DateField(required=False,
-        widget=DateTimePicker(options=datePickerOptions),
-        )
     cq=forms.ChoiceField(required=False,initial=QUICK_DATES.anytime,
         choices=QUICK_DATES,widget=BootstrapDropdownIntelligentDate)
-
-    cds = forms.DateField(required=False,
-        widget=DateTimePicker(options=datePickerOptions),
-        )
-    cde = forms.DateField(required=False,
-        widget=DateTimePicker(options=datePickerOptions),
-        )
+    cds = forms.DateField(required=False,label="Created after date",
+        widget=DateTimePicker(options=datePickerOptions),)
+    cde = forms.DateField(required=False,label="Created before date",
+        widget=DateTimePicker(options=datePickerOptions),)
 
     # Use short singular names
     #ras = [(ra.id, ra.name) for ra in MDR.RegistrationAuthority.objects.all()]
-    ra = forms.MultipleChoiceField(required=False,
+    ra = forms.MultipleChoiceField(required=False,label=_("Registration authority"),
         choices=[],widget=BootstrapDropdownSelectMultiple)
 
     sort = forms.ChoiceField(required=False,initial=SORT_OPTIONS.natural,
         choices=SORT_OPTIONS,widget=BootstrapDropdownSelect)
 
-    state = forms.MultipleChoiceField(required=False,
+    state = forms.MultipleChoiceField(required=False,label=_("Registration status"),
         choices=MDR.STATES,widget=BootstrapDropdownSelectMultiple)
     public_only = forms.BooleanField(required=False,
         label="Only show public items"
@@ -375,4 +370,3 @@ class PermissionSearchForm(TokenSearchForm):
             sqs = sqs.order_by('-highest_state')
 
         return sqs
-

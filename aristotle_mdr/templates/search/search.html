@@ -15,7 +15,9 @@
     <![endif]-->
 {% endblock %}
 
-{% block search %}{% endblock %}
+{% block header %}
+   {% include 'aristotle_mdr/header.html' with hide_search=True %}
+{% endblock %}
 {% block title %}{% trans "Search" %}{% if query %} {% trans "results" context 'Search results' %}{% endif %}{% endblock %}
 {% block content %}
     <form method="get">
@@ -132,6 +134,20 @@
               </div>
               </div>
             </nav>
+            {% if form.errors %}
+            <div class="col-md-10 col-md-offset-1">
+            <p>
+                <strong>There were one or more error with your search selections, please correct them and try again.</strong>
+                <ul>
+                {% for field in form %}
+                    {% if field.errors %}
+                        <li>{{ field.label_tag }} {{ field }} {{ field.errors }}</li>
+                    {% endif %}
+                {% endfor %}
+                </ul>
+            </p>
+            </div>
+            {% endif %}
     </form>
     <div class="col-md-10 col-md-offset-1">
         {#  ----- If there are spelling suggestions, show them. ----- #}
@@ -254,6 +270,7 @@
             {% endif %}
             </p>
         {% endif %}
+    {% elif form.errors %}
     {% else %}
         {# Show some example queries to run, maybe query syntax, something else? #}
         <p>

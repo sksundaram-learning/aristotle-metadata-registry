@@ -2,7 +2,9 @@
 {% load i18n %}
 
 {% block title %}{% trans 'Home'%}{% endblock %}
-{% block search %} {% endblock %}
+{% block header %}
+   {% include 'aristotle_mdr/header.html' with hide_search=True %}
+{% endblock %}
 {% block content %}
 
 <div class="jumbotron">
