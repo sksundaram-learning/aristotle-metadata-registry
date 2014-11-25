@@ -20,11 +20,11 @@ msgstr ""
 
 #: fields.py:41 fields.py:49
 msgid "Yes"
-msgstr ""
+msgstr "Ja"
 
 #: fields.py:41 fields.py:51
 msgid "No"
-msgstr ""
+msgstr "Nej"
 
 #: models.py:26
 msgid "Not Progressed"
@@ -48,7 +48,7 @@ msgstr ""
 
 #: models.py:31
 msgid "Standard"
-msgstr ""
+msgstr "Standard"
 
 #: models.py:32
 msgid "Preferred Standard"
@@ -91,12 +91,12 @@ msgstr ""
 
 #: utils.py:24
 msgid " (clone)"
-msgstr ""
+msgstr " (kopia)"
 
 #: views.py:619
 #, python-format
 msgid "New %(name)s Saved"
-msgstr ""
+msgstr "Ny %(name) sparad"
 
 #: forms/admin.py:21 forms/admin.py:22 forms/admin.py:23 forms/admin.py:24
 msgid "workgroups"
@@ -108,11 +108,11 @@ msgstr ""
 
 #: forms/forms.py:19
 msgid "First Name"
-msgstr ""
+msgstr "Förnamn"
 
 #: forms/forms.py:20
 msgid "Last Name"
-msgstr ""
+msgstr "Efternamn"
 
 #: forms/forms.py:21
 msgid "Email Address"
@@ -129,7 +129,7 @@ msgstr ""
 
 #: forms/forms.py:86
 msgid "Registration date"
-msgstr ""
+msgstr "Registrationsdatum"
 
 #: forms/forms.py:92
 msgid "Do you want to update the registration of associated items?"
@@ -201,7 +201,7 @@ msgstr ""
 
 #: templates/admin/submit_line.html:6
 msgid "Delete"
-msgstr ""
+msgstr "Radera"
 
 #: templates/admin/submit_line.html:10
 msgid "Cancel editing and return to main site"
@@ -217,7 +217,7 @@ msgstr ""
 
 #: templates/admin/submit_line.html:18
 msgid "Save as new"
-msgstr ""
+msgstr "Spara som ny"
 
 #: templates/admin/submit_line.html:21
 msgid "Save and add another"
@@ -251,15 +251,15 @@ msgstr ""
 
 #: templates/aristotle_mdr/header.html:94
 msgid "No unread notifications"
-msgstr ""
+msgstr "Inga olästa notifikationer"
 
 #: templates/aristotle_mdr/header.html:100
 msgid "My Dashboard"
-msgstr ""
+msgstr "Min kontrollpanel"
 
 #: templates/aristotle_mdr/header.html:103
 msgid "My Favourites"
-msgstr ""
+msgstr "Mina favoriter"
 
 #: templates/aristotle_mdr/header.html:107
 msgid "Notifications"
@@ -277,11 +277,11 @@ msgstr "arbetsgrupper"
 #: templates/aristotle_mdr/header.html:120
 #: templates/aristotle_mdr/user/userSideBar.html:61
 msgid "Change password"
-msgstr ""
+msgstr "Byt lösenord"
 
 #: templates/aristotle_mdr/header.html:126
 msgid "Registrar tools"
-msgstr ""
+msgstr "Registrera verktyg"
 
 #: templates/aristotle_mdr/header.html:132
 msgid "Management interface"
@@ -289,15 +289,15 @@ msgstr ""
 
 #: templates/aristotle_mdr/header.html:137
 msgid "Admin tools"
-msgstr ""
+msgstr "Administera verktyg"
 
 #: templates/aristotle_mdr/header.html:143
 msgid "Log out"
-msgstr ""
+msgstr "Logga ut"
 
 #: templates/aristotle_mdr/header.html:152
 msgid "Log in"
-msgstr ""
+msgstr "Logga in"
 
 #: templates/aristotle_mdr/statuses.html:2
 msgid "Registration status"
@@ -309,32 +309,32 @@ msgstr ""
 
 #: templates/aristotle_mdr/statuses.html:24
 msgid "Not registered"
-msgstr ""
+msgstr "Ej registerad"
 
 #: templates/aristotle_mdr/actions/autocompleteItem.html:10
 msgid "Open in a new window"
-msgstr ""
+msgstr "Öppna i nytt fönster"
 
 #: templates/aristotle_mdr/concepts/infobox.html:21
 msgctxt "Object Type"
 msgid "Type"
-msgstr ""
+msgstr "Typ"
 
 #: templates/aristotle_mdr/concepts/infobox.html:29
 #: templates/aristotle_mdr/concepts/managedContent.html:118
 msgid "Short name"
-msgstr ""
+msgstr "Kortnamn"
 
 #: templates/aristotle_mdr/concepts/infobox.html:32
 #: templates/aristotle_mdr/concepts/managedContent.html:33
 #: templates/aristotle_mdr/concepts/managedContent.html:121
 msgid "Version"
-msgstr ""
+msgstr "Version"
 
 #: templates/aristotle_mdr/concepts/infobox.html:35
 #: templates/aristotle_mdr/concepts/managedContent.html:124
 msgid "Synonyms"
-msgstr ""
+msgstr "Synonymer"
 
 #: templates/aristotle_mdr/concepts/infobox.html:38
 msgid "Origin URI"
@@ -343,11 +343,11 @@ msgstr ""
 #: templates/aristotle_mdr/concepts/infobox.html:44
 msgctxt "Aristotle Package"
 msgid "Package"
-msgstr ""
+msgstr "Paket"
 
 #: templates/aristotle_mdr/concepts/infobox.html:51
 msgid "Last updated"
-msgstr ""
+msgstr "Uppdaterad senast"
 
 #: templates/aristotle_mdr/concepts/infobox.html:61
 msgid "This may have been added during an import."
@@ -356,7 +356,7 @@ msgstr ""
 #: templates/aristotle_mdr/concepts/infobox.html:61
 msgctxt "Unknown import user"
 msgid "Unknown"
-msgstr ""
+msgstr "Okänd"
 
 #: templates/aristotle_mdr/concepts/infobox.html:66
 msgid "Created"
@@ -388,11 +388,11 @@ msgstr ""
 
 #: templates/aristotle_mdr/concepts/managedContent.html:48
 msgid "Edit menu"
-msgstr ""
+msgstr "Editera menyn"
 
 #: templates/aristotle_mdr/concepts/managedContent.html:53
 msgid "Advanced editor"
-msgstr ""
+msgstr "Avancerad editor"
 
 #: templates/aristotle_mdr/concepts/managedContent.html:58
 msgid "Clone this item"
@@ -400,11 +400,11 @@ msgstr ""
 
 #: templates/aristotle_mdr/concepts/managedContent.html:64
 msgid "Simple View"
-msgstr ""
+msgstr "Enkel vy"
 
 #: templates/aristotle_mdr/concepts/managedContent.html:66
 msgid "Technical View"
-msgstr ""
+msgstr "Teknisk vy"
 
 #: templates/aristotle_mdr/concepts/managedContent.html:70
 msgid "Download"
@@ -470,7 +470,7 @@ msgstr ""
 
 #: templates/aristotle_mdr/static/home.html:3
 msgid "Home"
-msgstr ""
+msgstr "Hem"
 
 #: templates/aristotle_mdr/static/home.html:12
 msgctxt "Front page search options"
@@ -491,7 +491,7 @@ msgstr ""
 
 #: templates/inplaceeditform/render_field.html:11
 msgid "Save"
-msgstr ""
+msgstr "Spara"
 
 #: templates/inplaceeditform/render_field.html:15
 msgid "Cancel change"
@@ -499,12 +499,12 @@ msgstr ""
 
 #: templates/inplaceeditform/render_field.html:17
 msgid "Cancel"
-msgstr ""
+msgstr "Avbryt"
 
 #: templates/search/search.html:19
 msgctxt "Search results"
 msgid "results"
-msgstr ""
+msgstr "resultat"
 
 #: templates/search/search.html:58
 msgid "Toggle navigation"
@@ -528,7 +528,7 @@ msgstr ""
 #: templates/search/search.html:80
 msgctxt "Registration Status"
 msgid "Status"
-msgstr ""
+msgstr "Status"
 
 #: templates/search/search.html:88
 msgctxt "Registration Authority"
@@ -538,7 +538,7 @@ msgstr ""
 #: templates/search/search.html:96
 msgctxt "Modified date"
 msgid "Modified"
-msgstr ""
+msgstr "Ändrad"
 
 #: templates/search/search.html:116
 #, fuzzy
