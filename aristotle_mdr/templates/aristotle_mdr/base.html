@@ -73,7 +73,9 @@
    </head>
 
    <body>
+   {% block header %}
    {% include 'aristotle_mdr/header.html' %}
+   {% endblock %}
    <div id='content' class="container">
         {% if messages %}
         <div class="alert alert-info" role="alert">

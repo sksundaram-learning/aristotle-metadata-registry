@@ -15,7 +15,9 @@
     <![endif]-->
 {% endblock %}
 
-{% block search %}{% endblock %}
+{% block header %}
+   {% include 'aristotle_mdr/header.html' with hide_search=True %}
+{% endblock %}
 {% block title %}{% trans "Search" %}{% if query %} {% trans "results" context 'Search results' %}{% endif %}{% endblock %}
 {% block content %}
     <form method="get">
