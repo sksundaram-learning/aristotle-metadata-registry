@@ -1,0 +1,25 @@
+{% extends "aristotle_mdr/create/concept_wizard_wrapper.html" %}
+
+{% block creationTips %}
+<header>The key to good metadata is reuse.</header>
+
+<p>
+Enter a name and short description for the what you would like to create, and
+Aristotle will do a quick search to see if similar objects exist for reuse.
+
+<p>
+If no items with similar terms exist, your search terms will be used to
+pre-populate any new items you create.
+
+{% endblock %}
+
+{% block formarea %}
+<fieldset class="wizard">
+<legend>What things are you collecting infomation about?
+</legend>
+What would be the <em>name</em> of this type of object?<br>
+{{ form.name }}<br>
+Add a brief description of what you are looking for (optional):<br>
+{{ form.description }}
+</fieldset>
+{% endblock %}

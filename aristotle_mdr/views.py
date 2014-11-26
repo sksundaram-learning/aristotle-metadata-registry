@@ -1,4 +1,5 @@
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.auth.models import User
 from django.contrib.formtools.wizard.views import SessionWizardView
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
@@ -7,16 +8,14 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.translation import ugettext_lazy as _
+from django.utils.decorators import method_decorator
 from django.views.generic import TemplateView
 from django.utils import timezone
 import datetime
-from django.contrib.auth.models import User
 
 from aristotle_mdr.perms import user_can_view, user_can_edit, user_in_workgroup, user_is_workgroup_manager, user_can_change_status
 from aristotle_mdr import perms
 from aristotle_mdr.utils import cache_per_item_user
-#import aristotle_mdr.forms as MDRForms
-#import aristotle_mdr.models as MDR
 from aristotle_mdr import forms as MDRForms
 from aristotle_mdr import models as MDR
 
@@ -577,6 +576,13 @@ def createDataElementConcept(request):
     return createManagedObject(request,MDRForms.wizards.DataElementConceptForm)
 
 def createManagedObject(request,f):
+    1/0
+    if not (perms.user_is_editor(request.user)):
+        if request.user.is_anonymous():
+            return redirect(reverse('django.contrib.auth.views.login')+'?next=%s' % request.path)
+        else:
+            raise PermissionDenied
+
     if request.user.is_anonymous():
         return redirect(reverse('django.contrib.auth.views.login')+'?next=%s' % request.path)
     similar = None # We keep track of any similar items to prompt users to reuse
@@ -659,11 +665,6 @@ def createManagedObject(request,f):
 
 # wizards
 
-TEMPLATES = {
-        "initial": "aristotle_mdr/create/dec_1_initial_search.html",
-        "results": "aristotle_mdr/create/dec_2_search_results.html",
-        }
-
 class ConceptWizard(SessionWizardView):
     templates = {
             "initial": "aristotle_mdr/create/concept_wizard_1_search.html",
@@ -673,6 +674,11 @@ class ConceptWizard(SessionWizardView):
     form_list = [("initial", MDRForms.wizards.Concept_1_Search),
                   ("results", MDRForms.wizards.Concept_2_Results),
                  ]
+
+    @method_decorator(permission_required('aristotle_mdr.user_is_editor'))
+    def dispatch(self,  *args, **kwargs):
+        return super(ConceptWizard,self).dispatch(*args, **kwargs)
+
     def get_template_names(self):
         return [self.templates[self.steps.current]]
 
@@ -683,40 +689,61 @@ class ConceptWizard(SessionWizardView):
                 'description': form.cleaned_data['description'],
             }
 
-    def get_form_kwargs(self, step):
-        # determine the step if not given
-        if step is None:
-            step = self.steps.current
-
-        if step == 'results':
-            return { 'similar': self.find_similar()}
+    def get_form_initial(self, step):
+        if step == "results":
+            return self.search_terms
         return {}
+
+    def get_form(self, step=None, data=None, files=None):
+        if step == "results":
+            kwargs = self.get_form_kwargs(step)
+            kwargs.update({
+                'data': data,
+                'files': files,
+                'prefix': self.get_form_prefix(step, self.form_list[step]),
+                'initial': self.get_form_initial(step),
+                'user':self.request.user
+            })
+
+            return MDRForms.wizards.subclassed_wizard_2_Results(self.model)(**kwargs)
+        else:
+            return super(ConceptWizard, self).get_form(step, data, files)
+
+
 
     def get_context_data(self, form, **kwargs):
         context = super(ConceptWizard, self).get_context_data(form=form, **kwargs)
         if self.steps.current == 'initial':
             context.update({'test': "hello"})
         if self.steps.current == 'results':
-            context.update({'results': self.find_similar()})
+            context.update({'results': self.find_similar(),
+                            'search_name':self.search_terms['name'],})
+        context.update({'model_name': self.model._meta.verbose_name,
+                        'template_name': self.template_name})
         return context
-
 
     """
         Looks for items ot a given item type with the given search terms
     """
     def find_similar(self):
-        from haystack.query import SearchQuerySet as SearchQuerySet
-        similar = SearchQuerySet().models(self.model).filter(
+        #from haystack.query import SearchQuerySet as SearchQuerySet
+        from aristotle_mdr.forms.search import PermissionSearchQuerySet as PSQS
+        similar = PSQS().auto_query(self.search_terms['description']).models(self.model).filter(
                 name=self.search_terms['name'],
-                content=self.search_terms['description']) #.filter(states="Standard")
+                ) #.filter(states="Standard")
+        similar = [i for i in similar if i is not None] # Dang whoosh.
         print self.model, self.search_terms['name']
         print similar
         return similar
 
 class ObjectClassWizard(ConceptWizard):
-    template_name = "aristotle_mdr/create/object_class_wrapper.html"
+    template_name = "aristotle_mdr/create/objectclass_wrapper.html"
     model = MDR.ObjectClass
 
+TEMPLATES = {
+        "initial": "aristotle_mdr/create/dec_1_initial_search.html",
+        "results": "aristotle_mdr/create/dec_2_search_results.html",
+        }
 
 class DataElementConceptWizard(SessionWizardView):
     template_name = "aristotle_mdr/create/dec_template_wrapper.html"

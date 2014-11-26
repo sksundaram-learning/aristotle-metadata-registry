@@ -25,9 +25,24 @@ class Concept_1_Search(forms.Form):
     name = forms.CharField(max_length=256)
     description = forms.CharField(widget = forms.Textarea,required=False)
 
-class Concept_2_Results(forms.Form):
-    def __init__(self , similar=None, *args, **kwargs):
+def subclassed_wizard_2_Results(object_type):
+    class MyForm(Concept_2_Results):
+        class Meta(Concept_2_Results.Meta):
+            model = object_type
+    return MyForm
+
+class Concept_2_Results(forms.ModelForm):
+    def __init__(self , *args, **kwargs):
+        self.user = kwargs.pop('user', None)
         super(Concept_2_Results, self).__init__(*args, **kwargs)
+        if not self.user.is_superuser:
+            self.fields['workgroup'].queryset = self.user.profile.myWorkgroups
+            self.fields['workgroup'].initial = self.user.profile.activeWorkgroup
+        self.fields['name'].widget = forms.widgets.TextInput()
+
+    class Meta:
+        model = MDR._concept
+        exclude = ['readyToReview','superseded_by','_is_public','_is_locked']
 
 #    def __init__(self, *args, **kwargs):
 #        hasSimilarItems = kwargs.get('hasSimilarItems', False)

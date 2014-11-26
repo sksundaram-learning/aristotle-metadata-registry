@@ -1,0 +1,37 @@
+{% extends "aristotle_mdr/base.html" %}
+{% load compile_static %}
+{% load i18n %}
+
+{% block title %}
+Create new {{ model_name }} - Step {{ wizard.steps.step1 }} of {{ wizard.steps.count }}
+{% endblock %}
+
+{% block extra_head_scripts %}
+    <link rel="stylesheet" href="{{ STATIC_URL }}{% compile 'aristotle_mdr/aristotle.wizard.less' %}" />
+    {{ wizard.form.media }}
+{% endblock %}
+
+{% block content %}
+<h1>Create {{ model_name }} - <em>Step {{ wizard.steps.step1 }} of {{ wizard.steps.count }}</em></h1>
+    {% if form.errors %}
+        {{ form.errors }}
+    {% endif %}
+    <div class="row">
+    <form class="col-sm-8" action="" method="post">{% csrf_token %}
+       {{ wizard.management_form }}
+        {% block formarea %}
+           {{ wizard.management_form }}
+        {% endblock %}
+
+        {% if wizard.steps.prev %}
+            <!-- button name="wizard_goto_step" type="submit" value="{{ wizard.steps.first }}">{% trans "First step" %}</button -->
+            <button name="wizard_goto_step" class="btn btn-default" type="submit" value="{{ wizard.steps.prev }}">{% trans "Back" %}</button>
+        {% endif %}
+            <button type="submit" class="btn btn-primary" value="{% trans "submit" %}">Next ></button>
+    </form>
+<aside class="creationTips col-sm-4">
+    {% block creationTips %}{% endblock %}
+</aside>
+</div>
+{% endblock %}
+

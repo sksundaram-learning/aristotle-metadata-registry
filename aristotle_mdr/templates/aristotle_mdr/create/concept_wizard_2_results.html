@@ -1,0 +1,42 @@
+{% extends template_name %}
+{% load aristotle_tags %}
+{% block formarea %}
+
+    {% if results %}
+    <div class="message warning">
+        <strong>{{ results.count }} items were found with a title similar to "<em>{{ search_name }}</em>".
+        </strong>
+        <br>Reusing existing content makes comparing items in the future easier.
+        <br>Consider reviewing these similar items to see if an existing piece of content meets your needs.
+        <ul>
+            {% for obj in results %}
+            <li>
+                {# <input type='checkbox'> #}
+                {% include "search/searchItem.html" with result=obj %}
+            </li>
+            {% endfor %}
+        </ul>
+        <input type="checkbox" name="userSwearsTheyKnowWhatTheyAreDoing"/>
+        <label for="userSwearsTheyKnowWhatTheyAreDoing">
+            I've reviewed these items, and none of them meet my needs. Make me a new one.
+        </label>
+    </div>
+    {% else %}
+        <p>
+            No matching items were found for reuse, so a new one will be created.
+        </p>
+    {% endif %}
+    {% for field in wizard.form %}
+        <div class="wizard_field">
+            <span>{{ field.label_tag }} {{ field.help_text }}</span>
+            {% if field.errors %}
+            <span class="alert alert-danger">
+                {{ field.errors }}
+            {% endif %}
+            {{ field }}
+            {% if field.errors %}
+                </span>
+            {% endif %}
+        </div>
+    {% endfor %}
+{% endblock %}
