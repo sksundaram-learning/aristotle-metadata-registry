@@ -20,7 +20,7 @@
 {% endblock %}
 {% block title %}{% trans "Search" %}{% if query %} {% trans "results" context 'Search results' %}{% endif %}{% endblock %}
 {% block content %}
-    <form method="get">
+    <form method="get"> {# open main_search_form #}
         <div id="searchbar" class="row">
             <div class="col-sm-8 col-sm-offset-2">
                 <div class="input-group">
@@ -148,7 +148,6 @@
             </p>
             </div>
             {% endif %}
-    </form>
     <div class="col-md-10 col-md-offset-1">
         {#  ----- If there are spelling suggestions, show them. ----- #}
         {% if form.auto_correct_spell_search %}
@@ -178,9 +177,12 @@
             {% endfor %}
             </a>
         {% endif %}
+    </div>
     {#  ----- MAIN RESULTS PAGE STARTS HERE ----- #}
     {% if query or form.filter_search %}
+
         {% if page.object_list %}
+        <div class="col-md-10 col-md-offset-1">
             {% if form.auto_broaden_search %}
                 <div class="alert alert-warning" role="alert">
                     <p>There were no results for "{{ form.q.value }}" with your requested filters.
@@ -209,7 +211,9 @@
                 Showing {{ page.paginator.count }} results.
                 {% endif %}
             </p>
-
+        </div>
+        </form> {# close main_search_form for when results#}
+        <div class="col-md-10 col-md-offset-1">
             {% if user.is_active %}
                 <form action="{% url 'aristotle:bulk_action' %}?next={{ request.get_full_path }}" method="POST">
                 {% csrf_token %}
@@ -236,7 +240,7 @@
             {% endif %}
 
             {% include "aristotle_mdr/helpers/paginator.html" with page=page %}
-
+        </div>
         {% else %}
             <h3>No results found.</h3>
             <p>
@@ -261,7 +265,9 @@
             </p>
         {% endif %}
     {% elif form.errors %}
+        </form> {# close main_search_form for when there are errors#}
     {% else %}
+        </form> {# close main_search_form for when there are no results#}
         {# Show some example queries to run, maybe query syntax, something else? #}
         <p>
             Enter a query above to search the registry.
