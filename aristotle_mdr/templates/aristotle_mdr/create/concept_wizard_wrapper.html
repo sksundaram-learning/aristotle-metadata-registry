@@ -17,7 +17,7 @@ Create new {{ model_name }} - Step {{ wizard.steps.step1 }} of {{ wizard.steps.c
         {{ form.errors }}
     {% endif %}
     <div class="row">
-    <form class="col-sm-8" action="" method="post">{% csrf_token %}
+    <form class="" action="" method="post">{% csrf_token %}
        {{ wizard.management_form }}
         {% block formarea %}
            {{ wizard.management_form }}
@@ -29,9 +29,6 @@ Create new {{ model_name }} - Step {{ wizard.steps.step1 }} of {{ wizard.steps.c
         {% endif %}
             <button type="submit" class="btn btn-primary" value="{% trans "submit" %}">Next ></button>
     </form>
-<aside class="creationTips col-sm-4">
-    {% block creationTips %}{% endblock %}
-</aside>
 </div>
 {% endblock %}
 

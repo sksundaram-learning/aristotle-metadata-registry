@@ -17,7 +17,7 @@ class ConceptForm(forms.ModelForm):
         self.fields['name'].widget = forms.widgets.TextInput()
 
     class Meta:
-        exclude = ['readyToReview','superseded_by','_is_public','_is_locked']
+        exclude = ['readyToReview','superseded_by','_is_public','_is_locked','originURI']
 
 class Concept_1_Search(forms.Form):
     template = "aristotle_mdr/create/concept_wizard_1_search.html"
@@ -42,7 +42,7 @@ class Concept_2_Results(forms.ModelForm):
 
     class Meta:
         model = MDR._concept
-        exclude = ['readyToReview','superseded_by','_is_public','_is_locked']
+        exclude = ['readyToReview','superseded_by','_is_public','_is_locked','originURI']
 
 #    def __init__(self, *args, **kwargs):
 #        hasSimilarItems = kwargs.get('hasSimilarItems', False)

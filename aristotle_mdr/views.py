@@ -719,19 +719,22 @@ class ConceptWizard(SessionWizardView):
             context.update({'results': self.find_similar(),
                             'search_name':self.search_terms['name'],})
         context.update({'model_name': self.model._meta.verbose_name,
-                        'template_name': self.template_name})
+                        'template_name': self.template_name,
+                        'help_guide':'%s/create/tips/%s.html'%(self.model._meta.app_label,self.model._meta.model_name)
+                        })
         return context
 
     """
         Looks for items ot a given item type with the given search terms
     """
     def find_similar(self):
-        #from haystack.query import SearchQuerySet as SearchQuerySet
+        #from haystack.query import SearchQuerySet as PSQS
         from aristotle_mdr.forms.search import PermissionSearchQuerySet as PSQS
-        similar = PSQS().auto_query(self.search_terms['description']).models(self.model).filter(
+        q = PSQS().models(self.model).auto_query(self.search_terms['description']).filter(
                 name=self.search_terms['name'],
-                ) #.filter(states="Standard")
-        similar = [i for i in similar if i is not None] # Dang whoosh.
+                )#.models(self.model) #.filter(states="Standard")
+        similar = q #.query.add_model(self.model)
+        #similar = [i for i in similar if i is not None] # Dang whoosh.
         print self.model, self.search_terms['name']
         print similar
         return similar
