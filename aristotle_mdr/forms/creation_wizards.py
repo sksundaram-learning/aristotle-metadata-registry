@@ -1,5 +1,7 @@
 from django import forms
 from django.utils.safestring import mark_safe
+from django.utils.translation import ugettext_lazy as _
+
 import aristotle_mdr.models as MDR
 
 class ConceptForm(forms.ModelForm):
@@ -23,16 +25,24 @@ class Concept_1_Search(forms.Form):
     template = "aristotle_mdr/create/concept_wizard_1_search.html"
     # Object class fields
     name = forms.CharField(max_length=256)
+    version = forms.CharField(max_length=256,required=False)
     description = forms.CharField(widget = forms.Textarea,required=False)
 
-def subclassed_wizard_2_Results(object_type):
+def subclassed_wizard_2_Results(wizard):
     class MyForm(Concept_2_Results):
         class Meta(Concept_2_Results.Meta):
-            model = object_type
+            model = wizard.model
+        def __init__(self, *args, **kwargs):
+            super(MyForm, self).__init__(*args, **kwargs)
+            for field,widget in wizard.widgets.items():
+                self.fields[field].widget = widget
     return MyForm
 
 class Concept_2_Results(forms.ModelForm):
-    def __init__(self , *args, **kwargs):
+    make_new_item = forms.BooleanField(initial=False,
+        label=_("I've reviewed these items, and none of them meet my needs. Make me a new one.")
+    )
+    def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user', None)
         super(Concept_2_Results, self).__init__(*args, **kwargs)
         if not self.user.is_superuser:
@@ -44,13 +54,24 @@ class Concept_2_Results(forms.ModelForm):
         model = MDR._concept
         exclude = ['readyToReview','superseded_by','_is_public','_is_locked','originURI']
 
-#    def __init__(self, *args, **kwargs):
-#        hasSimilarItems = kwargs.get('hasSimilarItems', False)
-#        if 'hasSimilarItems' in kwargs:
-#            del kwargs['hasSimilarItems']
-#        super(ConceptForm, self).__init__(*args, **kwargs)
-#        if hasSimilarItems:
-#            del self.fields['userAware']
+    def concept_fields(self):
+        field_names = [field.name for field in MDR.baseAristotleObject._meta.fields]+['version','workgroup'] #version/workgroup are displayed with name/definition
+        concept_field_names = [ field.name
+                                for field in MDR.concept._meta.fields
+                                if field.name not in field_names
+                                ]
+        for name in self.fields:
+            if name in concept_field_names and name != 'make_new_item':
+                yield self[name]
+    def object_specific_fields(self):
+        # returns every field that isn't in a concept
+        field_names = [field.name for field in MDR.concept._meta.fields]
+        for name in self.fields:
+            if name not in field_names and name != 'make_new_item':
+                yield self[name]
+
+    def clean_make_new_item(self):
+        pass #raise ValidationError(_('You must select this to ackowledge'))
 
 class ValueDomainForm(ConceptForm):
     template = "aristotle_mdr/create/valueDomain.html"

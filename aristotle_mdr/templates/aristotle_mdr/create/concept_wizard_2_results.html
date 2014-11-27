@@ -2,140 +2,183 @@
 {% load aristotle_tags %}
 {% block formarea %}
 
-    {% if results %}
-    <div class="alert alert-danger">
-        <strong>{{ results.count }} items were found with a title similar to "<em>{{ search_name }}</em>".
-        </strong>
-        <br>Reusing existing content makes comparing items in the future easier.
-        <br>Consider reviewing these similar items to see if an existing piece of content meets your needs.
-        <ul>
-            {% for obj in results %}
-            <li>
-                {# <input type='checkbox'> #}
-                {% include "search/searchItem.html" with result=obj %}
-            </li>
-            {% endfor %}
-        </ul>
-
-        <hr>
-        <label>
-            <input type="checkbox" name="userSwearsTheyKnowWhatTheyAreDoing"/>
-            I've reviewed these items, and none of them meet my needs. Make me a new one.
-        </label>
-    </div>
+    {% if duplicate_items %}
+        <div class="panel panel-danger">
+            <div class="panel-heading">
+                {{ duplicate_items.count }} items were found with a the name "<em>{{ search_name }}</em>".
+            </div>
+            <div class="panel-body">
+                Reusing existing content makes comparing items in the future easier.
+                <br>Consider reviewing these items to see if an existing piece of content meets your needs.
+                <ol class="searchResults">
+                    {% for obj in duplicate_items %}
+                    <li>
+                        {# <input type='checkbox'> #}
+                        {% include "search/searchItem.html" with item=obj %}
+                    </li>
+                    {% endfor %}
+                </ol>
+            </div>
+            <div class="panel-footer">
+                {{ wizard.form.make_new_item }}
+                {{ wizard.form.fields.make_new_item.label }}
+                {{ wizard.form.fields.make_new_item.errors }}
+            </div>
+        </div>
+    {% elif similar_items %}
+        <div class="panel panel-warning">
+            <div class="panel-heading">
+                {{ similar_items.count }} items were found with a content similar to "<em>{{ search_name }}</em>".
+            </div>
+            <div class="panel-body">
+                Reusing existing content makes comparing items in the future easier.
+                <br>Consider reviewing these similar items to see if an existing piece of content meets your needs.
+                <ol class="searchResults">
+                    {% for obj in similar_items %}
+                    <li>
+                        {# <input type='checkbox'> #}
+                        {% include "search/searchItem.html" with item=obj.object %}
+                    </li>
+                    {% endfor %}
+                </ol>
+            </div>
+            <div class="panel-footer">
+                {{ wizard.form.make_new_item }}
+                {{ wizard.form.fields.make_new_item.label }}
+                {{ wizard.form.fields.make_new_item.errors }}
+            </div>
+        </div>
     {% else %}
         <p>
             No matching items were found for reuse, so a new one will be created.
         </p>
     {% endif %}
     <div class="col-sm-8">
+        <div role="tabpanel">
+            <ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="active"><a href="#id" aria-controls="home" role="tab" data-toggle="tab">Identifiers</a></li>
+                <li role="presentation"><a href="#names" aria-controls="profile" role="tab" data-toggle="tab">Names</a></li>
+                <li role="presentation"><a href="#objSpecific" aria-controls="messages" role="tab" data-toggle="tab">{{ model_name|title }}</a></li>
+            </ul>
+            <div class="tab-content">
+                <div role="tabpanel" class="tab-pane active" id="id">
+                    <div class="alert alert-warning">
+                        <strong>These fields help identify and define the item.</strong>
+                        A name and definition are required, but adding a version is optional.
+                    </div>
+                    <div class="fancy_name_version">
+                        <div class="wizard_field name">
+                            <span>{{ wizard.form.name.label_tag }}</span>
+                            {% if wizard.form.name.errors %}
+                            <span class="alert alert-danger">
+                                {{ wizard.form.name.errors }}
+                            {% endif %}
+                                {{ wizard.form.name }}
+                                <div>
+                                 {{ wizard.form.name.help_text }}
+                                </div>
+                            {% if wizard.form.name.errors %}
+                                </span>
+                            {% endif %}
+                        </div>
+                        <div class="wizard_field version">
+                            <span>{{ wizard.form.version.label_tag }}</span>
+                            {% if wizard.form.version.errors %}
+                            <span class="alert alert-danger">
+                                {{ wizard.form.version.errors }}
+                            {% endif %}
+                            {{ wizard.form.version }}
+                            <div>
+                             {{ wizard.form.version.help_text }}
+                            </div>
+                            {% if wizard.form.version.errors %}
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="wizard_field">
+                        <span>{{ wizard.form.workgroup.label_tag }}
+                        {{ wizard.form.workgroup.help_text }}
+                        The workgroup responsible for maintaining this metadata item.
+                        </span>
+                        {% if wizard.form.workgroup.errors %}
+                        <span class="alert alert-danger">
+                            {{ wizard.form.workgroup.errors }}
+                        {% endif %}
+                        {{ wizard.form.workgroup }}
+                        {% if wizard.form.workgroup.errors %}
+                            </span>
+                        {% endif %}
+                    </div>
+                    <div class="wizard_field">
+                        <span>{{ wizard.form.description.label_tag }} {{ wizard.form.description.help_text }}</span>
+                        {% if wizard.form.shortName.errors %}
+                        <span class="alert alert-danger">
+                            {{ wizard.form.description.errors }}
+                        {% endif %}
+                        {{ wizard.form.description }}
+                        {% if wizard.form.description.errors %}
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div role="tabpanel" class="tab-pane" id="names">
+                    <div class="alert alert-info">
+                        <strong>These fields are optional</strong>
+                        but give extra context to this item, so add where appropriate.
+                    </div>
 
-
-    <div class="alert alert-warning">
-    <strong>These first few fields are mandatory.</strong>
-    </div>
-    <div class="fancy_name_version">
-        <div class="wizard_field name">
-            <span>{{ wizard.form.name.label_tag }}</span>
-            {% if field.errors %}
-            <span class="alert alert-danger">
-                {{ wizard.form.name.errors }}
-            {% endif %}
-            {{ wizard.form.name }}
-            {% if wizard.form.name.errors %}
-                </span>
-            {% endif %}
-            <div>
-             {{ wizard.form.name.help_text }}
-             </div>
+                    {% for field in wizard.form.concept_fields %}
+                        <div class="wizard_field">
+                            <span>{{ field.label_tag }} {{ field.help_text }}</span>
+                            {% if field.errors %}
+                            <span class="alert alert-danger">
+                                {{ field.errors }}
+                            {% endif %}
+                            {{ field }}
+                            {% if field.errors %}
+                                </span>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+                <div role="tabpanel" class="tab-pane" id="objSpecific">
+                {% for field in wizard.form.object_specific_fields %}
+                    {% if forloop.first %}
+                    <div class="alert alert-info">
+                        <p><strong>These fields are optional</strong>
+                        but give extra context to this item, so add where appropriate.
+                        </p>
+                        <p>Don't worry if you don't fill these out now, these can
+                            be filled in at a later stage.
+                        </p>
+                    </div>
+                    {% endif %}
+                    <div class="wizard_field">
+                        <span>{{ field.label_tag }} {{ field.help_text }}</span>
+                        {% if field.errors %}
+                        <span class="alert alert-danger">
+                            {{ field.errors }}
+                        {% endif %}
+                        {{ field }}
+                        {% if field.errors %}
+                            </span>
+                        {% endif %}
+                    </div>
+                {% empty %}
+                    <div class="alert alert-success">
+                        <strong>There are no additional fields required to make this {{ model_name }}.</strong>
+                        You are ready to submit.
+                    </div>
+                {% endfor %}
+                </div>
+            </div>
         </div>
-        <div class="wizard_field version">
-            <span>{{ wizard.form.version.label_tag }}</span>
-            {% if wizard.form.version.errors %}
-            <span class="alert alert-danger">
-                {{ wizard.form.version.errors }}
-            {% endif %}
-            {{ wizard.form.version }}
-            {% if wizard.form.version.errors %}
-                </span>
-            {% endif %}
-            <div>
-             {{ wizard.form.version.help_text }}
-             </div>
-        </div>
-    </div>
-    <div class="wizard_field">
-        <span>{{ wizard.form.workgroup.label_tag }}
-        {{ wizard.form.workgroup.help_text }}
-        The workgroup responsible for maintaining this metadata item.
-        </span>
-        {% if wizard.form.workgroup.errors %}
-        <span class="alert alert-danger">
-            {{ wizard.form.workgroup.errors }}
-        {% endif %}
-        {{ wizard.form.workgroup }}
-        {% if wizard.form.workgroup.errors %}
-            </span>
-        {% endif %}
-    </div>
-    <div class="wizard_field">
-        <span>{{ wizard.form.description.label_tag }} {{ wizard.form.description.help_text }}</span>
-        {% if wizard.form.shortName.errors %}
-        <span class="alert alert-danger">
-            {{ wizard.form.description.errors }}
-        {% endif %}
-        {{ wizard.form.description }}
-        {% if wizard.form.description.errors %}
-            </span>
-        {% endif %}
-    </div>
-    <div class="extra_fields">
-
-    </div>
-    <div class="alert alert-info">
-    <strong>The rest of these fields are optional</strong>
-    They may give extra context to this item, so add where appropriate.
-    </div>
-
-    <div class="wizard_field">
-        <span>{{ wizard.form.synonyms.label_tag }} {{ wizard.form.synonyms.help_text }}</span>
-        {% if wizard.form.synonyms.errors %}
-        <span class="alert alert-danger">
-            {{ wizard.form.synonyms.errors }}
-        {% endif %}
-        {{ wizard.form.synonyms }}
-        {% if wizard.form.synonyms.errors %}
-            </span>
-        {% endif %}
-    </div>
-    <div class="wizard_field">
-        <span>{{ wizard.form.shortName.label_tag }} {{ wizard.form.shortName.help_text }}</span>
-        {% if wizard.form.shortName.errors %}
-        <span class="alert alert-danger">
-            {{ wizard.form.shortName.errors }}
-        {% endif %}
-        {{ wizard.form.shortName }}
-        {% if wizard.form.shortName.errors %}
-            </span>
-        {% endif %}
-    </div>
-    {% for field in wizard.form %}
-        <div class="wizard_field">
-            <span>{{ field.label_tag }} {{ field.help_text }}</span>
-            {% if field.errors %}
-            <span class="alert alert-danger">
-                {{ field.errors }}
-            {% endif %}
-            {{ field }}
-            {% if field.errors %}
-                </span>
-            {% endif %}
-        </div>
-    {% endfor %}
-
     </div>
     <aside class="creationTips col-sm-4">
-    {% include help_guide  %}
+    {% if help_guide %}
+        {% include help_guide  %}
+    {% endif %}
     </aside>
 </div>
 {% endblock %}

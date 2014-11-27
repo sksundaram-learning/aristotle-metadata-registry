@@ -666,6 +666,7 @@ def createManagedObject(request,f):
 # wizards
 
 class ConceptWizard(SessionWizardView):
+    widgets = {}
     templates = {
             "initial": "aristotle_mdr/create/concept_wizard_1_search.html",
             "results": "aristotle_mdr/create/concept_wizard_2_results.html",
@@ -705,24 +706,46 @@ class ConceptWizard(SessionWizardView):
                 'user':self.request.user
             })
 
-            return MDRForms.wizards.subclassed_wizard_2_Results(self.model)(**kwargs)
+            return MDRForms.wizards.subclassed_wizard_2_Results(self)(**kwargs)
         else:
             return super(ConceptWizard, self).get_form(step, data, files)
-
-
 
     def get_context_data(self, form, **kwargs):
         context = super(ConceptWizard, self).get_context_data(form=form, **kwargs)
         if self.steps.current == 'initial':
             context.update({'test': "hello"})
         if self.steps.current == 'results':
-            context.update({'results': self.find_similar(),
-                            'search_name':self.search_terms['name'],})
+            context.update({'search_name':self.search_terms['name'],})
+            duplicates = self.find_duplicates()
+            if duplicates:
+                context.update({'duplicate_items': duplicates})
+            else:
+                context.update({'similar_items': self.find_similar()})
         context.update({'model_name': self.model._meta.verbose_name,
                         'template_name': self.template_name,
-                        'help_guide':'%s/create/tips/%s.html'%(self.model._meta.app_label,self.model._meta.model_name)
+                        'help_guide':self.help_guide()
                         })
         return context
+
+    def help_guide(self):
+        from django.template import TemplateDoesNotExist
+        try:
+            from django.template.loader import get_template
+            template_name = '%s/create/tips/%s.html'%(self.model._meta.app_label,self.model._meta.model_name)
+            get_template(template_name)
+            return template_name
+        except TemplateDoesNotExist:
+            # there is no extra content for this item, and thats ok.
+            return None
+
+    def done(self, form_dict, **kwargs):
+        item = form_dict['results'].save()
+        return HttpResponseRedirect('/item/%s'%item.id)
+
+    def find_duplicates(self):
+        name = self.search_terms['name']
+        name = name.strip()
+        return self.model.objects.filter(name__iexact=name).public().all()
 
     """
         Looks for items ot a given item type with the given search terms
@@ -730,25 +753,40 @@ class ConceptWizard(SessionWizardView):
     def find_similar(self):
         #from haystack.query import SearchQuerySet as PSQS
         from aristotle_mdr.forms.search import PermissionSearchQuerySet as PSQS
-        q = PSQS().models(self.model).auto_query(self.search_terms['description']).filter(
-                name=self.search_terms['name'],
-                )#.models(self.model) #.filter(states="Standard")
-        similar = q #.query.add_model(self.model)
-        #similar = [i for i in similar if i is not None] # Dang whoosh.
-        print self.model, self.search_terms['name']
-        print similar
+
+        q = PSQS().models(self.model).auto_query(
+            self.search_terms['description'] + " " + self.search_terms['name']
+            ).filter(statuses__in=[MDR.STATES[int(s)] for s in [MDR.STATES.standard,MDR.STATES.preferred]])
+
+            #.filter(states="Standard")
+        similar = q
         return similar
+
+
+import autocomplete_light
+autocomplete_light.autodiscover()
 
 class ObjectClassWizard(ConceptWizard):
     template_name = "aristotle_mdr/create/objectclass_wrapper.html"
     model = MDR.ObjectClass
+
+class PropertyWizard(ConceptWizard):
+    model = MDR.Property
+
+class DataElementConceptWizard(ConceptWizard):
+    model = MDR.DataElementConcept
+    widgets = {
+        'conceptualDomain':autocomplete_light.ChoiceWidget('AutocompleteConceptualDomain'),
+        'objectClass':autocomplete_light.ChoiceWidget('AutocompleteObjectClass'),
+        'property':autocomplete_light.ChoiceWidget('AutocompleteProperty'),
+        }
 
 TEMPLATES = {
         "initial": "aristotle_mdr/create/dec_1_initial_search.html",
         "results": "aristotle_mdr/create/dec_2_search_results.html",
         }
 
-class DataElementConceptWizard(SessionWizardView):
+class _DataElementConceptWizard(SessionWizardView):
     template_name = "aristotle_mdr/create/dec_template_wrapper.html"
     form_list = [("initial", MDRForms.wizards.DEC_Initial_Search),
                   ("results", MDRForms.wizards.DEC_Results),

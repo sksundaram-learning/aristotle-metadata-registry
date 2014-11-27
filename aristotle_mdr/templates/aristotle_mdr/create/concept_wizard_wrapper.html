@@ -8,15 +8,13 @@ Create new {{ model_name }} - Step {{ wizard.steps.step1 }} of {{ wizard.steps.c
 
 {% block extra_head_scripts %}
     <link rel="stylesheet" href="{{ STATIC_URL }}{% compile 'aristotle_mdr/aristotle.wizard.less' %}" />
+    <link rel="stylesheet" href="{{ STATIC_URL }}{% compile 'aristotle_mdr/aristotle_search.less' %}" />
     {{ wizard.form.media }}
 {% endblock %}
 
 {% block content %}
 <h1>Create {{ model_name }} - <em>Step {{ wizard.steps.step1 }} of {{ wizard.steps.count }}</em></h1>
-    {% if form.errors %}
-        {{ form.errors }}
-    {% endif %}
-    <div class="row">
+<div class="row">
     <form class="" action="" method="post">{% csrf_token %}
        {{ wizard.management_form }}
         {% block formarea %}
@@ -25,9 +23,15 @@ Create new {{ model_name }} - Step {{ wizard.steps.step1 }} of {{ wizard.steps.c
 
         {% if wizard.steps.prev %}
             <!-- button name="wizard_goto_step" type="submit" value="{{ wizard.steps.first }}">{% trans "First step" %}</button -->
-            <button name="wizard_goto_step" class="btn btn-default" type="submit" value="{{ wizard.steps.prev }}">{% trans "Back" %}</button>
+            <button name="wizard_goto_step" class="btn btn-default" type="submit" value="{{ wizard.steps.prev }}">
+                <i class="fa fa-angle-double-left"></i>
+                {% trans "Back" %}
+            </button>
         {% endif %}
-            <button type="submit" class="btn btn-primary" value="{% trans "submit" %}">Next ></button>
+            <button type="submit" class="btn btn-primary" value="{% trans "submit" %}">
+                {% trans "Next" %}
+                <i class="fa fa-angle-double-right"></i>
+            </button>
     </form>
 </div>
 {% endblock %}

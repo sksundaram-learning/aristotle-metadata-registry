@@ -226,7 +226,7 @@
                     {% if user.is_active %}
                         <input type='checkbox' id="id_items_{{item.id}}" name="items" value='{{ result.object.id }}' title='select to add to favourites'></input>
                     {% endif %}
-                    {% include "search/searchItem.html" with result=result %}
+                    {% include "search/searchItem.html" with item=result.object %}
                 </li>
                 {% endif %}
             {% empty %}
