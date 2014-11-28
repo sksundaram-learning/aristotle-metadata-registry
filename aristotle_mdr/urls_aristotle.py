@@ -60,9 +60,9 @@ urlpatterns = patterns('aristotle_mdr.views',
     url(r'^create/valuedomain/?$', views.createValueDomain, name='createValueDomain'),
     #url(r'^create/dataelementconcept$', views.createDataElementConcept, name='createDataElementConcept'),
 #    url(r'^create/dataelement$', views.createDataElement, name='createDataElement'),
-    url(r'^create/objectclass$', views.ObjectClassWizard.as_view(), name='createObjectClass'),
-    url(r'^create/dataelementconcept$', views.DataElementConceptWizard.as_view(), name='createDataElementConcept'),
-    url(r'^create/property/?$', views.PropertyWizard.as_view(), name='createProperty'),
+    url(r'^create/objectclass$', views.wizards.ObjectClassWizard.as_view(), name='createObjectClass'),
+    url(r'^create/dataelementconcept$', views.wizards.DataElementConceptWizard.as_view(), name='createDataElementConcept'),
+    url(r'^create/property/?$', views.wizards.PropertyWizard.as_view(), name='createProperty'),
 
     url(r'^download/(?P<downloadType>[a-zA-Z0-9\-\.]+)/(?P<iid>\d+)/?$', views.download, name='download'),
 

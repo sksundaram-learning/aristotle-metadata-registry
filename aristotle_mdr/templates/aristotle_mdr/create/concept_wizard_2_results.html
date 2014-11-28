@@ -1,7 +1,24 @@
 {% extends template_name %}
-{% load aristotle_tags %}
+{% load aristotle_tags i18n %}
 {% block formarea %}
 
+    {% if wizard.form.errors %}
+        <div class="alert alert-danger">
+        There were errors saving your {{ model_name }}, please review the errors shown below.
+        {{ wizard.form.errors }}
+            {% if duplicate_items or similar_items %}
+                {% if wizard.form.fields.make_new_item.errors %}
+                    <strong>There were similar items shown on the previous page.
+                    To save this item acknowledge that none of these are suitable or press back to review them again.</strong>
+                    <div class="panel-footer">
+                        {{ wizard.form.make_new_item }}
+                        {{ wizard.form.make_new_item.label }}
+                        {{ wizard.form.make_new_item.errors }}
+                    </div>
+                {% endif %}
+            {% endif %}
+        </div>
+    {% endif %}
     {% if duplicate_items %}
         <div class="panel panel-danger">
             <div class="panel-heading">
@@ -21,8 +38,8 @@
             </div>
             <div class="panel-footer">
                 {{ wizard.form.make_new_item }}
-                {{ wizard.form.fields.make_new_item.label }}
-                {{ wizard.form.fields.make_new_item.errors }}
+                {{ wizard.form.make_new_item.label }}
+                {{ wizard.form.make_new_item.errors }}
             </div>
         </div>
     {% elif similar_items %}
@@ -44,8 +61,8 @@
             </div>
             <div class="panel-footer">
                 {{ wizard.form.make_new_item }}
-                {{ wizard.form.fields.make_new_item.label }}
-                {{ wizard.form.fields.make_new_item.errors }}
+                {{ wizard.form.make_new_item.label }}
+                {{ wizard.form.make_new_item.errors }}
             </div>
         </div>
     {% else %}
@@ -53,15 +70,26 @@
             No matching items were found for reuse, so a new one will be created.
         </p>
     {% endif %}
-    <div class="col-sm-8">
+    <div class="col-sm-10">
         <div role="tabpanel">
             <ul class="nav nav-tabs" role="tablist">
-                <li role="presentation" class="active"><a href="#id" aria-controls="home" role="tab" data-toggle="tab">Identifiers</a></li>
-                <li role="presentation"><a href="#names" aria-controls="profile" role="tab" data-toggle="tab">Names</a></li>
-                <li role="presentation"><a href="#objSpecific" aria-controls="messages" role="tab" data-toggle="tab">{{ model_name|title }}</a></li>
+                <li role="presentation" class="active">
+                    <a href="#definition" aria-controls="home" role="tab" data-toggle="tab">{% trans 'Definition' context 'creating items' %}</a>
+                </li>
+                <li role="presentation">
+                    <a href="#names" aria-controls="profile" role="tab" data-toggle="tab">Names</a>
+                </li>
+                <li role="presentation">
+                    <a href="#objSpecific" aria-controls="messages" role="tab" data-toggle="tab">{{ model_name|title }}</a>
+                </li>
+                {% if help_guide %}
+                <li role="presentation">
+                    <a href="#tips" aria-controls="messages" role="tab" data-toggle="tab">{% trans 'Tips' context 'creating items' %}</a>
+                </li>
+                {% endif %}
             </ul>
             <div class="tab-content">
-                <div role="tabpanel" class="tab-pane active" id="id">
+                <div role="tabpanel" class="tab-pane active" id="definition">
                     <div class="alert alert-warning">
                         <strong>These fields help identify and define the item.</strong>
                         A name and definition are required, but adding a version is optional.
@@ -112,8 +140,8 @@
                     </div>
                     <div class="wizard_field">
                         <span>{{ wizard.form.description.label_tag }} {{ wizard.form.description.help_text }}</span>
-                        {% if wizard.form.shortName.errors %}
-                        <span class="alert alert-danger">
+                        {% if wizard.form.description.errors %}
+                            <span class="alert alert-danger">
                             {{ wizard.form.description.errors }}
                         {% endif %}
                         {{ wizard.form.description }}
@@ -172,13 +200,13 @@
                     </div>
                 {% endfor %}
                 </div>
+                {% if help_guide %}
+                <div role="tabpanel" class="tab-pane" id="tips">
+                    {% include help_guide  %}
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>
-    <aside class="creationTips col-sm-4">
-    {% if help_guide %}
-        {% include help_guide  %}
-    {% endif %}
-    </aside>
 </div>
 {% endblock %}
