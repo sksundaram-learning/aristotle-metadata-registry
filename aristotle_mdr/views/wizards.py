@@ -3,7 +3,7 @@ from aristotle_mdr import forms as MDRForms
 from django.contrib.formtools.wizard.views import SessionWizardView
 from django.contrib.auth.decorators import permission_required
 from django.utils.decorators import method_decorator
-
+from django.http import HttpResponseRedirect
 
 class ConceptWizard(SessionWizardView):
     widgets = {}
@@ -154,69 +154,70 @@ class _DataElementConceptWizard(ConceptWizard):
 
     def get_template_names(self):
         return [self.templates[self.steps.current]]
-TEMPLATES = {
-        "initial": "aristotle_mdr/create/dec_1_initial_search.html",
-        "results": "aristotle_mdr/create/dec_2_search_results.html",
-        }
+
 
 class DataElementConceptWizard(SessionWizardView):
+    templates = {
+        "oc_p_search": "aristotle_mdr/create/dec_1_initial_search.html",
+        "oc_p_results": "aristotle_mdr/create/dec_2_search_results.html",
+        "find_dec_results": "aristotle_mdr/create/dec_3_dec_search_results.html",
+        }
     template_name = "aristotle_mdr/create/dec_template_wrapper.html"
-    form_list = [("initial", MDRForms.wizards.DEC_Initial_Search),
-                  ("results", MDRForms.wizards.DEC_Results),
+    form_list = [("oc_p_search", MDRForms.wizards.DEC_OCP_Search),
+                  ("oc_p_results", MDRForms.wizards.DEC_OCP_Results),
+                  #("make_oc", MDRForms.wizards.DEC_OCP_Search),
+                  #("make_p", MDRForms.wizards.DEC_OCP_Search),
+                  ("find_dec_results", MDRForms.wizards.DEC_Find_DEC_Results),
+                  #("make_dec", MDRForms.wizards.DEC_OCP_Search),
                  ]
 
-    def get_template_names(self):
-        return [TEMPLATES[self.steps.current]]
+    @method_decorator(permission_required('aristotle_mdr.user_is_editor'))
+    def dispatch(self,  *args, **kwargs):
+        return super(DataElementConceptWizard,self).dispatch(*args, **kwargs)
 
-    def process_step(self,form):
-        if self.steps.current == 'initial':
-            print form.cleaned_data['oc_name']
-            self.search_terms = {
-                'oc_name': form.cleaned_data['oc_name'],
-                'oc_desc': form.cleaned_data['oc_desc'],
-                'pr_name': form.cleaned_data['pr_name'],
-                'pr_desc': form.cleaned_data['pr_desc'],
-            }
+    def get_template_names(self):
+        return [self.templates[self.steps.current]]
 
     def get_form_kwargs(self, step):
         # determine the step if not given
         if step is None:
             step = self.steps.current
 
-        if step == 'results':
-            return { 'oc_results': self.find_similar(model=MDR.ObjectClass,
-                                name=self.search_terms['oc_name'],
-                                description=self.search_terms['oc_desc']
+        if step == 'oc_p_results':
+            return { 'oc_similar': self.find_similar(model=MDR.ObjectClass,
+                                name=self.get_cleaned_data_for_step('oc_p_search')['oc_name'],
+                                description=self.get_cleaned_data_for_step('oc_p_search')['oc_desc']
                             ),
-                     'pr_results': self.find_similar(model=MDR.Property,
-                                name=self.search_terms['pr_name'],
-                                description=self.search_terms['pr_desc']
+                     'pr_similar': self.find_similar(model=MDR.Property,
+                                name=self.get_cleaned_data_for_step('oc_p_search')['pr_name'],
+                                description=self.get_cleaned_data_for_step('oc_p_search')['pr_desc']
                             )}
+        elif step == 'find_dec_results':
+            oc = self.get_cleaned_data_for_step('oc_p_results')['oc_options']
+            pr = self.get_cleaned_data_for_step('oc_p_results')['pr_options']
+            kwargs = {}
+            if oc:
+                kwargs.update({'objectClass':oc})
+            if pr:
+                kwargs.update({'property':pr})
+
+            return {'dec_matches':MDR.DataElementConcept.objects.filter(**kwargs)}
         return {}
 
     def get_context_data(self, form, **kwargs):
         context = super(DataElementConceptWizard, self).get_context_data(form=form, **kwargs)
-        return context
-        if self.steps.current == 'initial':
-            context.update({'test': "hello"})
-        if self.steps.current == 'results':
-            context.update({'oc_results': findSimilar(model=MDR.ObjectClass,
-                                name=self.search_terms['oc_name'],
-                                description=self.search_terms['oc_desc']
-                            )})
-            context.update({'pr_results': findSimilar(MDR.Property,
-                                name=self.search_terms['pr_name'],
-                                description=self.search_terms['pr_desc']
-                            )})
+
+        if self.steps.current == 'find_dec_results':
+            oc = self.get_cleaned_data_for_step('oc_p_results')['oc_options']
+            pr = self.get_cleaned_data_for_step('oc_p_results')['pr_options']
+            context.update({'objectClass':oc})
+            context.update({'property':pr})
         return context
 
     """
         Looks for items of a given item type with the given search terms
     """
     def find_similar(self,name,description,model=None):
-        if hasattr(self,'similar_items'):
-            return self.similar_items
-
         from aristotle_mdr.forms.search import PermissionSearchQuerySet as PSQS
         if model is None:
             model = self.model

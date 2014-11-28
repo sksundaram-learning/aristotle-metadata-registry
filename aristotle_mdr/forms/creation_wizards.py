@@ -80,7 +80,7 @@ class Concept_2_Results(forms.ModelForm):
             if name not in field_names and name != 'make_new_item':
                 yield self[name]
 
-class DEC_Initial_Search(forms.Form):
+class DEC_OCP_Search(forms.Form):
     template = "aristotle_mdr/create/dec_1_initial_search.html"
     # Object class fields
     oc_name = forms.CharField(max_length=256)
@@ -89,32 +89,38 @@ class DEC_Initial_Search(forms.Form):
     pr_name = forms.CharField(max_length=256)
     pr_desc = forms.CharField(widget = forms.Textarea,required=False)
 
-class DEC_Results(forms.Form):
-    def __init__(self, oc_results=None, pr_results=None , *args, **kwargs):
-        super(DEC_Results, self).__init__(*args, **kwargs)
+class DEC_OCP_Results(forms.Form):
+    def __init__(self, oc_similar=None, pr_similar=None, oc_duplicate=None, pr_duplicate=None, *args, **kwargs):
+        super(DEC_OCP_Results, self).__init__(*args, **kwargs)
 
-        # If we are passed a
-        if oc_results:
-            oc_options = []
-            for oc in oc_results:
-                # TODO: THIS IS A BAAAAD CHOICE, BUT WE'LL ACCEPT IT FOR NOW!!!
-                # HTML in code is a BAD IDEA... but we accept it here because we need
-                # links on the options for users to preview the possible options.
-                label = mark_safe('<a href="/item/{id}">{name}</a>'.format(id=oc.id,name=oc.name))
-                oc_options.append((oc.id,label))
+        if oc_similar:
+            oc_options = [(oc.object.id,oc) for oc in oc_similar]
             oc_options.append(("X","None of the above meet my needs"))
-            oc_options=tuple(oc_options)
             self.fields['oc_options'] = forms.ChoiceField(label="Similar Object Classes",
                                         choices=oc_options, widget=forms.RadioSelect())
-        if pr_results:
-            pr_options = []
-            for pr in pr_results:
-                # TODO: THIS IS A BAAAAD CHOICE, BUT WE'LL ACCEPT IT FOR NOW!!!
-                # HTML in code is a BAD IDEA... but we accept it here because we need
-                # links on the options for users to preview the possible options.
-                label = mark_safe('<a href="/item/{id}">{name}</a>'.format(id=pr.id,name=pr.name))
-                pr_options.append((pr.id,label))
+        if pr_similar:
+            pr_options = [(pr.object.id,pr) for pr in pr_similar]
             pr_options.append(("X","None of the above meet my needs"))
-            pr_options=tuple(oc_options)
-            self.fields['oc_options'] = forms.ChoiceField(label="Similar Properties",
-                                        choices=oc_options, widget=forms.RadioSelect())
+            self.fields['pr_options'] = forms.ChoiceField(label="Similar Properties",
+                                        choices=tuple(pr_options), widget=forms.RadioSelect())
+    def clean_oc_options(self):
+        try:
+            return MDR.ObjectClass.objects.get(pk=self.cleaned_data['oc_options'])
+        except:
+            return None
+    def clean_pr_options(self):
+        try:
+            return MDR.Property.objects.get(pk=self.cleaned_data['pr_options'])
+        except:
+            return None
+
+class DEC_Find_DEC_Results(forms.Form):
+    def __init__(self, dec_matches=None, *args, **kwargs):
+        super(DEC_Find_DEC_Results, self).__init__(*args, **kwargs)
+        # this is silly, they are trying to create something. giving them an option
+        # field here makes no sense.
+        if dec_matches:
+            dec_options = [(dec.id,dec) for dec in dec_matches]
+            dec_options.append(("X","None of the above meet my needs"))
+            self.fields['dec_options'] = forms.ChoiceField(label="Similar Data Element Concepts",
+                                        choices=dec_options, widget=forms.RadioSelect())

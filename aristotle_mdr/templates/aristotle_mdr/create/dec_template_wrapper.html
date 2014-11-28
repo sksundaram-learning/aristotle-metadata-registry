@@ -21,9 +21,9 @@ Create Data Element Concept - Step {{ wizard.steps.step1 }} of {{ wizard.steps.c
     {% endblock %}
     {% if wizard.steps.prev %}
         <!-- button name="wizard_goto_step" type="submit" value="{{ wizard.steps.first }}">{% trans "First step" %}</button -->
-        <button name="wizard_goto_step" type="submit" value="{{ wizard.steps.prev }}">{% trans "Back" %}</button>
+        <button class="btn" name="wizard_goto_step" type="submit" value="{{ wizard.steps.prev }}">{% trans "Back" %}</button>
     {% endif %}
-        <input type="submit" value="{% trans "submit" %}"/>
+        <button class="btn btn-primary" type="submit" value="submit">{% trans "Next" %}</button>
 </form>
 {% endblock %}
 

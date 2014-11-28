@@ -1,0 +1,54 @@
+{% extends "aristotle_mdr/create/dec_template_wrapper.html" %}
+{% load compile_static %}
+
+{% block extra_head_scripts %}
+    <link rel="stylesheet" href="{{ STATIC_URL }}{% compile 'aristotle_mdr/aristotle.wizard.less' %}" />
+    <link rel="stylesheet" href="{{ STATIC_URL }}{% compile 'aristotle_mdr/aristotle_search.less' %}" />
+    {{ wizard.form.media }}
+{% endblock %}
+
+{% block formarea %}
+{{ form.errors }}
+{% if form.oc_options or form.pr_options %}
+<div>
+    <strong>The following public objects were found with a title similar to "<em>{{form.name.value}}</em>".
+    </strong>
+    <br>Reusing existing content makes comparing items in the future easier.
+    <br>Consider reviewing these similar items to see if an existing piece of content meets your needs.
+</div>
+{% endif %}
+    <div class="panel panel-info">
+        <div class="panel-heading">
+            Pick a data element concept.
+        </div>
+        {% if form.dec_options %}
+            <div class="panel-body dec_choice">
+                {{ form.dec_options.label_tag }}
+                <ol class="searchResults">
+                {% for id, obj in form.dec_options.field.choices|slice:":-1" %}
+                    <li>
+                        <label>
+                            <input type="radio" name="results-dec_options" value="{{id}}"></input>
+                            {% include "search/searchItem.html" with item=obj %}
+                        </label>
+                    </li>
+                {% endfor %}
+                </ol>
+            </div>
+            <div class="panel-footer">
+                {% for id, label in form.dec_options.field.choices|slice:"-1:"  %}
+                    <label class="none_of_the_above">
+                        <input type="radio" name="results-dec_options" value="{{id}}"></input>
+                        {{ label }}
+                    </label>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="panel-body">
+                <p>
+                    No matching decs were found for reuse, so a new one will be created.
+                </p>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}
