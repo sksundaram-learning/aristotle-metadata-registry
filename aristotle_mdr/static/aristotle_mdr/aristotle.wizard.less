@@ -58,3 +58,26 @@
     border-right:1px solid lightgray;
     border-bottom:1px solid lightgray;
 }
+
+.progress-tracker {
+    display:table;
+    width:100%;
+    li {
+        padding:5px;
+        width:25%;
+        display:table-cell;
+        background-color:lightgray;
+        &.active {
+                background-color:darkgray;
+        }
+        &.disabled {
+            color:gray;
+            background-color:lightgray;
+        }
+        &:after {
+            font-family: FontAwesome;
+            padding-left:5px;
+            content:"\f101";
+        }
+    }
+}

@@ -1,19 +1,34 @@
 {% extends "aristotle_mdr/base.html" %}
-{% load i18n %}
+{% load compile_static i18n %}
 
 {% block title %}
 Create Data Element Concept - Step {{ wizard.steps.step1 }} of {{ wizard.steps.count }}
 {% endblock %}
 
+{% block extra_head_scripts %}
+    <link rel="stylesheet" href="{{ STATIC_URL }}{% compile 'aristotle_mdr/aristotle.wizard.less' %}" />
+    <link rel="stylesheet" href="{{ STATIC_URL }}{% compile 'aristotle_mdr/aristotle_search.less' %}" />
+    {{ wizard.form.media }}
+{% endblock %}
+
 {% block head %}
-{{ wizard.form.media }}
 {% endblock %}
 
 {% block content %}
 <h1>Create Data Element Concept - <em>Step {{ wizard.steps.step1 }} of {{ wizard.steps.count }}</em></h1>
+
+<ol class="progress-tracker">
+{% block steps %}
+    <li role="presentation" class="active">Search</li>
+    <li role="presentation">Refine</li>
+    <li role="presentation">Create</li>
+    <li role="presentation" class="disabled">Complete</li>
+{% endblock %}
+</ol>
 <aside class="creationTips">
     {% block creationTips %}{% endblock %}
 </aside>
+
 <form action="" method="post">{% csrf_token %}
    {{ wizard.management_form }}
     {% block formarea %}

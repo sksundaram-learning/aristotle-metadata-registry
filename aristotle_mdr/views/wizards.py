@@ -5,7 +5,32 @@ from django.contrib.auth.decorators import permission_required
 from django.utils.decorators import method_decorator
 from django.http import HttpResponseRedirect
 
-class ConceptWizard(SessionWizardView):
+class PermissionWizard(SessionWizardView):
+
+    @method_decorator(permission_required('aristotle_mdr.user_is_editor'))
+    def dispatch(self,  *args, **kwargs):
+        return super(PermissionWizard,self).dispatch(*args, **kwargs)
+    def get_template_names(self):
+        return [self.templates[self.steps.current]]
+    def get_form_kwargs(self, step):
+        kwargs = super(PermissionWizard, self).get_form_kwargs(step)
+        kwargs.update({ 'user': self.request.user})
+        return kwargs
+
+    def help_guide(self,model=None):
+        if model is None:
+            model=self.model
+        from django.template import TemplateDoesNotExist
+        try:
+            from django.template.loader import get_template
+            template_name = '%s/create/tips/%s.html'%(model._meta.app_label,model._meta.model_name)
+            get_template(template_name)
+            return template_name
+        except TemplateDoesNotExist:
+            # there is no extra content for this item, and thats ok.
+            return None
+
+class ConceptWizard(PermissionWizard):
     widgets = {}
     templates = {
             "initial": "aristotle_mdr/create/concept_wizard_1_search.html",
@@ -15,18 +40,6 @@ class ConceptWizard(SessionWizardView):
     form_list = [("initial", MDRForms.wizards.Concept_1_Search),
                   ("results", MDRForms.wizards.Concept_2_Results),
                  ]
-
-    @method_decorator(permission_required('aristotle_mdr.user_is_editor'))
-    def dispatch(self,  *args, **kwargs):
-        return super(ConceptWizard,self).dispatch(*args, **kwargs)
-
-    def get_template_names(self):
-        return [self.templates[self.steps.current]]
-
-    def get_form_kwargs(self, step):
-        kwargs = super(ConceptWizard, self).get_form_kwargs(step)
-        kwargs.update({ 'user': self.request.user})
-        return kwargs
 
     def get_form(self, step=None, data=None, files=None):
         if step is None:
@@ -42,7 +55,9 @@ class ConceptWizard(SessionWizardView):
                 'initial': self.get_cleaned_data_for_step('initial'),
                 'check_similar': similar or duplicates
             })
-            return MDRForms.wizards.subclassed_wizard_2_Results(self)(**kwargs)
+            if self.widgets:
+                kwargs.update({'custom_widgets':self.widgets})
+            return MDRForms.wizards.subclassed_wizard_2_Results(self.model)(**kwargs)
         return super(ConceptWizard, self).get_form(step, data, files)
 
     def get_context_data(self, form, **kwargs):
@@ -63,16 +78,6 @@ class ConceptWizard(SessionWizardView):
                         })
         return context
 
-    def help_guide(self):
-        from django.template import TemplateDoesNotExist
-        try:
-            from django.template.loader import get_template
-            template_name = '%s/create/tips/%s.html'%(self.model._meta.app_label,self.model._meta.model_name)
-            get_template(template_name)
-            return template_name
-        except TemplateDoesNotExist:
-            # there is no extra content for this item, and thats ok.
-            return None
 
     def done(self, form_list, **kwargs):
         item = None
@@ -132,87 +137,164 @@ class ConceptualDomainWizard(ConceptWizard):
         }
 """
 
-class _DataElementConceptWizard(ConceptWizard):
+def valid_object_class_and_property(wizard):
+    if wizard.steps.current is None or wizard.steps.current is False or wizard.steps.current == "oc_p_search":
+        return False
+    try:
+        oc = wizard.get_cleaned_data_for_step('oc_p_results').get('oc_options', None)
+        pr = wizard.get_cleaned_data_for_step('oc_p_results').get('pr_options', None)
+        return oc and pr
+    except:
+        return False
+def no_valid_property(wizard):
+    if not hasattr(wizard,'_property'):
+        return False
+    return not wizard.get_property()
+def no_valid_object_class(wizard):
+    if not hasattr(wizard,'_object_class'):
+        return False
+    return not wizard.get_object_class()
+
+class DataElementConceptWizard(PermissionWizard):
     model = MDR.DataElementConcept
-    widgets = {
-        'conceptualDomain':autocomplete_light.ChoiceWidget('AutocompleteConceptualDomain'),
-        'objectClass':autocomplete_light.ChoiceWidget('AutocompleteObjectClass'),
-        'property':autocomplete_light.ChoiceWidget('AutocompleteProperty'),
-        }
-    templates = {
-            "initial": "aristotle_mdr/create/concept_wizard_1_search.html",
-            "results": "aristotle_mdr/create/concept_wizard_2_results.html",
-            }
-    template_name = "aristotle_mdr/create/concept_wizard_wrapper.html"
-    form_list = [("initial", MDRForms.wizards.Concept_1_Search),
-                  ("results", MDRForms.wizards.Concept_2_Results),
-                 ]
-
-    @method_decorator(permission_required('aristotle_mdr.user_is_editor'))
-    def dispatch(self,  *args, **kwargs):
-        return super(ConceptWizard,self).dispatch(*args, **kwargs)
-
-    def get_template_names(self):
-        return [self.templates[self.steps.current]]
-
-
-class DataElementConceptWizard(SessionWizardView):
     templates = {
         "oc_p_search": "aristotle_mdr/create/dec_1_initial_search.html",
         "oc_p_results": "aristotle_mdr/create/dec_2_search_results.html",
+        "make_oc": "aristotle_mdr/create/concept_wizard_2_results.html",
+        "make_p": "aristotle_mdr/create/concept_wizard_2_results.html",
         "find_dec_results": "aristotle_mdr/create/dec_3_dec_search_results.html",
         }
     template_name = "aristotle_mdr/create/dec_template_wrapper.html"
     form_list = [("oc_p_search", MDRForms.wizards.DEC_OCP_Search),
                   ("oc_p_results", MDRForms.wizards.DEC_OCP_Results),
-                  #("make_oc", MDRForms.wizards.DEC_OCP_Search),
-                  #("make_p", MDRForms.wizards.DEC_OCP_Search),
+                  ("make_oc", MDRForms.wizards.subclassed_wizard_2_Results(MDR.ObjectClass)),
+                  ("make_p", MDRForms.wizards.subclassed_wizard_2_Results(MDR.Property)),
                   ("find_dec_results", MDRForms.wizards.DEC_Find_DEC_Results),
                   #("make_dec", MDRForms.wizards.DEC_OCP_Search),
+                  #("complete", MDRForms.wizards.DEC_Complete),
                  ]
+    condition_dict = {
+        #"find_dec_results": valid_object_class_and_property,
+        "make_oc": no_valid_object_class ,
+        #"make_p": no_valid_property,
+        }
 
-    @method_decorator(permission_required('aristotle_mdr.user_is_editor'))
-    def dispatch(self,  *args, **kwargs):
-        return super(DataElementConceptWizard,self).dispatch(*args, **kwargs)
+    widgets = {
+        'conceptualDomain':autocomplete_light.ChoiceWidget('AutocompleteConceptualDomain'),
+        'objectClass':autocomplete_light.ChoiceWidget('AutocompleteObjectClass'),
+        'property':autocomplete_light.ChoiceWidget('AutocompleteProperty'),
+        }
 
-    def get_template_names(self):
-        return [self.templates[self.steps.current]]
+    def process_step(self, form):
+        data = self.get_form_step_data(form)
+        if self.steps.current == "oc_p_results":
+            self._object_class = data.get('oc_options',None)
+            self._property = data.get('pr_options',None)
+        return data
+
+    def get_object_class(self):
+        if hasattr(self,'_object_class'):
+            return self._object_class
+        return None
+
+    def get_property(self):
+        if hasattr(self,'_property'):
+            return self._property
+        return None
+
+    def get_data_element_concept(self):
+        if hasattr(self,'_data_element_concept'):
+            return self._data_element_concept
+        oc = self.get_object_class()
+        pr = self.get_property()
+        if oc and pr:
+            self._data_element_concept = MDR.DataElementConcept.objects.filter(objectClass=oc,property=pr).public()
+            #.visible(self.request.user)
+            return self._data_element_concept
+        else:
+            return []
 
     def get_form_kwargs(self, step):
         # determine the step if not given
         if step is None:
             step = self.steps.current
+        kwargs = super(DataElementConceptWizard, self).get_form_kwargs(step)
 
         if step == 'oc_p_results':
-            return { 'oc_similar': self.find_similar(model=MDR.ObjectClass,
-                                name=self.get_cleaned_data_for_step('oc_p_search')['oc_name'],
-                                description=self.get_cleaned_data_for_step('oc_p_search')['oc_desc']
-                            ),
-                     'pr_similar': self.find_similar(model=MDR.Property,
-                                name=self.get_cleaned_data_for_step('oc_p_search')['pr_name'],
-                                description=self.get_cleaned_data_for_step('oc_p_search')['pr_desc']
-                            )}
+            ocp = self.get_cleaned_data_for_step('oc_p_search')
+            if ocp:
+                kwargs.update({
+                    'oc_similar': self.find_similar(model=MDR.ObjectClass,
+                            name        = ocp.get('oc_name',""),
+                            description = ocp.get('oc_desc',"")
+                        ),
+                    'pr_similar': self.find_similar(model=MDR.Property,
+                            name        = ocp.get('pr_name',""),
+                            description = ocp.get('pr_desc',"")
+                        )
+                    })
+        elif step == 'make_oc':
+            kwargs.update({
+                'check_similar': False # They waived this on the previous page
+            })
         elif step == 'find_dec_results':
-            oc = self.get_cleaned_data_for_step('oc_p_results')['oc_options']
-            pr = self.get_cleaned_data_for_step('oc_p_results')['pr_options']
-            kwargs = {}
-            if oc:
-                kwargs.update({'objectClass':oc})
-            if pr:
-                kwargs.update({'property':pr})
-
-            return {'dec_matches':MDR.DataElementConcept.objects.filter(**kwargs)}
-        return {}
+            kwargs.update({
+                'objectClass':self.get_object_class(),
+                'property':self.get_property(),
+                'custom_widgets':self.widgets
+                })
+        return kwargs
 
     def get_context_data(self, form, **kwargs):
         context = super(DataElementConceptWizard, self).get_context_data(form=form, **kwargs)
 
+        if self.steps.current == 'make_oc':
+            context.update({
+                'model_name': MDR.ObjectClass._meta.verbose_name,
+                'help_guide':self.help_guide(MDR.ObjectClass),
+                })
         if self.steps.current == 'find_dec_results':
-            oc = self.get_cleaned_data_for_step('oc_p_results')['oc_options']
-            pr = self.get_cleaned_data_for_step('oc_p_results')['pr_options']
-            context.update({'objectClass':oc})
-            context.update({'property':pr})
+            context.update({
+                'objectClass':self.get_object_class(),
+                'property':self.get_property(),
+                'dec_matches':self.get_data_element_concept()
+                })
+        context.update({
+            'template_name':'aristotle_mdr/create/dec_template_wrapper.html',
+            })
         return context
+
+    def get_form_initial(self, step):
+        initial = super(DataElementConceptWizard,self).get_form_initial(step)
+        if step is None:
+            step = self.steps.current
+        if step == "make_oc":
+            ocp = self.get_cleaned_data_for_step('oc_p_search')
+            if ocp:
+                initial.update({
+                        'name'        : ocp.get('oc_name',""),
+                        'description' : ocp.get('oc_desc',"")
+                        })
+        elif step == "make_p":
+            ocp = self.get_cleaned_data_for_step('oc_p_search')
+            if ocp:
+                initial.update({
+                        'name'        : ocp.get('pr_name',""),
+                        'description' : ocp.get('pr_desc',"")
+                        })
+        elif self.steps.current == 'find_dec_results':
+            oc_name,pr_name = ""
+            ocp = self.get_cleaned_data_for_step('oc_p_search')
+            if ocp:
+                oc_name = self.get_object_class().name or ocp.get('oc_name',""),
+                pr_name = self.get_property().name or ocp.get('pr_name',""),
+                oc_desc = self.get_object_class().description or ocp.get('oc_desc',""),
+                pr_desc = self.get_property().description or ocp.get('pr_desc',""),
+            initial.update({
+                'name' :        "%s - %s"%(oc_name,pr_name),
+                'description' : "%s - %s"%(oc_desc,pr_desc)
+                })
+        return initial
 
     """
         Looks for items of a given item type with the given search terms
@@ -221,15 +303,22 @@ class DataElementConceptWizard(SessionWizardView):
         from aristotle_mdr.forms.search import PermissionSearchQuerySet as PSQS
         if model is None:
             model = self.model
-        q = PSQS().models(model).auto_query(description + " " + name).filter(
+        if not hasattr(self,"similar_items"):
+            self.similar_items = {}
+        cached_items = self.similar_items.get(model,None)
+        if cached_items:
+            return cached_items
+
+        similar = PSQS().models(model).auto_query(name + " " + description).filter(
                 statuses__in=[  MDR.STATES[int(s)]
                                 for s in [MDR.STATES.standard,MDR.STATES.preferred]
                             ])
 
-            #.filter(states="Standard")
-        similar = q
-        self.similar_items = similar
-        return self.similar_items
+        self.similar_items[model] = similar
+        return similar
 
     def done(self, form_list, **kwargs):
-        pass
+        item = None
+        for form in form_list:
+            item = form.save()
+        return HttpResponseRedirect('/item/%s'%item.id)

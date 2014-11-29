@@ -1,10 +1,10 @@
 {% extends "aristotle_mdr/create/dec_template_wrapper.html" %}
-{% load compile_static %}
 
-{% block extra_head_scripts %}
-    <link rel="stylesheet" href="{{ STATIC_URL }}{% compile 'aristotle_mdr/aristotle.wizard.less' %}" />
-    <link rel="stylesheet" href="{{ STATIC_URL }}{% compile 'aristotle_mdr/aristotle_search.less' %}" />
-    {{ wizard.form.media }}
+{% block steps %}
+    <li role="presentation">Search</li>
+    <li role="presentation" class="active">Refine</li>
+    <li role="presentation">Create</li>
+    <li role="presentation">Complete</li>
 {% endblock %}
 
 {% block formarea %}

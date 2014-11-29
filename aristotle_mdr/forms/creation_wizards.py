@@ -5,14 +5,23 @@ from django.utils.translation import ugettext_lazy as _
 
 import aristotle_mdr.models as MDR
 
-class ConceptForm(forms.ModelForm):
+
+class UserAwareForm(forms.Form):
+    def __init__(self,*args,**kwargs):
+        self.user = kwargs.pop('user')
+        super(UserAwareForm, self).__init__(*args, **kwargs)
+class UserAwareModelForm(forms.ModelForm):
+    def __init__(self,*args,**kwargs):
+        self.user = kwargs.pop('user')
+        super(UserAwareModelForm, self).__init__(*args, **kwargs)
+
+class ConceptForm(UserAwareModelForm):
     """
     Add this in when we look at reintroducing the fancy templates.
     required_css_class = 'required'
     """
     def __init__(self, *args, **kwargs):
         #TODO: Have tis throw a 'no user' error
-        self.user = kwargs.pop('user', None)
         first_load = kwargs.pop('first_load', None)
         super(ConceptForm, self).__init__(*args, **kwargs)
         if not self.user.is_superuser:
@@ -22,36 +31,33 @@ class ConceptForm(forms.ModelForm):
     class Meta:
         exclude = ['readyToReview','superseded_by','_is_public','_is_locked','originURI']
 
-class Concept_1_Search(forms.Form):
+class Concept_1_Search(UserAwareForm):
     template = "aristotle_mdr/create/concept_wizard_1_search.html"
     # Object class fields
     name = forms.CharField(max_length=256)
     version = forms.CharField(max_length=256,required=False)
     description = forms.CharField(widget = forms.Textarea,required=False)
-    def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop('user')
-        super(Concept_1_Search, self).__init__(*args, **kwargs)
+
     def save(self, *args, **kwargs):
         pass
-def subclassed_wizard_2_Results(wizard):
+def subclassed_wizard_2_Results(set_model):
     class MyForm(Concept_2_Results):
         class Meta(Concept_2_Results.Meta):
-            model = wizard.model
+            model = set_model
         def __init__(self, *args, **kwargs):
-            kwargs.update({'user':wizard.request.user})
+            self.custom_widgets = kwargs.pop('custom_widgets',{})
             super(MyForm, self).__init__(*args, **kwargs)
-            for field,widget in wizard.widgets.items():
+            for field,widget in self.custom_widgets.items():
                 self.fields[field].widget = widget
     return MyForm
 
-class Concept_2_Results(forms.ModelForm):
+class Concept_2_Results(UserAwareModelForm):
     make_new_item = forms.BooleanField(initial=False,
         label=_("I've reviewed these items, and none of them meet my needs. Make me a new one."),
         error_messages={'required': 'You must select this to ackowledge you have reviewed the above items.'}
     )
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop('user')
-        self.check_similar = kwargs.pop('check_similar')
+        self.check_similar = kwargs.pop('check_similar',True)
 
         super(Concept_2_Results, self).__init__(*args, **kwargs)
         if not self.user.is_superuser:
@@ -80,7 +86,7 @@ class Concept_2_Results(forms.ModelForm):
             if name not in field_names and name != 'make_new_item':
                 yield self[name]
 
-class DEC_OCP_Search(forms.Form):
+class DEC_OCP_Search(UserAwareForm):
     template = "aristotle_mdr/create/dec_1_initial_search.html"
     # Object class fields
     oc_name = forms.CharField(max_length=256)
@@ -88,8 +94,10 @@ class DEC_OCP_Search(forms.Form):
     # Property fields
     pr_name = forms.CharField(max_length=256)
     pr_desc = forms.CharField(widget = forms.Textarea,required=False)
+    def save(self, *args, **kwargs):
+        pass
 
-class DEC_OCP_Results(forms.Form):
+class DEC_OCP_Results(UserAwareForm):
     def __init__(self, oc_similar=None, pr_similar=None, oc_duplicate=None, pr_duplicate=None, *args, **kwargs):
         super(DEC_OCP_Results, self).__init__(*args, **kwargs)
 
@@ -114,8 +122,22 @@ class DEC_OCP_Results(forms.Form):
         except:
             return None
 
-class DEC_Find_DEC_Results(forms.Form):
-    def __init__(self, dec_matches=None, *args, **kwargs):
+class DEC_Find_DEC_Results(Concept_2_Results):
+    class Meta(Concept_2_Results.Meta):
+        model = MDR.DataElementConcept
+    def __init__(self, *args, **kwargs):
+        objectClass = kwargs.pop('objectClass')
+        prop = kwargs.pop('property')
+        self.custom_widgets = kwargs.pop('custom_widgets',{})
+
+        super(DEC_Find_DEC_Results, self).__init__(*args, **kwargs)
+        for field,widget in self.custom_widgets.items():
+            self.fields[field].widget = widget
+
+class _DEC_Find_DEC_Results(UserAwareForm):
+    def __init__(self, *args, **kwargs):
+        dec_matches = kwargs.pop('dec_matches', None)
+        kwargs.update({'check_similar':dec_matches is not None})
         super(DEC_Find_DEC_Results, self).__init__(*args, **kwargs)
         # this is silly, they are trying to create something. giving them an option
         # field here makes no sense.

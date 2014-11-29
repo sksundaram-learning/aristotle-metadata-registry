@@ -1,5 +1,12 @@
 {% extends "aristotle_mdr/create/concept_wizard_wrapper.html" %}
 
+{% block steps %}
+    <li role="presentation" class="active">Search</li>
+    <li role="presentation">Refine</li>
+    <li role="presentation">Create</li>
+    <li role="presentation">Complete</li>
+{% endblock %}
+
 {% block formarea %}
 <div class="col-sm-8">
 <strong>The key to good metadata is reuse.</strong>
