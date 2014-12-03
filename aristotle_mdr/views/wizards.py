@@ -1,9 +1,14 @@
 from aristotle_mdr import models as MDR
 from aristotle_mdr import forms as MDRForms
-from django.contrib.formtools.wizard.views import SessionWizardView
+from django.conf import settings
+from django.core.urlresolvers import reverse
+from django.contrib import messages
 from django.contrib.auth.decorators import permission_required
-from django.utils.decorators import method_decorator
+from django.contrib.formtools.wizard.views import SessionWizardView
 from django.http import HttpResponseRedirect
+from django.utils.decorators import method_decorator
+from django.utils.safestring import mark_safe
+from django.utils.translation import ugettext_lazy as _
 
 class PermissionWizard(SessionWizardView):
 
@@ -83,7 +88,7 @@ class ConceptWizard(PermissionWizard):
         item = None
         for form in form_list:
             item = form.save()
-        return HttpResponseRedirect('/item/%s'%item.id)
+        return HttpResponseRedirect(reverse("aristotle:item",args=[item.id]))
 
     def find_duplicates(self):
         if hasattr(self,'duplicate_items'):
@@ -127,6 +132,8 @@ class ValueDomainWizard(ConceptWizard):
     model = MDR.ValueDomain
 class ConceptualDomainWizard(ConceptWizard):
     model = MDR.ConceptualDomain
+class DataElementWizard(ConceptWizard):
+    model = MDR.DataElement
 
 """class DataElementConceptWizard(ConceptWizard):
     model = MDR.DataElementConcept
@@ -137,22 +144,10 @@ class ConceptualDomainWizard(ConceptWizard):
         }
 """
 
-def valid_object_class_and_property(wizard):
-    if wizard.steps.current is None or wizard.steps.current is False or wizard.steps.current == "oc_p_search":
-        return False
-    try:
-        oc = wizard.get_cleaned_data_for_step('oc_p_results').get('oc_options', None)
-        pr = wizard.get_cleaned_data_for_step('oc_p_results').get('pr_options', None)
-        return oc and pr
-    except:
-        return False
 def no_valid_property(wizard):
-    if not hasattr(wizard,'_property'):
-        return False
+    print wizard.get_property()
     return not wizard.get_property()
 def no_valid_object_class(wizard):
-    if not hasattr(wizard,'_object_class'):
-        return False
     return not wizard.get_object_class()
 
 class DataElementConceptWizard(PermissionWizard):
@@ -163,20 +158,19 @@ class DataElementConceptWizard(PermissionWizard):
         "make_oc": "aristotle_mdr/create/concept_wizard_2_results.html",
         "make_p": "aristotle_mdr/create/concept_wizard_2_results.html",
         "find_dec_results": "aristotle_mdr/create/dec_3_dec_search_results.html",
+        "completed": "aristotle_mdr/create/dec_4_complete.html",
         }
     template_name = "aristotle_mdr/create/dec_template_wrapper.html"
-    form_list = [("oc_p_search", MDRForms.wizards.DEC_OCP_Search),
+    form_list = [ ("oc_p_search", MDRForms.wizards.DEC_OCP_Search),
                   ("oc_p_results", MDRForms.wizards.DEC_OCP_Results),
                   ("make_oc", MDRForms.wizards.subclassed_wizard_2_Results(MDR.ObjectClass)),
                   ("make_p", MDRForms.wizards.subclassed_wizard_2_Results(MDR.Property)),
                   ("find_dec_results", MDRForms.wizards.DEC_Find_DEC_Results),
-                  #("make_dec", MDRForms.wizards.DEC_OCP_Search),
-                  #("complete", MDRForms.wizards.DEC_Complete),
+                  ("completed", MDRForms.wizards.DEC_Complete),
                  ]
     condition_dict = {
-        #"find_dec_results": valid_object_class_and_property,
         "make_oc": no_valid_object_class ,
-        #"make_p": no_valid_property,
+        "make_p": no_valid_property,
         }
 
     widgets = {
@@ -185,21 +179,28 @@ class DataElementConceptWizard(PermissionWizard):
         'property':autocomplete_light.ChoiceWidget('AutocompleteProperty'),
         }
 
-    def process_step(self, form):
-        data = self.get_form_step_data(form)
-        if self.steps.current == "oc_p_results":
-            self._object_class = data.get('oc_options',None)
-            self._property = data.get('pr_options',None)
-        return data
-
     def get_object_class(self):
         if hasattr(self,'_object_class'):
             return self._object_class
+        else:
+            ocp = self.get_cleaned_data_for_step('oc_p_results')
+            if ocp:
+                oc = ocp.get('oc_options',None)
+                if oc:
+                    self._object_class = oc
+                    return self._object_class
         return None
 
     def get_property(self):
         if hasattr(self,'_property'):
             return self._property
+        else:
+            ocp = self.get_cleaned_data_for_step('oc_p_results')
+            if ocp:
+                pr = ocp.get('pr_options',None)
+                if pr:
+                    self._property = pr
+                    return self._property
         return None
 
     def get_data_element_concept(self):
@@ -208,8 +209,7 @@ class DataElementConceptWizard(PermissionWizard):
         oc = self.get_object_class()
         pr = self.get_property()
         if oc and pr:
-            self._data_element_concept = MDR.DataElementConcept.objects.filter(objectClass=oc,property=pr).public()
-            #.visible(self.request.user)
+            self._data_element_concept = MDR.DataElementConcept.objects.filter(objectClass=oc,property=pr).visible(self.request.user)
             return self._data_element_concept
         else:
             return []
@@ -233,30 +233,49 @@ class DataElementConceptWizard(PermissionWizard):
                             description = ocp.get('pr_desc',"")
                         )
                     })
-        elif step == 'make_oc':
+        elif step in ['make_oc','make_p']:
             kwargs.update({
                 'check_similar': False # They waived this on the previous page
             })
         elif step == 'find_dec_results':
             kwargs.update({
-                'objectClass':self.get_object_class(),
-                'property':self.get_property(),
-                'custom_widgets':self.widgets
+                'custom_widgets':self.widgets,
+                'check_similar': self.get_data_element_concept()
                 })
         return kwargs
 
     def get_context_data(self, form, **kwargs):
         context = super(DataElementConceptWizard, self).get_context_data(form=form, **kwargs)
 
+        context.update({
+            'oc_p_search'       : {'percent_complete':20, 'step_title':_('Search for components')},
+            'oc_p_results'      : {'percent_complete':40, 'step_title':_('Refine components')},
+            'make_oc'           : {'percent_complete':50, 'step_title':_('Create Object Class')},
+            'make_p'            : {'percent_complete':60, 'step_title':_('Create Property')},
+            'find_dec_results'  : {'percent_complete':80, 'step_title':_('Review Data Element Concept')},
+            'completed'         : {'percent_complete':100,'step_title':_('Complete and Save')},
+            }.get(self.steps.current,{}))
+
         if self.steps.current == 'make_oc':
             context.update({
                 'model_name': MDR.ObjectClass._meta.verbose_name,
                 'help_guide':self.help_guide(MDR.ObjectClass),
                 })
+        if self.steps.current == 'make_p':
+            context.update({
+                'model_name': MDR.Property._meta.verbose_name,
+                'help_guide':self.help_guide(MDR.Property),
+                })
         if self.steps.current == 'find_dec_results':
             context.update({
-                'objectClass':self.get_object_class(),
-                'property':self.get_property(),
+                'oc_match':self.get_object_class(),
+                'pr_match':self.get_property(),
+                'dec_matches':self.get_data_element_concept()
+                })
+        if self.steps.current == 'completed':
+            context.update({
+                'made_oc':not self.get_object_class(),
+                'made_pr':not self.get_property(),
                 'dec_matches':self.get_data_element_concept()
                 })
         context.update({
@@ -282,17 +301,44 @@ class DataElementConceptWizard(PermissionWizard):
                         'name'        : ocp.get('pr_name',""),
                         'description' : ocp.get('pr_desc',"")
                         })
-        elif self.steps.current == 'find_dec_results':
-            oc_name,pr_name = ""
-            ocp = self.get_cleaned_data_for_step('oc_p_search')
-            if ocp:
-                oc_name = self.get_object_class().name or ocp.get('oc_name',""),
-                pr_name = self.get_property().name or ocp.get('pr_name',""),
-                oc_desc = self.get_object_class().description or ocp.get('oc_desc',""),
-                pr_desc = self.get_property().description or ocp.get('pr_desc',""),
+        elif step == 'find_dec_results':
+            made_oc = self.get_cleaned_data_for_step('make_oc')
+            if self.get_object_class():
+                oc_name = self.get_object_class().name
+                oc_desc = self.get_object_class().description
+            elif made_oc:
+                oc_name = made_oc.get('name',_("No object class name found"))
+                oc_desc = made_oc.get('description',_("No object class description found"))
+            else:
+                oc_name = _("No object class name found")
+                oc_desc = _("No object class description found")
+            if oc_desc:
+                # lower case the first letter as this will be the latter part of a sentence
+                oc_desc = oc_desc[0].lower() + oc_desc[1:]
+
+            made_pr = self.get_cleaned_data_for_step('make_p')
+            if self.get_property():
+                pr_name = self.get_property().name
+                pr_desc = self.get_property().description
+            elif made_pr:
+                pr_name = made_pr.get('name',_("No property name found"))
+                pr_desc = made_pr.get('description',_("No property description found"))
+            else:
+                pr_name = _("No property name found")
+                pr_desc = _("No property description found")
+            if pr_desc and pr_desc[-1] == ".":
+                # remove the tailing period as we are going to try to make a sentence
+                pr_desc = pr_desc[:-1]
+
+            SEPARATORS = getattr(settings, 'ARISTOTLE_SETTINGS', {}).get('SEPARATORS',{})
+
             initial.update({
-                'name' :        "%s - %s"%(oc_name,pr_name),
-                'description' : "%s - %s"%(oc_desc,pr_desc)
+                'name' :        u"{oc}{separator}{pr}".format(
+                    oc=oc_name,
+                    separator=SEPARATORS["DataElementConcept"],
+                    pr=pr_name,
+                    ),
+                'description' : _(u"{pr} of a {oc} \n\n - This was an autogenerated description.").format(oc=oc_desc,pr=pr_desc)
                 })
         return initial
 
@@ -318,7 +364,30 @@ class DataElementConceptWizard(PermissionWizard):
         return similar
 
     def done(self, form_list, **kwargs):
-        item = None
+        oc = self.get_object_class()
+        pr = self.get_property()
+        dec = None
         for form in form_list:
-            item = form.save()
-        return HttpResponseRedirect('/item/%s'%item.id)
+            saved_item = form.save()
+            if type(saved_item) == MDR.Property:
+                pr = saved_item
+                messages.success(self.request,
+                        mark_safe(_("New Property '{name}' Saved - <a href='url'>id:{id}</a>").format(name=saved_item.name,id=saved_item.id))
+                )
+            if type(saved_item) == MDR.ObjectClass:
+                oc = saved_item
+                messages.success(self.request,
+                        mark_safe(_("New Object Class '{name}' Saved - <a href='url'>id:{id}</a>").format(name=saved_item.name,id=saved_item.id))
+                )
+            if type(saved_item) == MDR.DataElementConcept:
+                dec = saved_item
+                messages.success(self.request,
+                        mark_safe(_("New Data Element '{name}' Saved - <a href='url'>id:{id}</a>").format(
+                            name=saved_item.name,id=saved_item.id
+                            ))
+                )
+        if dec is not None:
+            dec.objectClass = oc
+            dec.property = pr
+            dec.save()
+        return HttpResponseRedirect(reverse("aristotle:%s"%dec.url_name,args=[dec.id]))

@@ -1,12 +1,5 @@
 {% extends "aristotle_mdr/create/dec_template_wrapper.html" %}
 
-{% block steps %}
-    <li role="presentation">Search</li>
-    <li role="presentation" class="active">Refine</li>
-    <li role="presentation">Create</li>
-    <li role="presentation">Complete</li>
-{% endblock %}
-
 {% block formarea %}
 {{ form.errors }}
 {% if form.oc_options or form.pr_options %}

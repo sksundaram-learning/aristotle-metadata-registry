@@ -1,15 +1,7 @@
 {% extends "aristotle_mdr/create/dec_template_wrapper.html" %}
 {% load aristotle_tags i18n %}
 
-{% block steps %}
-    <li role="presentation">Search</li>
-    <li role="presentation">Refine</li>
-    <li role="presentation" class="active">Create</li>
-    <li role="presentation">Complete</li>
-{% endblock %}
-
 {% block formarea %}
-{{ form.errors }}
     {% if wizard.form.errors %}
         <div class="alert alert-danger">
         There were errors saving your {{ model_name }}, please review the errors shown below.
@@ -31,7 +23,7 @@
         <div class="panel panel-danger">
             <div class="panel-heading">
                 There are already Data Element Concepts based on a
-                a "<em>{{ objectClass.name }}</em>" and "<em>{{ property.name }}</em>".
+                "<em>{{ objectClass.name }}</em>" and "<em>{{ property.name }}</em>".
             </div>
             <div class="panel-body">
                 Reusing existing content makes comparing items in the future easier.
@@ -50,148 +42,27 @@
                 {{ wizard.form.make_new_item.errors }}
             </div>
         </div>
+    {% elif oc_match and pr_match %}
+        <p>
+            No standard items based on "<em>{{ objectClass.name }}</em>" and "<em>{{ property.name }}</em>" were found,
+            so a new one will be created.
+        </p>
+    {% elif oc_match %}
+        <p>
+            You've elected to create a new Porperty, so you will need to create a new Data Element Concept as well.
+        </p>
+    {% elif pr_match %}
+        <p>
+            You've elected to create a new Object Class, so you will need to create a new Data Element Concept as well.
+        </p>
     {% else %}
         <p>
-            No matching items were found for reuse, so a new one will be created.
+            You've elected to create a new Object Class and Property, so you will need to create a new Data Element Concept as well.
         </p>
     {% endif %}
-    <div class="col-sm-10">
-        <div role="tabpanel">
-            <ul class="nav nav-tabs" role="tablist">
-                <li role="presentation" class="active">
-                    <a href="#definition" aria-controls="home" role="tab" data-toggle="tab">{% trans 'Definition' context 'creating items' %}</a>
-                </li>
-                <li role="presentation">
-                    <a href="#names" aria-controls="profile" role="tab" data-toggle="tab">Names</a>
-                </li>
-                <li role="presentation">
-                    <a href="#objSpecific" aria-controls="messages" role="tab" data-toggle="tab">{% trans 'Components' context 'For making a data element concept' %}</a>
-                </li>
-                {% if help_guide %}
-                <li role="presentation">
-                    <a href="#tips" aria-controls="messages" role="tab" data-toggle="tab">{% trans 'Tips' context 'creating items' %}</a>
-                </li>
-                {% endif %}
-            </ul>
-            <div class="tab-content">
-                <div role="tabpanel" class="tab-pane active" id="definition">
-                    <div class="alert alert-warning">
-                        <strong>These fields help identify and define the item.</strong>
-                        A name and definition are required, but adding a version is optional.
-                    </div>
-                    <div class="fancy_name_version">
-                        <div class="wizard_field name">
-                            <span>{{ wizard.form.name.label_tag }}</span>
-                            {% if wizard.form.name.errors %}
-                            <span class="alert alert-danger">
-                                {{ wizard.form.name.errors }}
-                            {% endif %}
-                                {{ wizard.form.name }}
-                                <div>
-                                 {{ wizard.form.name.help_text }}
-                                </div>
-                            {% if wizard.form.name.errors %}
-                                </span>
-                            {% endif %}
-                        </div>
-                        <div class="wizard_field version">
-                            <span>{{ wizard.form.version.label_tag }}</span>
-                            {% if wizard.form.version.errors %}
-                            <span class="alert alert-danger">
-                                {{ wizard.form.version.errors }}
-                            {% endif %}
-                            {{ wizard.form.version }}
-                            <div>
-                             {{ wizard.form.version.help_text }}
-                            </div>
-                            {% if wizard.form.version.errors %}
-                                </span>
-                            {% endif %}
-                        </div>
-                    </div>
-                    <div class="wizard_field">
-                        <span>{{ wizard.form.workgroup.label_tag }}
-                        {{ wizard.form.workgroup.help_text }}
-                        The workgroup responsible for maintaining this metadata item.
-                        </span>
-                        {% if wizard.form.workgroup.errors %}
-                        <span class="alert alert-danger">
-                            {{ wizard.form.workgroup.errors }}
-                        {% endif %}
-                        {{ wizard.form.workgroup }}
-                        {% if wizard.form.workgroup.errors %}
-                            </span>
-                        {% endif %}
-                    </div>
-                    <div class="wizard_field">
-                        <span>{{ wizard.form.description.label_tag }} {{ wizard.form.description.help_text }}</span>
-                        {% if wizard.form.description.errors %}
-                            <span class="alert alert-danger">
-                            {{ wizard.form.description.errors }}
-                        {% endif %}
-                        {{ wizard.form.description }}
-                        {% if wizard.form.description.errors %}
-                            </span>
-                        {% endif %}
-                    </div>
-                </div>
-                <div role="tabpanel" class="tab-pane" id="names">
-                    <div class="alert alert-info">
-                        <strong>These fields are optional</strong>
-                        but give extra context to this item, so add where appropriate.
-                    </div>
-
-                    {% for field in wizard.form.concept_fields %}
-                        <div class="wizard_field">
-                            <span>{{ field.label_tag }} {{ field.help_text }}</span>
-                            {% if field.errors %}
-                            <span class="alert alert-danger">
-                                {{ field.errors }}
-                            {% endif %}
-                            {{ field }}
-                            {% if field.errors %}
-                                </span>
-                            {% endif %}
-                        </div>
-                    {% endfor %}
-                </div>
-                <div role="tabpanel" class="tab-pane" id="objSpecific">
-                {% for field in wizard.form.object_specific_fields %}
-                    {% if forloop.first %}
-                    <div class="alert alert-info">
-                        <p><strong>These fields are optional</strong>
-                        but give extra context to this item, so add where appropriate.
-                        </p>
-                        <p>Don't worry if you don't fill these out now, these can
-                            be filled in at a later stage.
-                        </p>
-                    </div>
-                    {% endif %}
-                    <div class="wizard_field">
-                        <span>{{ field.label_tag }} {{ field.help_text }}</span>
-                        {% if field.errors %}
-                        <span class="alert alert-danger">
-                            {{ field.errors }}
-                        {% endif %}
-                        {{ field }}
-                        {% if field.errors %}
-                            </span>
-                        {% endif %}
-                    </div>
-                {% empty %}
-                    <div class="alert alert-success">
-                        <strong>There are no additional fields required to make this {{ model_name }}.</strong>
-                        You are ready to submit.
-                    </div>
-                {% endfor %}
-                </div>
-                {% if help_guide %}
-                <div role="tabpanel" class="tab-pane" id="tips">
-                    {% include help_guide  %}
-                </div>
-                {% endif %}
-            </div>
+    <div class="row">
+        <div class="col-sm-10">
+            {% include "aristotle_mdr/create/concept_editor.html" with form=wizard.form %}
         </div>
     </div>
-</div>
 {% endblock %}

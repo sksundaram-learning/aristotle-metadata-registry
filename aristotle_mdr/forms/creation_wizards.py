@@ -1,19 +1,31 @@
 from django import forms
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 import aristotle_mdr.models as MDR
-
+import autocomplete_light
 
 class UserAwareForm(forms.Form):
     def __init__(self,*args,**kwargs):
         self.user = kwargs.pop('user')
         super(UserAwareForm, self).__init__(*args, **kwargs)
-class UserAwareModelForm(forms.ModelForm):
+class UserAwareModelForm(autocomplete_light.ModelForm):
+    class Meta:
+        model = MDR._concept
+        exclude = ['readyToReview','superseded_by','_is_public','_is_locked','originURI']
+
     def __init__(self,*args,**kwargs):
         self.user = kwargs.pop('user')
         super(UserAwareModelForm, self).__init__(*args, **kwargs)
+
+    def _media(self):
+        js = ('/static/admin/js/jquery.min.js','aristotle_mdr/aristotle.wizard.js')
+        media = forms.Media(js=js)
+        for field in self.fields.values():
+            media = media + field.widget.media
+        return media
+    media = property(_media)
 
 class ConceptForm(UserAwareModelForm):
     """
@@ -28,8 +40,22 @@ class ConceptForm(UserAwareModelForm):
             self.fields['workgroup'].queryset = self.user.profile.myWorkgroups
         self.fields['name'].widget = forms.widgets.TextInput()
 
-    class Meta:
-        exclude = ['readyToReview','superseded_by','_is_public','_is_locked','originURI']
+
+    def concept_fields(self):
+        field_names = [field.name for field in MDR.baseAristotleObject._meta.fields]+['version','workgroup'] #version/workgroup are displayed with name/definition
+        concept_field_names = [ field.name
+                                for field in MDR.concept._meta.fields
+                                if field.name not in field_names
+                                ]
+        for name in self.fields:
+            if name in concept_field_names and name != 'make_new_item':
+                yield self[name]
+    def object_specific_fields(self):
+        # returns every field that isn't in a concept
+        field_names = [field.name for field in MDR.concept._meta.fields]
+        for name in self.fields:
+            if name not in field_names and name != 'make_new_item':
+                yield self[name]
 
 class Concept_1_Search(UserAwareForm):
     template = "aristotle_mdr/create/concept_wizard_1_search.html"
@@ -40,10 +66,19 @@ class Concept_1_Search(UserAwareForm):
 
     def save(self, *args, **kwargs):
         pass
+
+def subclassed_modelform(set_model):
+    class MyForm(ConceptForm):
+        class Meta(ConceptForm.Meta):
+            model = set_model
+            fields = '__all__'
+    return MyForm
+
 def subclassed_wizard_2_Results(set_model):
     class MyForm(Concept_2_Results):
         class Meta(Concept_2_Results.Meta):
             model = set_model
+            fields = '__all__'
         def __init__(self, *args, **kwargs):
             self.custom_widgets = kwargs.pop('custom_widgets',{})
             super(MyForm, self).__init__(*args, **kwargs)
@@ -66,25 +101,6 @@ class Concept_2_Results(UserAwareModelForm):
         self.fields['name'].widget = forms.widgets.TextInput()
         if not self.check_similar:
             self.fields.pop('make_new_item')
-    class Meta:
-        model = MDR._concept
-        exclude = ['readyToReview','superseded_by','_is_public','_is_locked','originURI']
-
-    def concept_fields(self):
-        field_names = [field.name for field in MDR.baseAristotleObject._meta.fields]+['version','workgroup'] #version/workgroup are displayed with name/definition
-        concept_field_names = [ field.name
-                                for field in MDR.concept._meta.fields
-                                if field.name not in field_names
-                                ]
-        for name in self.fields:
-            if name in concept_field_names and name != 'make_new_item':
-                yield self[name]
-    def object_specific_fields(self):
-        # returns every field that isn't in a concept
-        field_names = [field.name for field in MDR.concept._meta.fields]
-        for name in self.fields:
-            if name not in field_names and name != 'make_new_item':
-                yield self[name]
 
 class DEC_OCP_Search(UserAwareForm):
     template = "aristotle_mdr/create/dec_1_initial_search.html"
@@ -112,37 +128,39 @@ class DEC_OCP_Results(UserAwareForm):
             self.fields['pr_options'] = forms.ChoiceField(label="Similar Properties",
                                         choices=tuple(pr_options), widget=forms.RadioSelect())
     def clean_oc_options(self):
+        if self.cleaned_data['oc_options'] == "X":
+            # The user chose to make their own item, so return No item.
+            return None
         try:
-            return MDR.ObjectClass.objects.get(pk=self.cleaned_data['oc_options'])
-        except:
+            oc = MDR.ObjectClass.objects.get(pk=self.cleaned_data['oc_options'])
+            return oc
+        except ObjectDoesNotExist:
             return None
     def clean_pr_options(self):
+        if self.cleaned_data['pr_options'] == "X":
+            # The user chose to make their own item, so return No item.
+            return None
         try:
             return MDR.Property.objects.get(pk=self.cleaned_data['pr_options'])
-        except:
+        except ObjectDoesNotExist:
             return None
+    def save(self, *args, **kwargs):
+        pass
 
 class DEC_Find_DEC_Results(Concept_2_Results):
     class Meta(Concept_2_Results.Meta):
         model = MDR.DataElementConcept
     def __init__(self, *args, **kwargs):
-        objectClass = kwargs.pop('objectClass')
-        prop = kwargs.pop('property')
         self.custom_widgets = kwargs.pop('custom_widgets',{})
 
         super(DEC_Find_DEC_Results, self).__init__(*args, **kwargs)
         for field,widget in self.custom_widgets.items():
             self.fields[field].widget = widget
 
-class _DEC_Find_DEC_Results(UserAwareForm):
-    def __init__(self, *args, **kwargs):
-        dec_matches = kwargs.pop('dec_matches', None)
-        kwargs.update({'check_similar':dec_matches is not None})
-        super(DEC_Find_DEC_Results, self).__init__(*args, **kwargs)
-        # this is silly, they are trying to create something. giving them an option
-        # field here makes no sense.
-        if dec_matches:
-            dec_options = [(dec.id,dec) for dec in dec_matches]
-            dec_options.append(("X","None of the above meet my needs"))
-            self.fields['dec_options'] = forms.ChoiceField(label="Similar Data Element Concepts",
-                                        choices=dec_options, widget=forms.RadioSelect())
+class DEC_Complete(UserAwareForm):
+    make_items = forms.BooleanField(initial=False,
+        label=_("I've reviewed these items, and wish to create them."),
+        error_messages={'required': 'You must select this to ackowledge you have reviewed the above items.'}
+    )
+    def save(self, *args, **kwargs):
+        pass

@@ -13,7 +13,7 @@ import datetime
 
 from aristotle_mdr.perms import user_can_view, user_can_edit, user_in_workgroup, user_is_workgroup_manager, user_can_change_status
 from aristotle_mdr import perms
-from aristotle_mdr.utils import cache_per_item_user
+from aristotle_mdr.utils import cache_per_item_user, concept_to_dict
 from aristotle_mdr import forms as MDRForms
 from aristotle_mdr import models as MDR
 
@@ -192,6 +192,27 @@ def registrationHistory(request, iid):
     return render(request,"aristotle_mdr/registrationHistory.html",
             {'item':item,
              'history': history
+                }
+            )
+
+def edit_item(request,iid,*args,**kwargs):
+    item = get_object_or_404(MDR._concept,pk=iid).item
+    if not user_can_edit(request.user, item):
+        if request.user.is_anonymous():
+            return redirect(reverse('django.contrib.auth.views.login')+'?next=%s' % request.path)
+        else:
+            raise PermissionDenied
+
+    if request.method == 'POST': # If the form has been submitted...
+        form = MDRForms.wizards.subclassed_wizard_2_Results(item.__class__)(request.POST,instance=item,user=request.user)
+        if form.is_valid():
+            item = form.save()
+            return HttpResponseRedirect(reverse("aristotle:item",args=[item.pk]))
+    else:
+        form = MDRForms.wizards.subclassed_modelform(item.__class__)(instance=item,user=request.user)
+    return render(request,"aristotle_mdr/actions/advanced_editor.html",
+            {"item":item,
+             "form":form,
                 }
             )
 
@@ -726,7 +747,7 @@ def changeStatus(request, iid):
                 regDate = timezone.now().date()
             for ra in ras:
                 ra.register(item,state,request.user,regDate,cascade,changeDetails)
-            return HttpResponseRedirect(reverse("aristotle:%s"%item.url_name,args=[item.id]))
+            return HttpResponseRedirect(reverse("aristotle:item",args=[item.id]))
     else:
         form = MDRForms.ChangeStatusForm(user=request.user)
     return render(request,"aristotle_mdr/actions/changeStatus.html",

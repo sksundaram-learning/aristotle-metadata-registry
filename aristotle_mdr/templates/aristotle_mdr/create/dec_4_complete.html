@@ -1,0 +1,52 @@
+{% extends "aristotle_mdr/create/dec_template_wrapper.html" %}
+{% load aristotle_tags i18n %}
+
+{% block formarea %}
+
+<div class="panel panel-danger">
+    <div class="panel-heading">
+        You are about to create a new Data Element Concept based on a
+        "<em>{{ objectClass.name }}</em>" and "<em>{{ property.name }}</em>".
+    </div>
+    <div class="panel-body">
+        {% if dec_matches %}
+        Reusing existing content makes comparing items in the future easier.
+        <br>Consider reviewing these items to see if an existing piece of content meets your needs.
+        <ol class="searchResults">
+            {% for obj in dec_matches %}
+            <li>
+                {% include "search/searchItem.html" with item=obj %}
+            </li>
+            {% endfor %}
+        </ol>
+        {% endif %}
+        {% if made_oc and made_pr %}
+            <p>You are also going to create the following items:
+                <ul>
+                    <li>Object Class - {{made_oc}}</li>
+                    <li>Property - {{made_pr}}</li>
+                </ul>
+            </p>
+        {% elif made_oc %}
+            <p>You are also going to create the following item:
+                <ul>
+                    <li>Object Class - {{made_oc}}</li>
+                </ul>
+            </p>
+        {% elif made_pr %}
+            <p>You are also going to create the following item:
+                <ul>
+                    <li>Property - {{made_pr}}</li>
+                </ul>
+            </p>
+        {% else %}
+        {% endif %}
+    </div>
+    <div class="panel-footer">
+        {{ wizard.form.make_items }}
+        {{ wizard.form.make_items.label }}
+        {{ wizard.form.make_items.errors }}
+    </div>
+</div>
+
+{% endblock %}
