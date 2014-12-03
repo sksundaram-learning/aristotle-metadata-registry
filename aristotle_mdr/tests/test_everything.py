@@ -347,7 +347,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.assertEqual(response.status_code,302)
         response = self.client.get(reverse('aristotle:edit_item',args=[self.item2.id]))
         self.assertEqual(response.status_code,302)
-    def test_viewer_can_view_edit_page(self):
+    def test_viewer_cannot_view_edit_page(self):
         self.logout()
         response = self.client.get(reverse('aristotle:edit_item',args=[self.item1.id]))
         self.assertEqual(response.status_code,403)

@@ -60,8 +60,6 @@ class ConceptWizard(PermissionWizard):
                 'initial': self.get_cleaned_data_for_step('initial'),
                 'check_similar': similar or duplicates
             })
-            if self.widgets:
-                kwargs.update({'custom_widgets':self.widgets})
             return MDRForms.wizards.subclassed_wizard_2_Results(self.model)(**kwargs)
         return super(ConceptWizard, self).get_form(step, data, files)
 
@@ -135,15 +133,6 @@ class ConceptualDomainWizard(ConceptWizard):
 class DataElementWizard(ConceptWizard):
     model = MDR.DataElement
 
-"""class DataElementConceptWizard(ConceptWizard):
-    model = MDR.DataElementConcept
-    widgets = {
-        'conceptualDomain':autocomplete_light.ChoiceWidget('AutocompleteConceptualDomain'),
-        'objectClass':autocomplete_light.ChoiceWidget('AutocompleteObjectClass'),
-        'property':autocomplete_light.ChoiceWidget('AutocompleteProperty'),
-        }
-"""
-
 def no_valid_property(wizard):
     print wizard.get_property()
     return not wizard.get_property()
@@ -171,12 +160,6 @@ class DataElementConceptWizard(PermissionWizard):
     condition_dict = {
         "make_oc": no_valid_object_class ,
         "make_p": no_valid_property,
-        }
-
-    widgets = {
-        'conceptualDomain':autocomplete_light.ChoiceWidget('AutocompleteConceptualDomain'),
-        'objectClass':autocomplete_light.ChoiceWidget('AutocompleteObjectClass'),
-        'property':autocomplete_light.ChoiceWidget('AutocompleteProperty'),
         }
 
     def get_object_class(self):
@@ -239,7 +222,6 @@ class DataElementConceptWizard(PermissionWizard):
             })
         elif step == 'find_dec_results':
             kwargs.update({
-                'custom_widgets':self.widgets,
                 'check_similar': self.get_data_element_concept()
                 })
         return kwargs

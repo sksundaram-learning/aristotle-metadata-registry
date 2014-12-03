@@ -79,11 +79,6 @@ def subclassed_wizard_2_Results(set_model):
         class Meta(Concept_2_Results.Meta):
             model = set_model
             fields = '__all__'
-        def __init__(self, *args, **kwargs):
-            self.custom_widgets = kwargs.pop('custom_widgets',{})
-            super(MyForm, self).__init__(*args, **kwargs)
-            for field,widget in self.custom_widgets.items():
-                self.fields[field].widget = widget
     return MyForm
 
 class Concept_2_Results(UserAwareModelForm):
@@ -150,12 +145,6 @@ class DEC_OCP_Results(UserAwareForm):
 class DEC_Find_DEC_Results(Concept_2_Results):
     class Meta(Concept_2_Results.Meta):
         model = MDR.DataElementConcept
-    def __init__(self, *args, **kwargs):
-        self.custom_widgets = kwargs.pop('custom_widgets',{})
-
-        super(DEC_Find_DEC_Results, self).__init__(*args, **kwargs)
-        for field,widget in self.custom_widgets.items():
-            self.fields[field].widget = widget
 
 class DEC_Complete(UserAwareForm):
     make_items = forms.BooleanField(initial=False,
