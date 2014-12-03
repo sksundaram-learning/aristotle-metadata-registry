@@ -134,7 +134,6 @@ class DataElementWizard(ConceptWizard):
     model = MDR.DataElement
 
 def no_valid_property(wizard):
-    print wizard.get_property()
     return not wizard.get_property()
 def no_valid_object_class(wizard):
     return not wizard.get_object_class()

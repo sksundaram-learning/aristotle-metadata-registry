@@ -158,7 +158,6 @@ class TokenSearchForm(SearchForm):
             else:
                 query_text.append(word)
         self.models = token_models
-        print "self.models -- ",self.models
         self.query_text = " ".join(query_text)
         self.kwargs = kwargs
         return kwargs

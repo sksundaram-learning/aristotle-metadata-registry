@@ -10,26 +10,26 @@ setup_test_environment()
 class ConceptWizardPage(utils.LoggedInViewPages):
     wizard_name="Harry Potter" # This will break if called without overriding the wizard_name. Plus its funny.
     def setUp(self):
-        super(SupersedePage, self).setUp()
+        super(ConceptWizardPage, self).setUp()
 
     def test_anonymous_cannot_view_create_page(self):
         self.logout()
-        response = self.client.get(reverse('aristotle:%s'%self.wizard_name,args=[self.item1.id]))
+        response = self.client.get(reverse('aristotle:%s'%self.wizard_name))
         self.assertEqual(response.status_code,302)
 
     def test_viewer_cannot_view_create_page(self):
         self.login_viewer()
-        response = self.client.get(reverse('aristotle:%s'%self.wizard_name,args=[self.item1.id]))
+        response = self.client.get(reverse('aristotle:%s'%self.wizard_name))
         self.assertEqual(response.status_code,302)
 
     def test_registrar_cannot_view_create_page(self):
         self.login_registrar()
-        response = self.client.get(reverse('aristotle:%s'%self.wizard_name,args=[self.item1.id]))
+        response = self.client.get(reverse('aristotle:%s'%self.wizard_name))
         self.assertEqual(response.status_code,302)
 
     def test_editor_can_view_create_page(self):
         self.login_editor()
-        response = self.client.get(reverse('aristotle:%s'%self.wizard_name,args=[self.item1.id]))
+        response = self.client.get(reverse('aristotle:%s'%self.wizard_name))
         self.assertEqual(response.status_code,302)
 
 class ObjectClassWizardPage(ConceptWizardPage,TestCase):
@@ -42,3 +42,8 @@ class DataElementConceptWizardPage(ConceptWizardPage,TestCase):
     wizard_name="createDataElementConcept"
 class DataElementWizardPage(ConceptWizardPage,TestCase):
     wizard_name="createDataElement"
+
+
+"""Ordinary. Wizarding. Level. Examinations. O.W.L.s. More commonly known as 'Owls'.
+Study hard and you will be rewarded.
+Fail to do so and the consequences may be... severe"""
