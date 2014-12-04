@@ -30,7 +30,7 @@ class ConceptWizardPage(utils.LoggedInViewPages):
     def test_editor_can_view_create_page(self):
         self.login_editor()
         response = self.client.get(reverse('aristotle:%s'%self.wizard_name))
-        self.assertEqual(response.status_code,302)
+        self.assertEqual(response.status_code,200)
 
 class ObjectClassWizardPage(ConceptWizardPage,TestCase):
     wizard_name="createObjectClass"

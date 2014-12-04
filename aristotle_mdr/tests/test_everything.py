@@ -506,6 +506,14 @@ class DataElementConceptViewPage(LoggedInViewConceptPages,TestCase):
 class DataElementViewPage(LoggedInViewConceptPages,TestCase):
     url_name='dataElement'
     itemType=models.DataElement
+
+#class DataElementDerivationViewPage(LoggedInViewConceptPages,TestCase):
+#    url_name='dataElementDerivation'
+#    @property
+#    def defaults(self):
+#        return {'derives':models.DataElement.objects.create(name='derivedDE',description="",workgroup=self.wg1)}
+#    itemType=models.DataElementDerivation
+
 class GlossaryViewPage(LoggedInViewConceptPages,TestCase):
     url_name='glossary'
     itemType=models.GlossaryItem
