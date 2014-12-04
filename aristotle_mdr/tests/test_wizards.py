@@ -70,11 +70,31 @@ class ConceptWizardPage(utils.LoggedInViewPages):
         response = self.client.post(self.wizard_url, step_2_data)
         wizard = response.context['wizard']
         self.assertTrue('description' in response.context['wizard']['form'].errors.keys())
+        self.assertTrue('workgroup' in response.context['wizard']['form'].errors.keys())
 
-        # must submit a description at this step.
-        step_2_data.update({'results-description':"Test Description"})
+        # no "test item" yet.
+        self.assertFalse(models._concept.objects.filter(name="Test Item").exists())
+
+        # must submit a description at this step. But we are using a non-permitted workgroup.
+        step_2_data.update({
+            'results-description':"Test Description",
+            'results-workgroup':self.wg2.pk
+            })
         response = self.client.post(self.wizard_url, step_2_data)
         self.assertEqual(response.status_code, 200)
+        self.assertTrue('workgroup' in response.context['wizard']['form'].errors.keys())
+
+        # must submit a description at this step. With the right workgroup
+        step_2_data.update({
+            'results-description':"Test Description",
+            'results-workgroup':self.wg1.pk
+            })
+        response = self.client.post(self.wizard_url, step_2_data)
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(models._concept.objects.filter(name="Test Item").exists())
+        self.assertEqual(models._concept.objects.filter(name="Test Item").count(),1)
+        item = models._concept.objects.filter(name="Test Item").first()
+        self.assertRedirects(response,reverse("aristotle:item", args=[item.id]))
 
 class ObjectClassWizardPage(ConceptWizardPage,TestCase):
     wizard_url_name="createObjectClass"
