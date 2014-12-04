@@ -142,6 +142,13 @@ class ViewDiscussionPostPage(utils.LoggedInViewPages,TestCase):
         self.assertEqual(len(response.context['discussions']),3)
         self.assertListEqual(list(response.context['discussions']),[p3,p2,p1])
 
+    def test_nonmember_cannot_see_posts(self):
+        self.login_viewer()
+        self.wg3 = models.Workgroup.objects.create(name="Test WG 3")
+
+        response = self.client.get(reverse('aristotle:discussionsWorkgroup',args=[self.wg3.id]))
+        self.assertEqual(response.status_code,403)
+
     def test_viewer_can_see_posts_for_a_workgroup(self):
         self.login_viewer()
         post = models.DiscussionPost.objects.create(author=self.su,workgroup=self.wg1,title="test",body="test")

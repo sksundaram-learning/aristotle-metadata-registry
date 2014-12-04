@@ -1,7 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
-from django.http import HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from django.core.urlresolvers import reverse
 
 from aristotle_mdr import forms as MDRForms
 from aristotle_mdr import models as MDR
@@ -43,7 +43,7 @@ def edit(request):
             request.user.last_name = form.cleaned_data['last_name']
             request.user.email = form.cleaned_data['email']
             request.user.save()
-            return HttpResponseRedirect('/account/home')
+            return redirect(reverse('aristotle:userHome',))
     else:
         form = MDRForms.UserSelfEditForm({
             'first_name':request.user.first_name,

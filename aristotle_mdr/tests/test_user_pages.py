@@ -9,18 +9,28 @@ class UserHomePages(utils.LoggedInViewPages,TestCase):
     def setUp(self):
         super(UserHomePages, self).setUp()
 
-    def test_viewer_can_access_homepages(self):
-        self.login_viewer()
+    def check_generic_pages(self):
         response = self.client.get(reverse('aristotle:userHome',))
         self.assertEqual(response.status_code,200)
         response = self.client.get(reverse('aristotle:userEdit',))
         self.assertEqual(response.status_code,200)
         response = self.client.get(reverse('aristotle:userInbox',))
         self.assertEqual(response.status_code,200)
+        response = self.client.get(reverse('aristotle:userInbox',args=['all']))
+        self.assertEqual(response.status_code,200)
         response = self.client.get(reverse('aristotle:userFavourites',))
         self.assertEqual(response.status_code,200)
         response = self.client.get(reverse('aristotle:userWorkgroups',))
         self.assertEqual(response.status_code,200)
+
+        new_email = 'my_new@email.com'
+        response = self.client.get(reverse('aristotle:userEdit'),{'email': new_email})
+        self.assertEqual(response.status_code,200)
+        # TODO: check this saves correctly
+
+    def test_viewer_can_access_homepages(self):
+        self.login_viewer()
+        self.check_generic_pages()
 
         # A viewer, has no registrar permissions:
         response = self.client.get(reverse('aristotle:userRegistrarTools',))
@@ -35,16 +45,7 @@ class UserHomePages(utils.LoggedInViewPages,TestCase):
 
     def test_registrar_can_access_tools(self):
         self.login_registrar()
-        response = self.client.get(reverse('aristotle:userHome',))
-        self.assertEqual(response.status_code,200)
-        response = self.client.get(reverse('aristotle:userEdit',))
-        self.assertEqual(response.status_code,200)
-        response = self.client.get(reverse('aristotle:userInbox',))
-        self.assertEqual(response.status_code,200)
-        response = self.client.get(reverse('aristotle:userFavourites',))
-        self.assertEqual(response.status_code,200)
-        response = self.client.get(reverse('aristotle:userWorkgroups',))
-        self.assertEqual(response.status_code,200)
+        self.check_generic_pages()
 
         self.assertTrue(self.registrar.profile.is_registrar)
         response = self.client.get(reverse('aristotle:userRegistrarTools',))
@@ -54,17 +55,7 @@ class UserHomePages(utils.LoggedInViewPages,TestCase):
 
     def test_superuser_can_access_tools(self):
         self.login_superuser()
-
-        response = self.client.get(reverse('aristotle:userHome',))
-        self.assertEqual(response.status_code,200)
-        response = self.client.get(reverse('aristotle:userEdit',))
-        self.assertEqual(response.status_code,200)
-        response = self.client.get(reverse('aristotle:userInbox',))
-        self.assertEqual(response.status_code,200)
-        response = self.client.get(reverse('aristotle:userFavourites',))
-        self.assertEqual(response.status_code,200)
-        response = self.client.get(reverse('aristotle:userWorkgroups',))
-        self.assertEqual(response.status_code,200)
+        self.check_generic_pages()
 
         self.assertTrue(self.su.profile.is_registrar)
         response = self.client.get(reverse('aristotle:userRegistrarTools',))

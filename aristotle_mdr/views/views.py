@@ -222,7 +222,7 @@ def toggleFavourite(request, iid):
     request.user.profile.toggleFavourite(iid)
     if request.GET.get('next',None):
         return redirect(request.GET.get('next'))
-    return redirect('/item/%s' % iid)
+    return redirect(reverse("aristotle:item",args=[iid]))
 
 def registrationauthority(*args,**kwargs):
     return render_if_user_can_view(MDR.RegistrationAuthority,*args,**kwargs)
