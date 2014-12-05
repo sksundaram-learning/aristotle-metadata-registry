@@ -81,7 +81,7 @@ def subclassed_wizard_2_Results(set_model):
             fields = '__all__'
     return MyForm
 
-class Concept_2_Results(UserAwareModelForm):
+class Concept_2_Results(ConceptForm):
     make_new_item = forms.BooleanField(initial=False,
         label=_("I've reviewed these items, and none of them meet my needs. Make me a new one."),
         error_messages={'required': 'You must select this to ackowledge you have reviewed the above items.'}
