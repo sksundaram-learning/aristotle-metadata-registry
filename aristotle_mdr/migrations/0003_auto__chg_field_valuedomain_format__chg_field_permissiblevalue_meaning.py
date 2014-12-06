@@ -24,7 +24,7 @@ class Migration(SchemaMigration):
         # Changing field 'SupplementaryValue.value'
         db.alter_column(u'aristotle_mdr_supplementaryvalue', 'value', self.gf('django.db.models.fields.CharField')(max_length=32))
 
-    def backwards(self, orm):
+    def backwards(self, orm): # pragma: no cover
 
         # Changing field 'ValueDomain.format'
         db.alter_column(u'aristotle_mdr_valuedomain', 'format', self.gf('django.db.models.fields.CharField')(default='X', max_length=100))
