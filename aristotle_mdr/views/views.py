@@ -266,9 +266,28 @@ def about_all_items(request):
 
 # Actions
 
+def mark_ready_to_review(request,iid):
+    item = get_object_or_404(MDR._concept,pk=iid).item
+    if not (item and user_can_edit(request.user,item)):
+        if request.user.is_anonymous():
+            return redirect(reverse('django.contrib.auth.views.login')+'?next=%s' % request.path)
+        else:
+            raise PermissionDenied
+
+    if request.method == 'POST': # If the form has been submitted...
+        if item.is_registered:
+            raise PermissionDenied
+        else:
+            item.readyToReview = not item.readyToReview
+            item.save()
+        return HttpResponseRedirect(reverse("aristotle:item",args=[item.id]))
+    else:
+        return render(request,"aristotle_mdr/actions/mark_ready_to_review.html",
+            {"item":item,}
+            )
+
 def changeStatus(request, iid):
-    item = get_object_or_404(MDR._concept,pk=iid)
-    item = MDR._concept.objects.get_subclass(pk=iid)
+    item = get_object_or_404(MDR._concept,pk=iid).item
     if not (item and user_can_change_status(request.user,item)):
         if request.user.is_anonymous():
             return redirect(reverse('django.contrib.auth.views.login')+'?next=%s' % request.path)

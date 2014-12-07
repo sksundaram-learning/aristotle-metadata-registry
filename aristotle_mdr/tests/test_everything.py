@@ -397,6 +397,21 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         response = self.client.get(reverse('aristotle:supersede',args=[self.item3.id]))
         self.assertEqual(response.status_code,200)
 
+    def test_editor_can_use_ready_to_review(self):
+        self.login_editor()
+        response = self.client.get(reverse('aristotle:mark_ready_to_review',args=[self.item1.id]))
+        self.assertEqual(response.status_code,200)
+        response = self.client.get(reverse('aristotle:mark_ready_to_review',args=[self.item2.id]))
+        self.assertEqual(response.status_code,403)
+        response = self.client.get(reverse('aristotle:mark_ready_to_review',args=[self.item3.id]))
+        self.assertEqual(response.status_code,200)
+
+        self.assertFalse(self.item1.readyToReview)
+        response = self.client.post(reverse('aristotle:mark_ready_to_review',args=[self.item1.id]))
+        self.assertRedirects(response,reverse("aristotle:item",args=[self.item1.id]))
+        self.item1 = self.itemType.objects.get(id=self.item1.id) # Stupid cache
+        self.assertTrue(self.item1.readyToReview)
+
     def test_viewer_cannot_view_deprecate_page(self):
         self.login_viewer()
         response = self.client.get(reverse('aristotle:deprecate',args=[self.item1.id]))
@@ -477,8 +492,6 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.assertEqual(self.item1.statuses.count(),1)
         self.item1 = self.itemType.objects.get(pk=self.item1.pk)
         self.assertTrue(self.item1.is_public())
-
-
 
 class ObjectClassViewPage(LoggedInViewConceptPages,TestCase):
     url_name='objectClass'

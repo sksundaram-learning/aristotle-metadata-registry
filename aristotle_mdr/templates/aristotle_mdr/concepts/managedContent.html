@@ -137,22 +137,41 @@
         </div>
     {% else %}
         <div id="progress" class=" alert alert-warning">
-            {% trans 'This item is under review and active development. Content may change frequently.'%}
+            {% trans 'This item is under active development. Content may change frequently.'%}
         </div>
     {% endif %}
     {% if not item.is_registered %}
     <div id="review" class=" alert alert-info">
-        <strong>{% if item.readyToReview %}
-        {% trans 'This item has been marked as ready to review, but has not yet been registered in an authority.'%}
+        <strong>
+        {% if item.readyToReview %}
+            <i class="fa fa-flag"></i> {% trans 'This item has been marked as ready to review, but has not yet been registered in an authority.'%}
         {% else %}
-        {% trans 'The visibility of this item is still restricted to your current workgroup.'%}
-        {% endif %}</strong><br>
+            <i class="fa fa-flag-o"></i> {% trans 'The visibility of this item is still restricted to your current workgroup.'%}
+        {% endif %}
+        </strong>
 
+        {% if item|can_edit:request.user %}
+        {% blocktrans %}
         <p>You can control the visibility of this item by indicating its review status.
-        {% trans 'If an item is marked "ready for review", registrars will be able to see this item and begin the standardisation process according to their registration authority.'%}
-
-        <p><label>Is this item {% ternary item.readyToReview "still" "" %} ready for review?</label>
-        {% inplace_edit 'item.readyToReview' adaptor='booleanYesNo' %}
+        If an item is marked "ready for review", registrars will be able to see this item and
+        begin the standardisation process according to their registration authority.
+        </p>
+        {% endblocktrans %}
+        <a class="btn btn-default" href="{% url 'aristotle:mark_ready_to_review' item.id %}"
+            data-toggle="modal" data-target="#r2r_modals">
+            {% if item.readyToReview %}
+                <i class="fa fa-flag-o"></i> {% trans 'Remove ready for review flag' %}
+            {% else %}
+                <i class="fa fa-flag"></i> {% trans 'Flag as ready for review' %}
+            {% endif %}
+        </a>
+        {% endif %}
+    </div>
+    {# Outside the above div to stop "info" colors #}
+    <div id="r2r_modals" class="modal fade">
+        <div class="modal-dialog">
+            <div class="modal-content"></div>
+        </div>
     </div>
     {% endif %}
     <dl id="alternate_names" class="hidden-xs">
