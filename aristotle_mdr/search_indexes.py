@@ -2,6 +2,7 @@ import datetime
 import haystack.indexes as indexes
 
 import aristotle_mdr.models as models
+from django.utils import timezone
 
 class baseObjectIndex(indexes.SearchIndex):
     text = indexes.CharField(document=True, use_template=True)
@@ -17,7 +18,7 @@ class baseObjectIndex(indexes.SearchIndex):
     def index_queryset(self, using=None):
         """Used when the entire index for model is updated."""
 
-        return self.get_model().objects.filter(modified__lte=datetime.datetime.now())
+        return self.get_model().objects.filter(modified__lte=timezone.now())
 
     #def have_access(self, obj):
     #    for user in obj.viewers.users():
