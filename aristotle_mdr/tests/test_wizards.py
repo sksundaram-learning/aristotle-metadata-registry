@@ -116,7 +116,23 @@ class DataElementConceptWizardPage(ConceptWizardPage,TestCase):
     def test_editor_can_make_object(self):
         pass
     def test_editor_can_make_object__has_prior_components(self):
-        pass
+        self.login_editor()
+        ani = models.ObjectClass.objects.create(name="Animagus",description="",workgroup=self.wg1)
+        at  = models.Property.objects.create(name="Animal type",description="",workgroup=self.wg1)
+
+        step_1_data = {
+            self.wizard_form_name+'-current_step': 'oc_p_search',
+            'oc_p_search-oc_name':"Animagus",
+            'oc_p_search-pr_name':"Animal type"
+        }
+        # success!
+
+        response = self.client.post(self.wizard_url, step_1_data)
+        wizard = response.context['wizard']
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(wizard['steps'].current, 'oc_p_results')
+
+
     def test_editor_can_make_object__no_prior_components(self):
         self.login_editor()
         step_1_data = {
