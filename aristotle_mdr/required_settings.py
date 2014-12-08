@@ -151,7 +151,6 @@ ADAPTOR_INPLACEEDIT = {
     'image_thumb': 'inplaceeditform_extra_fields.fields.AdaptorImageThumbnailField',
     'tiny': 'inplaceeditform_extra_fields.fields.AdaptorTinyMCEField',
     'aristotle': 'aristotle_mdr.fields.AristotleRichTextField',
-    'booleanYesNo': 'aristotle_mdr.fields.booleanYesNo',
 }
 
 HAYSTACK_SIGNAL_PROCESSOR = 'aristotle_mdr.signals.AristotleSignalProcessor'
