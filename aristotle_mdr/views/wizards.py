@@ -336,11 +336,11 @@ class DataElementConceptWizard(PermissionWizard):
         if cached_items:
             return cached_items
 
-        similar = PSQS().models(model).auto_query(name + " " + description).filter(
-                statuses__in=[  MDR.STATES[int(s)]
-                                for s in [MDR.STATES.standard,MDR.STATES.preferred]
-                            ])
-
+        #similar = PSQS().models(model).auto_query(name + " " + description).filter(
+        #        statuses__in=[  MDR.STATES[int(s)]
+        #                        for s in [MDR.STATES.standard,MDR.STATES.preferred]
+        #                    ])
+        similar = PSQS().models(model).auto_query(name + " " + description).apply_permission_checks(user=self.request.user)
         self.similar_items[model] = similar
         return similar
 

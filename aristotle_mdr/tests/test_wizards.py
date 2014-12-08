@@ -51,7 +51,7 @@ class ConceptWizardPage(utils.LoggedInViewPages):
         response = self.client.post(self.wizard_url, step_1_data)
         wizard = response.context['wizard']
         self.assertEqual(wizard['steps'].current, 'initial')
-        self.assertTrue('name' in response.context['wizard']['form'].errors.keys())
+        self.assertTrue('name' in wizard['form'].errors.keys())
 
         # must submit a name
         step_1_data.update({'initial-name':"Test Item"})
@@ -69,8 +69,8 @@ class ConceptWizardPage(utils.LoggedInViewPages):
 
         response = self.client.post(self.wizard_url, step_2_data)
         wizard = response.context['wizard']
-        self.assertTrue('description' in response.context['wizard']['form'].errors.keys())
-        self.assertTrue('workgroup' in response.context['wizard']['form'].errors.keys())
+        self.assertTrue('description' in wizard['form'].errors.keys())
+        self.assertTrue('workgroup' in wizard['form'].errors.keys())
 
         # no "test item" yet.
         self.assertFalse(models._concept.objects.filter(name="Test Item").exists())
@@ -82,7 +82,7 @@ class ConceptWizardPage(utils.LoggedInViewPages):
             })
         response = self.client.post(self.wizard_url, step_2_data)
         self.assertEqual(response.status_code, 200)
-        self.assertTrue('workgroup' in response.context['wizard']['form'].errors.keys())
+        self.assertTrue('workgroup' in wizard['form'].errors.keys())
 
         # must submit a description at this step. With the right workgroup
         step_2_data.update({
@@ -117,13 +117,13 @@ class DataElementConceptWizardPage(ConceptWizardPage,TestCase):
         pass
     def test_editor_can_make_object__has_prior_components(self):
         self.login_editor()
-        ani = models.ObjectClass.objects.create(name="Animagus",description="",workgroup=self.wg1)
-        at  = models.Property.objects.create(name="Animal type",description="",workgroup=self.wg1)
+        ani = models.ObjectClass.objects.create(name="animagus",description="",workgroup=self.wg1)
+        at  = models.Property.objects.create(name="animal type",description="",workgroup=self.wg1)
 
         step_1_data = {
             self.wizard_form_name+'-current_step': 'oc_p_search',
-            'oc_p_search-oc_name':"Animagus",
-            'oc_p_search-pr_name':"Animal type"
+            'oc_p_search-oc_name':"animagus",
+            'oc_p_search-pr_name':"animal"
         }
         # success!
 
@@ -131,6 +131,36 @@ class DataElementConceptWizardPage(ConceptWizardPage,TestCase):
         wizard = response.context['wizard']
         self.assertEqual(response.status_code, 200)
         self.assertEqual(wizard['steps'].current, 'oc_p_results')
+        self.assertEqual(len(wizard['form'].fields.keys()),2) # we should have a match for OC and P
+
+        step_2_data = {}
+        step_2_data.update(step_1_data)
+        step_2_data.update({self.wizard_form_name+'-current_step': 'oc_p_results'})
+
+        response = self.client.post(self.wizard_url, step_2_data)
+        wizard = response.context['wizard']
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(wizard['steps'].current, 'oc_p_results')
+
+        # Must pick an Object Class and Property (or none) to continue.
+        self.assertTrue('oc_options' in wizard['form'].errors.keys())
+        self.assertTrue('pr_options' in wizard['form'].errors.keys())
+
+        # Try the wrong way around
+        step_2_data.update({'oc_p_results-oc_options':at.pk,'oc_p_results-pr_options':ani.pk})
+        response = self.client.post(self.wizard_url, step_2_data)
+        wizard = response.context['wizard']
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(wizard['steps'].current, 'oc_p_results')
+        self.assertTrue('oc_options' in wizard['form'].errors.keys())
+        self.assertTrue('pr_options' in wizard['form'].errors.keys())
+
+        # Picking the correct options should send us to the DEC results page.
+        step_2_data.update({'oc_p_results-oc_options':str(ani.pk),'oc_p_results-pr_options':str(at.pk)})
+        response = self.client.post(self.wizard_url, step_2_data)
+        wizard = response.context['wizard']
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(wizard['steps'].current, 'find_dec_results')
 
 
     def test_editor_can_make_object__no_prior_components(self):
@@ -142,8 +172,8 @@ class DataElementConceptWizardPage(ConceptWizardPage,TestCase):
         response = self.client.post(self.wizard_url, step_1_data)
         wizard = response.context['wizard']
         self.assertEqual(wizard['steps'].current, 'oc_p_search')
-        self.assertTrue('oc_name' in response.context['wizard']['form'].errors.keys())
-        self.assertTrue('pr_name' in response.context['wizard']['form'].errors.keys())
+        self.assertTrue('oc_name' in wizard['form'].errors.keys())
+        self.assertTrue('pr_name' in wizard['form'].errors.keys())
 
         # must submit a name
         step_1_data.update({'oc_p_search-oc_name':"Animagus"})
@@ -173,8 +203,8 @@ class DataElementConceptWizardPage(ConceptWizardPage,TestCase):
 
         response = self.client.post(self.wizard_url, step_3_data)
         wizard = response.context['wizard']
-        self.assertTrue('description' in response.context['wizard']['form'].errors.keys())
-        self.assertTrue('workgroup' in response.context['wizard']['form'].errors.keys())
+        self.assertTrue('description' in wizard['form'].errors.keys())
+        self.assertTrue('workgroup' in wizard['form'].errors.keys())
 
         # no "test item" yet.
         self.assertFalse(models._concept.objects.filter(name="Test Item").exists())
@@ -185,8 +215,9 @@ class DataElementConceptWizardPage(ConceptWizardPage,TestCase):
             'make_oc-workgroup':self.wg2.pk
             })
         response = self.client.post(self.wizard_url, step_3_data)
+        wizard = response.context['wizard']
         self.assertEqual(response.status_code, 200)
-        self.assertTrue('workgroup' in response.context['wizard']['form'].errors.keys())
+        self.assertTrue('workgroup' in wizard['form'].errors.keys())
 
         # must submit a description at this step. With the right workgroup
         step_3_data.update({
@@ -205,8 +236,8 @@ class DataElementConceptWizardPage(ConceptWizardPage,TestCase):
 
         response = self.client.post(self.wizard_url, step_4_data)
         wizard = response.context['wizard']
-        self.assertTrue('description' in response.context['wizard']['form'].errors.keys())
-        self.assertTrue('workgroup' in response.context['wizard']['form'].errors.keys())
+        self.assertTrue('description' in wizard['form'].errors.keys())
+        self.assertTrue('workgroup' in wizard['form'].errors.keys())
 
         # no "test item" yet.
         self.assertFalse(models._concept.objects.filter(name="Test Item").exists())
@@ -217,8 +248,9 @@ class DataElementConceptWizardPage(ConceptWizardPage,TestCase):
             'make_p-workgroup':self.wg2.pk
             })
         response = self.client.post(self.wizard_url, step_4_data)
+        wizard = response.context['wizard']
         self.assertEqual(response.status_code, 200)
-        self.assertTrue('workgroup' in response.context['wizard']['form'].errors.keys())
+        self.assertTrue('workgroup' in wizard['form'].errors.keys())
 
         # must submit a description at this step. With the right workgroup
         step_4_data.update({
@@ -245,8 +277,9 @@ class DataElementConceptWizardPage(ConceptWizardPage,TestCase):
         step_5_data.update({self.wizard_form_name+'-current_step': 'find_dec_results',})
 
         response = self.client.post(self.wizard_url, step_5_data)
+        wizard = response.context['wizard']
         self.assertEqual(response.status_code, 200)
-        self.assertTrue('name' in response.context['wizard']['form'].errors.keys())
+        self.assertTrue('name' in wizard['form'].errors.keys())
 
 
 """Ordinary. Wizarding. Level. Examinations. O.W.L.s. More commonly known as 'Owls'.
