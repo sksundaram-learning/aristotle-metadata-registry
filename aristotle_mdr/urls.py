@@ -4,6 +4,7 @@ import autocomplete_light
 autocomplete_light.autodiscover()
 
 from django.conf.urls import patterns, include, url
+from django.contrib.auth.views import password_reset
 from django.contrib import admin
 admin.autodiscover()
 
@@ -18,9 +19,25 @@ urlpatterns = patterns('',
     url(r'^grappelli/', include('grappelli.urls')), # grappelli URLS
     url(r'^tinymce/', include('tinymce.urls')),
     url(r'^inplaceeditform/', include('inplaceeditform.urls')),
-    url('^account/notifications/', include(notifications.urls)),
+    url(r'^account/notifications/', include(notifications.urls)),
 
+    url(r'^account/password/reset/$', password_reset), #, {'template_name': 'my_templates/password_reset.html'}
+    url(r'^account/password/reset_done/$', password_reset), #, {'template_name': 'my_templates/password_reset.html'}
     url(r'^', include('aristotle_mdr.urls_aristotle',app_name="aristotle_mdr",namespace="aristotle")),
+
+    url(r'^user/password/reset/$',
+        'django.contrib.auth.views.password_reset',
+        {'post_reset_redirect' : '/user/password/reset/done/'},
+        name="password_reset"),
+    url(r'^user/password/reset/done/$',
+        'django.contrib.auth.views.password_reset_done',
+        name="password_reset_done"
+        ),
+    (r'^user/password/reset/(?P<uidb64>[0-9A-Za-z]+)-(?P<token>.+)/$',
+        'django.contrib.auth.views.password_reset_confirm',
+        {'post_reset_redirect' : '/user/password/done/'}),
+    (r'^user/password/done/$',
+        'django.contrib.auth.views.password_reset_complete'),
 
     )
 
