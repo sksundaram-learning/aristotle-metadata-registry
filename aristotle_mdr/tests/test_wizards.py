@@ -10,6 +10,7 @@ setup_test_environment()
 
 class ConceptWizardPage(utils.LoggedInViewPages):
     wizard_url_name="Harry Potter" # This will break if called without overriding the wizard_url_name. Plus its funny.
+    wizard_form_name="dynamic_aristotle_wizard"
     def tearDown(self):
         call_command('clear_index', interactive=False, verbosity=0)
 
@@ -20,7 +21,7 @@ class ConceptWizardPage(utils.LoggedInViewPages):
 
     @property
     def wizard_url(self):
-        return reverse('aristotle:%s'%self.wizard_url_name)
+        return reverse('aristotle:createItem',args=[self.model._meta.app_label,self.model._meta.model_name])
 
     def test_anonymous_cannot_view_create_page(self):
         self.logout()
@@ -97,22 +98,20 @@ class ConceptWizardPage(utils.LoggedInViewPages):
         self.assertRedirects(response,reverse("aristotle:item", args=[item.id]))
 
 class ObjectClassWizardPage(ConceptWizardPage,TestCase):
-    wizard_url_name="createObjectClass"
-    wizard_form_name="object_class_wizard"
+    model=models.ObjectClass
 class PropertyWizardPage(ConceptWizardPage,TestCase):
-    wizard_url_name="createProperty"
-    wizard_form_name="property_wizard"
+    model=models.Property
 class ValueDomainWizardPage(ConceptWizardPage,TestCase):
-    wizard_url_name="createValueDomain"
-    wizard_form_name="value_domain_wizard"
-
+    model=models.ValueDomain
 class DataElementWizardPage(ConceptWizardPage,TestCase):
-    wizard_url_name="createDataElement"
-    wizard_form_name="data_element_wizard"
+    model=models.DataElement
 
 class DataElementConceptWizardPage(ConceptWizardPage,TestCase):
     wizard_url_name="createDataElementConcept"
     wizard_form_name="data_element_concept_wizard"
+    @property
+    def wizard_url(self):
+        return reverse('aristotle:%s'%self.wizard_url_name)
     def test_editor_can_make_object(self):
         pass
     def test_editor_can_make_object__has_prior_components(self):
