@@ -1,14 +1,46 @@
 from aristotle_mdr import models as MDR
 from aristotle_mdr import forms as MDRForms
 from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
 from django.core.urlresolvers import reverse
 from django.contrib import messages
 from django.contrib.auth.decorators import permission_required
+from django.contrib.contenttypes.models import ContentType
 from django.contrib.formtools.wizard.views import SessionWizardView
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, Http404
+from django.shortcuts import render
 from django.utils.decorators import method_decorator
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
+
+"""
+THis allows use to perform an inspection of the registered items
+so extensions don't need to register to get fancy creation wizards,
+they are available based on either the model name, or if that is
+ambiguous, present an option to make the right item.
+"""
+def create_item(request,app_label=None,model_name=None):
+    if not model_name:
+        raise ImproperlyConfigured
+
+    mod = None
+    if app_label is None:
+        models = ContentType.objects.filter(model=model_name)
+        if models.count() == 0:
+            raise Http404 # TODO: Throw better, more descriptive error
+        elif models.count() == 1:
+            mod = models.first().model_class()
+        else: # models.count() > 1:
+            # TODO: make this template
+            return render(request,"aristotle_mdr/ambiguous_create_request.html",
+                {'models':models,}
+        )
+    else:
+        mod = ContentType.objects.get(app_label=app_label,model=model_name).model_class()
+
+    class DynamicAristotleWizard(ConceptWizard):
+        model = mod
+    return DynamicAristotleWizard.as_view()(request)
 
 class PermissionWizard(SessionWizardView):
 
@@ -117,21 +149,6 @@ class ConceptWizard(PermissionWizard):
         similar = q
         self.similar_items = similar
         return self.similar_items
-
-
-import autocomplete_light
-autocomplete_light.autodiscover()
-
-class ObjectClassWizard(ConceptWizard):
-    model = MDR.ObjectClass
-class PropertyWizard(ConceptWizard):
-    model = MDR.Property
-class ValueDomainWizard(ConceptWizard):
-    model = MDR.ValueDomain
-class ConceptualDomainWizard(ConceptWizard):
-    model = MDR.ConceptualDomain
-class DataElementWizard(ConceptWizard):
-    model = MDR.DataElement
 
 def no_valid_property(wizard):
     return not wizard.get_property()
