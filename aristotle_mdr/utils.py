@@ -28,7 +28,6 @@ def get_download_template_path_for_item(item,downloadType):
     app_label = item._meta.app_label
     model_name = item._meta.model_name
     template = "%s/downloads/%s/%s.html"%(app_label,downloadType,model_name)
-    print template
     return template
 
 '''
