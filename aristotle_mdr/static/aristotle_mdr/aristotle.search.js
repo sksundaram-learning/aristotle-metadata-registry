@@ -71,7 +71,6 @@ function updateSortRadioDetails(menu) {
         x.prop("checked", true);
     }
     x=x[0];
-    console.log($("label[for='"+x.id+"']").text())
     $(menu).parent().find(".details").text($("label[for='"+x.id+"']").text());
 }
 

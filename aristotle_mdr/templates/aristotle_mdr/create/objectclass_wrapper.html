@@ -1,12 +1,12 @@
-{% extends "aristotle_mdr/create/managedObject.html" %}
+{% extends "aristotle_mdr/create/concept_wizard_wrapper.html" %}
 
 {% block type %}objectclass{% endblock %}
 
+{% comment %}
 {% block form_title %}
     <h1>{% block title %}New Object Class{% endblock %}</h1>
-{#{ form.as_p }#}
-
 {% endblock %}
+{% endcomment %}
 
 {% block creationTips %}
 <header>Tips for creating good Object Classes:</header>

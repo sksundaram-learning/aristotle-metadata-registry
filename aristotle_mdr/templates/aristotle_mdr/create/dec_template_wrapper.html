@@ -1,29 +1,47 @@
 {% extends "aristotle_mdr/base.html" %}
-{% load i18n %}
+{% load compile_static i18n %}
 
 {% block title %}
-Create Data Element Concept - Step {{ wizard.steps.step1 }} of {{ wizard.steps.count }}
+Create Data Element Concept - Step {{ wizard.steps.step1 }}: {{step_title}}
+{% endblock %}
+
+{% block extra_head_scripts %}
+<!-- script type="text/javascript" src="/static/admin/js/jquery.min.js"></script>
+<script type="text/javascript" src="/static/admin/js/jquery.init.js"></script -->
+    <link rel="stylesheet" href="{{ STATIC_URL }}{% compile 'aristotle_mdr/aristotle.wizard.less' %}" />
+    <link rel="stylesheet" href="{{ STATIC_URL }}{% compile 'aristotle_mdr/aristotle_search.less' %}" />
+    {{ wizard.form.media }}
 {% endblock %}
 
 {% block head %}
-{{ wizard.form.media }}
 {% endblock %}
 
 {% block content %}
-<h1>Create Data Element Concept - <em>Step {{ wizard.steps.step1 }} of {{ wizard.steps.count }}</em></h1>
+<h1>Create Data Element Concept - <span><em>Step {{ wizard.steps.step1 }}</em>: {{step_title}}</span></h1>
+
+<div class="progress">
+  <div class="progress-bar" role="progressbar" style="width:{{ percent_complete }}%;">
+  </div>
+</div>
+
+
 <aside class="creationTips">
     {% block creationTips %}{% endblock %}
 </aside>
+
 <form action="" method="post">{% csrf_token %}
    {{ wizard.management_form }}
     {% block formarea %}
        {{ wizard.management_form }}
     {% endblock %}
+
+    <div class="modal-footer">
     {% if wizard.steps.prev %}
         <!-- button name="wizard_goto_step" type="submit" value="{{ wizard.steps.first }}">{% trans "First step" %}</button -->
-        <button name="wizard_goto_step" type="submit" value="{{ wizard.steps.prev }}">{% trans "Back" %}</button>
+        <button class="btn" name="wizard_goto_step" type="submit" value="{{ wizard.steps.prev }}">{% trans "Back" %}</button>
     {% endif %}
-        <input type="submit" value="{% trans "submit" %}"/>
+        <button class="btn btn-primary" type="submit" value="submit">{% trans "Next" %}</button>
+    </div>
 </form>
 {% endblock %}
 

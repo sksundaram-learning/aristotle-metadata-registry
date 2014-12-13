@@ -1,9 +1,44 @@
 {% extends 'aristotle_mdr/base.html' %}
 {% load humanize i18n %}
-{% load inplace_edit compile_static %}
+{% load inplace_edit static compile_static %}
 {% load aristotle_tags %}
 
 {% block extra_head_scripts %}
+    {% if item|can_edit:request.user %}
+        <!--[if !IE]><!-->
+        <link rel="stylesheet" href="{{ STATIC_URL }}{% compile 'aristotle_mdr/aristotle.inplaceedit.less' %}" />
+        <link rel="stylesheet" href="{{ STATIC_URL }}{% compile 'aristotle_mdr/aristotle.autocomplete.less' %}" />
+        <script src="{% static 'aristotle_mdr/aristotle.inplaceedit.js' %}" type="text/javascript"></script>
+        <![endif]-->
+
+        {# This block is copied from django-inplaceedit with minor tweaks #}
+        <script type="text/javascript" src="//tinymce.cachefly.net/4.1/tinymce.min.js"></script>
+        <script src="/static/js/jquery.inplaceeditform.js" type="text/javascript"></script>
+        <script src="/static/js/jquery.inplaceeditform.hooks.js" type="text/javascript"></script>
+
+            <script type="text/javascript">
+                var isIE = function () {
+                    if(typeof jQuery!== typeof undefined && jQuery.browser === undefined){
+                        jQuery.browser = { msie : true};
+                }};
+            </script>
+            <!--[if IE]>
+                <script type="text/javascript">
+                    isIE(); /* IE <= 9*/
+                </script>
+            <![endif]-->
+            <!--[if !IE]><!-->
+                <script>
+                    if (/*@cc_on!@*/false) {
+                        isIE(); /* IE 10*/
+                    }
+                </script>
+            <!--<![endif]-->
+            <script type="text/javascript">
+                var csrf_token = "{{ csrf_token }}"; {# This is populated by django and needed for the inplace edit #}
+            </script>
+    {% endif %}
+
     <link rel="stylesheet" href="{{ STATIC_URL }}{% compile 'aristotle_mdr/aristotle.visuals.less' %}" />
 {% endblock %}
 
@@ -49,7 +84,8 @@
               </button>
               <ul class="dropdown-menu" role="menu">
                 <li><a id="ActivateInplaceEdit" class=""></a></li>
-                <li><a class="" href="{% adminEdit item %}">
+                <li><a class="" href="{% url 'aristotle:edit_item' item.id %}"
+                                data-toggle="modal" data-target="#infobox_adv_edit">
                     <i class="fa fa-sliders"></i> {% trans 'Advanced editor'%}
                 </a></li>
 
@@ -59,6 +95,12 @@
                 </a></li>
               </ul>
             </div>
+            <div id="infobox_adv_edit" class="modal fade">
+              <div class="modal-dialog">
+                  <div class="modal-content">
+                  </div><!-- /.modal-content -->
+                </div><!-- /.modal-dialog -->
+            </div><!-- /.modal -->
         {% endif %}
         {% if view == "technical" %}
             <a href="?view=simple" id="viewChange" class="btn btn-default"><i class="fa fa-minus-square"></i> {% trans 'Simple View'%}</a>
@@ -95,22 +137,41 @@
         </div>
     {% else %}
         <div id="progress" class=" alert alert-warning">
-            {% trans 'This item is under review and active development. Content may change frequently.'%}
+            {% trans 'This item is under active development. Content may change frequently.'%}
         </div>
     {% endif %}
     {% if not item.is_registered %}
     <div id="review" class=" alert alert-info">
-        <strong>{% if item.readyToReview %}
-        {% trans 'This item has been marked as ready to review, but has not yet been registered in an authority.'%}
+        <strong>
+        {% if item.readyToReview %}
+            <i class="fa fa-flag"></i> {% trans 'This item has been marked as ready to review, but has not yet been registered in an authority.'%}
         {% else %}
-        {% trans 'The visibility of this item is still restricted to your current workgroup.'%}
-        {% endif %}</strong><br>
+            <i class="fa fa-flag-o"></i> {% trans 'The visibility of this item is still restricted to your current workgroup.'%}
+        {% endif %}
+        </strong>
 
+        {% if item|can_edit:request.user %}
+        {% blocktrans %}
         <p>You can control the visibility of this item by indicating its review status.
-        {% trans 'If an item is marked "ready for review", registrars will be able to see this item and begin the standardisation process according to their registration authority.'%}
-
-        <p><label>Is this item {% ternary item.readyToReview "still" "" %} ready for review?</label>
-        {% inplace_edit 'item.readyToReview' adaptor='booleanYesNo' %}
+        If an item is marked "ready for review", registrars will be able to see this item and
+        begin the standardisation process according to their registration authority.
+        </p>
+        {% endblocktrans %}
+        <a class="btn btn-default" href="{% url 'aristotle:mark_ready_to_review' item.id %}"
+            data-toggle="modal" data-target="#r2r_modals">
+            {% if item.readyToReview %}
+                <i class="fa fa-flag-o"></i> {% trans 'Remove ready for review flag' %}
+            {% else %}
+                <i class="fa fa-flag"></i> {% trans 'Flag as ready for review' %}
+            {% endif %}
+        </a>
+        {% endif %}
+    </div>
+    {# Outside the above div to stop "info" colors #}
+    <div id="r2r_modals" class="modal fade">
+        <div class="modal-dialog">
+            <div class="modal-content"></div>
+        </div>
     </div>
     {% endif %}
     <dl id="alternate_names" class="hidden-xs">

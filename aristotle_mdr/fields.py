@@ -31,23 +31,3 @@ class AristotleTinyMCE(TinyMCE):
                  config=None, width=None, *args, **kwargs):
         super(AristotleTinyMCE, self).__init__(extra_mce_settings=conf,*args, **kwargs)
         self.mce_settings['setup'] = ''.join(render_to_string('aristotle_mdr/tinymce/setup.js', config).splitlines())
-
-class booleanYesNo(AdaptorChoicesField):
-    def __init__(self, *args, **kwargs):
-        super(booleanYesNo, self).__init__(*args, **kwargs)
-
-    def get_field(self):
-        field = super(booleanYesNo, self).get_field()
-        field.field.widget = widgets.Select(choices=((True, _('Yes')),(False, _('No'))))
-        return field
-
-    def render_value(self, field_name=None):
-        from django.utils.translation import ugettext
-        field_name = field_name or self.field_name_render
-        value = getattr(self.obj, field_name)
-        if value:
-            value = ugettext("Yes")
-        else:
-            value = ugettext("No")
-        return apply_filters(value, self.filters_to_show, self.loads)
-

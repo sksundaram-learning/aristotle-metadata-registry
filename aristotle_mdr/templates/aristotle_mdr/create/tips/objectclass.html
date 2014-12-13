@@ -1,14 +1,3 @@
-{% extends "aristotle_mdr/create/managedObject.html" %}
-
-{% block type %}objectclass{% endblock %}
-
-{% block form_title %}
-    <h1>{% block title %}New Object Class{% endblock %}</h1>
-{#{ form.as_p }#}
-
-{% endblock %}
-
-{% block creationTips %}
 <header>Tips for creating good Object Classes:</header>
 Object classes are <em>things</em> we wish to collect information about.
 Good names for object classes are short, descriptive nouns.
@@ -20,13 +9,10 @@ Good names for object classes are short, descriptive nouns.
   <!--  <li><strong>:</strong></li> -->
 </ul>
 
-<!--
 If you are unsure, use the name of your object class in the contexts below.
 <ul>
   <li>Measure of the age of <em>noun.</em></li>
   <li>Comparing the yearly income of <em>nouns</em> and private companies</li>
 </ul>
 In these examples, <q>Comparing the yearly income of <em>Persons</em> and private companies</q> makes sense,
-but <q>Measure of the age of <em>Wages.</em></q> does not - wages is an attribute of people or businesses.-->
-
-{% endblock %}
+but <q>Measure of the age of <em>Wages.</em></q> does not - wages is an attribute of people or businesses.

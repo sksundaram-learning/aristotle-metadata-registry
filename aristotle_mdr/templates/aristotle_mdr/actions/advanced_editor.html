@@ -1,0 +1,33 @@
+{% extends request.is_ajax|yesno:"aristotle_mdr/base_ajax.html,aristotle_mdr/base.html" %}
+{% load compile_static i18n %}
+
+{% block title %}Editing {{ item.name }}{% endblock %}
+{% block content %}
+{% block extra_head_scripts %}
+    <link rel="stylesheet" href="{{ STATIC_URL }}{% compile 'aristotle_mdr/aristotle.wizard.less' %}" />
+    <link rel="stylesheet" href="{{ STATIC_URL }}{% compile 'aristotle_mdr/aristotle_search.less' %}" />
+    {{ form.media }}
+    {% include 'autocomplete_light/static.html' %}
+{% endblock %}
+
+<form method="post" action="{#% url 'aristotle:editor' item.id %#}">{% csrf_token %}
+    <div class="modal-body">
+        <ol class="breadcrumb">
+          <li><a href="{% url 'aristotle:item' item.id %}">{{ item.name }}</a></li>
+          <li class="active">Advanced editor</li>
+        </ol>
+
+        <div>
+        {% include "aristotle_mdr/create/concept_editor.html" with form=form %}
+        </div>
+    </div>
+    <div class="modal-footer">
+        {% if request.is_ajax %}
+            <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+        {% else %}
+            <a class="btn btn-default" href="{% url 'aristotle:item' item.id %}">Cancel</a>
+        {% endif %}
+        <input type="submit" class="btn btn-primary" value="Save changes" />
+    </div>
+</form>
+{% endblock %}
