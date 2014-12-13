@@ -1,11 +1,10 @@
 {% extends "aristotle_mdr/create/managedObject.html" %}
 
-{% block title %}New Object Class{% endblock %}
 {% block type %}objectclass{% endblock %}
 
-{% block form_details %}
-
-{{ form.as_p }}
+{% block form_title %}
+    <h1>{% block title %}New Object Class{% endblock %}</h1>
+{#{ form.as_p }#}
 
 {% endblock %}
 
@@ -14,10 +13,10 @@
 Object classes are <em>things</em> we wish to collect information about.
 Good names for object classes are short, descriptive nouns.
 <ul>
-  <li><strong>Be generic:</strong>An object class should apply to the widest group possible.
+  <li><strong>Be generic:</strong> An object class should apply to the widest group possible.
   Only make more specific classes, if there are particular attributes only found on the specialisation.
   e.g. Person, not Australian Citizens</li>
-  <li><strong>Use singlar forms:</strong>When discusing individuals, use singular terms to ensure unambiguity. For example, a <em>Person</em> can have an age, but a <em>Group of people</em> has an average age.</li>
+  <li><strong>Use singlar forms:</strong> When discusing individuals, use singular terms to ensure unambiguity. For example, a <em>Person</em> can have an age, but a <em>Group of people</em> has an average age.</li>
   <!--  <li><strong>:</strong></li> -->
 </ul>
 

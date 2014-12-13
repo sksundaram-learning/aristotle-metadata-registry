@@ -36,8 +36,8 @@ STATES = Choices (
 VERY_RECENTLY_SECONDS = 15
 
 class baseAristotleObject(TimeStampedModel):
-    name = models.TextField(help_text="The primary name used for human identification purposes.")
-    description = HTMLField(help_text="A rich text field for describing the metadata item.")
+    name = models.TextField(help_text=_("The primary name used for human identification purposes."))
+    description = HTMLField(_('definition'),help_text=_("A rich text field for describing the metadata item."))
     objects = InheritanceManager()
 
     class Meta:
@@ -647,7 +647,7 @@ class RepresentationClass(unmanagedObject):
 
 class ValueDomain(concept):
     template = "aristotle_mdr/concepts/valueDomain.html"
-    format = models.CharField(max_length=100)
+    format = models.CharField(max_length=100,blank=True,null=True)
     maximumLength = models.PositiveIntegerField(blank=True,null=True)
     unitOfMeasure = models.ForeignKey(UnitOfMeasure,blank=True,null=True)
     dataType = models.ForeignKey(DataType,blank=True,null=True)
@@ -656,8 +656,8 @@ class ValueDomain(concept):
     representationClass =  models.ForeignKey(RepresentationClass,blank=True,null=True)
 
 class PermissibleValue(aristotleComponent):
-    value = models.CharField(max_length=20)
-    meaning = models.CharField(max_length=100)
+    value = models.CharField(max_length=32)
+    meaning = models.CharField(max_length=255)
     valueDomain = models.ForeignKey(ValueDomain,related_name="permissibleValues")
     order = models.PositiveSmallIntegerField("Position")
     def __unicode__(self):
@@ -669,8 +669,8 @@ class PermissibleValue(aristotleComponent):
         ordering = ['order']
 
 class SupplementaryValue(aristotleComponent):
-    value = models.CharField(max_length=20)
-    meaning = models.CharField(max_length=100)
+    value = models.CharField(max_length=32)
+    meaning = models.CharField(max_length=255)
     valueDomain = models.ForeignKey(ValueDomain,related_name="supplementaryValues")
     order = models.PositiveSmallIntegerField("Position")
     def __unicode__(self):
@@ -760,7 +760,7 @@ class PossumProfile(models.Model):
         if self.user.is_superuser:
             return Workgroup.objects.all()
         else:
-            return  (self.user.viewer_in.all()    |\
+            return (self.user.viewer_in.all()    |\
                     self.user.submitter_in.all() |\
                     self.user.steward_in.all()   |\
                     self.user.workgroup_manager_in.all()).distinct()

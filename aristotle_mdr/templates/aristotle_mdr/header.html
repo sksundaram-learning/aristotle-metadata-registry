@@ -18,7 +18,7 @@
     </div>
 
     <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-        {% block search %}
+        {% if not hide_search %}
             {% comment %}
             The search block is defined to allow some pages
             (SPECIFICALLY the home page) to override or hide the search bar
@@ -35,7 +35,7 @@
                     </button>
                 </div>
             </form>
-        {% endblock %}
+        {% endif %}
 
         <ul class="nav navbar-nav navbar-right">
         {% if user.is_active %}

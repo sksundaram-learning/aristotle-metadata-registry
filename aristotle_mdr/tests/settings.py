@@ -37,3 +37,5 @@ HAYSTACK_CONNECTIONS = {
 PASSWORD_HASHERS = (
     'django.contrib.auth.hashers.MD5PasswordHasher',
 )
+
+ARISTOTLE_SETTINGS['SEPARATORS']['DataElementConcept'] = '--'

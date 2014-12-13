@@ -25,8 +25,9 @@ def concept_to_clone_dict(obj):
     return clone_dict
 
 def get_download_template_path_for_item(item,downloadType):
-    p,t = item.template.split("/",1)
-    template = "%s/%s/%s"%(p,downloadType,t)
+    app_label = item._meta.app_label
+    model_name = item._meta.model_name
+    template = "%s/downloads/%s/%s.html"%(app_label,downloadType,model_name)
     return template
 
 '''

@@ -277,7 +277,9 @@ class AnonymousUserViewingThePages(TestCase):
     def test_homepage(self):
         home = self.client.get("/")
         self.assertEqual(home.status_code,200)
-
+    def test_help_all_items(self):
+        response = self.client.get(reverse('aristotle:about_all_items'))
+        self.assertEqual(response.status_code,200)
     def test_visible_item(self):
         wg = models.Workgroup.objects.create(name="Setup WG")
         ra = models.RegistrationAuthority.objects.create(name="Test RA")
@@ -340,6 +342,25 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         response = self.client.get(reverse('aristotle:itemPackages',args=[self.item2.id]))
         self.assertEqual(response.status_code,302)
 
+    def test_anon_cannot_view_edit_page(self):
+        self.logout()
+        response = self.client.get(reverse('aristotle:edit_item',args=[self.item1.id]))
+        self.assertEqual(response.status_code,302)
+        response = self.client.get(reverse('aristotle:edit_item',args=[self.item2.id]))
+        self.assertEqual(response.status_code,302)
+    def test_viewer_cannot_view_edit_page(self):
+        self.login_viewer()
+        response = self.client.get(reverse('aristotle:edit_item',args=[self.item1.id]))
+        self.assertEqual(response.status_code,403)
+        response = self.client.get(reverse('aristotle:edit_item',args=[self.item2.id]))
+        self.assertEqual(response.status_code,403)
+    def test_submitter_can_view_edit_page(self):
+        self.login_editor()
+        response = self.client.get(reverse('aristotle:edit_item',args=[self.item1.id]))
+        self.assertEqual(response.status_code,200)
+        response = self.client.get(reverse('aristotle:edit_item',args=[self.item2.id]))
+        self.assertEqual(response.status_code,403)
+
     def test_su_can_download_pdf(self):
         self.login_superuser()
         response = self.client.get(reverse('aristotle:download',args=['pdf',self.item1.id]))
@@ -376,6 +397,21 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.assertEqual(response.status_code,403)
         response = self.client.get(reverse('aristotle:supersede',args=[self.item3.id]))
         self.assertEqual(response.status_code,200)
+
+    def test_editor_can_use_ready_to_review(self):
+        self.login_editor()
+        response = self.client.get(reverse('aristotle:mark_ready_to_review',args=[self.item1.id]))
+        self.assertEqual(response.status_code,200)
+        response = self.client.get(reverse('aristotle:mark_ready_to_review',args=[self.item2.id]))
+        self.assertEqual(response.status_code,403)
+        response = self.client.get(reverse('aristotle:mark_ready_to_review',args=[self.item3.id]))
+        self.assertEqual(response.status_code,200)
+
+        self.assertFalse(self.item1.readyToReview)
+        response = self.client.post(reverse('aristotle:mark_ready_to_review',args=[self.item1.id]))
+        self.assertRedirects(response,reverse("aristotle:item",args=[self.item1.id]))
+        self.item1 = self.itemType.objects.get(id=self.item1.id) # Stupid cache
+        self.assertTrue(self.item1.readyToReview)
 
     def test_viewer_cannot_view_deprecate_page(self):
         self.login_viewer()
@@ -452,13 +488,11 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
                         'cascadeRegistration': 0, #no
                     }
                 )
-        self.assertRedirects(response,reverse("aristotle:%s"%self.item1.url_name, args=[self.item1.id]))
+        self.assertRedirects(response,reverse("aristotle:item", args=[self.item1.id]))
 
         self.assertEqual(self.item1.statuses.count(),1)
         self.item1 = self.itemType.objects.get(pk=self.item1.pk)
         self.assertTrue(self.item1.is_public())
-
-
 
 class ObjectClassViewPage(LoggedInViewConceptPages,TestCase):
     url_name='objectClass'
@@ -486,6 +520,14 @@ class DataElementConceptViewPage(LoggedInViewConceptPages,TestCase):
 class DataElementViewPage(LoggedInViewConceptPages,TestCase):
     url_name='dataElement'
     itemType=models.DataElement
+
+#class DataElementDerivationViewPage(LoggedInViewConceptPages,TestCase):
+#    url_name='dataElementDerivation'
+#    @property
+#    def defaults(self):
+#        return {'derives':models.DataElement.objects.create(name='derivedDE',description="",workgroup=self.wg1)}
+#    itemType=models.DataElementDerivation
+
 class GlossaryViewPage(LoggedInViewConceptPages,TestCase):
     url_name='glossary'
     itemType=models.GlossaryItem

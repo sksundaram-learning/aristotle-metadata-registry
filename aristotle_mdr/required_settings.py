@@ -95,9 +95,9 @@ STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     'static_precompiler.finders.StaticPrecompilerFinder',
 )
-if DEBUG:
-    STATIC_PRECOMPILER_CACHE_TIMEOUT = 1
-    STATIC_PRECOMPILER_DISABLE_AUTO_COMPILE = False
+#if DEBUG:
+STATIC_PRECOMPILER_CACHE_TIMEOUT = 1
+STATIC_PRECOMPILER_DISABLE_AUTO_COMPILE = False
 
 GRAPPELLI_ADMIN_TITLE = "Aristotle admin interface"
 BOOTSTRAP3 = {
@@ -151,11 +151,10 @@ ADAPTOR_INPLACEEDIT = {
     'image_thumb': 'inplaceeditform_extra_fields.fields.AdaptorImageThumbnailField',
     'tiny': 'inplaceeditform_extra_fields.fields.AdaptorTinyMCEField',
     'aristotle': 'aristotle_mdr.fields.AristotleRichTextField',
-    'booleanYesNo': 'aristotle_mdr.fields.booleanYesNo',
 }
 
 HAYSTACK_SIGNAL_PROCESSOR = 'aristotle_mdr.signals.AristotleSignalProcessor'
-HAYSTACK_SEARCH_RESULTS_PER_PAGE = 10
+#HAYSTACK_SEARCH_RESULTS_PER_PAGE = 10
 HAYSTACK_CONNECTIONS = {
     'default': {
         'ENGINE': 'haystack.backends.whoosh_backend.WhooshEngine',
@@ -163,3 +162,11 @@ HAYSTACK_CONNECTIONS = {
         'INCLUDE_SPELLING':True,
     },
 }
+
+# Email settings required for password resets.
+if DEBUG:
+    EMAIL_HOST = 'smtp.gmail.com'
+    EMAIL_PORT = 587
+    EMAIL_HOST_USER = 'aristotle.email@gmail.com'
+    EMAIL_HOST_PASSWORD = 'aristotle.email1'
+    EMAIL_USE_TLS = True

@@ -20,7 +20,6 @@ def render_to_pdf(template_src, context_dict):
 
 def download(request,downloadType,item):
     template = get_download_template_path_for_item(item,downloadType)
-
     from django.conf import settings
     page_size = getattr(settings, 'PDF_PAGE_SIZE', "A4")
 
@@ -34,5 +33,3 @@ def download(request,downloadType,item):
              'pagesize':request.GET.get('pagesize',page_size),
             }
         )
-
-    raise Http404

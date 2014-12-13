@@ -98,6 +98,12 @@ class EmptyPermissionSearchQuerySet(EmptySearchQuerySet):
         return self
 
 class PermissionSearchQuerySet(SearchQuerySet):
+    def models(self,*mods):
+        # We have to redefine this because Whoosh & Haystack don't play well with model filtering
+        from haystack.utils import get_model_ct
+        mods = [get_model_ct(m) for m in mods]
+        return self.filter(django_ct__in=mods)
+
     def apply_permission_checks(self,user=None,public_only=False,user_workgroups_only=False):
         sqs = self
         q = SQ(is_public=True)
@@ -132,13 +138,26 @@ class TokenSearchForm(SearchForm):
         opts = connections[DEFAULT_ALIAS].get_unified_index().fields.keys()
         kwargs = {}
         query_text = []
+        token_models = []
         for word in query.split(" "):
             if ":" in word:
                 opt,arg = word.split(":",1)
                 if opt in opts:
                     kwargs[str(opt)]=arg
+                elif opt == "type":
+                    # we'll allow these through and assume they meant content type
+                    from django.conf import settings
+                    aristotle_apps = getattr(settings, 'ARISTOTLE_SETTINGS', {}).get('CONTENT_EXTENSIONS',[])
+                    aristotle_apps += ["aristotle_mdr"]
+
+                    from django.contrib.contenttypes.models import ContentType
+                    arg = arg.lower().replace('_','').replace('-','')
+                    mods = ContentType.objects.filter(app_label__in=aristotle_apps,model=arg).all()
+                    for i in mods:
+                        token_models.append(i.model_class())
             else:
                 query_text.append(word)
+        self.models = token_models
         self.query_text = " ".join(query_text)
         self.kwargs = kwargs
         return kwargs
@@ -153,7 +172,8 @@ class TokenSearchForm(SearchForm):
             return self.no_query_found()
 
         sqs = self.searchqueryset.auto_query(self.query_text)
-
+        if self.models:
+            sqs = sqs.models(*self.models)
         if kwargs:
             sqs = sqs.filter(**kwargs)
 
@@ -183,32 +203,27 @@ class PermissionSearchForm(TokenSearchForm):
     """
     mq=forms.ChoiceField(required=False,initial=QUICK_DATES.anytime,
         choices=QUICK_DATES,widget=BootstrapDropdownIntelligentDate)
+    mds = forms.DateField(required=False,label="Modified after date",
+        widget=DateTimePicker(options=datePickerOptions),)
+    mde = forms.DateField(required=False,label="Modified before date",
+        widget=DateTimePicker(options=datePickerOptions),)
 
-    mds = forms.DateField(required=False,
-        widget=DateTimePicker(options=datePickerOptions),
-        )
-    mde = forms.DateField(required=False,
-        widget=DateTimePicker(options=datePickerOptions),
-        )
     cq=forms.ChoiceField(required=False,initial=QUICK_DATES.anytime,
         choices=QUICK_DATES,widget=BootstrapDropdownIntelligentDate)
-
-    cds = forms.DateField(required=False,
-        widget=DateTimePicker(options=datePickerOptions),
-        )
-    cde = forms.DateField(required=False,
-        widget=DateTimePicker(options=datePickerOptions),
-        )
+    cds = forms.DateField(required=False,label="Created after date",
+        widget=DateTimePicker(options=datePickerOptions),)
+    cde = forms.DateField(required=False,label="Created before date",
+        widget=DateTimePicker(options=datePickerOptions),)
 
     # Use short singular names
     #ras = [(ra.id, ra.name) for ra in MDR.RegistrationAuthority.objects.all()]
-    ra = forms.MultipleChoiceField(required=False,
+    ra = forms.MultipleChoiceField(required=False,label=_("Registration authority"),
         choices=[],widget=BootstrapDropdownSelectMultiple)
 
     sort = forms.ChoiceField(required=False,initial=SORT_OPTIONS.natural,
         choices=SORT_OPTIONS,widget=BootstrapDropdownSelect)
 
-    state = forms.MultipleChoiceField(required=False,
+    state = forms.MultipleChoiceField(required=False,label=_("Registration status"),
         choices=MDR.STATES,widget=BootstrapDropdownSelectMultiple)
     public_only = forms.BooleanField(required=False,
         label="Only show public items"
@@ -375,4 +390,3 @@ class PermissionSearchForm(TokenSearchForm):
             sqs = sqs.order_by('-highest_state')
 
         return sqs
-
