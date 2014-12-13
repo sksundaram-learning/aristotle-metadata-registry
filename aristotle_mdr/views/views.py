@@ -1,6 +1,6 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import PermissionDenied, ImproperlyConfigured
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse, Http404, HttpResponseRedirect
@@ -103,17 +103,17 @@ def download(request,downloadType,iid=None):
         import re
         if not re.search('^[a-zA-Z0-9\-\.]+$',downloadType): # pragma: no cover
             # Invalid downloadType
-            raise Exception
+            raise ImproperlyConfigured
         elif not re.search('^[a-zA-Z0-9\_]+$',module_name): # pragma: no cover
             # bad module_name
-            raise Exception
-        #try:
-        downloader = None
-        # dangerous - we are really trusting the settings creators here.
-        exec("import %s.downloader as downloader"%module_name)
-        return downloader.download(request,downloadType,item)
-        #except:
-        #    pass
+            raise ImproperlyConfigured
+        try:
+            downloader = None
+            # dangerous - we are really trusting the settings creators here.
+            exec("import %s.downloader as downloader"%module_name)
+            return downloader.download(request,downloadType,item)
+        except:
+            raise ImproperlyConfigured
 
     raise Http404
 
