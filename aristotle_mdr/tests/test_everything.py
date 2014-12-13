@@ -625,9 +625,9 @@ class CustomConceptQuerySetTest(TestCase):
         self.assertEqual(len(models.ObjectClass.objects.all().public()),0)
 
     def test_is_editable(self):
-        pass
+        pass #TODO: This needs to be checked
     def test_is_visible(self):
-        pass
+        pass #TODO: This needs to be checked
 
 
 class RegistryCascadeTest(TestCase):

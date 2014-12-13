@@ -90,6 +90,11 @@ class AdminPage(utils.LoggedInViewPages,TestCase):
     def test_editor_change_item(self):
         pass
 
+    def test_editor_can_view_admin_page(self):
+        self.login_editor()
+        response = self.client.get(reverse("admin:index"))
+        self.assertEqual(response.status_code,200)
+
     def test_editor_make_item(self):
         self.login_editor()
         response = self.client.get(reverse("admin:aristotle_mdr_objectclass_changelist"))

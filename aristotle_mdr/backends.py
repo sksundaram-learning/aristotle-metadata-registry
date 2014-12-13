@@ -44,10 +44,4 @@ class AristotleBackend(ModelBackend):
                 else:
                     return perms.user_can_edit(user_obj,obj)
 
-        if perm.startswith("aristotle_mdr.delete_"):
-            if obj is None and perm is not "aristotle_mdr.delete_concept_from_admin":
-                # This is a rough catch all, and will fail for extension items.
-                return perms.user_is_editor(user_obj)
-            if perm == "aristotle_mdr.delete_concept_from_admin":
-                return obj is None or perms.user_can_edit(user_obj,obj)
         return super(AristotleBackend, self).has_perm(user_obj, perm, obj)
