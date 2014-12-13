@@ -37,3 +37,4 @@ PASSWORD_HASHERS = (
 )
 
 ARISTOTLE_SETTINGS['SEPARATORS']['DataElementConcept'] = '--'
+ROOT_URLCONF = 'extension_test.urls'

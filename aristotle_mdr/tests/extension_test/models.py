@@ -5,7 +5,7 @@ from django.db import models
 import aristotle_mdr
 
 class Question(aristotle_mdr.models.concept):
-    template = "extenstion_test/concepts/question.html"
+    template = "extension_test/concepts/question.html"
     questionText = models.TextField(blank=True, null=True)
     responseLength = models.PositiveIntegerField(blank=True, null=True)
     collectedDataElement = models.ForeignKey(

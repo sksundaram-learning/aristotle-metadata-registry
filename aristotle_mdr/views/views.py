@@ -107,13 +107,13 @@ def download(request,downloadType,iid=None):
         elif not re.search('^[a-zA-Z0-9\_]+$',module_name): # pragma: no cover
             # bad module_name
             raise ImproperlyConfigured
-        try:
-            downloader = None
-            # dangerous - we are really trusting the settings creators here.
-            exec("import %s.downloader as downloader"%module_name)
-            return downloader.download(request,downloadType,item)
-        except:
-            raise ImproperlyConfigured
+        #try:
+        downloader = None
+        # dangerous - we are really trusting the settings creators here.
+        exec("import %s.downloader as downloader"%module_name)
+        return downloader.download(request,downloadType,item)
+        #except:
+        #    raise ImproperlyConfigured
 
     raise Http404
 

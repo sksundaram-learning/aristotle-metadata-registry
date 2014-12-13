@@ -2,4 +2,4 @@
 
 {{ object.questionText }}
 
-{% include "search/indexes/aristotle_mdr/objectclass_text.txt" with object=object.collectedDataElement only %}
+{% include "search/indexes/aristotle_mdr/dataelement_text.txt" with object=object.collectedDataElement only %}
