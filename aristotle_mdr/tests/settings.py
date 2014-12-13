@@ -4,8 +4,6 @@ BASE = os.path.dirname(os.path.dirname(__file__))
 
 sys.path.insert(1,BASE)
 sys.path.insert(1,os.path.join(BASE, "tests"))
-print sys.path
-
 
 SECRET_KEY = 'inara+vtkprm7@0(fsc$+grbz9-s+tmo9d)e#k(9uf8m281&$7xhdkjr'
 SOUTH_TESTS_MIGRATE = True

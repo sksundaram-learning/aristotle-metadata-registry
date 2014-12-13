@@ -102,11 +102,13 @@
                 </div><!-- /.modal-dialog -->
             </div><!-- /.modal -->
         {% endif %}
+        {% comment %}
         {% if view == "technical" %}
             <a href="?view=simple" id="viewChange" class="btn btn-default"><i class="fa fa-minus-square"></i> {% trans 'Simple View'%}</a>
         {% else %}
             <a href="?view=technical" id="viewChange" class="btn btn-default"><i class="fa fa-graduation-cap"></i> {% trans 'Technical View'%}</a>
         {% endif %}
+        {% endcomment %}
         <div class="btn-group">
             <button accesskey="d" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
             <i class="fa fa-download"></i> {% trans 'Download'%} <span class="caret"></span>
@@ -197,7 +199,7 @@
         {% inplace_edit 'item.comments' adaptor='aristotle' %}
     {% endif %}
 
-    {% if item.references or view == "technical" %}
+    {% if item.references %}
     <div>
     <h2>References</h2>
         <p>{% inplace_edit 'item.references' adaptor='aristotle' %}</p>

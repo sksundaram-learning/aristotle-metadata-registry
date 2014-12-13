@@ -140,7 +140,7 @@ def render_if_condition_met(request,condition,objtype,iid=None,subpage=None):
         ).first()
     return render(request,item.template,
         {'item':item,
-         'view':request.GET.get('view','').lower(),
+         #'view':request.GET.get('view','').lower(),
          'isFavourite': isFavourite,
          'last_edit': last_edit
             }
