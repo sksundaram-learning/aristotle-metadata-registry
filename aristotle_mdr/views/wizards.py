@@ -154,35 +154,15 @@ def no_valid_property(wizard):
     return not wizard.get_property()
 def no_valid_object_class(wizard):
     return not wizard.get_object_class()
+def no_valid_valuedomain(wizard):
+    return not wizard.get_value_domain()
 
-class DataElementConceptWizard(PermissionWizard):
-    model = MDR.DataElementConcept
-    templates = {
-        "oc_p_search": "aristotle_mdr/create/dec_1_initial_search.html",
-        "oc_p_results": "aristotle_mdr/create/dec_2_search_results.html",
-        "make_oc": "aristotle_mdr/create/concept_wizard_2_results.html",
-        "make_p": "aristotle_mdr/create/concept_wizard_2_results.html",
-        "find_dec_results": "aristotle_mdr/create/dec_3_dec_search_results.html",
-        "completed": "aristotle_mdr/create/dec_4_complete.html",
-        }
-    template_name = "aristotle_mdr/create/dec_template_wrapper.html"
-    form_list = [ ("oc_p_search", MDRForms.wizards.DEC_OCP_Search),
-                  ("oc_p_results", MDRForms.wizards.DEC_OCP_Results),
-                  ("make_oc", MDRForms.wizards.subclassed_wizard_2_Results(MDR.ObjectClass)),
-                  ("make_p", MDRForms.wizards.subclassed_wizard_2_Results(MDR.Property)),
-                  ("find_dec_results", MDRForms.wizards.DEC_Find_DEC_Results),
-                  ("completed", MDRForms.wizards.DEC_Complete),
-                 ]
-    condition_dict = {
-        "make_oc": no_valid_object_class ,
-        "make_p": no_valid_property,
-        }
-
+class MultiStepAristotleWizard(PermissionWizard):
     def get_object_class(self):
         if hasattr(self,'_object_class'):
             return self._object_class
         else:
-            ocp = self.get_cleaned_data_for_step('oc_p_results')
+            ocp = self.get_cleaned_data_for_step('component_results')
             if ocp:
                 oc = ocp.get('oc_options',None)
                 if oc:
@@ -194,13 +174,75 @@ class DataElementConceptWizard(PermissionWizard):
         if hasattr(self,'_property'):
             return self._property
         else:
-            ocp = self.get_cleaned_data_for_step('oc_p_results')
+            ocp = self.get_cleaned_data_for_step('component_results')
             if ocp:
                 pr = ocp.get('pr_options',None)
                 if pr:
                     self._property = pr
                     return self._property
         return None
+
+    def get_value_domain(self):
+        if hasattr(self,'_valuedomain'):
+            return self._valuedomain
+        else:
+            ocp = self.get_cleaned_data_for_step('component_results')
+            if ocp:
+                pr = ocp.get('vd_options',None)
+                if pr:
+                    self._valuedomain = pr
+                    return self._valuedomain
+        return None
+
+    """
+        Looks for items of a given item type with the given search terms
+    """
+    def find_similar(self,name,description,model=None):
+        from aristotle_mdr.forms.search import PermissionSearchQuerySet as PSQS
+        if model is None:
+            model = self.model
+        if not hasattr(self,"similar_items"):
+            self.similar_items = {}
+        cached_items = self.similar_items.get(model,None)
+        if cached_items:
+            return cached_items
+
+        similar = PSQS().models(model).auto_query(name + " " + description).apply_permission_checks(user=self.request.user)
+        self.similar_items[model] = similar
+        return similar
+
+    def get_field_defaults(self,field_prefix):
+        ocp = self.get_cleaned_data_for_step('component_search')
+        fd = {}
+        if ocp:
+            fd = {  'name'        : ocp.get(field_prefix+'_name',""),
+                    'description' : ocp.get(field_prefix+'_desc',"")
+                }
+        return fd
+
+
+class DataElementConceptWizard(MultiStepAristotleWizard):
+    model = MDR.DataElementConcept
+    templates = {
+        "component_search": "aristotle_mdr/create/dec_1_initial_search.html",
+        "component_results": "aristotle_mdr/create/dec_2_search_results.html",
+        "make_oc": "aristotle_mdr/create/concept_wizard_2_results.html",
+        "make_p": "aristotle_mdr/create/concept_wizard_2_results.html",
+        "find_dec_results": "aristotle_mdr/create/dec_3_dec_search_results.html",
+        "completed": "aristotle_mdr/create/dec_4_complete.html",
+        }
+    template_name = "aristotle_mdr/create/dec_template_wrapper.html"
+    form_list = [ ("component_search", MDRForms.wizards.DEC_OCP_Search),
+                  ("component_results", MDRForms.wizards.DEC_OCP_Results),
+                  ("make_oc", MDRForms.wizards.subclassed_wizard_2_Results(MDR.ObjectClass)),
+                  ("make_p", MDRForms.wizards.subclassed_wizard_2_Results(MDR.Property)),
+                  ("find_dec_results", MDRForms.wizards.DEC_Find_DEC_Results),
+                  ("completed", MDRForms.wizards.DEC_Complete),
+                 ]
+    condition_dict = {
+        "make_oc": no_valid_object_class ,
+        "make_p": no_valid_property,
+        }
 
     def get_data_element_concept(self):
         if hasattr(self,'_data_element_concept'):
@@ -219,8 +261,8 @@ class DataElementConceptWizard(PermissionWizard):
             step = self.steps.current
         kwargs = super(DataElementConceptWizard, self).get_form_kwargs(step)
 
-        if step == 'oc_p_results':
-            ocp = self.get_cleaned_data_for_step('oc_p_search')
+        if step == 'component_results':
+            ocp = self.get_cleaned_data_for_step('component_search')
             if ocp:
                 kwargs.update({
                     'oc_similar': self.find_similar(model=MDR.ObjectClass,
@@ -246,8 +288,8 @@ class DataElementConceptWizard(PermissionWizard):
         context = super(DataElementConceptWizard, self).get_context_data(form=form, **kwargs)
 
         context.update({
-            'oc_p_search'       : {'percent_complete':20, 'step_title':_('Search for components')},
-            'oc_p_results'      : {'percent_complete':40, 'step_title':_('Refine components')},
+            'component_search'  : {'percent_complete':20, 'step_title':_('Search for components')},
+            'component_results' : {'percent_complete':40, 'step_title':_('Refine components')},
             'make_oc'           : {'percent_complete':50, 'step_title':_('Create Object Class')},
             'make_p'            : {'percent_complete':60, 'step_title':_('Create Property')},
             'find_dec_results'  : {'percent_complete':80, 'step_title':_('Review Data Element Concept')},
@@ -286,19 +328,9 @@ class DataElementConceptWizard(PermissionWizard):
         if step is None:
             step = self.steps.current
         if step == "make_oc":
-            ocp = self.get_cleaned_data_for_step('oc_p_search')
-            if ocp:
-                initial.update({
-                        'name'        : ocp.get('oc_name',""),
-                        'description' : ocp.get('oc_desc',"")
-                        })
+            initial.update(self.get_field_defaults('oc'))
         elif step == "make_p":
-            ocp = self.get_cleaned_data_for_step('oc_p_search')
-            if ocp:
-                initial.update({
-                        'name'        : ocp.get('pr_name',""),
-                        'description' : ocp.get('pr_desc',"")
-                        })
+            initial.update(self.get_field_defaults('pr'))
         elif step == 'find_dec_results':
             made_oc = self.get_cleaned_data_for_step('make_oc')
             if self.get_object_class():
@@ -340,27 +372,6 @@ class DataElementConceptWizard(PermissionWizard):
                 })
         return initial
 
-    """
-        Looks for items of a given item type with the given search terms
-    """
-    def find_similar(self,name,description,model=None):
-        from aristotle_mdr.forms.search import PermissionSearchQuerySet as PSQS
-        if model is None:
-            model = self.model
-        if not hasattr(self,"similar_items"):
-            self.similar_items = {}
-        cached_items = self.similar_items.get(model,None)
-        if cached_items:
-            return cached_items
-
-        #similar = PSQS().models(model).auto_query(name + " " + description).filter(
-        #        statuses__in=[  MDR.STATES[int(s)]
-        #                        for s in [MDR.STATES.standard,MDR.STATES.preferred]
-        #                    ])
-        similar = PSQS().models(model).auto_query(name + " " + description).apply_permission_checks(user=self.request.user)
-        self.similar_items[model] = similar
-        return similar
-
     def done(self, form_list, **kwargs):
         oc = self.get_object_class()
         pr = self.get_property()
@@ -380,12 +391,195 @@ class DataElementConceptWizard(PermissionWizard):
             if type(saved_item) == MDR.DataElementConcept:
                 dec = saved_item
                 messages.success(self.request,
-                        mark_safe(_("New Data Element '{name}' Saved - <a href='url'>id:{id}</a>").format(
+                        mark_safe(_("New Data Element Concept '{name}' Saved - <a href='url'>id:{id}</a>").format(
                             name=saved_item.name,id=saved_item.id
                             ))
                 )
         if dec is not None:
             dec.objectClass = oc
             dec.property = pr
+            dec.save()
+        return HttpResponseRedirect(reverse("aristotle:%s"%dec.url_name,args=[dec.id]))
+
+class DataElementWizard(MultiStepAristotleWizard):
+    model = MDR.DataElement
+    templates = {
+        "component_search": "aristotle_mdr/create/de_1_initial_search.html",
+        "component_results": "aristotle_mdr/create/de_2_search_results.html",
+        "make_oc": "aristotle_mdr/create/concept_wizard_2_results.html",
+        "make_p": "aristotle_mdr/create/concept_wizard_2_results.html",
+        "find_dec_results": "aristotle_mdr/create/de_3_dec_search_results.html",
+        "make_vd": "aristotle_mdr/create/concept_wizard_2_results.html",
+        "find_de_results": "aristotle_mdr/create/de_4_de_search_results.html",
+        "completed": "aristotle_mdr/create/dec_5_complete.html",
+        }
+    form_list = [ ("component_search", MDRForms.wizards.DE_OCPVD_Search),
+                  ("component_results", MDRForms.wizards.DE_OCPVD_Results),
+                  ("make_oc", MDRForms.wizards.subclassed_wizard_2_Results(MDR.ObjectClass)),
+                  ("make_p", MDRForms.wizards.subclassed_wizard_2_Results(MDR.Property)),
+                  ("find_dec_results", MDRForms.wizards.DE_Find_DEC_Results),
+                  ("make_vd", MDRForms.wizards.subclassed_wizard_2_Results(MDR.ValueDomain)),
+                  ("find_de_results", MDRForms.wizards.DE_Find_DE_Results),
+                  ("completed", MDRForms.wizards.DE_Complete),
+                 ]
+    condition_dict = {
+        "make_oc": no_valid_object_class,
+        "make_p": no_valid_property,
+        "make_vd": no_valid_valuedomain,
+        }
+
+
+    def get_data_element_concepts(self):
+        if hasattr(self,'_data_element_concepts'):
+            return self._data_element_concepts
+        oc = self.get_object_class()
+        pr = self.get_property()
+        if oc and pr:
+            self._data_element_concepts = MDR.DataElementConcept.objects.filter(objectClass=oc,property=pr).visible(self.request.user)
+            return self._data_element_concepts
+        else:
+            return []
+
+    def get_data_element_concept(self):
+        if hasattr(self,'_data_element_concept'):
+            return self._data_element_concept
+        else:
+            results = self.get_cleaned_data_for_step('find_dec_results')
+            if results:
+                dec = results.get('dec_options',None)
+                if dec:
+                    self._data_element_concept = dec
+                    return self._data_element_concept
+        return None
+
+    def get_data_element(self):
+        if hasattr(self,'_data_element'):
+            return self._data_element
+        dec = self.get_data_element_concept()
+        vd = self.get_value_domain()
+        if dec and vd:
+            self._data_element = MDR.DataElement.objects.filter(dataElementConcept=dec,valueDomain=vd).visible(self.request.user)
+            return self._data_element
+        else:
+            return []
+
+    def get_form_kwargs(self, step):
+        # determine the step if not given
+        kwargs = super(DataElementWizard, self).get_form_kwargs(step)
+        if step is None:
+            step = self.steps.current
+
+        if step == 'component_results':
+            ocp = self.get_cleaned_data_for_step('component_search')
+            if ocp:
+                kwargs.update({
+                    'oc_similar': self.find_similar(model=MDR.ObjectClass,
+                            name        = ocp.get('oc_name',""),
+                            description = ocp.get('oc_desc',"")
+                        ),
+                    'pr_similar': self.find_similar(model=MDR.Property,
+                            name        = ocp.get('pr_name',""),
+                            description = ocp.get('pr_desc',"")
+                        ),
+                    'vd_similar': self.find_similar(model=MDR.ValueDomain,
+                            name        = ocp.get('vd_name',""),
+                            description = ocp.get('vd_desc',"")
+                        )
+                    })
+        elif step in ['make_oc','make_p','make_vd']:
+            kwargs.update({
+                'check_similar': False # They waived this on a previous page
+            })
+        elif step == 'find_dec_results':
+            kwargs.update({
+                'check_similar': False, # They waived this on a previous page
+                'dec_similar': self.get_data_element_concepts()
+                })
+        elif step == 'find_de_results':
+            kwargs.update({
+                })
+        return kwargs
+
+    def get_context_data(self, form, **kwargs):
+        context = super(DataElementWizard, self).get_context_data(form=form, **kwargs)
+
+        context.update({
+            'component_search'  : {'percent_complete':12, 'step_title':_('Search for components')},
+            'component_results' : {'percent_complete':25, 'step_title':_('Refine components')},
+            'make_oc'           : {'percent_complete':38, 'step_title':_('Create Object Class')},
+            'make_p'            : {'percent_complete':50, 'step_title':_('Create Property')},
+            'find_dec_results'  : {'percent_complete':62, 'step_title':_('Review Data Element Concept')},
+            'make_vd'           : {'percent_complete':75, 'step_title':_('Create Value Domain')},
+            'find_de_results'   : {'percent_complete':88, 'step_title':_('Review Data Element')},
+            'completed'         : {'percent_complete':100,'step_title':_('Complete and Save')},
+            }.get(self.steps.current,{}))
+
+        if self.steps.current == 'make_vd':
+            context.update({
+                'model_name': MDR.ValueDomain._meta.verbose_name,
+                'help_guide':self.help_guide(MDR.Property),
+                })
+        if self.steps.current == 'find_dec_results':
+            context.update({
+                'oc_match':self.get_object_class(),
+                'pr_match':self.get_property(),
+                'dec_matches':self.get_data_element_concepts()
+                })
+        if self.steps.current == 'find_de_results':
+            context.update({
+                'dec_match':self.get_data_element_concept(),
+                'vd_match':self.get_value_domain(),
+                'de_matches':self.get_data_element()
+                })
+        if self.steps.current == 'completed':
+            context.update({
+                'made_oc':not self.get_object_class(),
+                'made_pr':not self.get_property(),
+                'made_vd':not self.get_value_domain(),
+                'made_dec':self.get_data_element_concept(),
+                'de_matches':self.get_data_element()
+                })
+        return context
+
+    def get_form_initial(self, step):
+        initial = super(DataElementWizard,self).get_form_initial(step)
+        if step is None:
+            step = self.steps.current
+        if step == "make_vd":
+            initial.update(self.get_field_defaults('vd'))
+        return initial
+
+    def done(self, form_list, **kwargs):
+        oc = self.get_object_class()
+        pr = self.get_property()
+        vd = self.get_value_domain()
+        dec = self.get_data_element_concept()
+        de = None
+        for form in form_list:
+            saved_item = form.save()
+            if type(saved_item) == MDR.Property:
+                pr = saved_item
+                messages.success(self.request,
+                        mark_safe(_("New Property '{name}' Saved - <a href='url'>id:{id}</a>").format(name=saved_item.name,id=saved_item.id))
+                )
+            if type(saved_item) == MDR.ObjectClass:
+                oc = saved_item
+                messages.success(self.request,
+                        mark_safe(_("New Object Class '{name}' Saved - <a href='url'>id:{id}</a>").format(name=saved_item.name,id=saved_item.id))
+                )
+            if type(saved_item) == MDR.DataElementConcept:
+                dec = saved_item
+                messages.success(self.request,
+                        mark_safe(_("New Data Element Concept '{name}' Saved - <a href='url'>id:{id}</a>").format(
+                            name=saved_item.name,id=saved_item.id
+                            ))
+                )
+        if dec is not None:
+            dec.objectClass = oc
+            dec.property = pr
+            dec.save()
+        if de is not None:
+            dec.dataElementConcept = dec
+            dec.valueDomain = vd
             dec.save()
         return HttpResponseRedirect(reverse("aristotle:%s"%dec.url_name,args=[dec.id]))

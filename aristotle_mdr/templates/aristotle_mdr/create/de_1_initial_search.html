@@ -1,0 +1,53 @@
+{% extends "aristotle_mdr/create/de_template_wrapper.html" %}
+
+{% block creationTips %}
+<header>The key to good metadata is reuse.</header>
+
+<p>
+Enter a name and short description for the what you would like to create, and
+Aristotle will do a quick search to see if similar objects exist to reuse.
+
+<p>
+If no items with similar terms exist, your search terms will be used to
+pre-populate any new items you create.
+
+{% endblock %}
+
+{% block formarea %}
+{{ form.errors }}
+<fieldset class="wizard col-sm-4">
+<legend>What things are you collecting infomation about?</legend>
+    <label>
+        What would be the <em>name</em> of this type of object?
+    </label>
+    {{ form.oc_name }}
+    <label>
+        Add a brief <em>description</em> of what you are looking for (optional):
+    </label>
+    {{ form.oc_desc }}
+</fieldset>
+
+<fieldset class="wizard col-sm-4">
+    <legend>What data to you want to find out about these things?</legend>
+    <label>
+        What would be the <em>name</em> of the property you are measuring?
+    </label>
+    {{ form.pr_name }}
+    <label>
+        Add a brief <em>description</em> of what you are looking for (optional):
+    </label>
+        {{ form.pr_desc }}
+</fieldset>
+
+<fieldset class="wizard col-sm-4">
+    <legend>How would you store this information?</legend>
+    <label>
+        What would be the <em>name</em> of the value domain you are collecting?
+    </label>
+    {{ form.vd_name }}
+    <label>
+        Add a brief <em>description</em> of how you would store it (optional):
+    </label>
+        {{ form.vd_desc }}
+</fieldset>
+{% endblock %}

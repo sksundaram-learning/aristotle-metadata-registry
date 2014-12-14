@@ -88,7 +88,6 @@ class Concept_2_Results(ConceptForm):
     )
     def __init__(self, *args, **kwargs):
         self.check_similar = kwargs.pop('check_similar',True)
-
         super(Concept_2_Results, self).__init__(*args, **kwargs)
         if not self.user.is_superuser:
             self.fields['workgroup'].queryset = self.user.profile.myWorkgroups
@@ -153,3 +152,73 @@ class DEC_Complete(UserAwareForm):
     )
     def save(self, *args, **kwargs):
         pass
+
+
+class DE_OCPVD_Search(UserAwareForm):
+    template = "aristotle_mdr/create/de_1_initial_search.html"
+    # Object Class fields
+    oc_name = forms.CharField(max_length=256)
+    oc_desc = forms.CharField(widget = forms.Textarea,required=False)
+    # Property fields
+    pr_name = forms.CharField(max_length=256)
+    pr_desc = forms.CharField(widget = forms.Textarea,required=False)
+    # Value Domain fields
+    vd_name = forms.CharField(max_length=256)
+    vd_desc = forms.CharField(widget = forms.Textarea,required=False)
+    def save(self, *args, **kwargs):
+        pass
+
+
+class DE_OCPVD_Results(DEC_OCP_Results):
+    def __init__(self, vd_similar=None, vd_duplicate=None, *args, **kwargs):
+        super(DE_OCPVD_Results, self).__init__(*args, **kwargs)
+
+        if vd_similar:
+            vd_options = [(vd.object.id,vd) for vd in vd_similar]
+            vd_options.append(("X","None of the above meet my needs"))
+            self.fields['vd_options'] = forms.ChoiceField(label="Similar Value Domains",
+                                        choices=tuple(vd_options), widget=forms.RadioSelect())
+    def clean_vd_options(self):
+        if self.cleaned_data['vd_options'] == "X":
+            # The user chose to make their own item, so return No item.
+            return None
+        try:
+            return MDR.ValueDomain.objects.get(pk=self.cleaned_data['vd_options'])
+        except ObjectDoesNotExist:
+            return None
+    def save(self, *args, **kwargs):
+        pass
+
+class DE_Find_DEC_Results(Concept_2_Results):
+    class Meta(Concept_2_Results.Meta):
+        model = MDR.DataElementConcept
+    def __init__(self, *args, **kwargs):
+        dec_similar = kwargs.pop('dec_similar')
+        super(DE_Find_DEC_Results, self).__init__(*args, **kwargs)
+        if dec_similar:
+            dec_options = [(dec.id,dec) for dec in dec_similar]
+            dec_options.append(("X","None of the above meet my needs"))
+            self.fields['dec_options'] = forms.ChoiceField(label="Similar Data Element Concepts",
+                                        choices=tuple(dec_options), widget=forms.RadioSelect())
+    def clean_dec_options(self):
+        if self.cleaned_data['dec_options'] == "X":
+            # The user chose to make their own item, so return No item.
+            return None
+        try:
+            dec = MDR.DataElementConcept.objects.get(pk=self.cleaned_data['dec_options'])
+            return dec
+        except ObjectDoesNotExist:
+            return None
+
+class DE_Find_DE_Results(Concept_2_Results):
+    class Meta(Concept_2_Results.Meta):
+        model = MDR.DataElement
+
+class DE_Complete(UserAwareForm):
+    make_items = forms.BooleanField(initial=False,
+        label=_("I've reviewed these items, and wish to create them."),
+        error_messages={'required': 'You must select this to ackowledge you have reviewed the above items.'}
+    )
+    def save(self, *args, **kwargs):
+        pass
+

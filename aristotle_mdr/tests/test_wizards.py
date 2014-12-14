@@ -120,42 +120,42 @@ class DataElementConceptWizardPage(ConceptWizardPage,TestCase):
         at  = models.Property.objects.create(name="animal type",description="",workgroup=self.wg1)
 
         step_1_data = {
-            self.wizard_form_name+'-current_step': 'oc_p_search',
-            'oc_p_search-oc_name':"animagus",
-            'oc_p_search-pr_name':"animal"
+            self.wizard_form_name+'-current_step': 'component_search',
+            'component_search-oc_name':"animagus",
+            'component_search-pr_name':"animal"
         }
         # success!
 
         response = self.client.post(self.wizard_url, step_1_data)
         wizard = response.context['wizard']
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(wizard['steps'].current, 'oc_p_results')
+        self.assertEqual(wizard['steps'].current, 'component_results')
         self.assertEqual(len(wizard['form'].fields.keys()),2) # we should have a match for OC and P
 
         step_2_data = {}
         step_2_data.update(step_1_data)
-        step_2_data.update({self.wizard_form_name+'-current_step': 'oc_p_results'})
+        step_2_data.update({self.wizard_form_name+'-current_step': 'component_results'})
 
         response = self.client.post(self.wizard_url, step_2_data)
         wizard = response.context['wizard']
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(wizard['steps'].current, 'oc_p_results')
+        self.assertEqual(wizard['steps'].current, 'component_results')
 
         # Must pick an Object Class and Property (or none) to continue.
         self.assertTrue('oc_options' in wizard['form'].errors.keys())
         self.assertTrue('pr_options' in wizard['form'].errors.keys())
 
         # Try the wrong way around
-        step_2_data.update({'oc_p_results-oc_options':at.pk,'oc_p_results-pr_options':ani.pk})
+        step_2_data.update({'component_results-oc_options':at.pk,'component_results-pr_options':ani.pk})
         response = self.client.post(self.wizard_url, step_2_data)
         wizard = response.context['wizard']
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(wizard['steps'].current, 'oc_p_results')
+        self.assertEqual(wizard['steps'].current, 'component_results')
         self.assertTrue('oc_options' in wizard['form'].errors.keys())
         self.assertTrue('pr_options' in wizard['form'].errors.keys())
 
         # Picking the correct options should send us to the DEC results page.
-        step_2_data.update({'oc_p_results-oc_options':str(ani.pk),'oc_p_results-pr_options':str(at.pk)})
+        step_2_data.update({'component_results-oc_options':str(ani.pk),'component_results-pr_options':str(at.pk)})
         response = self.client.post(self.wizard_url, step_2_data)
         wizard = response.context['wizard']
         self.assertEqual(response.status_code, 200)
@@ -165,29 +165,29 @@ class DataElementConceptWizardPage(ConceptWizardPage,TestCase):
     def test_editor_can_make_object__no_prior_components(self):
         self.login_editor()
         step_1_data = {
-            self.wizard_form_name+'-current_step': 'oc_p_search',
+            self.wizard_form_name+'-current_step': 'component_search',
         }
 
         response = self.client.post(self.wizard_url, step_1_data)
         wizard = response.context['wizard']
-        self.assertEqual(wizard['steps'].current, 'oc_p_search')
+        self.assertEqual(wizard['steps'].current, 'component_search')
         self.assertTrue('oc_name' in wizard['form'].errors.keys())
         self.assertTrue('pr_name' in wizard['form'].errors.keys())
 
         # must submit a name
-        step_1_data.update({'oc_p_search-oc_name':"Animagus"})
-        step_1_data.update({'oc_p_search-pr_name':"Animal type"})
+        step_1_data.update({'component_search-oc_name':"Animagus"})
+        step_1_data.update({'component_search-pr_name':"Animal type"})
         # success!
 
         response = self.client.post(self.wizard_url, step_1_data)
         wizard = response.context['wizard']
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(wizard['steps'].current, 'oc_p_results')
+        self.assertEqual(wizard['steps'].current, 'component_results')
         self.assertContains(response,"No matching object classes were found")
         self.assertContains(response,"No matching properties were found")
 
         step_2_data = {
-            self.wizard_form_name+'-current_step': 'oc_p_results',
+            self.wizard_form_name+'-current_step': 'component_results',
         } # nothing else needed, as we aren't picking a component.
 
         response = self.client.post(self.wizard_url, step_2_data)

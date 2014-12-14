@@ -1,8 +1,8 @@
-{% extends "aristotle_mdr/create/dec_template_wrapper.html" %}
+{% extends "aristotle_mdr/create/de_template_wrapper.html" %}
 
 {% block formarea %}
 {{ form.errors }}
-{% if form.oc_options or form.pr_options %}
+{% if form.oc_options or form.pr_options or form.vd_options %}
 <div>
     <strong>The following public objects were found with a title similar to "<em>{{form.name.value}}</em>".
     </strong>
@@ -81,5 +81,41 @@
             </div>
         {% endif %}
     </div>
+
+    <div class="panel panel-info">
+        <div class="panel-heading">
+            Pick a value domain.
+        </div>
+        {% if form.vd_options %}
+            <div class="panel-body">
+                {{ form.vd_options.label_tag }}
+                <ol class="searchResults">
+                {% for id, obj in form.vd_options.field.choices|slice:":-1" %}
+                    <li>
+                        <label>
+                            <input type="radio" name="component_results-vd_options" value="{{id}}"></input>
+                            {% include "search/searchItem.html" with item=obj.object %}
+                        </label>
+                    </li>
+                {% endfor %}
+                </ol>
+            </div>
+            <div class="panel-footer">
+                {% for id, label in form.vd_options.field.choices|slice:"-1:"  %}
+                    <label class="none_of_the_above">
+                        <input type="radio" name="component_results-vd_options" value="{{id}}"></input>
+                        {{ label }}
+                    </label>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="panel-body">
+                <p>
+                    No matching value domains were found for reuse, so a new one will be created.
+                </p>
+            </div>
+        {% endif %}
+    </div>
+
 </div>
 {% endblock %}
