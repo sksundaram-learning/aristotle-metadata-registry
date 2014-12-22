@@ -14,7 +14,8 @@ For example, creating a new item within the registry requires as little code as:
 This code creates a new "Question" object in the registry that can be progressed
 like any standard item in Aristotle. Once the the appropriate admin pages are
 set up, from a usability and publication standpoint this would be indistinguishable
-from an Aristotle-MDR item.
+from an Aristotle-MDR item, and would get a instantly get a number of
+:doc:`features that are available to all Aristotle 'concepts' without having to write any additional code </extensions/out_of_the_box_features>`
 
 Once synced with the database, this immediately creates a new item type that not only has
 a ``name`` and ``description``, but also can immediately be associated with a workgroup, can be
@@ -40,7 +41,10 @@ such as a ``ForeignKey`` or ``ManyToManyField``, like so::
 This code, extends our Question model from the previous example and adds an optional
 link to the 11179 Data Element model managed by Aristotle and even add a new property
 on to Data Elements, so that ``myDataElement.questions`` would return of all Questions
-that are used to collect information for that Data Element.
+that are used to collect information for that Data Element. Its also possible to
+:doc:`include content from objects across relations on other pages </extensions/including_extra_content>`
+without having to alter the templates of other content types. For example, this would allow
+pertinant information about questions to appear on data elements, and vice versa.
 
 Caveats: ``concept`` versus ``_concept``
 ----------------------------------------
@@ -317,5 +321,5 @@ A complete example of an Aristotle Extension
 The first package of content extension for Aristotle that helped clarify a lot
 of the issues around inheritance was the
 `Comet Indicator Registry <https://github.com/LegoStormtroopr/comet-indicator-registry>`_.
-This adds 6 new content types along with admin pages, search indexes and templates and includes an override for the
-Aristotle ``DataElement`` template - which was all achieved with less than 600 lines of code.
+This adds 6 new content types along with admin pages, search indexes and templates and extra content for
+display on the included Aristotle ``DataElement`` template - which was all achieved with less than 600 lines of code.

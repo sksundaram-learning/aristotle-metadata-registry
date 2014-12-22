@@ -21,6 +21,7 @@ the `Python programming language <https://www.python.org/about/gettingstarted/>`
    downloads.rst
    templates.rst
    including_extra_content.rst
+   out_of_the_box_features.rst
    templatetags.rst
    using_permissions.rst
    using_concept_manager.rst
