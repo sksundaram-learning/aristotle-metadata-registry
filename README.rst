@@ -53,6 +53,8 @@ Quick start
 
 For a complete example of how to successfully include Aristotle, see the `aristotle_mdr/tests/settings.py` settings file.
 
+**A live aristotle instance is available on PythonAnywhere at:** ``http://aristotle.pythonanywhere.com/``.
+Be aware, this is an active development instance and may go down from occasionally.
 
 .. |build-status| image:: https://travis-ci.org/LegoStormtroopr/aristotle-metadata-registry.svg?branch=master
     :alt: build status
