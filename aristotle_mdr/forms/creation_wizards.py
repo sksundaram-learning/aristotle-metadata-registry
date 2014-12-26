@@ -189,9 +189,7 @@ class DE_OCPVD_Results(DEC_OCP_Results):
     def save(self, *args, **kwargs):
         pass
 
-class DE_Find_DEC_Results(Concept_2_Results):
-    class Meta(Concept_2_Results.Meta):
-        model = MDR.DataElementConcept
+class DE_Find_DEC_Results(UserAwareForm):
     def __init__(self, *args, **kwargs):
         dec_similar = kwargs.pop('dec_similar')
         super(DE_Find_DEC_Results, self).__init__(*args, **kwargs)
@@ -209,6 +207,12 @@ class DE_Find_DEC_Results(Concept_2_Results):
             return dec
         except ObjectDoesNotExist:
             return None
+
+class DE_Find_DE_Results_from_components(UserAwareForm):
+    make_new_item = forms.BooleanField(initial=False,
+        label=_("I've reviewed these items, and none of them meet my needs. Make me a new one."),
+        error_messages={'required': 'You must select this to ackowledge you have reviewed the above items.'}
+    )
 
 class DE_Find_DE_Results(Concept_2_Results):
     class Meta(Concept_2_Results.Meta):

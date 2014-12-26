@@ -154,8 +154,12 @@ def no_valid_property(wizard):
     return not wizard.get_property()
 def no_valid_object_class(wizard):
     return not wizard.get_object_class()
-def no_valid_valuedomain(wizard):
+def no_valid_value_domain(wizard):
     return not wizard.get_value_domain()
+def no_valid_data_element_concept(wizard):
+    return not wizard.get_data_element_concept()
+def has_valid_data_elements_from_components(wizard):
+    return wizard.get_data_elements_from_components()
 
 class MultiStepAristotleWizard(PermissionWizard):
     def get_object_class(self):
@@ -404,30 +408,35 @@ class DataElementConceptWizard(MultiStepAristotleWizard):
 class DataElementWizard(MultiStepAristotleWizard):
     model = MDR.DataElement
     templates = {
-        "component_search": "aristotle_mdr/create/de_1_initial_search.html",
-        "component_results": "aristotle_mdr/create/de_2_search_results.html",
-        "make_oc": "aristotle_mdr/create/concept_wizard_2_results.html",
-        "make_p": "aristotle_mdr/create/concept_wizard_2_results.html",
-        "find_dec_results": "aristotle_mdr/create/de_3_dec_search_results.html",
-        "make_vd": "aristotle_mdr/create/concept_wizard_2_results.html",
-        "find_de_results": "aristotle_mdr/create/de_4_de_search_results.html",
-        "completed": "aristotle_mdr/create/dec_5_complete.html",
+        "component_search"  : "aristotle_mdr/create/de_1_initial_search.html",
+        "component_results" : "aristotle_mdr/create/de_2_search_results.html",
+        "make_oc"           : "aristotle_mdr/create/concept_wizard_2_results.html",
+        "make_p"            : "aristotle_mdr/create/concept_wizard_2_results.html",
+        "find_de_from_comp" : "aristotle_mdr/create/de_3_de_search_results_from_components.html",
+        "find_dec_results"  : "aristotle_mdr/create/de_3_dec_search_results.html",
+        "make_dec"          : "aristotle_mdr/create/de_4_dec_create.html",
+        "make_vd"           : "aristotle_mdr/create/concept_wizard_2_results.html",
+        "find_de_results"   : "aristotle_mdr/create/de_4_de_search_results.html",
+        "completed"         : "aristotle_mdr/create/dec_6_complete.html",
         }
-    form_list = [ ("component_search", MDRForms.wizards.DE_OCPVD_Search),
-                  ("component_results", MDRForms.wizards.DE_OCPVD_Results),
-                  ("make_oc", MDRForms.wizards.subclassed_wizard_2_Results(MDR.ObjectClass)),
-                  ("make_p", MDRForms.wizards.subclassed_wizard_2_Results(MDR.Property)),
-                  ("find_dec_results", MDRForms.wizards.DE_Find_DEC_Results),
-                  ("make_vd", MDRForms.wizards.subclassed_wizard_2_Results(MDR.ValueDomain)),
-                  ("find_de_results", MDRForms.wizards.DE_Find_DE_Results),
-                  ("completed", MDRForms.wizards.DE_Complete),
+    form_list = [ ("component_search"   , MDRForms.wizards.DE_OCPVD_Search),
+                  ("component_results"  , MDRForms.wizards.DE_OCPVD_Results),
+                  ("make_oc"            , MDRForms.wizards.subclassed_wizard_2_Results(MDR.ObjectClass)),
+                  ("make_p"             , MDRForms.wizards.subclassed_wizard_2_Results(MDR.Property)),
+                  ("find_de_from_comp"  , MDRForms.wizards.DE_Find_DE_Results_from_components),
+                  ("find_dec_results"   , MDRForms.wizards.DE_Find_DEC_Results),
+                  ("make_dec"           , MDRForms.wizards.subclassed_wizard_2_Results(MDR.DataElementConcept)),
+                  ("make_vd"            , MDRForms.wizards.subclassed_wizard_2_Results(MDR.ValueDomain)),
+                  ("find_de_results"    , MDRForms.wizards.DE_Find_DE_Results),
+                  ("completed"          , MDRForms.wizards.DE_Complete),
                  ]
     condition_dict = {
         "make_oc": no_valid_object_class,
         "make_p": no_valid_property,
-        "make_vd": no_valid_valuedomain,
+        "make_vd": no_valid_value_domain,
+        "make_dec": no_valid_data_element_concept,
+        "find_de_from_comp": has_valid_data_elements_from_components,
         }
-
 
     def get_data_element_concepts(self):
         if hasattr(self,'_data_element_concepts'):
@@ -451,6 +460,18 @@ class DataElementWizard(MultiStepAristotleWizard):
                     self._data_element_concept = dec
                     return self._data_element_concept
         return None
+
+    def get_data_elements_from_components(self):
+        if hasattr(self,'_data_element_from_components'):
+            return self._data_element_from_components
+        dec = self.get_data_element_concepts()
+        vd = self.get_value_domain()
+        if dec and vd:
+            self._data_element_from_components = MDR.DataElement.objects.filter(dataElementConcept__in=dec,valueDomain=vd).visible(self.request.user)
+            print self._data_element_from_components
+            return self._data_element_from_components
+        else:
+            return []
 
     def get_data_element(self):
         if hasattr(self,'_data_element'):
@@ -486,32 +507,59 @@ class DataElementWizard(MultiStepAristotleWizard):
                             description = ocp.get('vd_desc',"")
                         )
                     })
-        elif step in ['make_oc','make_p','make_vd']:
+        elif step in ['make_oc','make_p','make_vd','make_dec']:
             kwargs.update({
                 'check_similar': False # They waived this on a previous page
             })
         elif step == 'find_dec_results':
             kwargs.update({
-                'check_similar': False, # They waived this on a previous page
                 'dec_similar': self.get_data_element_concepts()
                 })
         elif step == 'find_de_results':
             kwargs.update({
                 })
+
         return kwargs
 
     def get_context_data(self, form, **kwargs):
         context = super(DataElementWizard, self).get_context_data(form=form, **kwargs)
 
+        context.update({'next_button_text':_("Next")})
         context.update({
-            'component_search'  : {'percent_complete':12, 'step_title':_('Search for components')},
-            'component_results' : {'percent_complete':25, 'step_title':_('Refine components')},
-            'make_oc'           : {'percent_complete':38, 'step_title':_('Create Object Class')},
-            'make_p'            : {'percent_complete':50, 'step_title':_('Create Property')},
-            'find_dec_results'  : {'percent_complete':62, 'step_title':_('Review Data Element Concept')},
-            'make_vd'           : {'percent_complete':75, 'step_title':_('Create Value Domain')},
-            'find_de_results'   : {'percent_complete':88, 'step_title':_('Review Data Element')},
-            'completed'         : {'percent_complete':100,'step_title':_('Complete and Save')},
+            'component_search'  : {
+                'percent_complete':10,
+                'step_title':_('Search for components'),
+                'next_button_text':_("Search"),
+            },
+            'component_search'  : {'percent_complete':10, 'step_title':_('Search for components')},
+            'component_results' : {'percent_complete':20, 'step_title':_('Refine components')},
+            'find_de_from_comp' : {'percent_complete':30, 'step_title':_('Review Data Element')},
+            'make_oc'           : {
+                'percent_complete':40,
+                'step_title':_('Create Object Class'),
+                'next_button_text':_("Save Object Class"),
+                },
+            'make_p'            : {
+                'percent_complete':50,
+                'step_title':_('Create Property'),
+                'next_button_text':_("Save Property"),
+            },
+            'find_dec_results'  : {'percent_complete':60, 'step_title':_('Select Data Element Concept')},
+            'make_dec'          : {
+                'percent_complete':70,
+                'step_title':_('Create Data Element Concept'),
+                'next_button_text':_("Save Data Element Concept"),
+            },
+            'make_vd'           : {
+                'percent_complete':80,
+                'step_title':_('Create Value Domain')
+            },
+            'find_de_results'   : {'percent_complete':90, 'step_title':_('Review Data Element')},
+            'completed'         : {
+                'percent_complete':100,
+                'step_title':_('Complete and Save'),
+                'next_button_text':_("Save and Finish"),
+            },
             }.get(self.steps.current,{}))
 
         if self.steps.current == 'make_vd':
@@ -525,11 +573,18 @@ class DataElementWizard(MultiStepAristotleWizard):
                 'pr_match':self.get_property(),
                 'dec_matches':self.get_data_element_concepts()
                 })
+        if self.steps.current == 'find_de_from_comp':
+            context.update({
+                'oc_match':self.get_object_class(),
+                'pr_match':self.get_property(),
+                'vd_match':self.get_value_domain(),
+                'de_matches':self.get_data_elements_from_components()
+                })
         if self.steps.current == 'find_de_results':
             context.update({
                 'dec_match':self.get_data_element_concept(),
                 'vd_match':self.get_value_domain(),
-                'de_matches':self.get_data_element()
+                'de_matches':self.get_data_elements_from_components()
                 })
         if self.steps.current == 'completed':
             context.update({
@@ -574,12 +629,19 @@ class DataElementWizard(MultiStepAristotleWizard):
                             name=saved_item.name,id=saved_item.id
                             ))
                 )
+            if type(saved_item) == MDR.DataElement:
+                de = saved_item
+                messages.success(self.request,
+                        mark_safe(_("New Data Element '{name}' Saved - <a href='url'>id:{id}</a>").format(
+                            name=saved_item.name,id=saved_item.id
+                            ))
+                )
         if dec is not None:
             dec.objectClass = oc
             dec.property = pr
             dec.save()
         if de is not None:
-            dec.dataElementConcept = dec
-            dec.valueDomain = vd
-            dec.save()
-        return HttpResponseRedirect(reverse("aristotle:%s"%dec.url_name,args=[dec.id]))
+            de.dataElementConcept = dec
+            de.valueDomain = vd
+            de.save()
+        return HttpResponseRedirect(reverse("aristotle:%s"%de.url_name,args=[de.id]))

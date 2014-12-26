@@ -21,30 +21,26 @@
     {% endif %}
     <div class="panel panel-danger">
         <div class="panel-heading">
-            There are already Data Element Concepts based on a
-            "<em>{{ oc_match.name }}</em>" and "<em>{{ pr_match.name }}</em>".
+            There are already Data Elements based on a
+            "<em>{{ oc_match.name }}</em>", "<em>{{ pr_match.name }}</em>" and "<em>{{ vd_match.name }}</em>".
         </div>
         <div class="panel-body">
             Reusing existing content makes comparing items in the future easier.
             <br>Consider reviewing these items to see if an existing piece of content meets your needs.
             <ol class="searchResults">
-            {% for id, obj in wizard.form.dec_options.field.choices|slice:":-1" %}
+                {% for obj in de_matches %}
                 <li>
-                    <label>
-                        <input type="radio" name="find_dec_results-dec_options" value="{{id}}"></input>
-                        {% include "search/searchItem.html" with item=obj %}
-                    </label>
+                    {% include "search/searchItem.html" with item=obj %}
                 </li>
-            {% endfor %}
+                {% endfor %}
             </ol>
         </div>
         <div class="panel-footer">
-            {% for id, label in wizard.form.dec_options.field.choices|slice:"-1:"  %}
-                <label class="none_of_the_above">
-                    <input type="radio" name="find_dec_results-dec_options" value="{{id}}"></input>
-                    {{ label }}
-                </label>
-            {% endfor %}
+            <label>
+            {{ wizard.form.make_new_item }}
+            {{ wizard.form.make_new_item.label }}
+            </label>
+            {{ wizard.form.make_new_item.errors }}
         </div>
     </div>
 {% endblock %}

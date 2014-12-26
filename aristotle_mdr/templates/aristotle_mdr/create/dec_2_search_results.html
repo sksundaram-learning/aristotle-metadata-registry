@@ -11,7 +11,8 @@
 </div>
 {% endif %}
 
-<div class="component_choice_columns">
+<div class="__component_choice_columns row">
+    <div class="col-sm-6">
     <div class="panel panel-info">
         <div class="panel-heading">
             Pick an object class.
@@ -46,7 +47,9 @@
             </div>
         {% endif %}
     </div>
+    </div>
 
+    <div class="col-sm-6">
     <div class="panel panel-info">
         <div class="panel-heading">
             Pick a property.
@@ -80,6 +83,7 @@
                 </p>
             </div>
         {% endif %}
+    </div>
     </div>
 </div>
 {% endblock %}

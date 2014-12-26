@@ -19,39 +19,21 @@
             {% endif %}
         </div>
     {% endif %}
-    {% if de_matches %}
-        <div class="panel panel-danger">
-            <div class="panel-heading">
-                There are already Data Elements based on a
-                "<em>{{ dec_match.name }}</em>" and "<em>{{ vd_match.name }}</em>".
-            </div>
-            <div class="panel-body">
-                Reusing existing content makes comparing items in the future easier.
-                <br>Consider reviewing these items to see if an existing piece of content meets your needs.
-                <ol class="searchResults">
-                    {% for obj in de_matches %}
-                    <li>
-                        {% include "search/searchItem.html" with item=obj %}
-                    </li>
-                    {% endfor %}
-                </ol>
-            </div>
-            <div class="panel-footer">
-                {{ wizard.form.make_new_item }}
-                {{ wizard.form.make_new_item.label }}
-                {{ wizard.form.make_new_item.errors }}
-            </div>
-        </div>
-    {% elif dec_match and vd_match %}
+    {% if dec_matches %}
         <p>
-            No standard items based on "<em>{{ dec_match.name }}</em>" and "<em>{{ vd_match.name }}</em>" were found,
+            Standard items based on "<em>{{ objectClass.name }}</em>" and "<em>{{ property.name }}</em>" <strong>were found</strong>,
+            but you are electing to create a new one.
+        </p>
+    {% elif oc_match and pr_match %}
+        <p>
+            No standard items based on "<em>{{ objectClass.name }}</em>" and "<em>{{ property.name }}</em>" were found,
             so a new one will be created.
         </p>
-    {% elif dec_match %}
+    {% elif oc_match %}
         <p>
             You've elected to create a new Property, so you will need to create a new Data Element Concept as well.
         </p>
-    {% elif vd_match %}
+    {% elif pr_match %}
         <p>
             You've elected to create a new Object Class, so you will need to create a new Data Element Concept as well.
         </p>
