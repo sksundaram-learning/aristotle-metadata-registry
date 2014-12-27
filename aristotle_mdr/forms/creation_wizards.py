@@ -170,6 +170,7 @@ class DE_OCPVD_Search(UserAwareForm):
 
 
 class DE_OCPVD_Results(DEC_OCP_Results):
+    vd_options = forms.ChoiceField(label="Similar Value Domains", choices=[()], widget=forms.RadioSelect())
     def __init__(self, vd_similar=None, vd_duplicate=None, *args, **kwargs):
         super(DE_OCPVD_Results, self).__init__(*args, **kwargs)
 

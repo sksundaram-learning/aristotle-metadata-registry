@@ -4,8 +4,7 @@
 {% block formarea %}
     {% if wizard.form.errors %}
         <div class="alert alert-danger">
-        There were errors saving your {{ model_name }}, please review the errors shown below.
-        {{ wizard.form.errors }}
+        There were errors saving your Data Element, please review the errors shown below.
             {% if duplicate_items or similar_items %}
                 {% if wizard.form.fields.make_new_item.errors %}
                     <strong>There were similar items shown on the previous page.
@@ -23,7 +22,7 @@
         <div class="panel panel-danger">
             <div class="panel-heading">
                 There are already Data Elements based on a
-                "<em>{{ dec_match.name }}</em>" and "<em>{{ vd_match.name }}</em>".
+                "<em>{{ dec_match.name }} <small>({{dec_match.id}})</small></em>" and "<em>{{ vd_match.name }}<small> ({{vd_match.id}})</small></em>".
             </div>
             <div class="panel-body">
                 Reusing existing content makes comparing items in the future easier.
@@ -37,8 +36,10 @@
                 </ol>
             </div>
             <div class="panel-footer">
+                <label>
                 {{ wizard.form.make_new_item }}
                 {{ wizard.form.make_new_item.label }}
+                </label>
                 {{ wizard.form.make_new_item.errors }}
             </div>
         </div>
