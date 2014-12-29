@@ -10,7 +10,7 @@ class UserAwareForm(forms.Form):
     def __init__(self,*args,**kwargs):
         self.user = kwargs.pop('user')
         super(UserAwareForm, self).__init__(*args, **kwargs)
-class UserAwareModelForm(autocomplete_light.ModelForm):
+class UserAwareModelForm(forms.ModelForm): #autocomplete_light.ModelForm):
     class Meta:
         model = MDR._concept
         exclude = ['readyToReview','superseded_by','_is_public','_is_locked','originURI']
@@ -20,7 +20,8 @@ class UserAwareModelForm(autocomplete_light.ModelForm):
         super(UserAwareModelForm, self).__init__(*args, **kwargs)
 
     def _media(self):
-        js = ('/static/admin/js/jquery.min.js','aristotle_mdr/aristotle.wizard.js')
+        js = ('aristotle_mdr/aristotle.wizard.js','/static/tiny_mce/tiny_mce.js')
+        #js = ('/static/admin/js/jquery.min.js','aristotle_mdr/aristotle.wizard.js','/static/tiny_mce/tiny_mce.js')
         media = forms.Media(js=js)
         for field in self.fields.values():
             media = media + field.widget.media
@@ -93,6 +94,7 @@ class Concept_2_Results(ConceptForm):
             self.fields['workgroup'].queryset = self.user.profile.myWorkgroups
         self.fields['workgroup'].initial = self.user.profile.activeWorkgroup
         self.fields['name'].widget = forms.widgets.TextInput()
+        #self.fields['description'].widget = forms.widgets.TextInput()
         if not self.check_similar:
             self.fields.pop('make_new_item')
 

@@ -6,11 +6,8 @@ Create Data Element Concept - Step {{ wizard.steps.step1 }}: {{step_title}}
 {% endblock %}
 
 {% block extra_head_scripts %}
-<!-- script type="text/javascript" src="/static/admin/js/jquery.min.js"></script>
-<script type="text/javascript" src="/static/admin/js/jquery.init.js"></script -->
     <link rel="stylesheet" href="{{ STATIC_URL }}{% compile 'aristotle_mdr/aristotle.wizard.less' %}" />
     <link rel="stylesheet" href="{{ STATIC_URL }}{% compile 'aristotle_mdr/aristotle_search.less' %}" />
-    {{ wizard.form.media }}
 {% endblock %}
 
 {% block head %}
@@ -38,7 +35,7 @@ Create Data Element Concept - Step {{ wizard.steps.step1 }}: {{step_title}}
     <div class="modal-footer">
     {% if wizard.steps.prev %}
         <!-- button name="wizard_goto_step" type="submit" value="{{ wizard.steps.first }}">{% trans "First step" %}</button -->
-        <button class="btn" name="wizard_goto_step" type="submit" value="{{ wizard.steps.prev }}">{% trans "Back" %}</button>
+        <button class="btn" name="wizard_goto_step" type="button" value="{{ wizard.steps.prev }}">{% trans "Back" %}</button>
     {% endif %}
         <button class="btn btn-primary" type="submit" value="submit">{% trans "Next" %}</button>
     </div>
