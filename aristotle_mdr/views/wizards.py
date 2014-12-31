@@ -375,9 +375,12 @@ class DataElementConceptWizard(MultiStepAristotleWizard):
                 })
         if self.steps.current == 'completed':
             context.update({
-                'made_oc':not self.get_object_class(),
-                'made_pr':not self.get_property(),
-                'dec_matches':self.get_data_element_concept()
+                'dec_matches':self.get_data_element_concept(),
+                'oc':self.get_object_class() or self.get_cleaned_data_for_step('make_oc'),
+                'pr':self.get_property() or self.get_cleaned_data_for_step('make_pr'),
+                'made_oc':self.get_cleaned_data_for_step('make_oc'),
+                'made_pr':self.get_cleaned_data_for_step('make_pr'),
+                'made_dec':self.get_cleaned_data_for_step('find_dec_results'),
                 })
         context.update({
             'template_name':'aristotle_mdr/create/dec_template_wrapper.html',
@@ -393,17 +396,24 @@ class DataElementConceptWizard(MultiStepAristotleWizard):
             if type(saved_item) == MDR.Property:
                 pr = saved_item
                 messages.success(self.request,
-                        mark_safe(_("New Property '{name}' Saved - <a href='url'>id:{id}</a>").format(name=saved_item.name,id=saved_item.id))
+                        mark_safe(_("New Property '{name}' Saved - <a href='{url}'>id:{id}</a>").format(
+                            url=reverse("aristotle:item",args=[saved_item.id]),
+                            name=saved_item.name,id=saved_item.id
+                            ))
                 )
             if type(saved_item) == MDR.ObjectClass:
                 oc = saved_item
                 messages.success(self.request,
-                        mark_safe(_("New Object Class '{name}' Saved - <a href='url'>id:{id}</a>").format(name=saved_item.name,id=saved_item.id))
+                        mark_safe(_("New Object Class '{name}' Saved - <a href='{url}'>id:{id}</a>").format(
+                            url=reverse("aristotle:item",args=[saved_item.id]),
+                            name=saved_item.name,id=saved_item.id
+                            ))
                 )
             if type(saved_item) == MDR.DataElementConcept:
                 dec = saved_item
                 messages.success(self.request,
-                        mark_safe(_("New Data Element Concept '{name}' Saved - <a href='url'>id:{id}</a>").format(
+                        mark_safe(_("New Data Element Concept '{name}' Saved - <a href='{url}'>id:{id}</a>").format(
+                            url=reverse("aristotle:item",args=[saved_item.id]),
                             name=saved_item.name,id=saved_item.id
                             ))
                 )
@@ -414,7 +424,7 @@ class DataElementConceptWizard(MultiStepAristotleWizard):
         return HttpResponseRedirect(reverse("aristotle:%s"%dec.url_name,args=[dec.id]))
 
 def no_valid_data_element_concept(wizard):
-    return not wizard.get_data_element_concepts()
+    return not wizard.get_data_element_concept()
 def has_valid_data_element_concepts(wizard):
     return wizard.get_data_element_concepts()
 def has_valid_data_elements_from_components(wizard):
@@ -432,7 +442,7 @@ class DataElementWizard(MultiStepAristotleWizard):
         "make_dec"          : "aristotle_mdr/create/de_4_dec_create.html",
         "make_vd"           : "aristotle_mdr/create/concept_wizard_2_results.html",
         "find_de_results"   : "aristotle_mdr/create/de_4_de_search_results.html",
-        "completed"         : "aristotle_mdr/create/dec_6_complete.html",
+        "completed"         : "aristotle_mdr/create/de_6_complete.html",
         }
     form_list = [ ("component_search"   , MDRForms.wizards.DE_OCPVD_Search),
                   ("component_results"  , MDRForms.wizards.DE_OCPVD_Results),
@@ -498,14 +508,26 @@ class DataElementWizard(MultiStepAristotleWizard):
     def get_data_element(self):
         if hasattr(self,'_data_element'):
             return self._data_element
+        else:
+            results = self.get_cleaned_data_for_step('find_de_results')
+            if results:
+                de = results.get('dec_options',None)
+                if de:
+                    self._data_element = de
+                    return self._data_element
+        return None
+
+    def get_data_elements(self):
+        if hasattr(self,'_data_elements'):
+            return self._data_elements
         dec = self.get_data_element_concept()
         results = self.get_cleaned_data_for_step('find_dec_results')
         if results:
             dec = results.get('dec_options',None)
         vd = self.get_value_domain()
         if dec and vd:
-            self._data_element = MDR.DataElement.objects.filter(dataElementConcept=dec,valueDomain=vd).visible(self.request.user)
-            return self._data_element
+            self._data_elements = MDR.DataElement.objects.filter(dataElementConcept=dec,valueDomain=vd).visible(self.request.user)
+            return self._data_elements
         else:
             return []
 
@@ -542,21 +564,24 @@ class DataElementWizard(MultiStepAristotleWizard):
                 })
         elif step == 'find_de_results':
             kwargs.update({
+                'check_similar' : self.get_data_elements()
                 })
 
         return kwargs
 
     def get_context_data(self, form, **kwargs):
         context = super(DataElementWizard, self).get_context_data(form=form, **kwargs)
+        context.update({
+            'template_name':'aristotle_mdr/create/dec_template_wrapper.html',
+            'next_button_text':_("Next")
+            })
 
-        context.update({'next_button_text':_("Next")})
         context.update({
             'component_search'  : {
                 'percent_complete':10,
                 'step_title':_('Search for components'),
                 'next_button_text':_("Search"),
             },
-            'component_search'  : {'percent_complete':10, 'step_title':_('Search for components')},
             'component_results' : {'percent_complete':20, 'step_title':_('Refine components')},
             'find_de_from_comp' : {'percent_complete':30, 'step_title':_('Review Data Element')},
             'make_oc'           : {
@@ -609,15 +634,20 @@ class DataElementWizard(MultiStepAristotleWizard):
             context.update({
                 'dec_match':self.get_data_element_concept(),
                 'vd_match':self.get_value_domain(),
-                'de_matches':self.get_data_element()
+                'de_matches':self.get_data_elements()
                 })
         if self.steps.current == 'completed':
             context.update({
-                'made_oc':not self.get_object_class(),
-                'made_pr':not self.get_property(),
-                'made_vd':not self.get_value_domain(),
-                'made_dec':self.get_data_element_concept(),
-                'de_matches':self.get_data_element()
+                'oc':self.get_object_class() or self.get_cleaned_data_for_step('make_oc'),
+                'pr':self.get_property() or self.get_cleaned_data_for_step('make_pr'),
+                'vd':self.get_value_domain() or self.get_cleaned_data_for_step('make_vd'),
+                'dec':self.get_data_element_concept() or self.get_cleaned_data_for_step('make_dec'),
+                'made_oc':self.get_cleaned_data_for_step('make_oc'),
+                'made_pr':self.get_cleaned_data_for_step('make_pr'),
+                'made_vd':self.get_cleaned_data_for_step('make_vd'),
+                'made_dec':self.get_cleaned_data_for_step('make_dec'),
+                'de_matches':self.get_data_elements(),
+                'made_de':self.get_cleaned_data_for_step('find_de_results'),
                 })
         return context
 
@@ -663,7 +693,7 @@ class DataElementWizard(MultiStepAristotleWizard):
 
             initial.update({
                 'name' : u"{dec}{separator}{vd}".format(dec=dec_name,separator=SEPARATORS["DataElement"],vd=vd_name),
-                'description' : _(u"<p>{dec}, recorded as a {vd}</p> - This was an autogenerated definition.").format(
+                'description' : _(u"<p>{dec}, recorded as {vd}</p> - This was an autogenerated definition.").format(
                     dec=dec_desc,vd=vd_desc
                     )
                 })
@@ -680,24 +710,40 @@ class DataElementWizard(MultiStepAristotleWizard):
             if type(saved_item) == MDR.Property:
                 pr = saved_item
                 messages.success(self.request,
-                        mark_safe(_("New Property '{name}' Saved - <a href='url'>id:{id}</a>").format(name=saved_item.name,id=saved_item.id))
+                        mark_safe(_("New Property '{name}' Saved - <a href='{url}'>id:{id}</a>").format(
+                            url=reverse("aristotle:item",args=[saved_item.id]),
+                            name=saved_item.name,id=saved_item.id
+                            ))
                 )
             if type(saved_item) == MDR.ObjectClass:
                 oc = saved_item
                 messages.success(self.request,
-                        mark_safe(_("New Object Class '{name}' Saved - <a href='url'>id:{id}</a>").format(name=saved_item.name,id=saved_item.id))
+                        mark_safe(_("New Object Class '{name}' Saved - <a href='{url}'>id:{id}</a>").format(
+                            url=reverse("aristotle:item",args=[saved_item.id]),
+                            name=saved_item.name,id=saved_item.id
+                            ))
                 )
             if type(saved_item) == MDR.DataElementConcept:
                 dec = saved_item
                 messages.success(self.request,
-                        mark_safe(_("New Data Element Concept '{name}' Saved - <a href='url'>id:{id}</a>").format(
+                        mark_safe(_("New Data Element Concept '{name}' Saved - <a href='{url}'>id:{id}</a>").format(
+                            url=reverse("aristotle:item",args=[saved_item.id]),
+                            name=saved_item.name,id=saved_item.id
+                            ))
+                )
+            if type(saved_item) == MDR.ValueDomain:
+                vd = saved_item
+                messages.success(self.request,
+                        mark_safe(_("New ValueDomain '{name}' Saved - <a href='{url}'>id:{id}</a>").format(
+                            url=reverse("aristotle:item",args=[saved_item.id]),
                             name=saved_item.name,id=saved_item.id
                             ))
                 )
             if type(saved_item) == MDR.DataElement:
                 de = saved_item
                 messages.success(self.request,
-                        mark_safe(_("New Data Element '{name}' Saved - <a href='url'>id:{id}</a>").format(
+                        mark_safe(_("New Data Element '{name}' Saved - <a href='{url}'>id:{id}</a>").format(
+                            url=reverse("aristotle:item",args=[saved_item.id]),
                             name=saved_item.name,id=saved_item.id
                             ))
                 )

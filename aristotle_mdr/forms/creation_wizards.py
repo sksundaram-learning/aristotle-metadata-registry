@@ -10,7 +10,7 @@ class UserAwareForm(forms.Form):
     def __init__(self,*args,**kwargs):
         self.user = kwargs.pop('user')
         super(UserAwareForm, self).__init__(*args, **kwargs)
-class UserAwareModelForm(forms.ModelForm): #autocomplete_light.ModelForm):
+class UserAwareModelForm(autocomplete_light.ModelForm):
     class Meta:
         model = MDR._concept
         exclude = ['readyToReview','superseded_by','_is_public','_is_locked','originURI']
@@ -210,12 +210,16 @@ class DE_Find_DEC_Results(UserAwareForm):
             return dec
         except ObjectDoesNotExist:
             return None
+    def save(self, *args, **kwargs):
+        pass
 
 class DE_Find_DE_Results_from_components(UserAwareForm):
     make_new_item = forms.BooleanField(initial=False,
         label=_("I've reviewed these items, and none of them meet my needs. Make me a new one."),
         error_messages={'required': 'You must select this to ackowledge you have reviewed the above items.'}
     )
+    def save(self, *args, **kwargs):
+        pass
 
 class DE_Find_DE_Results(Concept_2_Results):
     class Meta(Concept_2_Results.Meta):
