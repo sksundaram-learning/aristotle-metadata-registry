@@ -103,8 +103,8 @@ class PropertyWizardPage(ConceptWizardPage,TestCase):
     model=models.Property
 class ValueDomainWizardPage(ConceptWizardPage,TestCase):
     model=models.ValueDomain
-class DataElementWizardPage(ConceptWizardPage,TestCase):
-    model=models.DataElement
+#class DataElementWizardPage(ConceptWizardPage,TestCase):
+#    model=models.DataElement
 
 class DataElementConceptWizardPage(ConceptWizardPage,TestCase):
     wizard_url_name="createDataElementConcept"
@@ -280,6 +280,344 @@ class DataElementConceptWizardPage(ConceptWizardPage,TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue('name' in wizard['form'].errors.keys())
 
+
+class DataElementWizardPage(ConceptWizardPage,TestCase):
+    wizard_url_name="createDataElement"
+    wizard_form_name="data_element_wizard"
+    @property
+    def wizard_url(self):
+        return reverse('aristotle:%s'%self.wizard_url_name)
+    def test_editor_can_make_object(self):
+        pass
+    def test_editor_can_make_object__has_prior_components(self):
+        self.login_editor()
+        ani   = models.ObjectClass.objects.create(name="animagus",description="",workgroup=self.wg1)
+        at    = models.Property.objects.create(name="animal type",description="",workgroup=self.wg1)
+        momat = models.ValueDomain.objects.create(name="MoM animal type classification",
+                description="Ministry of Magic standard classification of animagus animal types",workgroup=self.wg1)
+        ani_dec = models.DataElementConcept.objects.create(name="animagus--animal type",description="",workgroup=self.wg1,
+                objectClass=ani,property=at
+                )
+
+        step_1_data = {
+            self.wizard_form_name+'-current_step': 'component_search',
+            'component_search-oc_name':"animagus",
+            'component_search-pr_name':"animal",
+            'component_search-vd_name':"mom classification"
+        }
+        # success!
+
+        response = self.client.post(self.wizard_url, step_1_data)
+        wizard = response.context['wizard']
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(wizard['steps'].current, 'component_results')
+        self.assertEqual(len(wizard['form'].fields.keys()),3) # we should have a match for OC, P and VD
+
+        step_2_data = {}
+        step_2_data.update(step_1_data)
+        step_2_data.update({self.wizard_form_name+'-current_step': 'component_results'})
+
+        response = self.client.post(self.wizard_url, step_2_data)
+        wizard = response.context['wizard']
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(wizard['steps'].current, 'component_results')
+
+        # Must pick an Object Class and Property (or none) to continue.
+        self.assertTrue('oc_options' in wizard['form'].errors.keys())
+        self.assertTrue('pr_options' in wizard['form'].errors.keys())
+        self.assertTrue('vd_options' in wizard['form'].errors.keys())
+
+        # Try the wrong way around
+        step_2_data.update({'component_results-oc_options':at.pk,'component_results-pr_options':momat.pk,'component_results-vd_options':ani.pk})
+        response = self.client.post(self.wizard_url, step_2_data)
+        wizard = response.context['wizard']
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(wizard['steps'].current, 'component_results')
+        self.assertTrue('oc_options' in wizard['form'].errors.keys())
+        self.assertTrue('pr_options' in wizard['form'].errors.keys())
+        self.assertTrue('vd_options' in wizard['form'].errors.keys())
+
+        # Picking the correct options should send us to the DEC results page.
+        step_2_data.update({'component_results-oc_options':str(ani.pk),
+                            'component_results-pr_options':str(at.pk),
+                            'component_results-vd_options':str(momat.pk)})
+        response = self.client.post(self.wizard_url, step_2_data)
+        wizard = response.context['wizard']
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(wizard['steps'].current, 'find_dec_results') # There is a matching DEC
+        step_3_data = {}
+        step_3_data.update(step_2_data)
+        step_3_data.update({self.wizard_form_name+'-current_step': 'find_dec_results'})
+        response = self.client.post(self.wizard_url, step_3_data)
+        wizard = response.context['wizard']
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(wizard['steps'].current, 'find_dec_results')
+
+    def test_editor_can_make_object__has_prior_components_but_no_dec(self):
+        self.login_editor()
+        ani   = models.ObjectClass.objects.create(name="animagus",description="",workgroup=self.wg1)
+        at    = models.Property.objects.create(name="animal type",description="",workgroup=self.wg1)
+        momat = models.ValueDomain.objects.create(name="MoM animal type classification",
+                description="Ministry of Magic standard classification of animagus animal types",workgroup=self.wg1)
+
+        step_1_data = {
+            self.wizard_form_name+'-current_step': 'component_search',
+            'component_search-oc_name':"animagus",
+            'component_search-pr_name':"animal",
+            'component_search-vd_name':"mom classification"
+        }
+        # success!
+
+        response = self.client.post(self.wizard_url, step_1_data)
+        wizard = response.context['wizard']
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(wizard['steps'].current, 'component_results')
+        self.assertEqual(len(wizard['form'].fields.keys()),3) # we should have a match for OC, P and VD
+
+        step_2_data = {}
+        step_2_data.update(step_1_data)
+        step_2_data.update({self.wizard_form_name+'-current_step': 'component_results'})
+
+        response = self.client.post(self.wizard_url, step_2_data)
+        wizard = response.context['wizard']
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(wizard['steps'].current, 'component_results')
+
+        # Must pick an Object Class and Property (or none) to continue.
+        self.assertTrue('oc_options' in wizard['form'].errors.keys())
+        self.assertTrue('pr_options' in wizard['form'].errors.keys())
+        self.assertTrue('vd_options' in wizard['form'].errors.keys())
+
+        # Try the wrong way around
+        step_2_data.update({'component_results-oc_options':at.pk,'component_results-pr_options':momat.pk,'component_results-vd_options':ani.pk})
+        response = self.client.post(self.wizard_url, step_2_data)
+        wizard = response.context['wizard']
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(wizard['steps'].current, 'component_results')
+        self.assertTrue('oc_options' in wizard['form'].errors.keys())
+        self.assertTrue('pr_options' in wizard['form'].errors.keys())
+        self.assertTrue('vd_options' in wizard['form'].errors.keys())
+
+        # Picking the correct options should send us to the DEC results page.
+        step_2_data.update({'component_results-oc_options':str(ani.pk),
+                            'component_results-pr_options':str(at.pk),
+                            'component_results-vd_options':str(momat.pk)})
+        response = self.client.post(self.wizard_url, step_2_data)
+        wizard = response.context['wizard']
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(wizard['steps'].current, 'make_dec') # Jump straight to make DEC, as no matching will be found.
+
+        # Now we make the Data Element Concept
+        step_3_data = {}
+        step_3_data.update(step_2_data)
+        step_3_data = {
+            self.wizard_form_name+'-current_step': 'make_dec',
+            'make_dec-name':"Animagus--Animal type",
+        }
+
+        response = self.client.post(self.wizard_url, step_3_data)
+        wizard = response.context['wizard']
+        self.assertTrue('description' in wizard['form'].errors.keys())
+        self.assertTrue('workgroup' in wizard['form'].errors.keys())
+
+        # no "test item" yet.
+        self.assertFalse(models.DataElementConcept.objects.filter(name="Animagus--Animal type").exists())
+
+        # must submit a description at this step. But we are using a non-permitted workgroup.
+        step_3_data.update({
+            'make_dec-description':"The record of the shape a wizard can change into.",
+            'make_dec-workgroup':self.wg2.pk
+            })
+        response = self.client.post(self.wizard_url, step_3_data)
+        wizard = response.context['wizard']
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue('workgroup' in wizard['form'].errors.keys())
+
+        # must submit a description at this step. With the right workgroup
+        step_3_data.update({
+            'make_dec-workgroup':self.wg1.pk
+            })
+        response = self.client.post(self.wizard_url, step_3_data)
+        self.assertEqual(response.status_code, 200)
+        wizard = response.context['wizard']
+        self.assertEqual(wizard['steps'].current, 'find_de_results')
+
+        # Now we make the Data Element
+        step_4_data = {}
+        step_4_data.update(step_3_data)
+        step_4_data = {
+            self.wizard_form_name+'-current_step': 'find_de_results',
+            'find_de_results-name':"Animagus--Animal type, MoM Code",
+        }
+
+        response = self.client.post(self.wizard_url, step_4_data)
+        wizard = response.context['wizard']
+        self.assertTrue('description' in wizard['form'].errors.keys())
+        self.assertTrue('workgroup' in wizard['form'].errors.keys())
+
+        # no "test item" yet.
+        self.assertFalse(models.DataElement.objects.filter(name="Animagus--Animal type, MoM Code").exists())
+
+        # must submit a description at this step. But we are using a non-permitted workgroup.
+        step_4_data.update({
+            'find_de_results-description':"The record of the shape a wizard can change into.",
+            'find_de_results-workgroup':self.wg2.pk
+            })
+        response = self.client.post(self.wizard_url, step_4_data)
+        wizard = response.context['wizard']
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue('workgroup' in wizard['form'].errors.keys())
+
+        # must submit a description at this step. With the right workgroup
+        step_4_data.update({
+            'find_de_results-workgroup':self.wg1.pk
+            })
+        response = self.client.post(self.wizard_url, step_4_data)
+        self.assertEqual(response.status_code, 200)
+        wizard = response.context['wizard']
+        self.assertEqual(wizard['steps'].current, 'completed')
+
+        # Now we save the whole thing
+        step_5_data = {}
+        step_5_data.update(step_4_data)
+        step_5_data = {
+            self.wizard_form_name+'-current_step': 'completed',
+        }
+
+        response = self.client.post(self.wizard_url, step_5_data)
+        wizard = response.context['wizard']
+        self.assertTrue('make_items' in wizard['form'].errors.keys())
+        self.assertFalse(models.DataElementConcept.objects.filter(name="Animagus--Animal type").exists())
+        self.assertFalse(models.DataElement.objects.filter(name="Animagus--Animal type, MoM Code").exists())
+        step_5_data.update({
+            'completed-make_items':self.wg1.pk
+            })
+        response = self.client.post(self.wizard_url, step_5_data)
+        item = models.DataElement.objects.filter(name="Animagus--Animal type, MoM Code").first()
+        self.assertRedirects(response,reverse("aristotle:dataElement", args=[item.id]))
+
+        self.assertTrue(models.DataElementConcept.objects.filter(name="Animagus--Animal type").exists())
+        self.assertTrue(models.DataElement.objects.filter(name="Animagus--Animal type, MoM Code").exists())
+
+"""
+    def test_editor_can_make_object__no_prior_components(self):
+        self.login_editor()
+        step_1_data = {
+            self.wizard_form_name+'-current_step': 'component_search',
+        }
+
+        response = self.client.post(self.wizard_url, step_1_data)
+        wizard = response.context['wizard']
+        self.assertEqual(wizard['steps'].current, 'component_search')
+        self.assertTrue('oc_name' in wizard['form'].errors.keys())
+        self.assertTrue('pr_name' in wizard['form'].errors.keys())
+
+        # must submit a name
+        step_1_data.update({'component_search-oc_name':"Animagus"})
+        step_1_data.update({'component_search-pr_name':"Animal type"})
+        # success!
+
+        response = self.client.post(self.wizard_url, step_1_data)
+        wizard = response.context['wizard']
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(wizard['steps'].current, 'component_results')
+        self.assertContains(response,"No matching object classes were found")
+        self.assertContains(response,"No matching properties were found")
+
+        step_2_data = {
+            self.wizard_form_name+'-current_step': 'component_results',
+        } # nothing else needed, as we aren't picking a component.
+
+        response = self.client.post(self.wizard_url, step_2_data)
+        wizard = response.context['wizard']
+        self.assertEqual(wizard['steps'].current, 'make_oc')
+
+        # Now we make the object class
+        step_3_data = {
+            self.wizard_form_name+'-current_step': 'make_oc',
+            'make_oc-name':"Animagus",
+        }
+
+        response = self.client.post(self.wizard_url, step_3_data)
+        wizard = response.context['wizard']
+        self.assertTrue('description' in wizard['form'].errors.keys())
+        self.assertTrue('workgroup' in wizard['form'].errors.keys())
+
+        # no "test item" yet.
+        self.assertFalse(models._concept.objects.filter(name="Test Item").exists())
+
+        # must submit a description at this step. But we are using a non-permitted workgroup.
+        step_3_data.update({
+            'make_oc-description':"A wizard who can change shape.",
+            'make_oc-workgroup':self.wg2.pk
+            })
+        response = self.client.post(self.wizard_url, step_3_data)
+        wizard = response.context['wizard']
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue('workgroup' in wizard['form'].errors.keys())
+
+        # must submit a description at this step. With the right workgroup
+        step_3_data.update({
+            'make_oc-workgroup':self.wg1.pk
+            })
+        response = self.client.post(self.wizard_url, step_3_data)
+        self.assertEqual(response.status_code, 200)
+        wizard = response.context['wizard']
+        self.assertEqual(wizard['steps'].current, 'make_p')
+
+        # Now we make the property
+        step_4_data = {
+            self.wizard_form_name+'-current_step': 'make_p',
+            'make_p-name':"Animal type",
+        }
+
+        response = self.client.post(self.wizard_url, step_4_data)
+        wizard = response.context['wizard']
+        self.assertTrue('description' in wizard['form'].errors.keys())
+        self.assertTrue('workgroup' in wizard['form'].errors.keys())
+
+        # no "test item" yet.
+        self.assertFalse(models._concept.objects.filter(name="Test Item").exists())
+
+        # must submit a description at this step. But we are using a non-permitted workgroup.
+        step_4_data.update({
+            'make_p-description':"A wizard who can change shape.",
+            'make_p-workgroup':self.wg2.pk
+            })
+        response = self.client.post(self.wizard_url, step_4_data)
+        wizard = response.context['wizard']
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue('workgroup' in wizard['form'].errors.keys())
+
+        # must submit a description at this step. With the right workgroup
+        step_4_data.update({
+            'make_p-workgroup':self.wg1.pk
+            })
+        response = self.client.post(self.wizard_url, step_4_data)
+        self.assertEqual(response.status_code, 200)
+        wizard = response.context['wizard']
+        self.assertEqual(wizard['steps'].current, 'find_dec_results')
+
+        step_4_data.update(step_1_data)
+        step_4_data.update(step_2_data)
+        step_4_data.update(step_3_data)
+        self.assertEqual(response.status_code, 200)
+        wizard = response.context['wizard']
+        self.assertEqual(response.context['form'].initial['name'], 'Animagus--Animal type')
+
+
+        step_5_data = {}
+        step_5_data.update(step_1_data)
+        step_5_data.update(step_2_data)
+        step_5_data.update(step_3_data)
+        step_5_data.update(step_4_data)
+        step_5_data.update({self.wizard_form_name+'-current_step': 'find_dec_results',})
+
+        response = self.client.post(self.wizard_url, step_5_data)
+        wizard = response.context['wizard']
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue('name' in wizard['form'].errors.keys())
+"""
 
 """Ordinary. Wizarding. Level. Examinations. O.W.L.s. More commonly known as 'Owls'.
 Study hard and you will be rewarded.

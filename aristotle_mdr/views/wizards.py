@@ -15,7 +15,7 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 def make_it_clean(string):
-    return strip_tags(string).replace("&nbsp;"," ").strip() # Clean it up
+    return str(strip_tags(string)).replace("&nbsp;"," ").strip() # Clean it up
 
 """
 THis allows use to perform an inspection of the registered items
@@ -377,9 +377,9 @@ class DataElementConceptWizard(MultiStepAristotleWizard):
             context.update({
                 'dec_matches':self.get_data_element_concept(),
                 'oc':self.get_object_class() or self.get_cleaned_data_for_step('make_oc'),
-                'pr':self.get_property() or self.get_cleaned_data_for_step('make_pr'),
+                'pr':self.get_property() or self.get_cleaned_data_for_step('make_p'),
                 'made_oc':self.get_cleaned_data_for_step('make_oc'),
-                'made_pr':self.get_cleaned_data_for_step('make_pr'),
+                'made_pr':self.get_cleaned_data_for_step('make_p'),
                 'made_dec':self.get_cleaned_data_for_step('find_dec_results'),
                 })
         context.update({
@@ -500,7 +500,7 @@ class DataElementWizard(MultiStepAristotleWizard):
                 dataElementConcept__property=pr,
                 valueDomain=vd
                 ).visible(self.request.user)
-            print self._data_element_from_components
+
             return self._data_element_from_components
         else:
             return []
@@ -639,11 +639,11 @@ class DataElementWizard(MultiStepAristotleWizard):
         if self.steps.current == 'completed':
             context.update({
                 'oc':self.get_object_class() or self.get_cleaned_data_for_step('make_oc'),
-                'pr':self.get_property() or self.get_cleaned_data_for_step('make_pr'),
+                'pr':self.get_property() or self.get_cleaned_data_for_step('make_p'),
                 'vd':self.get_value_domain() or self.get_cleaned_data_for_step('make_vd'),
                 'dec':self.get_data_element_concept() or self.get_cleaned_data_for_step('make_dec'),
                 'made_oc':self.get_cleaned_data_for_step('make_oc'),
-                'made_pr':self.get_cleaned_data_for_step('make_pr'),
+                'made_pr':self.get_cleaned_data_for_step('make_p'),
                 'made_vd':self.get_cleaned_data_for_step('make_vd'),
                 'made_dec':self.get_cleaned_data_for_step('make_dec'),
                 'de_matches':self.get_data_elements(),
@@ -684,7 +684,7 @@ class DataElementWizard(MultiStepAristotleWizard):
                 dec_name = _("No property name found")
                 dec_desc = _("No property description found")
             dec_desc = make_it_clean(dec_desc)
-            print "---%s---"%dec_desc
+
             if dec_desc and dec_desc[-1] == ".":
                 # remove the trailing period as we are going to try to make a sentence
                 dec_desc = dec_desc[:-1]
