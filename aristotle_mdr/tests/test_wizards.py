@@ -8,6 +8,35 @@ from django.core.management import call_command
 from django.test.utils import setup_test_environment
 setup_test_environment()
 
+class ConceptWizard_TestInvalidUrls(utils.LoggedInViewPages,TestCase):
+    def tearDown(self):
+        call_command('clear_index', interactive=False, verbosity=0)
+
+    def setUp(self):
+        super(ConceptWizard_TestInvalidUrls, self).setUp()
+        import haystack
+        haystack.connections.reload('default')
+
+    def test_invalid_model(self):
+        url = reverse('aristotle:createItem',args=["invalid_model_name"])
+        self.login_editor()
+        response = self.client.get(url)
+        self.assertEqual(response.status_code,404)
+        url = reverse('aristotle:createItem',args=["objectclass"])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code,200)
+
+    def test_invalid_app_and_model(self):
+        url = reverse('aristotle:createItem',args=["invalid_app_name","invalid_model_name"])
+        self.login_editor()
+        response = self.client.get(url)
+        self.assertEqual(response.status_code,404)
+        url = reverse('aristotle:createItem',args=["aristotle_mdr","objectclass"])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code,200)
+
+
+
 class ConceptWizardPage(utils.LoggedInViewPages):
     wizard_url_name="Harry Potter" # This will break if called without overriding the wizard_url_name. Plus its funny.
     wizard_form_name="dynamic_aristotle_wizard"
@@ -260,18 +289,12 @@ class DataElementConceptWizardPage(ConceptWizardPage,TestCase):
         wizard = response.context['wizard']
         self.assertEqual(wizard['steps'].current, 'find_dec_results')
 
-        step_4_data.update(step_1_data)
-        step_4_data.update(step_2_data)
         step_4_data.update(step_3_data)
         self.assertEqual(response.status_code, 200)
         wizard = response.context['wizard']
         self.assertEqual(response.context['form'].initial['name'], 'Animagus--Animal type')
 
-
         step_5_data = {}
-        step_5_data.update(step_1_data)
-        step_5_data.update(step_2_data)
-        step_5_data.update(step_3_data)
         step_5_data.update(step_4_data)
         step_5_data.update({self.wizard_form_name+'-current_step': 'find_dec_results',})
 
@@ -279,6 +302,49 @@ class DataElementConceptWizardPage(ConceptWizardPage,TestCase):
         wizard = response.context['wizard']
         self.assertEqual(response.status_code, 200)
         self.assertTrue('name' in wizard['form'].errors.keys())
+        self.assertTrue('description' in wizard['form'].errors.keys())
+        self.assertTrue('workgroup' in wizard['form'].errors.keys())
+
+        # must submit a name and description at this step. But we are using a non-permitted workgroup.
+        step_5_data.update({
+            'find_dec_results-name':"Animagus--Animal type",
+            'find_dec_results-description':"The record of the shape a wizard can change into.",
+            'find_dec_results-workgroup':self.wg2.pk
+            })
+        response = self.client.post(self.wizard_url, step_5_data)
+        wizard = response.context['wizard']
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue('workgroup' in wizard['form'].errors.keys())
+
+        # must submit a description at this step. With the right workgroup
+        step_5_data.update({
+            'find_dec_results-workgroup':self.wg1.pk
+            })
+        response = self.client.post(self.wizard_url, step_5_data)
+        self.assertEqual(response.status_code, 200)
+        wizard = response.context['wizard']
+        self.assertEqual(wizard['steps'].current, 'completed')
+
+
+        # now save everything
+        step_6_data = {}
+        step_6_data.update(step_5_data)
+        step_6_data.update({
+            self.wizard_form_name+'-current_step': 'completed',
+        })
+
+        response = self.client.post(self.wizard_url, step_6_data)
+        wizard = response.context['wizard']
+        self.assertTrue('make_items' in wizard['form'].errors.keys())
+        self.assertFalse(models.DataElementConcept.objects.filter(name="Animagus--Animal type").exists())
+        step_6_data.update({
+            self.wizard_form_name+'-current_step': 'completed',
+            'completed-make_items':True
+            })
+        response = self.client.post(self.wizard_url, step_6_data)
+        self.assertTrue(models.DataElementConcept.objects.filter(name="Animagus--Animal type").exists())
+        item = models.DataElementConcept.objects.filter(name="Animagus--Animal type").first()
+        self.assertRedirects(response,reverse("aristotle:dataElementConcept", args=[item.id]))
 
 
 class DataElementWizardPage(ConceptWizardPage,TestCase):
@@ -480,9 +546,9 @@ class DataElementWizardPage(ConceptWizardPage,TestCase):
         # Now we save the whole thing
         step_5_data = {}
         step_5_data.update(step_4_data)
-        step_5_data = {
+        step_5_data.update({
             self.wizard_form_name+'-current_step': 'completed',
-        }
+        })
 
         response = self.client.post(self.wizard_url, step_5_data)
         wizard = response.context['wizard']
@@ -490,7 +556,7 @@ class DataElementWizardPage(ConceptWizardPage,TestCase):
         self.assertFalse(models.DataElementConcept.objects.filter(name="Animagus--Animal type").exists())
         self.assertFalse(models.DataElement.objects.filter(name="Animagus--Animal type, MoM Code").exists())
         step_5_data.update({
-            'completed-make_items':self.wg1.pk
+            'completed-make_items':True
             })
         response = self.client.post(self.wizard_url, step_5_data)
         item = models.DataElement.objects.filter(name="Animagus--Animal type, MoM Code").first()

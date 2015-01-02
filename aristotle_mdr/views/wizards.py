@@ -1,7 +1,7 @@
 from aristotle_mdr import models as MDR
 from aristotle_mdr import forms as MDRForms
 from django.conf import settings
-from django.core.exceptions import ImproperlyConfigured
+from django.core.exceptions import ImproperlyConfigured, ObjectDoesNotExist
 from django.core.urlresolvers import reverse
 from django.contrib import messages
 from django.contrib.auth.decorators import permission_required
@@ -40,7 +40,10 @@ def create_item(request,app_label=None,model_name=None):
                 {'models':models,}
         )
     else:
-        mod = ContentType.objects.get(app_label=app_label,model=model_name).model_class()
+        try:
+            mod = ContentType.objects.get(app_label=app_label,model=model_name).model_class()
+        except ObjectDoesNotExist:
+            raise Http404 # TODO: Throw better, more descriptive error
 
     class DynamicAristotleWizard(ConceptWizard):
         model = mod
@@ -83,7 +86,7 @@ class ConceptWizard(PermissionWizard):
                  ]
 
     def get_form(self, step=None, data=None, files=None):
-        if step is None:
+        if step is None: # pragma: no cover
             step = self.steps.current
         if step == "results":
             similar = self.find_similar()
@@ -231,7 +234,7 @@ class MultiStepAristotleWizard(PermissionWizard):
 
     def get_form_initial(self, step):
         initial = super(MultiStepAristotleWizard,self).get_form_initial(step)
-        if step is None:
+        if step is None: # pragma: no cover
             step = self.steps.current
         if step == "make_oc":
             initial.update(self.get_field_defaults('oc'))
@@ -318,7 +321,7 @@ class DataElementConceptWizard(MultiStepAristotleWizard):
 
     def get_form_kwargs(self, step):
         # determine the step if not given
-        if step is None:
+        if step is None: # pragma: no cover
             step = self.steps.current
         kwargs = super(DataElementConceptWizard, self).get_form_kwargs(step)
 
@@ -534,7 +537,7 @@ class DataElementWizard(MultiStepAristotleWizard):
     def get_form_kwargs(self, step):
         # determine the step if not given
         kwargs = super(DataElementWizard, self).get_form_kwargs(step)
-        if step is None:
+        if step is None: # pragma: no cover
             step = self.steps.current
 
         if step == 'component_results':
@@ -653,7 +656,7 @@ class DataElementWizard(MultiStepAristotleWizard):
 
     def get_form_initial(self, step):
         initial = super(DataElementWizard,self).get_form_initial(step)
-        if step is None:
+        if step is None: # pragma: no cover
             step = self.steps.current
         if step == "make_vd":
             initial.update(self.get_field_defaults('vd'))
