@@ -113,7 +113,7 @@ def download(request,downloadType,iid=None):
         exec("import %s.downloader as downloader"%module_name)
         return downloader.download(request,downloadType,item)
         #except:
-        #    raise ImproperlyConfigured
+        #    raise Http404
 
     raise Http404
 

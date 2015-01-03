@@ -39,15 +39,15 @@ class PermissionsAutocomplete(autocomplete_light.AutocompleteModelTemplate):
         self.choices = self.choices.visible(self.request.user)
         return super(PermissionsAutocomplete, self).choices_for_request()
 
+# When autocomplete respects queryset all of these can be removed
 autocompletesToRegister = [
         MDR._concept,
         MDR.DataElement,
-        MDR.DataElementConcept,
+        #MDR.DataElementConcept,
         MDR.ConceptualDomain,
         MDR.ObjectClass,
         MDR.Property,
         MDR.ValueDomain,
-        MDR.DataElementConcept,
         MDR.DataType,
         MDR.GlossaryItem,
     ]

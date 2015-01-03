@@ -95,27 +95,31 @@ class AdminPage(utils.LoggedInViewPages,TestCase):
         response = self.client.get(reverse("admin:index"))
         self.assertEqual(response.status_code,200)
 
+class AdminPageForConcept(utils.LoggedInViewPages):
+    def setUp(self):
+        super(AdminPageForConcept, self).setUp()
+
     def test_editor_make_item(self):
         self.login_editor()
-        response = self.client.get(reverse("admin:aristotle_mdr_objectclass_changelist"))
+        response = self.client.get(reverse("admin:%s_%s_changelist"%(self.itemType._meta.app_label,self.itemType._meta.model_name)))
         self.assertEqual(response.status_code,200)
-        response = self.client.get(reverse("admin:aristotle_mdr_objectclass_add"))
+        response = self.client.get(reverse("admin:%s_%s_add"%(self.itemType._meta.app_label,self.itemType._meta.model_name)))
         self.assertEqual(response.status_code,200)
         # make an item
-        response = self.client.get(reverse("admin:aristotle_mdr_objectclass_add"))
+        response = self.client.get(reverse("admin:%s_%s_add"%(self.itemType._meta.app_label,self.itemType._meta.model_name)))
 
-        response = self.client.post(reverse("admin:aristotle_mdr_objectclass_add"),
+        response = self.client.post(reverse("admin:%s_%s_add"%(self.itemType._meta.app_label,self.itemType._meta.model_name)),
                     {'name':"admin_page_test_oc",'description':"test","workgroup":self.wg1.id,
                         'statuses-TOTAL_FORMS': 0, 'statuses-INITIAL_FORMS': 0 #no substatuses
                     }
                 )
         self.assertEqual(response.status_code,302)
-        self.assertRedirects(response,reverse("admin:aristotle_mdr_objectclass_changelist"))
+        self.assertRedirects(response,reverse("admin:%s_%s_changelist"%(self.itemType._meta.app_label,self.itemType._meta.model_name)))
         self.assertEqual(self.wg1.items.first().name,"admin_page_test_oc")
         self.assertEqual(self.wg1.items.count(),1)
 
         # Editor can't save in WG2, so this won't redirect.
-        response = self.client.post(reverse("admin:aristotle_mdr_objectclass_add"),
+        response = self.client.post(reverse("admin:%s_%s_add"%(self.itemType._meta.app_label,self.itemType._meta.model_name)),
                     {'name':"admin_page_test_oc",'description':"test","workgroup":self.wg2.id,
                         'statuses-TOTAL_FORMS': 0, 'statuses-INITIAL_FORMS': 0 #no substatuses
                     }
@@ -123,43 +127,64 @@ class AdminPage(utils.LoggedInViewPages,TestCase):
         self.assertEqual(self.wg2.items.count(),0)
         self.assertEqual(response.status_code,200)
 
-    def test_editor_deleting(self):
+    def test_editor_deleting_allowed_item(self):
         self.login_editor()
         # make some items
-        self.item1 = models.ObjectClass.objects.create(name="OC1",workgroup=self.wg1)
-        self.item2 = models.ObjectClass.objects.create(name="OC2",workgroup=self.wg2)
+        self.item1 = self.itemType.objects.create(name="OC1",workgroup=self.wg1)
 
         self.assertEqual(self.wg1.items.count(),1)
-        response = self.client.get(reverse("admin:aristotle_mdr_objectclass_delete",args=(str(self.item1.id))))
+        response = self.client.get(reverse("admin:%s_%s_delete"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=(str(self.item1.id))))
         self.assertEqual(response.status_code,200)
         response = self.client.post(
-            reverse("admin:aristotle_mdr_objectclass_delete",args=(str(self.item1.id))),
+            reverse("admin:%s_%s_delete"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=(str(self.item1.id))),
             {'post':'yes'}
             )
-        self.assertRedirects(response,reverse("admin:aristotle_mdr_objectclass_changelist"))
+        self.assertRedirects(response,reverse("admin:%s_%s_changelist"%(self.itemType._meta.app_label,self.itemType._meta.model_name)))
         self.assertEqual(self.wg1.items.count(),0)
 
-        self.item1 = models.ObjectClass.objects.create(name="OC1",workgroup=self.wg1,readyToReview=True)
+        self.item1 = self.itemType.objects.create(name="OC1",workgroup=self.wg1,readyToReview=True)
         self.assertEqual(self.wg1.items.count(),1)
         self.ra.register(self.item1,models.STATES.standard,self.registrar)
         self.assertTrue(self.item1.is_registered)
 
-        response = self.client.get(reverse("admin:aristotle_mdr_objectclass_delete",args=(str(self.item1.id))))
+        response = self.client.get(reverse("admin:%s_%s_delete"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=(str(self.item1.id))))
         self.assertEqual(response.status_code,404)
         self.assertEqual(self.wg1.items.count(),1)
         response = self.client.post(
-            reverse("admin:aristotle_mdr_objectclass_delete",args=(str(self.item1.id))),
+            reverse("admin:%s_%s_delete"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=(str(self.item1.id))),
             {'post':'yes'}
             )
         self.assertEqual(response.status_code,404)
         self.assertEqual(self.wg1.items.count(),1)
 
-        response = self.client.get(reverse("admin:aristotle_mdr_objectclass_delete",args=(str(self.item2.id))))
+    def test_editor_deleting_forbidden_item(self):
+        self.login_editor()
+        self.item2 = self.itemType.objects.create(name="OC2",workgroup=self.wg2)
+
+
+        response = self.client.get(reverse("admin:%s_%s_delete"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=(str(self.item2.id))))
         self.assertEqual(response.status_code,404)
         self.assertEqual(self.wg2.items.count(),1)
         response = self.client.post(
-            reverse("admin:aristotle_mdr_objectclass_delete",args=(str(self.item2.id))),
+            reverse("admin:%s_%s_delete"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=(str(self.item2.id))),
             {'post':'yes'}
             )
         self.assertEqual(response.status_code,404)
         self.assertEqual(self.wg2.items.count(),1)
+
+
+
+class ObjectClassAdminPage(AdminPageForConcept,TestCase):
+    itemType=models.ObjectClass
+class PropertyAdminPage(AdminPageForConcept,TestCase):
+    itemType=models.Property
+class ValueDomainAdminPage(AdminPageForConcept,TestCase):
+    itemType=models.ValueDomain
+class ConceptualDomainAdminPage(AdminPageForConcept,TestCase):
+    itemType=models.ConceptualDomain
+class DataElementConceptAdminPage(AdminPageForConcept,TestCase):
+    itemType=models.DataElementConcept
+class DataElementAdminPage(AdminPageForConcept,TestCase):
+    itemType=models.DataElement
+class GlossaryAdminPage(AdminPageForConcept,TestCase):
+    itemType=models.GlossaryItem

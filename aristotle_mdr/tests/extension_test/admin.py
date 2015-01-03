@@ -9,4 +9,11 @@ class QuestionAdmin(aristotle_admin.ConceptAdmin):
                 {'fields': ['questionText','responseLength','collectedDataElement',]}),
     ]
 
+class QuestionnaireAdmin(aristotle_admin.ConceptAdmin):
+    fieldsets = aristotle_admin.ConceptAdmin.fieldsets + [
+            ('Questions',
+                {'fields': ['questions',]}),
+    ]
+
 admin.site.register(models.Question,QuestionAdmin)
+admin.site.register(models.Questionnaire,QuestionnaireAdmin)

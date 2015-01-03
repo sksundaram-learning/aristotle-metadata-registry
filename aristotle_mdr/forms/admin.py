@@ -2,6 +2,7 @@ import autocomplete_light
 autocomplete_light.autodiscover()
 
 from django import forms
+from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.utils.translation import ugettext_lazy as _
 
 import aristotle_mdr.models as MDR
@@ -10,7 +11,6 @@ from aristotle_mdr.perms import user_can_edit
 from aristotle_mdr.utils import concept_to_clone_dict
 
 def MembershipField(model,name):
-    from django.contrib.admin.widgets import FilteredSelectMultiple
     return forms.ModelMultipleChoiceField(
         queryset=model.objects.all(),
         required=False,
@@ -59,7 +59,7 @@ class AristotleProfileForm(forms.ModelForm):
         if "registrar_in" in self.cleaned_data.keys():
             user.registrar_in = self.cleaned_data['registrar_in']
 
-class AdminConceptForm(forms.ModelForm):
+class AdminConceptForm(autocomplete_light.ModelForm):
     # Thanks: http://stackoverflow.com/questions/6034047/one-to-many-inline-select-with-django-admin
     # Although concept is an abstract class, we still need this to have a reverse one-to-many edit field.
     class Meta:
@@ -85,15 +85,17 @@ class AdminConceptForm(forms.ModelForm):
                     required=False,
                     label="Supersedes",
                     queryset=self.itemtype.objects.all(),
-                    widget=autocomplete_light.MultipleChoiceWidget(self.instance.get_autocomplete_name())
                 )
+            if self.instance.get_autocomplete_name() in autocomplete_light.registry.keys():
+                # if there is an autocomplete for this item, then replace it
+                # TODO: when autocomplete respects queryset these can be done automatically
+                self.fields['deprecated'].widget = autocomplete_light.MultipleChoiceWidget(self.instance.get_autocomplete_name())
             self.fields['deprecated'].initial = self.instance.supersedes.all()
-            self.fields['superseded_by'].widget = autocomplete_light.ChoiceWidget(self.instance.get_autocomplete_name())
 
         if name_suggest_fields:
             self.fields['name'].widget = widgets.NameSuggestInput(name_suggest_fields=name_suggest_fields,separator=separator)
 
-        if auto_fields:
+        if auto_fields and False:
             for f,l in auto_fields['fk']:
                 self.fields[f].widget = autocomplete_light.ChoiceWidget(l.get_autocomplete_name())
 

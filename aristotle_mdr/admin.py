@@ -196,27 +196,12 @@ class DataElementAdmin(ConceptAdmin):
     fieldsets = ConceptAdmin.fieldsets + [
             ('Components', {'fields': ['dataElementConcept','valueDomain']}),
     ]
-    raw_id_fields = ConceptAdmin.raw_id_fields + ('dataElementConcept','valueDomain')
-    light_autocomplete_lookup_fields = {
-        'fk': [
-            ('dataElementConcept',MDR.DataElementConcept ),
-            ('valueDomain',MDR.ValueDomain ),
-            ] +ConceptAdmin.light_autocomplete_lookup_fields['fk'],
-    }
 
 class DataElementConceptAdmin(ConceptAdmin):
-
     name_suggest_fields = ['objectClass','property']
     fieldsets = ConceptAdmin.fieldsets + [
             ('Components', {'fields': ['objectClass','property']}),
     ]
-    raw_id_fields = ConceptAdmin.raw_id_fields + ('objectClass','property',)
-    light_autocomplete_lookup_fields = {
-        'fk': [
-            ('objectClass',MDR.ObjectClass ),
-            ('property',MDR.Property ),
-            ] +ConceptAdmin.light_autocomplete_lookup_fields['fk'],
-    }
 
 class ObjectClassAdmin(ConceptAdmin):       pass
 class ConceptualDomainAdmin(ConceptAdmin):  pass

@@ -842,11 +842,14 @@ def defaultData():
        ("Number","A sequence of numeric characters which may contain decimals, excluding codes with 'leading' characters e.g. '01','02','03'. "),
        ("String","A sequence of alphabetic and/or numeric characters, including 'leading' characters e.g. '01','02','03'."),
        ]
+    print "making datatypes:  ",
     for name,desc in dataTypes:
         dt,created = DataType.objects.get_or_create(name=name,description=desc,workgroup=iso_wg)
         iso.register(dt,STATES.standard,system,datetime.date(2000,1,1))
         iso_package.items.add(dt)
-        print "making datatype: {name}".format(name=name)
+        print "{name} ".format(name=name),
+    print ""
+
     reprClasses = [
        ("Code","A system of valid symbols that substitute for specified values e.g. alpha, numeric, symbols and/or combinations."),
        ("Count","Non-monetary numeric value arrived at by counting."),
@@ -859,9 +862,11 @@ def defaultData():
        ("Text","A text field that is usually unformatted."),
        ("Time","Time of day or duration eg HH:MM:SS.SSSS."),
        ]
+    print "making representation class: ",
     for name,desc in reprClasses:
         rc,created = RepresentationClass.objects.get_or_create(name=name,description=desc)
-        print "making representation class: {name}".format(name=name)
+        print "{name} ".format(name=name),
+    print ""
     unitsOfMeasure = [
         ("Length", [
          ("Centimetre", "cm"),
@@ -886,11 +891,12 @@ def defaultData():
     ]
     for measure,units in unitsOfMeasure:
         m,created = Measure.objects.get_or_create(name=measure,description="")
-        print "making measure: {name}".format(name=name)
+        print "making measure: {name}".format(name=measure),
+        print "  : units of measure:  ",
         for name,symbol in units:
             u,created = UnitOfMeasure.objects.get_or_create(name=name,symbol=symbol,measure=m)
-            print "   making unit of measure: {name}".format(name=name)
-
+            print "{name}".format(name=name),
+        print ""
 
 def favourite_updated(recipient,obj):
     notify.send(recipient, recipient=recipient, verb="changed a favourited item", target=obj)

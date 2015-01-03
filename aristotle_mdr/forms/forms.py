@@ -29,19 +29,24 @@ class DeprecateForm(forms.Form):
                 required=False,
                 widget=autocomplete_light.MultipleChoiceWidget('Autocomplete_concept'))
 
-                #widget=forms.CheckboxSelectMultiple)
     def __init__(self, *args, **kwargs):
         self.item = kwargs.pop('item')
         self.qs = kwargs.pop('qs')
         self.user = kwargs.pop('user')
         super(DeprecateForm, self).__init__(*args, **kwargs)
+        if self.item.get_autocomplete_name() in autocomplete_light.registry.keys():
+            form_widget = autocomplete_light.MultipleChoiceWidget(self.item.get_autocomplete_name())
+        else:
+            # if there is no autocomplete for this item, then just give a select
+            # TODO: when autocomplete respects queryset these can be done automatically
+            form_widget = forms.SelectMultiple
         self.fields['olderItems']=forms.ModelMultipleChoiceField(
                 queryset=self.qs,
                 label=_("Supersede older items"),
                 required=False,
                 initial=self.item.supersedes.all(),
-                widget=autocomplete_light.MultipleChoiceWidget(self.item.get_autocomplete_name()))
-
+                widget=form_widget
+            )
     def clean_olderItems(self):
         olderItems = self.cleaned_data['olderItems']
         if self.item in olderItems:
@@ -64,13 +69,19 @@ class SupersedeForm(forms.Form):
         self.qs = kwargs.pop('qs')
         self.user = kwargs.pop('user')
         super(SupersedeForm, self).__init__(*args, **kwargs)
+        if self.item.get_autocomplete_name() in autocomplete_light.registry.keys():
+            form_widget = autocomplete_light.ChoiceWidget(self.item.get_autocomplete_name())
+        else:
+            # if there is no autocomplete for this item, then just give a select
+            # TODO: when autocomplete respects queryset these can be done automatically
+            form_widget = forms.Select
         self.fields['newerItem']=forms.ModelChoiceField(
                 queryset=self.qs,
                 empty_label="None",
                 label=_("Superseded by"),
                 initial=self.item.superseded_by,
                 required=False,
-                widget=autocomplete_light.ChoiceWidget(self.item.get_autocomplete_name()))
+                widget=form_widget)
     def clean_newerItem(self):
         item  = self.cleaned_data['newerItem']
         if self.item.id == item.id:
