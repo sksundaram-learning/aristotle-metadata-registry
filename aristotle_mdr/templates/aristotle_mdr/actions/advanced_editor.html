@@ -6,11 +6,13 @@
 {% block extra_head_scripts %}
     <link rel="stylesheet" href="{{ STATIC_URL }}{% compile 'aristotle_mdr/aristotle.wizard.less' %}" />
     <link rel="stylesheet" href="{{ STATIC_URL }}{% compile 'aristotle_mdr/aristotle_search.less' %}" />
-    {{ form.media }}
+    {% if request.is_ajax %}
+        {{ form.media }}
+    {% endif %}
     {% include 'autocomplete_light/static.html' %}
 {% endblock %}
 
-<form method="post" action="{#% url 'aristotle:editor' item.id %#}">{% csrf_token %}
+<form method="post" action="{% url 'aristotle:edit_item' item.id %}">{% csrf_token %}
     <div class="modal-body">
         <ol class="breadcrumb">
           <li><a href="{% url 'aristotle:item' item.id %}">{{ item.name }}</a></li>

@@ -1,4 +1,4 @@
-{% extends "aristotle_mdr/create/dec_template_wrapper.html" %}
+{% extends "aristotle_mdr/create/de_template_wrapper.html" %}
 
 {% block creationTips %}
 <div class="panel panel-info">
@@ -15,13 +15,14 @@
             pre-populate any new items you create.
         </p>
         <p>
-            <a href="{% url 'aristotle:about' 'dataelementconcept' %}"><em>Data Element concepts</em></a>
-            are description of a type of data that might be collected for a particular
+            <a href="{% url 'aristotle:about' 'dataelement' %}"><em>Data Elements</em></a>
+            are descriptions of how an data might be recorded for a particular
             attribute of an entity, described by the combination of a
-            <a href="{% url 'aristotle:about' 'objectclass' %}"><em>Object Class</em></a> and a
-            <a href="{% url 'aristotle:about' 'property' %}"><em>Property</em></a>.
+            <a href="{% url 'aristotle:about' 'dataelementconcept' %}"><em>Data Element Concept</em></a> and a
+            <a href="{% url 'aristotle:about' 'valuedomain' %}"><em>Value Domain</em></a>.
 
-            <small class="example">For example: <em>Age of a Person</em> or <em>Number of employees of a Business</em>.</small>
+            <small class="example">For example: <em>Age of a Person, in whole years</em> or
+            <em>Number of employees of a Business, recorded in coded 5 year increments</em>.</small>
         </p>
     </div>
 </div>
@@ -77,6 +78,32 @@
         <label>
             Add some <em>keywords</em> to help narrow your search (optional):
             {{ form.pr_desc }}
+        </label>
+    </div>
+</fieldset>
+
+<fieldset class="wizard row">
+    <legend class="col-sm-4">How would you store this information?
+        <small class="example">For example: Number, code, text...</small>
+    </legend>
+    <div class="col-sm-8">
+        <label>
+            What would be the <em>name</em> of the value domain you are collecting?
+            {% if form.vd_name.errors %}
+                <div class="alert alert-danger">
+                {{ form.vd_name.errors }}
+            {% endif %}
+            {{ form.vd_name }}
+            <div>
+             {{ form.vd_name.help_text }}
+            </div>
+            {% if form.vd_name.errors %}
+                </div>
+            {% endif %}
+        </label>
+        <label>
+            Add some <em>keywords</em> to help narrow your search (optional):
+            {{ form.vd_desc }}
         </label>
     </div>
 </fieldset>

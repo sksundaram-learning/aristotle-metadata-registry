@@ -70,25 +70,31 @@
         </em>
         {% endif %}
         <small>({{ item.get_verbose_name }})</small>
-        {% if item|can_edit:request.user %}
-        <a class="sr-only" accesskey="p" href="{% adminEdit item %}">
-            <i class="fa fa-sliders"></i> {% trans 'Admin editor'%}
-        </a>
+
+        {# Screen reader quick links #}
+        {% if item|can_edit:request.user and request.user.is_staff %}
+            <a class="sr-only" accesskey="p" href="{% adminEdit item %}">{% trans 'Admin editor'%}</a>
+        {% elif item|can_edit:request.user %}
+            <a class="sr-only" accesskey="p" href="{% url 'aristotle:edit_item' item.id %}">{% trans 'Advanced editor'%}</a>
         {% endif %}
     </h1>
     <div class="btn-group pull-right">
         {% if item|can_edit:request.user %}
             <div class="btn-group">
               <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                {% trans 'Edit menu'%} <span class="caret"></span>
+                <i class="fa fa-pencil-square-o"></i> {% trans 'Edit'%} <span class="caret"></span>
               </button>
               <ul class="dropdown-menu" role="menu">
                 <li><a id="ActivateInplaceEdit" class=""></a></li>
                 <li><a class="" href="{% url 'aristotle:edit_item' item.id %}"
                                 data-toggle="modal" data-target="#infobox_adv_edit">
-                    <i class="fa fa-sliders"></i> {% trans 'Advanced editor'%}
+                    <i class="fa fa-pencil-square"></i> {% trans 'Advanced editor'%}
                 </a></li>
-
+                {% if request.user.is_staff %}
+                <li><a class="" href="{% adminEdit item %}">
+                    <i class="fa fa-sliders"></i> {% trans 'Edit in admin'%}
+                </a></li>
+                {% endif %}
                 <li class="divider"></li>
                 <li><a class="" href="{% clone item %}">
                     <i class="fa fa-code-fork"></i> {% trans 'Clone this item'%}

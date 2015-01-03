@@ -95,9 +95,9 @@ STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     'static_precompiler.finders.StaticPrecompilerFinder',
 )
-#if DEBUG:
-STATIC_PRECOMPILER_CACHE_TIMEOUT = 1
-STATIC_PRECOMPILER_DISABLE_AUTO_COMPILE = False
+if DEBUG:
+    STATIC_PRECOMPILER_CACHE_TIMEOUT = 1
+    STATIC_PRECOMPILER_DISABLE_AUTO_COMPILE = False
 
 GRAPPELLI_ADMIN_TITLE = "Aristotle admin interface"
 BOOTSTRAP3 = {

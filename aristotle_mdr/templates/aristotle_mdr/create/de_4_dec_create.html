@@ -1,4 +1,4 @@
-{% extends "aristotle_mdr/create/dec_template_wrapper.html" %}
+{% extends "aristotle_mdr/create/de_template_wrapper.html" %}
 {% load aristotle_tags i18n %}
 
 {% block formarea %}
@@ -20,31 +20,13 @@
         </div>
     {% endif %}
     {% if dec_matches %}
-        <div class="panel panel-danger">
-            <div class="panel-heading">
-                There are already Data Element Concepts based on a
-                "<em>{{ oc_match.name }}</em>" and "<em>{{ pr_match.name }}</em>".
-            </div>
-            <div class="panel-body">
-                Reusing existing content makes comparing items in the future easier.
-                <br>Consider reviewing these items to see if an existing piece of content meets your needs.
-                <ol class="searchResults">
-                    {% for obj in dec_matches %}
-                    <li>
-                        {% include "search/searchItem.html" with item=obj %}
-                    </li>
-                    {% endfor %}
-                </ol>
-            </div>
-            <div class="panel-footer">
-                {{ wizard.form.make_new_item }}
-                {{ wizard.form.make_new_item.label }}
-                {{ wizard.form.make_new_item.errors }}
-            </div>
-        </div>
+        <p>
+            Standard items based on "<em>{{ objectClass.name }}</em>" and "<em>{{ property.name }}</em>" <strong>were found</strong>,
+            but you are electing to create a new one.
+        </p>
     {% elif oc_match and pr_match %}
         <p>
-            No Data Element Concepts based on "<em>{{ oc_match.name }}</em>" and "<em>{{ pr_match.name }}</em>" were found,
+            No standard items based on "<em>{{ objectClass.name }}</em>" and "<em>{{ property.name }}</em>" were found,
             so a new one will be created.
         </p>
     {% elif oc_match %}

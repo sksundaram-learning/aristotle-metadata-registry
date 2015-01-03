@@ -24,4 +24,4 @@ This will then be rendered in the "Relationships" section of the page.
 
 The full path for a generic extra content template, would be::
 
-    templates/app_name/extra_content/aristotle_content_type.html
+    templates/app_name/extra_content/model_name.html

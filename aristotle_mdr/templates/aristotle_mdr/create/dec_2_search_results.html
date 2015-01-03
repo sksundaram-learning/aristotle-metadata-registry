@@ -11,7 +11,8 @@
 </div>
 {% endif %}
 
-<div class="oc_p_choice_columns">
+<div class="__component_choice_columns row">
+    <div class="col-sm-6">
     <div class="panel panel-info">
         <div class="panel-heading">
             Pick an object class.
@@ -23,7 +24,7 @@
                 {% for id, obj in form.oc_options.field.choices|slice:":-1" %}
                     <li>
                         <label>
-                            <input type="radio" name="oc_p_results-oc_options" value="{{id}}"></input>
+                            <input type="radio" name="component_results-oc_options" value="{{id}}"></input>
                             {% include "search/searchItem.html" with item=obj.object %}
                         </label>
                     </li>
@@ -33,7 +34,7 @@
             <div class="panel-footer">
                 {% for id, label in form.oc_options.field.choices|slice:"-1:"  %}
                     <label class="none_of_the_above">
-                        <input type="radio" name="oc_p_results-oc_options" value="{{id}}"></input>
+                        <input type="radio" name="component_results-oc_options" value="{{id}}"></input>
                         {{ label }}
                     </label>
                 {% endfor %}
@@ -46,7 +47,9 @@
             </div>
         {% endif %}
     </div>
+    </div>
 
+    <div class="col-sm-6">
     <div class="panel panel-info">
         <div class="panel-heading">
             Pick a property.
@@ -58,7 +61,7 @@
                 {% for id, obj in form.pr_options.field.choices|slice:":-1" %}
                     <li>
                         <label>
-                            <input type="radio" name="oc_p_results-pr_options" value="{{id}}"></input>
+                            <input type="radio" name="component_results-pr_options" value="{{id}}"></input>
                             {% include "search/searchItem.html" with item=obj.object %}
                         </label>
                     </li>
@@ -68,7 +71,7 @@
             <div class="panel-footer">
                 {% for id, label in form.pr_options.field.choices|slice:"-1:"  %}
                     <label class="none_of_the_above">
-                        <input type="radio" name="oc_p_results-pr_options" value="{{id}}"></input>
+                        <input type="radio" name="component_results-pr_options" value="{{id}}"></input>
                         {{ label }}
                     </label>
                 {% endfor %}
@@ -80,6 +83,7 @@
                 </p>
             </div>
         {% endif %}
+    </div>
     </div>
 </div>
 {% endblock %}

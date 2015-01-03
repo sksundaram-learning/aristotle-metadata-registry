@@ -59,8 +59,8 @@ urlpatterns = patterns('aristotle_mdr.views',
 
     #url(r'^create/?$', views.item, name='item'),
     url(r'^create/?$', views.allRegistrationAuthorities, name='createList'),
-    #url(r'^create/datatype/?$', views.createDataType, name='createDataType'),
     url(r'^create/dataelementconcept$', views.wizards.DataElementConceptWizard.as_view(), name='createDataElementConcept'),
+    url(r'^create/dataelement$', views.wizards.DataElementWizard.as_view(), name='createDataElement'),
     url(r'^create/(?P<app_label>.+)/(?P<model_name>.+)/?$', views.wizards.create_item, name='createItem'),
     url(r'^create/(?P<model_name>.+)/?$', views.wizards.create_item, name='createItem'),
 
