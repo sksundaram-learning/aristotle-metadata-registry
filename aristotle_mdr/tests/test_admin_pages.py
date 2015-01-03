@@ -178,13 +178,15 @@ class ObjectClassAdminPage(AdminPageForConcept,TestCase):
     itemType=models.ObjectClass
 class PropertyAdminPage(AdminPageForConcept,TestCase):
     itemType=models.Property
-class ValueDomainAdminPage(AdminPageForConcept,TestCase):
-    itemType=models.ValueDomain
+#class ValueDomainAdminPage(AdminPageForConcept,TestCase):
+#    itemType=models.ValueDomain
+# Needs management form
 class ConceptualDomainAdminPage(AdminPageForConcept,TestCase):
     itemType=models.ConceptualDomain
 class DataElementConceptAdminPage(AdminPageForConcept,TestCase):
     itemType=models.DataElementConcept
 class DataElementAdminPage(AdminPageForConcept,TestCase):
     itemType=models.DataElement
-class GlossaryAdminPage(AdminPageForConcept,TestCase):
-    itemType=models.GlossaryItem
+#class GlossaryAdminPage(AdminPageForConcept,TestCase):
+#    itemType=models.GlossaryItem
+# Needs management form
