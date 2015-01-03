@@ -196,7 +196,7 @@ def edit_item(request,iid,*args,**kwargs):
             raise PermissionDenied
 
     if request.method == 'POST': # If the form has been submitted...
-        form = MDRForms.wizards.subclassed_wizard_2_Results(item.__class__)(request.POST,instance=item,user=request.user)
+        form = MDRForms.wizards.subclassed_modelform(item.__class__)(request.POST,instance=item,user=request.user)
         if form.is_valid():
             item = form.save()
             return HttpResponseRedirect(reverse("aristotle:item",args=[item.pk]))
