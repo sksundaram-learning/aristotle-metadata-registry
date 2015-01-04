@@ -212,6 +212,7 @@ class ObjectClassAdmin(ConceptAdmin):       pass
 class ConceptualDomainAdmin(ConceptAdmin):  pass
 class PackageAdmin(ConceptAdmin):           pass
 class PropertyAdmin(ConceptAdmin):          pass
+class DataTypeAdmin(ConceptAdmin):          pass
 
 class CodeValueInline(admin.TabularInline):
     form = MDRForms.PermissibleValueForm
@@ -257,6 +258,7 @@ class RegistrationAuthorityAdmin(admin.ModelAdmin):
 # Register your models here.
 admin.site.register(MDR.ConceptualDomain,ConceptualDomainAdmin)
 admin.site.register(MDR.DataElement,DataElementAdmin)
+admin.site.register(MDR.DataType,DataTypeAdmin)
 admin.site.register(MDR.DataElementDerivation,DataElementDerivationAdmin)
 admin.site.register(MDR.DataElementConcept,DataElementConceptAdmin)
 admin.site.register(MDR.GlossaryItem,GlossaryItemAdmin)
@@ -275,7 +277,6 @@ class UnitOfMeasureAdmin(admin.ModelAdmin):
 
 admin.site.register(MDR.UnitOfMeasure,UnitOfMeasureAdmin)
 admin.site.register(MDR.Measure)
-admin.site.register(MDR.DataType)
 #admin.site.register(MDR.)
 
 # Define an inline admin descriptor for Employee model

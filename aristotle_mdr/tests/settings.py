@@ -20,6 +20,7 @@ INSTALLED_APPS = (
     'haystack',
     'extension_test',
     'aristotle_mdr',
+    'text_download_test',
 ) + INSTALLED_APPS
 
 HAYSTACK_CONNECTIONS = {
@@ -38,4 +39,7 @@ PASSWORD_HASHERS = (
 
 ARISTOTLE_SETTINGS['SEPARATORS']['DataElementConcept'] = '--'
 ARISTOTLE_SETTINGS['CONTENT_EXTENSIONS'] = ARISTOTLE_SETTINGS['CONTENT_EXTENSIONS'] +['extension_test']
+ARISTOTLE_DOWNLOADS = ARISTOTLE_DOWNLOADS +[
+    ('txt','Text','fa-file-pdf-o','text_download_test'),
+    ]
 ROOT_URLCONF = 'extension_test.urls'

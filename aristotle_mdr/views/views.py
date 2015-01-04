@@ -5,7 +5,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.shortcuts import render, redirect, get_object_or_404
-from django.template import RequestContext
+from django.template import RequestContext, TemplateDoesNotExist
 from django.template.loader import select_template
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import TemplateView
@@ -109,13 +109,17 @@ def download(request,downloadType,iid=None):
         elif not re.search('^[a-zA-Z0-9\_]+$',module_name): # pragma: no cover
             # bad module_name
             raise ImproperlyConfigured
-        #try:
-        downloader = None
-        # dangerous - we are really trusting the settings creators here.
-        exec("import %s.downloader as downloader"%module_name)
-        return downloader.download(request,downloadType,item)
-        #except:
-        #    raise Http404
+        try:
+            downloader = None
+            # dangerous - we are really trusting the settings creators here.
+            exec("import %s.downloader as downloader"%module_name)
+            return downloader.download(request,downloadType,item)
+        except TemplateDoesNotExist:
+            # If the template doesn't exist lets tell the user not to try again
+            raise Http404
+        except:
+            # Every other error raises an ImproperlyConfigured because the download-dev has done something wrong (probably).
+            raise ImproperlyConfigured
 
     raise Http404
 
