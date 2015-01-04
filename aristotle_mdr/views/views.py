@@ -5,6 +5,8 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.shortcuts import render, redirect, get_object_or_404
+from django.template import RequestContext
+from django.template.loader import select_template
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import TemplateView
 from django.utils import timezone
@@ -138,13 +140,18 @@ def render_if_condition_met(request,condition,objtype,iid=None,subpage=None):
             item.__class__,
             item.pk,
         ).first()
-    return render(request,item.template,
+
+    default_template = "%s/concepts/%s.html"%(item.__class__._meta.app_label,item.__class__._meta.model_name)
+    template = select_template([default_template,item.template])
+    context = RequestContext(request,
         {'item':item,
          #'view':request.GET.get('view','').lower(),
          'isFavourite': isFavourite,
          'last_edit': last_edit
             }
         )
+
+    return HttpResponse(template.render(context))
 
 def itemPackages(request, iid):
     item = get_if_user_can_view(MDR._concept,request.user,iid=iid)

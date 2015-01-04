@@ -187,6 +187,10 @@ class DataElementConceptAdminPage(AdminPageForConcept,TestCase):
     itemType=models.DataElementConcept
 class DataElementAdminPage(AdminPageForConcept,TestCase):
     itemType=models.DataElement
+class DataTypeAdminPage(AdminPageForConcept,TestCase):
+    itemType=models.DataType
+class DataElementDerivationAdminPage(AdminPageForConcept,TestCase):
+    itemType=models.DataElementDerivation
 #class GlossaryAdminPage(AdminPageForConcept,TestCase):
 #    itemType=models.GlossaryItem
 # Needs management form

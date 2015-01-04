@@ -197,6 +197,11 @@ class DataElementAdmin(ConceptAdmin):
             ('Components', {'fields': ['dataElementConcept','valueDomain']}),
     ]
 
+class DataElementDerivationAdmin(ConceptAdmin):
+    fieldsets = ConceptAdmin.fieldsets + [
+            ('Components', {'fields': ['derivation_rule','derives','inputs']}),
+    ]
+
 class DataElementConceptAdmin(ConceptAdmin):
     name_suggest_fields = ['objectClass','property']
     fieldsets = ConceptAdmin.fieldsets + [
@@ -252,6 +257,7 @@ class RegistrationAuthorityAdmin(admin.ModelAdmin):
 # Register your models here.
 admin.site.register(MDR.ConceptualDomain,ConceptualDomainAdmin)
 admin.site.register(MDR.DataElement,DataElementAdmin)
+admin.site.register(MDR.DataElementDerivation,DataElementDerivationAdmin)
 admin.site.register(MDR.DataElementConcept,DataElementConceptAdmin)
 admin.site.register(MDR.GlossaryItem,GlossaryItemAdmin)
 admin.site.register(MDR.Package,PackageAdmin)

@@ -26,6 +26,7 @@ ambiguous, present an option to make the right item.
 def create_item(request,app_label=None,model_name=None):
     if not model_name:
         raise ImproperlyConfigured
+    model_name = model_name.lower()
 
     mod = None
     if app_label is None:
