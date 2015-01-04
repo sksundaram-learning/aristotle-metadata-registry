@@ -96,6 +96,8 @@ class AdminPage(utils.LoggedInViewPages,TestCase):
         self.assertEqual(response.status_code,200)
 
 class AdminPageForConcept(utils.LoggedInViewPages):
+    form_defaults = {}
+    create_defaults = {}
     def setUp(self):
         super(AdminPageForConcept, self).setUp()
 
@@ -108,30 +110,31 @@ class AdminPageForConcept(utils.LoggedInViewPages):
         # make an item
         response = self.client.get(reverse("admin:%s_%s_add"%(self.itemType._meta.app_label,self.itemType._meta.model_name)))
 
-        response = self.client.post(reverse("admin:%s_%s_add"%(self.itemType._meta.app_label,self.itemType._meta.model_name)),
-                    {'name':"admin_page_test_oc",'description':"test","workgroup":self.wg1.id,
-                        'statuses-TOTAL_FORMS': 0, 'statuses-INITIAL_FORMS': 0 #no substatuses
-                    }
-                )
+        data = {'name':"admin_page_test_oc",'description':"test","workgroup":self.wg1.id,
+                    'statuses-TOTAL_FORMS': 0, 'statuses-INITIAL_FORMS': 0 #no substatuses
+                }
+        data.update(self.form_defaults)
+
+        response = self.client.post(reverse("admin:%s_%s_add"%(self.itemType._meta.app_label,self.itemType._meta.model_name)),data)
+
         self.assertEqual(response.status_code,302)
         self.assertRedirects(response,reverse("admin:%s_%s_changelist"%(self.itemType._meta.app_label,self.itemType._meta.model_name)))
         self.assertEqual(self.wg1.items.first().name,"admin_page_test_oc")
         self.assertEqual(self.wg1.items.count(),1)
 
         # Editor can't save in WG2, so this won't redirect.
-        response = self.client.post(reverse("admin:%s_%s_add"%(self.itemType._meta.app_label,self.itemType._meta.model_name)),
-                    {'name':"admin_page_test_oc",'description':"test","workgroup":self.wg2.id,
-                        'statuses-TOTAL_FORMS': 0, 'statuses-INITIAL_FORMS': 0 #no substatuses
-                    }
-                )
+        data.update({"workgroup":self.wg2.id})
+        response = self.client.post(reverse("admin:%s_%s_add"%(self.itemType._meta.app_label,self.itemType._meta.model_name)),data)
+
         self.assertEqual(self.wg2.items.count(),0)
         self.assertEqual(response.status_code,200)
 
     def test_editor_deleting_allowed_item(self):
         self.login_editor()
         # make some items
-        self.item1 = self.itemType.objects.create(name="OC1",workgroup=self.wg1)
+        self.item1 = self.itemType.objects.create(name="OC1",workgroup=self.wg1, **self.create_defaults)
 
+        before_count = self.wg1.items.count()
         self.assertEqual(self.wg1.items.count(),1)
         response = self.client.get(reverse("admin:%s_%s_delete"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=(str(self.item1.id))))
         self.assertEqual(response.status_code,200)
@@ -140,37 +143,41 @@ class AdminPageForConcept(utils.LoggedInViewPages):
             {'post':'yes'}
             )
         self.assertRedirects(response,reverse("admin:%s_%s_changelist"%(self.itemType._meta.app_label,self.itemType._meta.model_name)))
-        self.assertEqual(self.wg1.items.count(),0)
+        self.assertEqual(self.wg1.items.count(),before_count-1)
 
-        self.item1 = self.itemType.objects.create(name="OC1",workgroup=self.wg1,readyToReview=True)
+        self.item1 = self.itemType.objects.create(name="OC1",workgroup=self.wg1,readyToReview=True, **self.create_defaults)
         self.assertEqual(self.wg1.items.count(),1)
+        before_count = self.wg1.items.count()
         self.ra.register(self.item1,models.STATES.standard,self.registrar)
         self.assertTrue(self.item1.is_registered)
 
+        before_count = self.wg1.items.count()
         response = self.client.get(reverse("admin:%s_%s_delete"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=(str(self.item1.id))))
         self.assertEqual(response.status_code,404)
-        self.assertEqual(self.wg1.items.count(),1)
+        self.assertEqual(self.wg1.items.count(),before_count)
         response = self.client.post(
             reverse("admin:%s_%s_delete"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=(str(self.item1.id))),
             {'post':'yes'}
             )
         self.assertEqual(response.status_code,404)
-        self.assertEqual(self.wg1.items.count(),1)
+        self.assertEqual(self.wg1.items.count(),before_count)
 
     def test_editor_deleting_forbidden_item(self):
         self.login_editor()
-        self.item2 = self.itemType.objects.create(name="OC2",workgroup=self.wg2)
+        self.item2 = self.itemType.objects.create(name="OC2",workgroup=self.wg2, **self.create_defaults)
 
-
+        before_count = self.wg2.items.count()
         response = self.client.get(reverse("admin:%s_%s_delete"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=(str(self.item2.id))))
         self.assertEqual(response.status_code,404)
-        self.assertEqual(self.wg2.items.count(),1)
+        self.assertEqual(self.wg2.items.count(),before_count)
+
+        before_count = self.wg2.items.count()
         response = self.client.post(
             reverse("admin:%s_%s_delete"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=(str(self.item2.id))),
             {'post':'yes'}
             )
         self.assertEqual(response.status_code,404)
-        self.assertEqual(self.wg2.items.count(),1)
+        self.assertEqual(self.wg2.items.count(),before_count)
 
 
 
@@ -178,9 +185,16 @@ class ObjectClassAdminPage(AdminPageForConcept,TestCase):
     itemType=models.ObjectClass
 class PropertyAdminPage(AdminPageForConcept,TestCase):
     itemType=models.Property
-#class ValueDomainAdminPage(AdminPageForConcept,TestCase):
-#    itemType=models.ValueDomain
-# Needs management form
+class ValueDomainAdminPage(AdminPageForConcept,TestCase):
+    itemType=models.ValueDomain
+    form_defaults={
+        'permissibleValues-TOTAL_FORMS':0,
+        'permissibleValues-INITIAL_FORMS':0,
+        'permissibleValues-MAX_NUM_FORMS':1,
+        'supplementaryValues-TOTAL_FORMS':0,
+        'supplementaryValues-INITIAL_FORMS':0,
+        'supplementaryValues-MAX_NUM_FORMS':1,
+        }
 class ConceptualDomainAdminPage(AdminPageForConcept,TestCase):
     itemType=models.ConceptualDomain
 class DataElementConceptAdminPage(AdminPageForConcept,TestCase):
@@ -191,6 +205,17 @@ class DataTypeAdminPage(AdminPageForConcept,TestCase):
     itemType=models.DataType
 class DataElementDerivationAdminPage(AdminPageForConcept,TestCase):
     itemType=models.DataElementDerivation
-#class GlossaryAdminPage(AdminPageForConcept,TestCase):
-#    itemType=models.GlossaryItem
-# Needs management form
+    def setUp(self):
+        super(DataElementDerivationAdminPage, self).setUp()
+        self.ded_wg = models.Workgroup.objects.create(name="Derived WG")
+        self.derived_de = models.DataElement.objects.create(name='derivedDE',description="",workgroup=self.ded_wg)
+        self.ra.register(self.derived_de,models.STATES.standard,self.registrar)
+        self.create_defaults = {'derives':self.derived_de}
+        self.form_defaults = {'derives':self.derived_de.id}
+class GlossaryItemAdminPage(AdminPageForConcept,TestCase):
+    itemType=models.GlossaryItem
+    form_defaults={
+        'alternate_definitions-TOTAL_FORMS':0,
+        'alternate_definitions-INITIAL_FORMS':0,
+        'alternate_definitions-MAX_NUM_FORMS':1,
+        }
