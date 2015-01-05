@@ -22,14 +22,14 @@ class PostingAndCommentingAtObjectLevel(TestCase):
         self.wg1.giveRoleToUser('manager',self.manager)
 
     def test_ViewerCanAlterPost(self):
-        post = models.DiscussionPost(author=self.viewer1,workgroup=self.wg1,title="test",body="test")
+        post = models.DiscussionPost.objects.create(author=self.viewer1,workgroup=self.wg1,title="test",body="test")
         self.assertTrue(perms.user_can_alter_post(self.viewer1,post))
         self.assertTrue(perms.user_can_alter_post(self.manager,post))
         self.assertFalse(perms.user_can_alter_post(self.viewer2,post))
 
     def test_ViewerCanAlterComment(self):
-        post = models.DiscussionPost(author=self.viewer1,workgroup=self.wg1,title="test",body="test")
-        comment = models.DiscussionComment(author=self.viewer2,post=post,body="test")
+        post = models.DiscussionPost.objects.create(author=self.viewer1,workgroup=self.wg1,title="test",body="test")
+        comment = models.DiscussionComment.objects.create(author=self.viewer2,post=post,body="test")
         self.assertFalse(perms.user_can_alter_comment(self.viewer1,comment))
         self.assertTrue(perms.user_can_alter_comment(self.manager,comment))
         self.assertTrue(perms.user_can_alter_comment(self.viewer2,comment))
@@ -41,6 +41,49 @@ class WorkgroupMembersCanMakePostsAndComments(utils.LoggedInViewPages,TestCase):
         self.viewer3 = User.objects.create_user('viewer3','','viewer') # not in our "primary testing workgroup" (self.wg1)
         self.wg1.giveRoleToUser('viewer',self.viewer3)
         self.wg2 = models.Workgroup.objects.create(name="Test WG 2")
+
+    def can_the_current_logged_in_user_toggle_post(self):
+        post = models.DiscussionPost.objects.create(author=self.viewer,workgroup=self.wg1,title="test",body="test")
+        self.assertEqual(post.closed,False)
+
+        response = self.client.get(reverse('aristotle:discussionsPostToggle',args=[post.id]))
+        self.assertRedirects(response,reverse('aristotle:discussionsPost',args=[post.id]))
+        self.assertEqual(response.status_code,302)
+        post = models.DiscussionPost.objects.get(id=post.id) #decache
+        self.assertEqual(post.closed,True)
+
+        response = self.client.get(reverse('aristotle:discussionsPostToggle',args=[post.id]))
+        self.assertRedirects(response,reverse('aristotle:discussionsPost',args=[post.id]))
+        post = models.DiscussionPost.objects.get(id=post.id) #decache
+        self.assertEqual(post.closed,False)
+
+    def test_viewer_can_toggle_post(self):
+        self.login_viewer()
+        self.can_the_current_logged_in_user_toggle_post()
+
+    def test_superuser_can_toggle_post(self):
+        self.login_superuser()
+        self.can_the_current_logged_in_user_toggle_post()
+
+    def test_manager_can_toggle_post(self):
+        self.login_manager()
+        self.can_the_current_logged_in_user_toggle_post()
+
+    def test_editor_cannot_toggle_post(self):
+        # Standard editors/submitters have no power to close/open posts that aren't their own.
+        self.login_editor()
+        post = models.DiscussionPost.objects.create(author=self.viewer,workgroup=self.wg1,title="test",body="test")
+        self.assertEqual(post.closed,False)
+
+        response = self.client.get(reverse('aristotle:discussionsPostToggle',args=[post.id]))
+        post = models.DiscussionPost.objects.get(id=post.id) #decache
+        self.assertEqual(post.closed,False)
+        self.assertEqual(response.status_code,403)
+
+        response = self.client.get(reverse('aristotle:discussionsPostToggle',args=[post.id]))
+        self.assertEqual(response.status_code,403)
+        post = models.DiscussionPost.objects.get(id=post.id) #decache
+        self.assertEqual(post.closed,False)
 
     def can_the_current_logged_in_user_post(self):
         response = self.client.get(reverse('aristotle:discussionsNew'),)
@@ -117,6 +160,73 @@ class WorkgroupMembersCanMakePostsAndComments(utils.LoggedInViewPages,TestCase):
     def test_editor_can_comment_in_workgroup(self):
         self.login_editor()
         self.can_the_current_logged_in_user_comment()
+
+    def can_the_current_logged_in_user_delete_post(self):
+        post = models.DiscussionPost.objects.create(author=self.viewer,workgroup=self.wg1,title="test",body="test")
+
+        response = self.client.get(reverse('aristotle:discussionsDeletePost',args=[post.id]))
+        self.assertRedirects(response,reverse('aristotle:discussionsWorkgroup',args=[self.wg1.id]))
+        self.assertEqual(models.DiscussionPost.objects.filter(id=post.id).count(),0)
+
+    def test_viewer_can_delete_post(self):
+        self.login_viewer()
+        self.can_the_current_logged_in_user_delete_post()
+
+    def test_superuser_can_delete_post(self):
+        self.login_superuser()
+        self.can_the_current_logged_in_user_delete_post()
+
+    def test_manager_can_delete_post(self):
+        self.login_manager()
+        self.can_the_current_logged_in_user_delete_post()
+
+    def test_editor_cannot_delete_post(self):
+        # Standard editors/submitters have no power to delete posts that aren't their own.
+        self.login_editor()
+        post = models.DiscussionPost.objects.create(author=self.viewer,workgroup=self.wg1,title="test",body="test")
+
+        response = self.client.get(reverse('aristotle:discussionsDeletePost',args=[post.id]))
+        self.assertEqual(response.status_code,403)
+        self.assertEqual(models.DiscussionPost.objects.filter(id=post.id).count(),1)
+
+
+    def can_the_current_logged_in_user_edit_post(self):
+        post = models.DiscussionPost.objects.create(author=self.viewer,workgroup=self.wg1,title="test",body="test")
+
+        response = self.client.get(reverse('aristotle:discussionsEditPost',args=[post.id]))
+        self.assertEqual(response.status_code,200)
+
+        data = {
+            'title': 'test',
+            'body': 'edit test',
+        }
+
+        response = self.client.post(reverse('aristotle:discussionsEditPost',args=[post.id]),data)
+        self.assertRedirects(response,reverse('aristotle:discussionsPost',args=[post.id]))
+        self.assertEqual(response.status_code,302)
+        post = models.DiscussionPost.objects.get(id=post.id) #decache
+        self.assertEqual(post.body,"edit test")
+
+    def test_viewer_can_edit_post(self):
+        self.login_viewer()
+        self.can_the_current_logged_in_user_edit_post()
+
+    def test_superuser_can_edit_post(self):
+        self.login_superuser()
+        self.can_the_current_logged_in_user_edit_post()
+
+    def test_manager_can_edit_post(self):
+        self.login_manager()
+        self.can_the_current_logged_in_user_edit_post()
+
+    def test_editor_cannot_edit_post(self):
+        # Standard editors/submitters have no power to edit posts that aren't their own.
+        self.login_editor()
+        post = models.DiscussionPost.objects.create(author=self.viewer,workgroup=self.wg1,title="test",body="test")
+
+        response = self.client.get(reverse('aristotle:discussionsEditPost',args=[post.id]))
+        self.assertEqual(response.status_code,403)
+        self.assertEqual(post.body,"test")
 
 
 class ViewDiscussionPostPage(utils.LoggedInViewPages,TestCase):

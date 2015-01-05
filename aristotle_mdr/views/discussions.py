@@ -45,7 +45,7 @@ def post(request,pid):
 @login_required
 def toggle_post(request,pid):
     post = get_object_or_404(MDR.DiscussionPost,pk=pid)
-    if not perms.user_in_workgroup(request.user,post.workgroup):
+    if not perms.user_can_alter_post(request.user,post):
         raise PermissionDenied
     post.closed = not post.closed
     post.save()
@@ -120,13 +120,13 @@ def edit_comment(request,cid):
     if not perms.user_can_alter_comment(request.user,comment):
         raise PermissionDenied
     if request.method == 'POST':
-        form = MDRForms.DiscussionCommentForm(request.POST)
+        form = MDRForms.discussions.CommentForm(request.POST)
         if form.is_valid():
             comment.body = form.cleaned_data['body']
             comment.save()
             return HttpResponseRedirect(reverse("aristotle:discussionsPost",args=[comment.post.pk])+"#comment_%s"%comment.id)
     else:
-        form = MDRForms.DiscussionCommentForm(instance=comment)
+        form = MDRForms.discussions.CommentForm(instance=comment)
 
     return render(request,"aristotle_mdr/discussions/edit_comment.html",{
         'post':post,
@@ -138,7 +138,7 @@ def edit_post(request,pid):
     if not perms.user_can_alter_post(request.user,post):
         raise PermissionDenied
     if request.method == 'POST': # If the form has been submitted...
-        form = MDRForms.DiscussionEditPostForm(request.POST) # A form bound to the POST data
+        form = MDRForms.discussions.EditPostForm(request.POST) # A form bound to the POST data
         if form.is_valid():
             # process the data in form.cleaned_data as required
             post.title = form.cleaned_data['title']
@@ -147,6 +147,6 @@ def edit_post(request,pid):
             post.relatedItems = form.cleaned_data['relatedItems']
             return HttpResponseRedirect(reverse("aristotle:discussionsPost",args=[post.pk]))
     else:
-        form = MDRForms.DiscussionEditPostForm(instance=post)
+        form = MDRForms.discussions.EditPostForm(instance=post)
     return render(request,"aristotle_mdr/discussions/edit.html",{"form":form,'post':post})
 
