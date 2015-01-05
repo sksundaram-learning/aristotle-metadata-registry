@@ -310,7 +310,6 @@ class discussionAbstract(TimeStampedModel):
     body = models.TextField()
     author = models.ForeignKey(User)
     class Meta:
-        ordering = ['-modified']
         abstract = True
     @property
     def edited(self):
@@ -323,12 +322,18 @@ class DiscussionPost(discussionAbstract):
                     related_name='relatedDiscussions',
                     )
     closed = models.BooleanField(default=False)
+    class Meta:
+        ordering = ['-modified']
+
     @property
     def active(self):
         return not self.closed
 
 class DiscussionComment(discussionAbstract):
     post = models.ForeignKey(DiscussionPost, related_name='comments')
+    class Meta:
+        ordering = ['-created']
+
 
 #class ReferenceDocument(models.Model):
 #    url = models.URLField()

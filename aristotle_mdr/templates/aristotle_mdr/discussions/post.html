@@ -67,8 +67,8 @@
         <header class="panel-heading">
             <span class="author">{{ comment.author }}</span>
             <small class="date" title='{{ comment.created }}'>Posted {{ comment.created|naturaltime }}</small>
-            {% if comment.edited %}
-                , <span class="edit"  title='{{ comment.modified }}'>edited {{ comment.modified|naturaltime }}</span>
+            {% if comment.modified %}
+                , <small><span class="edit"  title='{{ comment.modified }}'>edited {{ comment.modified|naturaltime }}</span></small>
             {% endif %}
         {% if request.user|can_alter_comment:comment and post.active %}
             <span class="comment_action_bar btn-group pull-right">
