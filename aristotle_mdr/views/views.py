@@ -227,6 +227,24 @@ def unauthorised(request, path=''):
 
 
 
+def createList(request):
+    from django.conf import settings
+    aristotle_apps = getattr(settings, 'ARISTOTLE_SETTINGS', {}).get('CONTENT_EXTENSIONS',[])
+    aristotle_apps += ["aristotle_mdr"]
+
+    from django.contrib.contenttypes.models import ContentType
+    models = ContentType.objects.filter(app_label__in=aristotle_apps).all()
+    out = {}
+    for m in models:
+        if not m.model.startswith("_"):
+            app_models = out.get(m.app_label,[])
+            app_models.append((m,m.model_class()))
+            out[m.app_label] = app_models
+
+    return render(request,"aristotle_mdr/create/create_list.html",
+        {'models':out,}
+        )
+
 
 @login_required
 def toggleFavourite(request, iid):

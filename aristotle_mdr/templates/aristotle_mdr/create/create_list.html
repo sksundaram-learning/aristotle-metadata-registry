@@ -1,0 +1,26 @@
+{% extends 'aristotle_mdr/base.html' %}
+{% load aristotle_tags %}
+
+{% block title %}Creation List{% endblock %}
+
+{% block content %}
+
+<p>
+    Below is a list of all posible objects you can create in this metadata registry.
+</p>
+{% for app,app_models in models.items %}
+<h2>{{ app }}</h2>
+    <ul>
+    {% for m,model in app_models %}
+        {% if model.help_name %}
+        <li>
+            <a href="{% url 'aristotle:createItem' m.app_label m.model %}">
+                {{ model.get_verbose_name }}
+            </a>
+        </li>
+        {% endif %}
+    {% endfor %}
+    </ul>
+{% endfor %}
+
+{% endblock %}
