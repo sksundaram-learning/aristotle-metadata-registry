@@ -228,6 +228,11 @@ def unauthorised(request, path=''):
 
 
 def createList(request):
+    if request.user.is_anonymous():
+        return redirect(reverse('django.contrib.auth.views.login')+'?next=%s' % request.path)
+    if not perms.user_is_editor(request.user):
+        raise PermissionDenied
+
     from django.conf import settings
     aristotle_apps = getattr(settings, 'ARISTOTLE_SETTINGS', {}).get('CONTENT_EXTENSIONS',[])
     aristotle_apps += ["aristotle_mdr"]
