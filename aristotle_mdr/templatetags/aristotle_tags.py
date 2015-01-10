@@ -319,10 +319,12 @@ def downloadMenu(item):
     downloadsForItem = []
     for d in downloadOpts:
         downloadType = d[0]
+        print downloadType
         try:
             get_template(get_download_template_path_for_item(item,downloadType))
             downloadsForItem.append(d)
         except template.TemplateDoesNotExist:
+
             pass # This is ok.
         except:
             pass # Something very bad has happened in the template.

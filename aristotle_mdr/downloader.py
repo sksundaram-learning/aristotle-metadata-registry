@@ -7,6 +7,7 @@ from django.http import HttpResponse, Http404
 from django.template.loader import select_template
 from django.template import Context
 import xhtml2pdf.pisa as pisa
+import csv
 
 def render_to_pdf(template_src, context_dict):
     # If the request template doesnt exist, we will give a default one.
@@ -34,3 +35,16 @@ def download(request,downloadType,item):
              'pagesize':request.GET.get('pagesize',page_size),
             }
         )
+
+    if downloadType=="csv-vd":
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="%s.csv"'%item.name
+
+        writer = csv.writer(response)
+        writer.writerow(['value', 'meaning', 'role'])
+        for v in item.permissibleValues.all():
+            writer.writerow([v.value, v.meaning,"permissible"])
+        for v in item.supplementaryValues.all():
+            writer.writerow([v.value, v.meaning,"supplementary"])
+
+        return response

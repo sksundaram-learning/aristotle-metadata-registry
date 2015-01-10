@@ -532,3 +532,10 @@ dl.treble_defintions {
     resize:none;
     overflow:auto;
 }
+
+#loading_indicator.loading {
+  position: absolute;
+  left: 45%;
+  top: 45%;
+  z-index:2000; /* Needs to be greater than 1040 to go over the bootstrap modal-backdrop */
+}

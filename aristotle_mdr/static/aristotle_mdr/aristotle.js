@@ -21,3 +21,11 @@ function getGlossaryList() {
     })
     return glossaryList;
 }
+
+$(document).ajaxSend(function(event, request, settings) {
+    $('#loading_indicator').show().addClass('loading').removeClass('hidden');
+});
+
+$(document).ajaxComplete(function(event, request, settings) {
+    $('#loading_indicator').hide().removeClass('loading');
+});
