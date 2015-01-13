@@ -54,7 +54,7 @@ So we've split this out into its own template.
                     {% if forloop.first %}
                     <th rowspan="{{ item.permissibleValues.count }}">Permissable Values
                         {% if item|can_edit:request.user %}
-                            <a class="inline_action" href="{% adminEdit item %}#permissibleValues-group">edit</a>
+                            <a class="inline_action" href="{% url 'aristotle:valueDomain_edit_values' item.id %}">edit</a>
                         {% endif %}
                     </th>
                     {% endif %}

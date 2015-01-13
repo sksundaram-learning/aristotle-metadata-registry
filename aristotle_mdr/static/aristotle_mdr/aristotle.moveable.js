@@ -14,10 +14,7 @@ jQuery(function($) {
         },
 
         update: function() {
-            $('.moveablerow', panelList).each(function(index, elem) {
-                $(this).find('input[name$=-order]').val(index);
-                $(this).find('input[name$=-DELETE]').attr('title',"Delete item "+index)
-            });
+            reorderRows();
         }
     });
 });
@@ -26,10 +23,28 @@ function addCode() {
     var panelList = $('#draggableTable');
     new_form = $('#formstage tr').clone().appendTo(panelList);
     num_forms = $('#draggableTable tr').length
-    $(new_form).find('td input').each(function(index, elem) {
-        name=[$(this).attr('name').split('-')[0],num_forms,$(this).attr('name').split('-')[2]].join('-');
-    })
-    $(new_form).find('td input[name$=-order]').val(num_forms)
+    $(new_form).find('input').attr('value','');
+    $(new_form).find('input[name$="-id"]').removeAttr('value');
+    reorderRows();
+    // rename the form entries
     $('input[name=form-TOTAL_FORMS]').val(num_forms)
     return false;
+}
+
+function renumberRow(row,num) {
+    $(row).find('input[name$="-order"]').attr('value',num);
+    $(row).find('input').each(function(index, elem) {
+        name=[$(this).attr('name').split('-')[0],num,$(this).attr('name').split('-')[2]].join('-');
+        $(this).attr('name',name);
+        $(this).attr('id',"id_"+name);
+    });
+}
+
+function reorderRows() {
+    var panelList = $('#draggableTable');
+
+    $('.moveablerow', panelList).each(function(index, elem) {
+        renumberRow(this,index);
+        $(this).find('input[name$=-DELETE]').attr('title',"Delete item "+index)
+    });
 }

@@ -18,8 +18,11 @@
 
 Editing values for {{ item.name }}
 {% if formset.errors %}
-{{formset.errors}}
+<div class="alert alert-danger">
+    {{formset.errors}}
+</div>
 {% endif %}
+<a class="sr-only" onclick="addCode()" href="?extra=1" accesskey='r'>Add a code (adding a row does not save changes)</a>
 <form method="post" action="" >
     {% csrf_token %}
     {{ formset.management_form }}
@@ -65,7 +68,7 @@ Editing values for {{ item.name }}
                 <i class="fa fa-times"></i>
                 Cancel</a>
         {% endif %}
-        <button type="submit" class="btn btn-primary" value="Save">
+        <button type="submit" class="btn btn-primary" value="Save" accesskey='s'>
             <i class="fa fa-save"></i> Save
         </button>
     </div>
