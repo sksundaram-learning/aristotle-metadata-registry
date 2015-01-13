@@ -3,6 +3,7 @@ from django.contrib import messages
 from django.core.exceptions import PermissionDenied, ImproperlyConfigured
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.urlresolvers import reverse
+from django.db import transaction
 from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.shortcuts import render, redirect, get_object_or_404
 from django.template import RequestContext, TemplateDoesNotExist
@@ -11,10 +12,11 @@ from django.utils.translation import ugettext_lazy as _
 from django.views.generic import TemplateView
 from django.utils import timezone
 import datetime
+import reversion
 
 from aristotle_mdr.perms import user_can_view, user_can_edit, user_can_change_status
 from aristotle_mdr import perms
-from aristotle_mdr.utils import cache_per_item_user, concept_to_dict
+from aristotle_mdr.utils import cache_per_item_user, concept_to_dict, construct_change_message
 from aristotle_mdr import forms as MDRForms
 from aristotle_mdr import models as MDR
 
@@ -209,8 +211,11 @@ def edit_item(request,iid,*args,**kwargs):
     if request.method == 'POST': # If the form has been submitted...
         form = MDRForms.wizards.subclassed_modelform(item.__class__)(request.POST,instance=item,user=request.user)
         if form.is_valid():
-            item = form.save()
-            return HttpResponseRedirect(reverse("aristotle:item",args=[item.pk]))
+            with transaction.atomic(), reversion.create_revision():
+                item = form.save()
+                reversion.set_user(request.user)
+                reversion.set_comment(construct_change_message(request,form,None))
+                return HttpResponseRedirect(reverse("aristotle:item",args=[item.pk]))
     else:
         form = MDRForms.wizards.subclassed_modelform(item.__class__)(instance=item,user=request.user)
     return render(request,"aristotle_mdr/actions/advanced_editor.html",
@@ -418,15 +423,29 @@ def valuedomain_value_edit(request,iid):
     ValuesFormSet = modelformset_factory(
         MDR.PermissibleValue,
         can_delete=True, # dont need can_order is we have an order field
-        fields=('order','value','meaning')
+        fields=('order','value','meaning'),
+        extra=0
         )
     if request.method == 'POST':
         formset = ValuesFormSet(request.POST, request.FILES)
         if formset.is_valid():
-            # do something with the formset.cleaned_data
-            for form in formset.forms:
-                form.save()
-            redirect(reverse("aristotle_mdr:item",args=[item.id]))
+                with transaction.atomic(), reversion.create_revision():
+                    item.save() # do this to ensure we are saving reversion records for the value domain, not just the values
+                    formset.save(commit=False)
+                    for form in formset.forms:
+                        if form['id'].value() not in [deleted_record['id'].value() for deleted_record in formset.deleted_forms]:
+                            value = form.save(commit=False) #Don't immediately save, we need to attach the value domain
+                            value.valueDomain = item
+                            value.save()
+                        #else:
+                        #    val = form.cleaned_data['id']
+                        #    if val and user_can_edit(request.user,val) and val.valueDomain==item:
+                        #        form.cleaned_data['id'].delete()
+                    #formset.save(commit=True)
+                    reversion.set_user(request.user)
+                    reversion.set_comment(construct_change_message(request,None,[formset,]))
+
+                return redirect(reverse("aristotle_mdr:item",args=[item.id]))
     else:
         formset = ValuesFormSet(
             queryset=MDR.PermissibleValue.objects.filter(valueDomain=item.id)
