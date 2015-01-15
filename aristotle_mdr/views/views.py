@@ -412,16 +412,21 @@ def deprecate(request, iid):
 from django.forms.formsets import formset_factory
 from django.forms.models import modelformset_factory
 
-def valuedomain_value_edit(request,iid):
+def valuedomain_value_edit(request,iid,value_type):
     item = get_object_or_404(MDR._concept,pk=iid).item
     if not (item and user_can_edit(request.user,item)):
         if request.user.is_anonymous():
             return redirect(reverse('django.contrib.auth.views.login')+'?next=%s' % request.path)
         else:
             raise PermissionDenied
+    value_model = { 'permissible'   : MDR.PermissibleValue,
+                    'supplementary' : MDR.SupplementaryValue
+                }.get(value_type, None)
+    if not value_model:
+        raise Http404
 
     ValuesFormSet = modelformset_factory(
-        MDR.PermissibleValue,
+        value_model,
         can_delete=True, # dont need can_order is we have an order field
         fields=('order','value','meaning'),
         extra=0
@@ -448,10 +453,10 @@ def valuedomain_value_edit(request,iid):
                 return redirect(reverse("aristotle_mdr:item",args=[item.id]))
     else:
         formset = ValuesFormSet(
-            queryset=MDR.PermissibleValue.objects.filter(valueDomain=item.id)
+            queryset=value_model.objects.filter(valueDomain=item.id)
             )
     return render(request,"aristotle_mdr/actions/edit_value_domain_values.html",
-            {'item':item,'formset': formset}
+            {'item':item,'formset': formset,'value_type':value_type.title(),'value_model':value_model}
         )
 
 def browse(request,oc_id=None,dec_id=None):

@@ -11,8 +11,6 @@ from aristotle_mdr import perms
 from django.core.urlresolvers import reverse
 from reversion_compare.admin import CompareVersionAdmin
 
-from aristotle_mdr.reversions import ConceptCompareVersionAdmin
-
 # Thanks http://stackoverflow.com/questions/6727372/
 class RegistrationAuthoritySelect(forms.Select):
     def render(self, name, value, attrs=None, choices=()):
@@ -93,7 +91,7 @@ class WorkgroupAdmin(CompareVersionAdmin):
         else:
             return super(WorkgroupAdmin, self).has_change_permission(request,obj=None)
 
-class ConceptAdmin(ConceptCompareVersionAdmin):
+class ConceptAdmin(CompareVersionAdmin):
     class Media:
         js = [
                 '/static/grappelli/tinymce/jscripts/tiny_mce/tiny_mce.js',

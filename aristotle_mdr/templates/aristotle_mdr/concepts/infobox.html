@@ -50,7 +50,8 @@
             {% include "aristotle_mdr/statuses.html" with statuses=item.statuses infoBox=True %}
             <dt>{% trans 'Last updated'%}</dt>
             <dd>
-                {% if request.user.is_superuser or item.workgroup in request.user.workgroups %}
+                {#% if request.user.is_superuser or item.workgroup in request.user.workgroups %#}
+                {% if request.user.is_superuser or request.user.is_staff and item.workgroup in request.user.workgroups %}
                     <a title ="{{item.modified}}"
                     href="{% historyLink item %}">{{item.modified|naturaltime}}</a>
                 {% else %}

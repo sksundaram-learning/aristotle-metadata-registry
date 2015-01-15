@@ -13,17 +13,22 @@
         {% endif %}
     {% endblock %}
 
-<script type="text/javascript">
-</script>
 
-Editing values for {{ item.name }}
-{% if formset.errors %}
-<div class="alert alert-danger">
-    {{formset.errors}}
-</div>
-{% endif %}
+
 <a class="sr-only" onclick="addCode()" href="?extra=1" accesskey='r'>Add a code (adding a row does not save changes)</a>
 <form method="post" action="" >
+    <div class="modal-body">
+        <ol class="breadcrumb">
+          <li><a href="{% url 'aristotle:item' item.id %}">{{ item.name }}</a></li>
+          <li class="active">{{ value_type }} Values editor</li>
+        </ol>
+
+        {% if formset.errors %}
+        <div class="alert alert-danger">
+            {{formset.errors}}
+        </div>
+        {% endif %}
+
     {% csrf_token %}
     {{ formset.management_form }}
     {{ formset.non_form_errors.as_ul }}
@@ -58,6 +63,7 @@ Editing values for {{ item.name }}
     </table>
     <a class="btn btn-primary" onclick="addCode()">
         <i class="fa fa-plus-circle"></i> Add a code</a>
+    </div>
 
     <div class="modal-footer">
         {% if request.is_ajax %}
