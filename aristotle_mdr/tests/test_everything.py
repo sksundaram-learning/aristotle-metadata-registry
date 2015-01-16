@@ -511,6 +511,44 @@ class PropertyViewPage(LoggedInViewConceptPages,TestCase):
 class ValueDomainViewPage(LoggedInViewConceptPages,TestCase):
     url_name='valueDomain'
     itemType=models.ValueDomain
+    def setUp(self):
+        super(ValueDomainViewPage, self).setUp()
+
+        for i in range(4):
+            models.PermissibleValue.objects.create(
+                value=i,meaning="test %d"%i,order=i,valueDomain=self.item1
+                )
+        for i in range(4):
+            models.SupplementaryValue.objects.create(
+                value=i,meaning="test %d"%i,order=i,valueDomain=self.item1
+                )
+
+    def loggedin_user_can_use_value_page(self,value_type,current_item,http_code):
+        response = self.client.get(reverse('aristotle:valueDomain_edit_values',args=[current_item.id,value_type]))
+        self.assertEqual(response.status_code,http_code)
+
+    def submitter_user_can_use_value_edit_page(self,value_type):
+        self.login_editor()
+        self.loggedin_user_can_use_value_page(value_type,self.item1,200)
+        self.loggedin_user_can_use_value_page(value_type,self.item2,403)
+        self.loggedin_user_can_use_value_page(value_type,self.item3,200)
+        models.Status.objects.create(
+                concept=self.item1,
+                registrationAuthority=self.ra,
+                registrationDate=timezone.now(),
+                state=self.ra.locked_state
+                )
+        item = models.ValueDomain.objects.get(pk=self.item1.pk)
+        self.assertTrue(item.is_locked())
+        self.assertFalse(perms.user_can_edit(self.editor,item))
+        self.loggedin_user_can_use_value_page(value_type,item,403)
+
+    def test_submitter_can_use_permissible_value_edit_page(self):
+        self.submitter_user_can_use_value_edit_page('permissible')
+
+    def test_submitter_can_use_supplementary_value_edit_page(self):
+        self.submitter_user_can_use_value_edit_page('supplementary')
+
 class ConceptualDomainViewPage(LoggedInViewConceptPages,TestCase):
     url_name='conceptualDomain'
     itemType=models.ConceptualDomain
