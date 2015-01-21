@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 import aristotle_mdr.models as models
 import aristotle_mdr.perms as perms
+from aristotle_mdr.utils import url_slugify_concept
 
 from django.test.utils import setup_test_environment
 setup_test_environment()
@@ -104,16 +105,17 @@ class ManagedObjectVisibility(object):
         self.item.save()
 
         # test editor 1 can view, editor 2 cannot
-        self.assertEqual(perms.user_can_view(e1,self.item),True)
-        self.assertEqual(perms.user_can_view(e2,self.item),False)
+        self.assertTrue(perms.user_can_view(e1,self.item))
+        self.assertFalse(perms.user_can_view(e2,self.item))
 
         # move object to wg2
         self.item.workgroup = wg2
         self.item.save()
+        self.item = self.item.__class__.objects.get(pk=self.item.pk) #Silly DB cache
 
         # test editor 2 can view, editor 1 cannot
-        self.assertEqual(perms.user_can_view(e2,self.item),True)
-        self.assertEqual(perms.user_can_view(e1,self.item),False)
+        self.assertTrue(perms.user_can_view(e2,self.item))
+        self.assertFalse(perms.user_can_view(e1,self.item))
 
         s = models.Status.objects.create(
                 concept=self.item,
@@ -122,8 +124,8 @@ class ManagedObjectVisibility(object):
                 state=ra.locked_state
                 )
         # Editor 2 can view. Editor 1 cannot
-        self.assertEqual(perms.user_can_view(e2,self.item),True)
-        self.assertEqual(perms.user_can_view(e1,self.item),False)
+        self.assertTrue(perms.user_can_view(e2,self.item))
+        self.assertFalse(perms.user_can_view(e1,self.item))
 
         # Set status to a public state
         s.state = ra.public_state
@@ -290,12 +292,12 @@ class AnonymousUserViewingThePages(TestCase):
                 registrationDate=timezone.now(),
                 state=ra.locked_state
                 )
-        home = self.client.get("/item/%s"%item.id)
+        home = self.client.get(url_slugify_concept(item))
         #Anonymous users requesting a hidden page will be redirected to login
         self.assertEqual(home.status_code,302)
         s.state = ra.public_state
         s.save()
-        home = self.client.get("/item/%s"%item.id)
+        home = self.client.get(url_slugify_concept(item))
         self.assertEqual(home.status_code,200)
 
 class LoggedInViewConceptPages(utils.LoggedInViewPages):
@@ -409,7 +411,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
 
         self.assertFalse(self.item1.readyToReview)
         response = self.client.post(reverse('aristotle:mark_ready_to_review',args=[self.item1.id]))
-        self.assertRedirects(response,reverse("aristotle:item",args=[self.item1.id]))
+        self.assertRedirects(response,url_slugify_concept(self.item1))
         self.item1 = self.itemType.objects.get(id=self.item1.id) # Stupid cache
         self.assertTrue(self.item1.readyToReview)
 
@@ -432,7 +434,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
     def test_help_page_exists(self):
         self.logout()
         response = self.client.get(self.get_help_page())
-        self.assertRedirects(response,reverse("aristotle:about",args=[self.item1.help_name])) # This should redirect
+        self.assertEqual(response.status_code,200)
 
     def test_viewer_can_view_registration_history(self):
         self.login_viewer()
@@ -457,12 +459,12 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.assertEqual(self.viewer.profile.favourites.count(),0)
 
         response = self.client.get(reverse('aristotle:toggleFavourite', args=[self.item1.id]))
-        self.assertRedirects(response,reverse("aristotle:item", args=[self.item1.id]))
+        self.assertRedirects(response,url_slugify_concept(self.item1))
         self.assertEqual(self.viewer.profile.favourites.count(),1)
         self.assertEqual(self.viewer.profile.favourites.first().item,self.item1)
 
         response = self.client.get(reverse('aristotle:toggleFavourite', args=[self.item1.id]))
-        self.assertRedirects(response,reverse("aristotle:item", args=[self.item1.id]))
+        self.assertRedirects(response,url_slugify_concept(self.item1))
         self.assertEqual(self.viewer.profile.favourites.count(),0)
 
     def test_registrar_can_change_status(self):
@@ -488,7 +490,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
                         'cascadeRegistration': 0, #no
                     }
                 )
-        self.assertRedirects(response,reverse("aristotle:item", args=[self.item1.id]))
+        self.assertRedirects(response,url_slugify_concept(self.item1))
 
         self.assertEqual(self.item1.statuses.count(),1)
         self.item1 = self.itemType.objects.get(pk=self.item1.pk)
@@ -602,10 +604,15 @@ class LoggedInViewUnmanagedPages(utils.LoggedInViewPages):
         super(LoggedInViewUnmanagedPages, self).setUp()
         self.item1 = self.itemType.objects.create(name="OC1",**self.defaults)
 
+    def get_page(self,item):
+        url_name = "".join(item._meta.verbose_name.title().split())
+        url_name = url_name[0].lower() + url_name[1:]
+        return reverse('aristotle:%s'%url_name,args=[item.id])
+
     def test_help_page_exists(self):
         self.logout()
         response = self.client.get(self.get_help_page())
-        self.assertRedirects(response,reverse("aristotle:about",args=[self.item1.help_name])) # This should redirect
+        self.assertEqual(response.status_code,200)
 
     def test_item_page_exists(self):
         self.logout()

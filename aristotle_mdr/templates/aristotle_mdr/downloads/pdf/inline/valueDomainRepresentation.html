@@ -12,14 +12,14 @@ So we've split this out into its own template.
 {% if item.dataType %}
 <tr>
   <th>Data Type</th>
-  <td><a href="{% url 'aristotle:dataType' item.dataType.id %}">{% inplace_edit 'item.dataType' %}</a></dd>
+  <td><a href="{% url 'aristotle:dataType' item.dataType.id %}">{{ item.dataType }}</a></dd>
 </tr>
 {% endif %}
 {% if item.unitOfMeasure %}
 <tr>
   <th>Unit Of Measure</th>
   <td><a href="{% url 'aristotle:unitOfMeasure' item.unitOfMeasure.id %}">
-    {% inplace_edit 'item.unitOfMeasure' %}
+    {{ item.unitOfMeasure }}
     {% if item.unitOfMeasure.symbol %}<tt>({{ item.unitOfMeasure.symbol }})</tt>{% endif %}
   </td>
 </tr>
@@ -27,36 +27,31 @@ So we've split this out into its own template.
 {% if item.format %}
 <tr>
   <th>Format</th>
-  <td>{% inplace_edit 'item.format' %}</td>
+  <td>{{ item.format }}</td>
 </tr>
 {% endif %}
 {% if item.maximumLength %}
 <tr>
   <th>Maximum character length</th>
-  <td>{% inplace_edit 'item.maximumLength' %}</td>
+  <td>{{ item.maximumLength }}</td>
 </tr>
 {% endif %}
 </table>
 </div>
 {% if item.permissibleValues.count > 0 %}
-  <strong>Permissible Values</strong>
     <table class="codeList table table-striped">
         <thead>
             <tr>
-                <td></td>
-                <th>Value</th><th>Meaning</th>
+                <td style="width:5cm"></td>
+                <th style="width:2cm">Value</th>
+                <th>Meaning</th>
             </tr>
         </thead>
         {% if item.permissibleValues.count > 0 %}
-        <tbody>
             {% for perm in item.permissibleValues.all %}
                 <tr>
                     {% if forloop.first %}
-                    <th rowspan="{{ item.permissibleValues.count }}">Permissible Values
-                        {% if item|can_edit:request.user %}
-                            <a class="inline_action" data-toggle="modal" data-target="#value_domain_modal"
-                            href="{% url 'aristotle:valueDomain_edit_values' item.id 'permissible' %}">edit</a>
-                        {% endif %}
+                    <th style="vertical-align:top;" rowspan="{{ item.permissibleValues.count }}">Permissible Values
                     </th>
                     {% endif %}
                     <td>{{ perm.value }}</td>
@@ -71,10 +66,6 @@ So we've split this out into its own template.
                 <tr>
                     {% if forloop.first %}
                     <th rowspan="{{ item.supplementaryValues.count }}">Supplementary Values
-                        {% if item|can_edit:request.user %}
-                            <a class="inline_action" data-toggle="modal" data-target="#value_domain_modal"
-                            href="{% url 'aristotle:valueDomain_edit_values' item.id 'supplementary' %}">edit</a>
-                        {% endif %}
                     </th>
                     {% endif %}
                     <td>{{ perm.value }}</td>
@@ -84,10 +75,4 @@ So we've split this out into its own template.
         </tbody>
         {% endif %}
     </table>
-    <div id="value_domain_modal" class="modal fade">
-      <div class="modal-dialog">
-          <div class="modal-content">
-          </div><!-- /.modal-content -->
-        </div><!-- /.modal-dialog -->
-    </div><!-- /.modal -->
 {% endif %}

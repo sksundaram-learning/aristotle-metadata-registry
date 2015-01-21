@@ -69,11 +69,14 @@ class baseAristotleObject(TimeStampedModel):
         return self._meta.verbose_name.title()
     def get_verbose_name_plural(self):
         return self._meta.verbose_name_plural.title()
+    #@property
+    #def url_name(self):
+    #    s = self._meta.object_name
+    #    s = s[0].lower() + s[1:]
+    #    return s
     @property
     def url_name(self):
-        s = self._meta.object_name
-        s = s[0].lower() + s[1:]
-        return s
+        return "item" # TODO: Changed as we've altered URL handling,but will refactor calls to this away later
     @property
     def help_name(self):
         return self._meta.model_name
@@ -490,7 +493,12 @@ class _concept(baseAristotleObject):
     def autocomplete_search_fields(self):
         return ("name__icontains",)
     def get_absolute_url(self):
-        return reverse("aristotle:item",args=[self.id])
+        try:
+            url_name = "%s:%s"%(self.item._meta.app_label,self.item.url_name)
+            url = reverse(url_name,args=[self.id])
+        except:
+            url = reverse("aristotle:item",args=[self.id])
+        return url
 
     # This returns the items that can be registered along with the this item.
     # Reimplementations of this MUST return lists
@@ -796,11 +804,11 @@ class PossumProfile(models.Model):
     def is_workgroup_manager(self,wg):
         return perms.user_is_workgroup_manager(self.user,wg)
 
-    def isFavourite(self,iid):
-        return self.favourites.filter(pk=iid).exists()
+    def is_favourite(self,item):
+        return self.favourites.filter(pk=item.id).exists()
 
     def toggleFavourite(self, item):
-        if self.isFavourite(item):
+        if self.is_favourite(item):
             self.favourites.remove(item)
         else:
             self.favourites.add(item)

@@ -18,7 +18,7 @@ urlpatterns = patterns('aristotle_mdr.views',
     # all the below take on the same form:
     # url(r'^itemType/(?P<iid>\d+)?/?
     # Allowing for a blank ItemId (iid) allows aristotle to redirect to /about/itemtype instead of 404ing
-    url(r'^objectclass/(?P<iid>\d+)?/?$', views.items.objectclass, name='objectClass'),
+    #url(r'^objectclass/(?P<iid>\d+)?/?$', views.items.objectclass, name='objectClass'),
     #url(r'^objectclass/(?P<iid>\d+)?(?:/(?P<subpage>\w+))?/?$', views.objectclass, name='objectClass'),
     url(r'^property/(?P<iid>\d+)?/?$', views.items.property, name='property'),
     url(r'^valuedomain/(?P<iid>\d+)?/?$', views.items.valuedomain, name='valueDomain'),
@@ -53,10 +53,12 @@ urlpatterns = patterns('aristotle_mdr.views',
     url(r'^discussions/edit/post/(?P<pid>\d+)/?$', views.discussions.edit_post, name='discussionsEditPost'),
     url(r'^discussions/post/(?P<pid>\d+)/toggle/?$', views.discussions.toggle_post, name='discussionsPostToggle'),
 
-    url(r'^item/(?P<iid>\d+)/?$', views.items.concept, name='item'),
+    #url(r'^item/(?P<iid>\d+)/?$', views.items.concept, name='item'),
+    url(r'^item/(?P<iid>\d+)(?:\/(?P<model_slug>\w+)\/(?P<name_slug>.+))?/?$', views.items.concept, name='item'),
     url(r'^item/(?P<iid>\d+)/edit/?$', views.edit_item, name='edit_item'),
     url(r'^item/(?P<iid>\d+)/packages/?$', views.itemPackages, name='itemPackages'),
     url(r'^item/(?P<iid>\d+)/registrationHistory/?$', views.registrationHistory, name='registrationHistory'),
+    url(r'^item/(?P<iid>\d+)(?:\/.*)?$', views.items.concept, name='item'), # Catch every other 'item' URL and throw it for a redirect
 
     #url(r'^create/?$', views.item, name='item'),
     url(r'^create/?$', views.createList, name='createList'),

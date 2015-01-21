@@ -1,5 +1,11 @@
 Out-of-the-box features available for new item types
 ====================================================
 
-* intuitive editing wizard to improve reuse
+* Editing wizard to improve reuse
+* Pretty URLs
 
+Features that require a little work
+------------------------------------
+
+* Admin pages
+* Search indexing

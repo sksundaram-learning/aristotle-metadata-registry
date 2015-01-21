@@ -25,17 +25,17 @@ class QuestionVisibility(TestCase,ManagedObjectVisibility):
 class QuestionAdmin(AdminPageForConcept,TestCase):
     itemType=Question
 
-class QuestionViewPage(LoggedInViewConceptPages,TestCase):
+class LoggedInViewExtensionConceptPages(LoggedInViewConceptPages):
+    def get_help_page(self):
+        return reverse('extension_test:about',args=[self.item1._meta.model_name])
+
+class QuestionViewPage(LoggedInViewExtensionConceptPages,TestCase):
     url_name='question'
     itemType=Question
-    def get_page(self,item):
-        return reverse('extension_test:%s'%self.item1.url_name,args=[item.id])
-    def get_help_page(self):
-        return reverse('extension_test:%s'%self.item1.url_name)
     def test_help_page_exists(self):
         self.logout()
         response = self.client.get(self.get_help_page())
-        self.assertRedirects(response,reverse("extension_test:about",args=[self.item1.help_name])) # This should redirect
+        self.assertEqual(response.status_code,200)
 
 class QuestionnaireVisibility(TestCase,ManagedObjectVisibility):
     def setUp(self):
@@ -47,20 +47,12 @@ class QuestionnaireVisibility(TestCase,ManagedObjectVisibility):
 class QuestionnaireAdmin(AdminPageForConcept,TestCase):
     itemType=Questionnaire
 
-class QuestionnaireViewPage(LoggedInViewConceptPages,TestCase):
+class QuestionnaireViewPage(LoggedInViewExtensionConceptPages,TestCase):
     url_name='item' #'questionnaire' # the lazy way
     itemType=Questionnaire
-    def get_page(self,item):
-        return reverse('extension_test:%s'%self.item1.url_name,args=[item.id])
-    def get_help_page(self):
-        return reverse('extension_test:%s'%self.item1.url_name)
     def test_help_page_exists(self):
         self.logout()
-        response = self.client.get(self.get_help_page())
-        self.assertEqual(response.status_code,302)
-        self.assertTrue(response['Location'].endswith(reverse("extension_test:about",args=[self.item1.help_name])))
 
-        #self.assertRedirects(response,reverse("extension_test:about",args=[self.item1.help_name])) # This should redirect
         with self.assertRaises(TemplateDoesNotExist):
-            response = self.client.get(reverse("extension_test:about",args=[self.item1.help_name])) # They never made this help page, this will error
+            response = self.client.get(self.get_help_page())# They never made this help page, this will error
 

@@ -1,9 +1,11 @@
 from django.test import TestCase
 from django.utils import timezone
 from django.core.urlresolvers import reverse
+from django.core.management import call_command
+
 import aristotle_mdr.models as models
 import aristotle_mdr.tests.utils as utils
-from django.core.management import call_command
+from aristotle_mdr.utils import url_slugify_concept
 
 from django.test.utils import setup_test_environment
 setup_test_environment()
@@ -124,7 +126,7 @@ class ConceptWizardPage(utils.LoggedInViewPages):
         self.assertTrue(models._concept.objects.filter(name="Test Item").exists())
         self.assertEqual(models._concept.objects.filter(name="Test Item").count(),1)
         item = models._concept.objects.filter(name="Test Item").first()
-        self.assertRedirects(response,reverse("aristotle:item", args=[item.id]))
+        self.assertRedirects(response,url_slugify_concept(item))
 
 class ObjectClassWizardPage(ConceptWizardPage,TestCase):
     model=models.ObjectClass
@@ -344,7 +346,7 @@ class DataElementConceptWizardPage(ConceptWizardPage,TestCase):
         response = self.client.post(self.wizard_url, step_6_data)
         self.assertTrue(models.DataElementConcept.objects.filter(name="Animagus--Animal type").exists())
         item = models.DataElementConcept.objects.filter(name="Animagus--Animal type").first()
-        self.assertRedirects(response,reverse("aristotle:dataElementConcept", args=[item.id]))
+        self.assertRedirects(response,url_slugify_concept(item))
 
 
 class DataElementWizardPage(ConceptWizardPage,TestCase):
@@ -560,7 +562,7 @@ class DataElementWizardPage(ConceptWizardPage,TestCase):
             })
         response = self.client.post(self.wizard_url, step_5_data)
         item = models.DataElement.objects.filter(name="Animagus--Animal type, MoM Code").first()
-        self.assertRedirects(response,reverse("aristotle:dataElement", args=[item.id]))
+        self.assertRedirects(response,url_slugify_concept(item))
 
         self.assertTrue(models.DataElementConcept.objects.filter(name="Animagus--Animal type").exists())
         self.assertTrue(models.DataElement.objects.filter(name="Animagus--Animal type, MoM Code").exists())

@@ -1,5 +1,5 @@
 {% extends "aristotle_mdr/user/userHome.html" %}
-{% load inplace_edit %}
+{% load inplace_edit i18n %}
 
 {% block collapse-link %}
     <i class="fa fa-users fa-fw"></i> My Workgroups </a>
@@ -13,18 +13,49 @@
 <h1>{% block title %}My Workgroups{% endblock %}</h1>
     <section id="workgroups">
         <header>Recent Workgroups</header>
-        <ul>
-        {% for item in user.profile.myWorkgroups.all %}
-          <li><a href="{% url 'aristotle:workgroup' item.id %}">{{ item }}</a> -
-            <span>{{ item.description|striptags }}</span>
-            </li>
-        {% empty %}
-            <li> No workgroups </li>
-        {% endfor %}
-        </ul>
-    </section>
 
-<h2>Recent conversations</h2>
-<a href="{% url 'aristotle:discussions' %}">View all posts.</a>
-{% include 'aristotle_mdr/discussions/discussion_list.html' with discussions=request.user.profile.discussions.all|slice:":5" showWorkgroups=True%}
+<table class='table'>
+    <thead>
+        <tr>
+            <th>Workgroup</th>
+            <th>
+                <i class="fa fa-users" title="Number of members"></i>
+            </th>
+            <th>
+                <i class="fa fa-file" title="Number of items"></i>
+            </th>
+            {% if archived %}
+            <th>
+                <i class="fa fa-file" title="Number of items"></i>
+            </th>
+            {% endif %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for wg in user.profile.myWorkgroups.all %}
+        <tr>
+            <td>
+                <a href="{% url 'aristotle:workgroup' wg.id %}">{{ wg }}</a> -
+                <span>{{ wg.description|striptags }}</span>
+            </td>
+            <td>
+                {{ wg.members.count }}
+            </td>
+            <td>
+                {{ wg.items.count }}
+            </td>
+            {% if archived %}
+            <td>
+                {% if wg.archived %}
+                    {% trans "Archived" %}
+                {% else %}
+                    {% trans "Active" %}
+                {% endif %}
+            </td>
+            {% endif %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</section>
 {% endblock %}

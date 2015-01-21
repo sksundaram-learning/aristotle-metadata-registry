@@ -4,6 +4,7 @@ from django.utils import timezone
 
 import aristotle_mdr.models as models
 import aristotle_mdr.perms as perms
+from aristotle_mdr.utils import url_slugify_concept
 
 # Since all managed objects have the same rules, these can be used to cover everything
 # This isn't an actual TestCase, we'll just pretend it is
@@ -177,10 +178,10 @@ class LoggedInViewPages(object):
         self.registrar = User.objects.get(pk=self.registrar.pk)
 
     def get_page(self,item):
-        return reverse('aristotle:%s'%self.item1.url_name,args=[item.id])
+        return url_slugify_concept(item)
 
     def get_help_page(self):
-        return reverse('aristotle:%s'%self.item1.url_name)
+        return reverse('aristotle:about',args=[self.item1._meta.model_name])
 
     def logout(self):
         self.client.post(reverse('django.contrib.auth.views.logout'), {})

@@ -17,6 +17,7 @@ from django import template
 from aristotle_mdr import perms
 import aristotle_mdr.models as MDR
 from django.core.urlresolvers import reverse, resolve
+from django.template.defaultfilters import slugify
 
 register = template.Library()
 
@@ -243,6 +244,18 @@ def stateToText(state):
     """
     return MDR.STATES[int(state)]
 
+
+@register.filter
+def unique_recent(recent):
+    seen = []
+    out = []
+    for item in recent:
+        if item.object and item.object.id not in seen:
+            seen.append(item.object.id)
+            out.append(item)
+    return out
+
+
 # Adds a zerowidth space before an em-dash
 @register.simple_tag
 def zws(string):
@@ -267,7 +280,7 @@ def adminEdit(item):
         <a href="{% adminEdit item %}">Advanced editor for {{item.name}}</a>
     """
     app_name = item._meta.app_label
-    return reverse("admin:%s_%s_change"%(app_name,item.url_name.lower()),args=[item.id])
+    return reverse("admin:%s_%s_change"%(app_name,item._meta.model_name),args=[item.id])
 
 @register.simple_tag
 def clone(item):
@@ -277,7 +290,7 @@ def clone(item):
         <a href="{% clone item %}">Clone {{item.name}}</a>
     """
     app_name = item._meta.app_label
-    return reverse("admin:%s_%s_add"%(app_name,item.url_name.lower()))+"?clone=%s"%item.id
+    return reverse("admin:%s_%s_add"%(app_name,item._meta.model_name))+"?clone=%s"%item.id
 
 @register.simple_tag
 def historyLink(item):
@@ -287,7 +300,7 @@ def historyLink(item):
         <a href="{% clone item %}">Clone {{item.name}}</a>
     """
     app_name = item._meta.app_label
-    return reverse("admin:%s_%s_history"%(app_name,item.url_name.lower()),args=[item.id])
+    return reverse("admin:%s_%s_history"%(app_name,item._meta.model_name),args=[item.id])
 
 @register.simple_tag
 def aboutLink(item):
@@ -297,8 +310,12 @@ def aboutLink(item):
 
 @register.simple_tag
 def itemURL(item):
-    app_name = item._meta.app_label
-    return reverse("%s:%s"%(app_name,item.url_name),args=[item.id])
+    #app_name = item._meta.app_label
+    model_name = item._meta.model_name
+    name = slugify(item.name)[:50]
+    return reverse("aristotle:item",
+            kwargs={'iid':item.pk,'model_slug':model_name,'name_slug':name}
+            )
 
 @register.simple_tag
 def downloadMenu(item):
@@ -335,7 +352,10 @@ def extra_content(extension,item,user):
     try:
         from django.template.loader import get_template
         from django.template import Context
-        return get_template(extension+"/extra_content/"+item.url_name+".html").render(
+        s = item._meta.object_name
+        s = s[0].lower() + s[1:]
+
+        return get_template(extension+"/extra_content/"+s+".html").render(
             Context({'item':item,'user':user})
         )
     except template.TemplateDoesNotExist:

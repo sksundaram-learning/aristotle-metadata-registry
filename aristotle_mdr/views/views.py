@@ -7,6 +7,7 @@ from django.db import transaction
 from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.shortcuts import render, redirect, get_object_or_404
 from django.template import RequestContext, TemplateDoesNotExist
+from django.template.defaultfilters import slugify
 from django.template.loader import select_template
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import TemplateView
@@ -16,7 +17,7 @@ import reversion
 
 from aristotle_mdr.perms import user_can_view, user_can_edit, user_can_change_status
 from aristotle_mdr import perms
-from aristotle_mdr.utils import cache_per_item_user, concept_to_dict, construct_change_message
+from aristotle_mdr.utils import cache_per_item_user, concept_to_dict, construct_change_message, url_slugify_concept
 from aristotle_mdr import forms as MDRForms
 from aristotle_mdr import models as MDR
 
@@ -127,7 +128,7 @@ def download(request,downloadType,iid=None):
 
 
 @cache_per_item_user(ttl=300, cache_post=False)
-def render_if_condition_met(request,condition,objtype,iid=None,subpage=None):
+def render_if_condition_met(request,condition,objtype,iid=None,model_slug=None,name_slug=None,subpage=None):
     if iid is None:
         app_name = objtype._meta.app_label
         return redirect(reverse("%s:about"%app_name,args=["".join(objtype._meta.verbose_name.lower().split())]))
@@ -139,7 +140,7 @@ def render_if_condition_met(request,condition,objtype,iid=None,subpage=None):
             raise PermissionDenied
 
     # We add a user_can_edit flag in addition to others as we have odd rules around who can edit objects.
-    isFavourite = request.user.is_authenticated () and request.user.profile.isFavourite(item.id)
+    isFavourite = request.user.is_authenticated () and request.user.profile.is_favourite(item)
 
     from reversion.revisions import default_revision_manager
     last_edit = default_revision_manager.get_for_object_reference(
@@ -215,7 +216,7 @@ def edit_item(request,iid,*args,**kwargs):
                 item = form.save()
                 reversion.set_user(request.user)
                 reversion.set_comment(construct_change_message(request,form,None))
-                return HttpResponseRedirect(reverse("aristotle:item",args=[item.pk]))
+                return HttpResponseRedirect(url_slugify_concept(item))
     else:
         form = MDRForms.wizards.subclassed_modelform(item.__class__)(instance=item,user=request.user)
     return render(request,"aristotle_mdr/actions/advanced_editor.html",
@@ -258,13 +259,27 @@ def createList(request):
 
 @login_required
 def toggleFavourite(request, iid):
-    request.user.profile.toggleFavourite(iid)
+    item = get_object_or_404(MDR._concept,pk=iid).item
+    if not user_can_view(request.user, item):
+        if request.user.is_anonymous():
+            return redirect(reverse('django.contrib.auth.views.login')+'?next=%s' % request.path)
+        else:
+            raise PermissionDenied
+    request.user.profile.toggleFavourite(item)
     if request.GET.get('next',None):
         return redirect(request.GET.get('next'))
-    return redirect(reverse("aristotle:item",args=[iid]))
+    return redirect(url_slugify_concept(item))
 
-def registrationauthority(*args,**kwargs):
-    return render_if_user_can_view(MDR.RegistrationAuthority,*args,**kwargs)
+def registrationauthority(request,iid,*args,**kwargs):
+    objtype = MDR.RegistrationAuthority
+    if iid is None:
+        app_name = objtype._meta.app_label
+        return redirect(reverse("%s:about"%app_name,args=["".join(objtype._meta.verbose_name.lower().split())]))
+    item = get_object_or_404(objtype,pk=iid).item
+
+    return render(request,item.template,
+        {'item':item.item,}
+        )
 
 def allRegistrationAuthorities(request):
     ras = MDR.RegistrationAuthority.objects.order_by('name')
@@ -319,7 +334,7 @@ def mark_ready_to_review(request,iid):
         else:
             item.readyToReview = not item.readyToReview
             item.save()
-        return HttpResponseRedirect(reverse("aristotle:item",args=[item.id]))
+        return HttpResponseRedirect(url_slugify_concept(item))
     else:
         return render(request,"aristotle_mdr/actions/mark_ready_to_review.html",
             {"item":item,}
@@ -347,7 +362,8 @@ def changeStatus(request, iid):
                 regDate = timezone.now().date()
             for ra in ras:
                 ra.register(item,state,request.user,regDate,cascade,changeDetails)
-            return HttpResponseRedirect(reverse("aristotle:item",args=[item.id]))
+            return HttpResponseRedirect(url_slugify_concept(item))
+            return HttpResponseRedirect(url_slugify_concept(item))
     else:
         form = MDRForms.ChangeStatusForm(user=request.user)
     return render(request,"aristotle_mdr/actions/changeStatus.html",
@@ -369,7 +385,7 @@ def supersede(request, iid):
         if form.is_valid():
             item.superseded_by = form.cleaned_data['newerItem']
             item.save()
-            return HttpResponseRedirect(reverse("aristotle:item",args=[item.id]))
+            return HttpResponseRedirect(url_slugify_concept(item))
     else:
         form = MDRForms.SupersedeForm(item=item,user=request.user,qs=qs)
     return render(request,"aristotle_mdr/actions/supersedeItem.html",
@@ -400,7 +416,7 @@ def deprecate(request, iid):
             for i in form.cleaned_data['olderItems']:
                 if user_can_edit(request.user,i): #Would check item.supersedes but its a set
                     item.supersedes.add(i)
-            return HttpResponseRedirect(reverse("aristotle:item",args=[str(item.id)]))
+            return HttpResponseRedirect(url_slugify_concept(item))
     else:
         form = MDRForms.DeprecateForm(user=request.user,item=item,qs=qs)
     return render(request,"aristotle_mdr/actions/deprecateItems.html",

@@ -1,4 +1,6 @@
+from django.core.urlresolvers import reverse
 from django.forms import model_to_dict
+from django.template.defaultfilters import slugify
 from django.utils.text import get_text_list
 from django.utils.encoding import force_text
 from django.utils.translation import ugettext as _
@@ -32,6 +34,13 @@ def get_download_template_path_for_item(item,downloadType):
     model_name = item._meta.model_name
     template = "%s/downloads/%s/%s.html"%(app_label,downloadType,model_name)
     return template
+
+def url_slugify_concept(item):
+    item = item.item
+    return reverse("aristotle:item",
+        kwargs={'iid':item.pk,'model_slug':item._meta.model_name,'name_slug':slugify(item.name)[:50]}
+        )
+
 
 def construct_change_message(request, form, formsets):
     """
