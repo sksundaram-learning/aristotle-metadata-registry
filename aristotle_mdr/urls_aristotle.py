@@ -34,7 +34,6 @@ urlpatterns = patterns('aristotle_mdr.views',
     url(r'^glossary/?$', views.glossary, name='glossary'),
     url(r'^glossaryItem/(?P<iid>\d+)?/?$', views.items.glossaryById, name='glossaryItem'),
     #url(r'^glossary/(?P<slug>\w+)/?$', views.glossaryBySlug, name='glossary_by_slug'),
-    url(r'^glossary/ajaxlist?$', views.glossaryAjaxlist, name='glossaryAjaxlist'), # For TinyMCE
 
     url(r'^workgroup/(?P<iid>\d+)/?$', views.workgroups.workgroup, name='workgroup'),
     url(r'^workgroup/(?P<iid>\d+)/members/?$', views.workgroups.members, name='workgroupMembers'),

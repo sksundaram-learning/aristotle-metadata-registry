@@ -292,11 +292,6 @@ def glossary(request):
         {'terms':MDR.GlossaryItem.objects.all().order_by('name').visible(request.user)
         })
 
-def glossaryAjaxlist(request):
-    import json
-    results = [g.json_link_list() for g in MDR.GlossaryItem.objects.visible(request.user).all()]
-    return HttpResponse(json.dumps(results), content_type="application/json")
-
 #def glossaryBySlug(request,slug):
 #    term = get_object_or_404(MDR.GlossaryItem,id=iid)
 #    return render(request,"aristotle_mdr/glossaryItem.html",{'item':term})
