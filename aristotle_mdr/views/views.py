@@ -467,7 +467,7 @@ def valuedomain_value_edit(request,iid,value_type):
             queryset=value_model.objects.filter(valueDomain=item.id)
             )
     return render(request,"aristotle_mdr/actions/edit_value_domain_values.html",
-            {'item':item,'formset': formset,'value_type':value_type.title(),'value_model':value_model}
+            {'item':item,'formset': formset,'value_type':value_type,'value_model':value_model,}
         )
 
 def browse(request,oc_id=None,dec_id=None):

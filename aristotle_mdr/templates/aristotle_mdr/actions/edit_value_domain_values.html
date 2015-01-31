@@ -16,11 +16,11 @@
 
 
 <a class="sr-only" onclick="addCode()" href="?extra=1" accesskey='r'>Add a code (adding a row does not save changes)</a>
-<form method="post" action="" >
+<form method="post" action="{% url 'aristotle:valueDomain_edit_values' item.id value_type %}" >
     <div class="modal-body">
         <ol class="breadcrumb">
           <li><a href="{% url 'aristotle:item' item.id %}">{{ item.name }}</a></li>
-          <li class="active">{{ value_type }} Values editor</li>
+          <li class="active">{{ value_type|title }} Values editor</li>
         </ol>
 
         {% if formset.errors %}
