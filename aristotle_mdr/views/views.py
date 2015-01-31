@@ -126,12 +126,11 @@ def download(request,downloadType,iid=None):
 
     raise Http404
 
+def concept(*args,**kwargs):
+    return render_if_user_can_view(MDR._concept,*args,**kwargs)
 
 @cache_per_item_user(ttl=300, cache_post=False)
-def render_if_condition_met(request,condition,objtype,iid=None,model_slug=None,name_slug=None,subpage=None):
-    if iid is None:
-        app_name = objtype._meta.app_label
-        return redirect(reverse("%s:about"%app_name,args=["".join(objtype._meta.verbose_name.lower().split())]))
+def render_if_condition_met(request,condition,objtype,iid,model_slug=None,name_slug=None,subpage=None):
     item = get_object_or_404(objtype,pk=iid).item
     if not condition(request.user, item):
         if request.user.is_anonymous():
@@ -357,7 +356,6 @@ def changeStatus(request, iid):
                 regDate = timezone.now().date()
             for ra in ras:
                 ra.register(item,state,request.user,regDate,cascade,changeDetails)
-            return HttpResponseRedirect(url_slugify_concept(item))
             return HttpResponseRedirect(url_slugify_concept(item))
     else:
         form = MDRForms.ChangeStatusForm(user=request.user)
