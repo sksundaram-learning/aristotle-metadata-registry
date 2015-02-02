@@ -551,6 +551,27 @@ class ValueDomainViewPage(LoggedInViewConceptPages,TestCase):
     def test_submitter_can_use_supplementary_value_edit_page(self):
         self.submitter_user_can_use_value_edit_page('supplementary')
 
+    def test_su_can_download_pdf(self):
+        self.login_superuser()
+        response = self.client.get(reverse('aristotle:download',args=['csv-vd',self.item1.id]))
+        self.assertEqual(response.status_code,200)
+        response = self.client.get(reverse('aristotle:download',args=['csv-vd',self.item2.id]))
+        self.assertEqual(response.status_code,200)
+
+    def test_editor_can_download_pdf(self):
+        self.login_editor()
+        response = self.client.get(reverse('aristotle:download',args=['csv-vd',self.item1.id]))
+        self.assertEqual(response.status_code,200)
+        response = self.client.get(reverse('aristotle:download',args=['csv-vd',self.item2.id]))
+        self.assertEqual(response.status_code,403)
+
+    def test_viewer_can_download_pdf(self):
+        self.login_viewer()
+        response = self.client.get(reverse('aristotle:download',args=['csv-vd',self.item1.id]))
+        self.assertEqual(response.status_code,200)
+        response = self.client.get(reverse('aristotle:download',args=['csv-vd',self.item2.id]))
+        self.assertEqual(response.status_code,403)
+
 class ConceptualDomainViewPage(LoggedInViewConceptPages,TestCase):
     url_name='conceptualDomain'
     itemType=models.ConceptualDomain
