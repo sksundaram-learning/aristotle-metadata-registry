@@ -132,6 +132,8 @@ def concept(*args,**kwargs):
 @cache_per_item_user(ttl=300, cache_post=False)
 def render_if_condition_met(request,condition,objtype,iid,model_slug=None,name_slug=None,subpage=None):
     item = get_object_or_404(objtype,pk=iid).item
+    if item._meta.model_name != model_slug or not slugify(item.name).startswith(str(name_slug)):
+        return redirect(url_slugify_concept(item))
     if not condition(request.user, item):
         if request.user.is_anonymous():
             return redirect(reverse('django.contrib.auth.views.login')+'?next=%s' % request.path)

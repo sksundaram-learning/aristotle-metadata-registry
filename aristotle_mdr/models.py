@@ -19,6 +19,7 @@ from django.dispatch import receiver
 import datetime
 from tinymce.models import HTMLField
 from aristotle_mdr import perms
+from aristotle_mdr.utils import url_slugify_concept
 
 # 11179 States
 # When used these MUST be used as IntegerFields to allow status comparison
@@ -493,12 +494,7 @@ class _concept(baseAristotleObject):
     def autocomplete_search_fields(self):
         return ("name__icontains",)
     def get_absolute_url(self):
-        try:
-            url_name = "%s:%s"%(self.item._meta.app_label,self.item.url_name)
-            url = reverse(url_name,args=[self.id])
-        except:
-            url = reverse("aristotle:item",args=[self.id])
-        return url
+        return url_slugify_concept(item)
 
     # This returns the items that can be registered along with the this item.
     # Reimplementations of this MUST return lists

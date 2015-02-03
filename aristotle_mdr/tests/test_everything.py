@@ -330,6 +330,15 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         response = self.client.get(self.get_page(self.item2))
         self.assertEqual(response.status_code,403)
 
+    def test_stubs_redirect_correctly(self):
+        self.login_viewer()
+        response = self.client.get(reverse('aristotle:item',args=[self.item1.id]))
+        self.assertRedirects(response,url_slugify_concept(self.item1))
+        response = self.client.get(reverse('aristotle:item',args=[self.item1.id])+"/not-a-model/fake-name")
+        self.assertRedirects(response,url_slugify_concept(self.item1))
+        response = self.client.get(reverse('aristotle:item',args=[self.item1.id])+"/this-isnt-even-a-proper-stub")
+        self.assertRedirects(response,url_slugify_concept(self.item1))
+
     def test_viewer_can_view_related_packages(self):
         self.login_viewer()
         response = self.client.get(reverse('aristotle:itemPackages',args=[self.item1.id]))
