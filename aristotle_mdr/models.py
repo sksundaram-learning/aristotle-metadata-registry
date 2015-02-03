@@ -494,7 +494,7 @@ class _concept(baseAristotleObject):
     def autocomplete_search_fields(self):
         return ("name__icontains",)
     def get_absolute_url(self):
-        return url_slugify_concept(item)
+        return url_slugify_concept(self)
 
     # This returns the items that can be registered along with the this item.
     # Reimplementations of this MUST return lists
