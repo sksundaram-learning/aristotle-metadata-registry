@@ -70,7 +70,6 @@ class AdminConceptForm(autocomplete_light.ModelForm):
     def __init__(self, *args, **kwargs):
 
         self.request = kwargs.pop('request', None)
-        auto_fields = kwargs.pop('auto_fields', None)
         clone = self.request.GET.get("clone",None)
         name_suggest_fields = kwargs.pop('name_suggest_fields',[])
         separator = kwargs.pop('separator','-')
@@ -94,10 +93,6 @@ class AdminConceptForm(autocomplete_light.ModelForm):
 
         if name_suggest_fields:
             self.fields['name'].widget = widgets.NameSuggestInput(name_suggest_fields=name_suggest_fields,separator=separator)
-
-        if auto_fields and False:
-            for f,l in auto_fields['fk']:
-                self.fields[f].widget = autocomplete_light.ChoiceWidget(l.get_autocomplete_name())
 
 
     def save_model(self, *args, **kwargs):

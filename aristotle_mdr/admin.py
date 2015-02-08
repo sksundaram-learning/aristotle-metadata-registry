@@ -120,9 +120,6 @@ class ConceptAdmin(CompareVersionAdmin):
             })
     ]
     name_suggest_fields = []
-    light_autocomplete_lookup_fields = {
-        'fk': [],
-    }
     actions_on_top = True; actions_on_bottom = False
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
@@ -138,7 +135,6 @@ class ConceptAdmin(CompareVersionAdmin):
         class ModelFormMetaClass(conceptForm):
             def __new__(cls, *args, **kwargs):
                 kwargs['request'] = request
-                kwargs['auto_fields'] = self.light_autocomplete_lookup_fields
                 kwargs['name_suggest_fields'] = self.name_suggest_fields
                 if self.name_suggest_fields:
                     SEPARATORS = getattr(settings, 'ARISTOTLE_SETTINGS', {}).get('SEPARATORS',{})

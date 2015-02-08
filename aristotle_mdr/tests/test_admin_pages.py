@@ -87,9 +87,6 @@ class AdminPage(utils.LoggedInViewPages,TestCase):
     def test_supersede_saves(self):
         pass
 
-    def test_editor_change_item(self):
-        pass
-
     def test_editor_can_view_admin_page(self):
         self.login_editor()
         response = self.client.get(reverse("admin:index"))
@@ -100,6 +97,7 @@ class AdminPageForConcept(utils.LoggedInViewPages):
     create_defaults = {}
     def setUp(self):
         super(AdminPageForConcept, self).setUp()
+        self.item1 = self.itemType.objects.create(name="OC1",description=" ",workgroup=self.wg1,**self.create_defaults)
 
     def test_editor_make_item(self):
         self.login_editor()
@@ -132,7 +130,6 @@ class AdminPageForConcept(utils.LoggedInViewPages):
     def test_editor_deleting_allowed_item(self):
         self.login_editor()
         # make some items
-        self.item1 = self.itemType.objects.create(name="OC1",workgroup=self.wg1, **self.create_defaults)
 
         before_count = self.wg1.items.count()
         self.assertEqual(self.wg1.items.count(),1)
@@ -179,6 +176,27 @@ class AdminPageForConcept(utils.LoggedInViewPages):
         self.assertEqual(response.status_code,404)
         self.assertEqual(self.wg2.items.count(),before_count)
 
+    def test_editor_change_item(self):
+        from django.forms import model_to_dict
+        self.login_editor()
+        response = self.client.get(reverse("admin:%s_%s_change"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=(str(self.item1.id))))
+        self.assertEqual(response.status_code,200)
+
+        updated_item = dict((k,v) for (k,v) in model_to_dict(self.item1).items() if v is not None)
+        updated_name = updated_item['name'] + " updated!"
+        updated_item['name'] = updated_name
+
+        updated_item.update({
+            'statuses-TOTAL_FORMS': 0, 'statuses-INITIAL_FORMS': 0 #no statuses
+        })
+        updated_item.update(self.form_defaults)
+
+        response = self.client.post(
+                reverse("admin:%s_%s_change"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=(str(self.item1.id))),
+                updated_item
+                )
+        self.item1 = self.itemType.objects.get(pk=self.item1.pk)
+        self.assertEqual(self.item1.name,updated_name)
 
 
 class ObjectClassAdminPage(AdminPageForConcept,TestCase):

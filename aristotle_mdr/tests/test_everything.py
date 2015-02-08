@@ -9,7 +9,6 @@ from aristotle_mdr.utils import url_slugify_concept
 from django.test.utils import setup_test_environment
 setup_test_environment()
 from aristotle_mdr.tests import utils
-from aristotle_mdr.tests.utils import ManagedObjectVisibility
 #  Create your tests here.
 
 class SuperuserPermissions(TestCase):
@@ -40,152 +39,16 @@ class SuperuserPermissions(TestCase):
     def test_in_workgroup(self):
         self.assertTrue(perms.user_in_workgroup(self.su,None))
 
-# Since all managed objects have the same rules, these can be used to cover everything
-# This isn't an actual TestCase, we'll just pretend it is
-class ManagedObjectVisibility(object):
-    def test_object_is_public(self):
-        ra = models.RegistrationAuthority.objects.create(name="Test RA")
-        self.wg = models.Workgroup.objects.create(name="Test WG")
 
-        self.assertEqual(self.item.is_public(),False)
-        s = models.Status.objects.create(
-                concept=self.item,
-                registrationAuthority=ra,
-                registrationDate=timezone.now(),
-                state=ra.public_state
-                )
-        self.assertEqual(s.registrationAuthority,ra)
-        self.assertEqual(self.item.is_public(),True)
-        ra.public_state = models.STATES.standard
-        ra.save()
-
-        self.item = models._concept.objects.get(id=self.item.id) # Stupid cache
-        self.assertEqual(self.item.is_public(),False)
-        self.item.statuses.first().state = models.STATES.standard
-        self.item.save()
-        self.assertEqual(self.item.is_public(),False)
-
-    def test_registrar_can_view(self):
-        # set up
-        ra = models.RegistrationAuthority.objects.create(name="Test RA")
-
-        # make editor for wg1
-        r1 = User.objects.create_user('reggie','','reg')
-
-        self.assertEqual(perms.user_can_view(r1,self.item),False)
-        s = models.Status.objects.create(
-                concept=self.item,
-                registrationAuthority=ra,
-                registrationDate=timezone.now(),
-                state=ra.locked_state
-                )
-        self.assertEqual(perms.user_can_view(r1,self.item),False)
-        # Caching issue, refresh from DB with correct permissions
-        ra.giveRoleToUser('registrar',r1)
-        r1 = User.objects.get(pk=r1.pk)
-
-        self.assertEqual(perms.user_can_view(r1,self.item),True)
-
-    def test_object_submitter_can_view(self):
-        # set up
-        ra = models.RegistrationAuthority.objects.create(name="Test RA")
-
-        # make editor for wg1
-        wg1 = models.Workgroup.objects.create(name="Test WG 1")
-        e1 = User.objects.create_user('editor1','','editor1')
-        wg1.giveRoleToUser('submitter',e1)
-
-        # make editor for wg2
-        wg2 = models.Workgroup.objects.create(name="Test WG 2")
-        e2 = User.objects.create_user('editor2','','editor2')
-        wg2.giveRoleToUser('submitter',e2)
-
-        # ensure object is in wg1
-        self.item.workgroup = wg1
-        self.item.save()
-
-        # test editor 1 can view, editor 2 cannot
-        self.assertTrue(perms.user_can_view(e1,self.item))
-        self.assertFalse(perms.user_can_view(e2,self.item))
-
-        # move object to wg2
-        self.item.workgroup = wg2
-        self.item.save()
-        self.item = self.item.__class__.objects.get(pk=self.item.pk) #Silly DB cache
-
-        # test editor 2 can view, editor 1 cannot
-        self.assertTrue(perms.user_can_view(e2,self.item))
-        self.assertFalse(perms.user_can_view(e1,self.item))
-
-        s = models.Status.objects.create(
-                concept=self.item,
-                registrationAuthority=ra,
-                registrationDate=timezone.now(),
-                state=ra.locked_state
-                )
-        # Editor 2 can view. Editor 1 cannot
-        self.assertTrue(perms.user_can_view(e2,self.item))
-        self.assertFalse(perms.user_can_view(e1,self.item))
-
-        # Set status to a public state
-        s.state = ra.public_state
-        s.save()
-        # Both can view, neither can edit.
-        self.assertEqual(perms.user_can_view(e1,self.item),True)
-        self.assertEqual(perms.user_can_view(e2,self.item),True)
-
-    def test_object_submitter_can_edit(self):
-        # set up
-        ra = models.RegistrationAuthority.objects.create(name="Test RA")
-        registrar = User.objects.create_user('registrar','','registrar')
-        ra.registrars.add(registrar)
-
-        # make editor for wg1
-        wg1 = models.Workgroup.objects.create(name="Test WG 1")
-        e1 = User.objects.create_user('editor1','','editor1')
-        wg1.giveRoleToUser('submitter',e1)
-
-        # make editor for wg2
-        wg2 = models.Workgroup.objects.create(name="Test WG 2")
-        e2 = User.objects.create_user('editor2','','editor2')
-        wg2.giveRoleToUser('submitter',e2)
-
-        # ensure object is in wg1
-        self.item.workgroup = wg1
-        self.item.save()
-
-        # test editor 1 can edit, editor 2 cannot
-        self.assertEqual(perms.user_can_edit(e1,self.item),True)
-        self.assertEqual(perms.user_can_edit(e2,self.item),False)
-
-        # move Object Class to wg2
-        self.item.workgroup = wg2
-        self.item.save()
-
-        # test editor 2 can edit, editor 1 cannot
-        self.assertEqual(perms.user_can_edit(e2,self.item),True)
-        self.assertEqual(perms.user_can_edit(e1,self.item),False)
-
-        #ra.register(self.item,ra.locked_state,registrar,timezone.now(),)
-        s = models.Status.objects.create(
-                concept=self.item,
-                registrationAuthority=ra,
-                registrationDate=timezone.now(),
-                state=ra.locked_state
-                )
-        # Editor 2 can no longer edit. Neither can Editor 1
-        self.assertEqual(perms.user_can_edit(e2,self.item),False)
-        self.assertEqual(perms.user_can_view(e1,self.item),False)
-
-class ObjectClassVisibility(TestCase,ManagedObjectVisibility):
+class ObjectClassVisibility(TestCase,utils.ManagedObjectVisibility):
     def setUp(self):
         self.wg = models.Workgroup.objects.create(name="Setup WG")
         self.item = models.ObjectClass.objects.create(name="Test OC",workgroup=self.wg)
-class PropertyVisibility(TestCase,ManagedObjectVisibility):
+class PropertyVisibility(TestCase,utils.ManagedObjectVisibility):
     def setUp(self):
         self.wg = models.Workgroup.objects.create(name="Setup WG")
         self.item = models.Property.objects.create(name="Test P",workgroup=self.wg)
-class ValueDomainVisibility(TestCase,ManagedObjectVisibility):
+class ValueDomainVisibility(TestCase,utils.ManagedObjectVisibility):
     def setUp(self):
         self.wg = models.Workgroup.objects.create(name="Setup WG")
         self.item = models.ValueDomain.objects.create(name="Test VD",
@@ -194,31 +57,31 @@ class ValueDomainVisibility(TestCase,ManagedObjectVisibility):
                 maximumLength = 3,
                 dataType = models.DataType.objects.create(name="Test DT",workgroup=self.wg)
                 )
-class DataElementConceptVisibility(TestCase,ManagedObjectVisibility):
+class DataElementConceptVisibility(TestCase,utils.ManagedObjectVisibility):
     def setUp(self):
         self.wg = models.Workgroup.objects.create(name="Setup WG")
         self.item = models.DataElementConcept.objects.create(name="Test DEC",
             workgroup=self.wg,
             )
-class DataElementVisibility(TestCase,ManagedObjectVisibility):
+class DataElementVisibility(TestCase,utils.ManagedObjectVisibility):
     def setUp(self):
         self.wg = models.Workgroup.objects.create(name="Setup WG")
         self.item = models.DataElement.objects.create(name="Test DE",
             workgroup=self.wg,
             )
-class DataTypeVisibility(TestCase,ManagedObjectVisibility):
+class DataTypeVisibility(TestCase,utils.ManagedObjectVisibility):
     def setUp(self):
         self.wg = models.Workgroup.objects.create(name="Setup WG")
         self.item = models.DataType.objects.create(name="Test DT",
             workgroup=self.wg,
             )
-class PackageVisibility(TestCase,ManagedObjectVisibility):
+class PackageVisibility(TestCase,utils.ManagedObjectVisibility):
     def setUp(self):
         self.wg = models.Workgroup.objects.create(name="Setup WG")
         self.item = models.Package.objects.create(name="Test Package",
             workgroup=self.wg,
             )
-class GlossaryVisibility(TestCase,ManagedObjectVisibility):
+class GlossaryVisibility(TestCase,utils.ManagedObjectVisibility):
     def setUp(self):
         self.wg = models.Workgroup.objects.create(name="Setup WG")
         self.item = models.GlossaryItem.objects.create(name="Test Glossary",
@@ -380,7 +243,6 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         updated_item = dict((k,v) for (k,v) in model_to_dict(response.context['item']).items() if v is not None)
         updated_name = updated_item['name'] + " updated!"
         updated_item['name'] = updated_name
-        print updated_item
         response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
         self.item1 = self.itemType.objects.get(pk=self.item1.pk)
         self.assertRedirects(response,url_slugify_concept(self.item1))
