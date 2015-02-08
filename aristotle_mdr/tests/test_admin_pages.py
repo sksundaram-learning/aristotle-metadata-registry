@@ -97,7 +97,7 @@ class AdminPageForConcept(utils.LoggedInViewPages):
     create_defaults = {}
     def setUp(self):
         super(AdminPageForConcept, self).setUp()
-        self.item1 = self.itemType.objects.create(name="OC1",description=" ",workgroup=self.wg1,**self.create_defaults)
+        self.item1 = self.itemType.objects.create(name="admin_page_test_oc",description=" ",workgroup=self.wg1,**self.create_defaults)
 
     def test_editor_make_item(self):
         self.login_editor()
@@ -224,12 +224,12 @@ class DataTypeAdminPage(AdminPageForConcept,TestCase):
 class DataElementDerivationAdminPage(AdminPageForConcept,TestCase):
     itemType=models.DataElementDerivation
     def setUp(self):
-        super(DataElementDerivationAdminPage, self).setUp()
         self.ded_wg = models.Workgroup.objects.create(name="Derived WG")
         self.derived_de = models.DataElement.objects.create(name='derivedDE',description="",workgroup=self.ded_wg)
         self.ra.register(self.derived_de,models.STATES.standard,self.registrar)
         self.create_defaults = {'derives':self.derived_de}
         self.form_defaults = {'derives':self.derived_de.id}
+        super(DataElementDerivationAdminPage, self).setUp()
 class GlossaryItemAdminPage(AdminPageForConcept,TestCase):
     itemType=models.GlossaryItem
     form_defaults={
