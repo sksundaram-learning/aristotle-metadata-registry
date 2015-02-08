@@ -95,12 +95,18 @@ class AdminPage(utils.LoggedInViewPages,TestCase):
 class AdminPageForConcept(utils.LoggedInViewPages):
     form_defaults = {}
     create_defaults = {}
-    def setUp(self):
+    def setUp(self,instant_create=True):
         super(AdminPageForConcept, self).setUp()
+        if instant_create:
+            self.create_item()
+
+    def create_item(self):
         self.item1 = self.itemType.objects.create(name="admin_page_test_oc",description=" ",workgroup=self.wg1,**self.create_defaults)
 
     def test_editor_make_item(self):
         self.login_editor()
+
+        before_count = self.wg1.items.count()
         response = self.client.get(reverse("admin:%s_%s_changelist"%(self.itemType._meta.app_label,self.itemType._meta.model_name)))
         self.assertEqual(response.status_code,200)
         response = self.client.get(reverse("admin:%s_%s_add"%(self.itemType._meta.app_label,self.itemType._meta.model_name)))
@@ -118,7 +124,7 @@ class AdminPageForConcept(utils.LoggedInViewPages):
         self.assertEqual(response.status_code,302)
         self.assertRedirects(response,reverse("admin:%s_%s_changelist"%(self.itemType._meta.app_label,self.itemType._meta.model_name)))
         self.assertEqual(self.wg1.items.first().name,"admin_page_test_oc")
-        self.assertEqual(self.wg1.items.count(),1)
+        self.assertEqual(self.wg1.items.count(),before_count+1)
 
         # Editor can't save in WG2, so this won't redirect.
         data.update({"workgroup":self.wg2.id})
@@ -224,12 +230,14 @@ class DataTypeAdminPage(AdminPageForConcept,TestCase):
 class DataElementDerivationAdminPage(AdminPageForConcept,TestCase):
     itemType=models.DataElementDerivation
     def setUp(self):
+        super(DataElementDerivationAdminPage, self).setUp(instant_create=False)
         self.ded_wg = models.Workgroup.objects.create(name="Derived WG")
         self.derived_de = models.DataElement.objects.create(name='derivedDE',description="",workgroup=self.ded_wg)
         self.ra.register(self.derived_de,models.STATES.standard,self.registrar)
         self.create_defaults = {'derives':self.derived_de}
         self.form_defaults = {'derives':self.derived_de.id}
-        super(DataElementDerivationAdminPage, self).setUp()
+        self.create_item()
+
 class GlossaryItemAdminPage(AdminPageForConcept,TestCase):
     itemType=models.GlossaryItem
     form_defaults={
