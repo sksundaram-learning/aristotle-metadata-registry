@@ -43,7 +43,7 @@ class PermissionsAutocomplete(autocomplete_light.AutocompleteModelTemplate):
 autocompletesToRegister = [
         MDR._concept,
         MDR.DataElement,
-        #MDR.DataElementConcept,
+        MDR.DataElementConcept,
         MDR.ConceptualDomain,
         MDR.ObjectClass,
         MDR.Property,

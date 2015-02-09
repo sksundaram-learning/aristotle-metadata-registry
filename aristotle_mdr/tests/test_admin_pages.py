@@ -84,9 +84,6 @@ class AdminPage(utils.LoggedInViewPages,TestCase):
             self.assertEqual(rel.count(),0)
 
 
-    def test_supersede_saves(self):
-        pass
-
     def test_editor_can_view_admin_page(self):
         self.login_editor()
         response = self.client.get(reverse("admin:index"))
@@ -98,10 +95,11 @@ class AdminPageForConcept(utils.LoggedInViewPages):
     def setUp(self,instant_create=True):
         super(AdminPageForConcept, self).setUp()
         if instant_create:
-            self.create_item()
+            self.create_items()
 
-    def create_item(self):
+    def create_items(self):
         self.item1 = self.itemType.objects.create(name="admin_page_test_oc",description=" ",workgroup=self.wg1,**self.create_defaults)
+        self.item2 = self.itemType.objects.create(name="admin_page_test_oc_2",description=" ",workgroup=self.wg1,**self.create_defaults)
 
     def test_editor_make_item(self):
         self.login_editor()
@@ -204,6 +202,58 @@ class AdminPageForConcept(utils.LoggedInViewPages):
         self.item1 = self.itemType.objects.get(pk=self.item1.pk)
         self.assertEqual(self.item1.name,updated_name)
 
+#deprecated
+    def test_supersedes_saves(self):
+        self.item3 = self.itemType.objects.create(name="admin_page_test_oc_2",description=" ",workgroup=self.wg1,**self.create_defaults)
+
+        from django.forms import model_to_dict
+        self.login_editor()
+        response = self.client.get(reverse("admin:%s_%s_change"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=(str(self.item1.id))))
+        self.assertEqual(response.status_code,200)
+
+        updated_item = dict((k,v) for (k,v) in model_to_dict(self.item1).items() if v is not None)
+        updated_name = updated_item['name'] + " updated!"
+        updated_item['name'] = updated_name
+
+        updated_item.update({
+            'statuses-TOTAL_FORMS': 0, 'statuses-INITIAL_FORMS': 0, #no statuses
+            'deprecated':[self.item2.id,self.item3.id]
+        })
+        updated_item.update(self.form_defaults)
+
+        response = self.client.post(
+                reverse("admin:%s_%s_change"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=(str(self.item1.id))),
+                updated_item
+                )
+        self.item1 = self.itemType.objects.get(pk=self.item1.pk)
+        self.assertTrue(self.item2 in self.item1.supersedes.all())
+        self.assertTrue(self.item3 in self.item1.supersedes.all())
+
+    def test_superseded_by_saves(self):
+
+        from django.forms import model_to_dict
+        self.login_editor()
+        response = self.client.get(reverse("admin:%s_%s_change"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=(str(self.item1.id))))
+        self.assertEqual(response.status_code,200)
+
+        updated_item = dict((k,v) for (k,v) in model_to_dict(self.item1).items() if v is not None)
+        updated_name = updated_item['name'] + " updated!"
+        updated_item['name'] = updated_name
+
+        updated_item.update({
+            'statuses-TOTAL_FORMS': 0, 'statuses-INITIAL_FORMS': 0, #no statuses
+            'superseded_by':self.item2.id
+        })
+        updated_item.update(self.form_defaults)
+
+        response = self.client.post(
+                reverse("admin:%s_%s_change"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=(str(self.item1.id))),
+                updated_item
+                )
+        self.item1 = self.itemType.objects.get(pk=self.item1.pk)
+        self.assertTrue(self.item2 == self.item1.superseded_by)
+
+
 
 class ObjectClassAdminPage(AdminPageForConcept,TestCase):
     itemType=models.ObjectClass
@@ -236,7 +286,7 @@ class DataElementDerivationAdminPage(AdminPageForConcept,TestCase):
         self.ra.register(self.derived_de,models.STATES.standard,self.registrar)
         self.create_defaults = {'derives':self.derived_de}
         self.form_defaults = {'derives':self.derived_de.id}
-        self.create_item()
+        self.create_items()
 
 class GlossaryItemAdminPage(AdminPageForConcept,TestCase):
     itemType=models.GlossaryItem

@@ -95,14 +95,13 @@ class AdminConceptForm(autocomplete_light.ModelForm):
             self.fields['name'].widget = widgets.NameSuggestInput(name_suggest_fields=name_suggest_fields,separator=separator)
 
 
-    def save_model(self, *args, **kwargs):
-        instance = super(AdminConceptForm, self).save_model(*args, **kwargs)
-        request = kwargs['request']
+    def save(self, *args, **kwargs):
+        instance = super(AdminConceptForm, self).save(*args, **kwargs)
         for i in instance.supersedes.all():
-            if user_can_edit(request.user,i) and i not in self.cleaned_data['deprecated']:
+            if user_can_edit(self.request.user,i) and i not in self.cleaned_data['deprecated']:
                 instance.supersedes.remove(i)
         for i in self.cleaned_data['deprecated']:
-            if user_can_edit(request.user,i): #Would check item.supersedes but its a set
+            if user_can_edit(self.request.user,i): #Would check item.supersedes but its a set
                 instance.supersedes.add(i)
 
         return instance
