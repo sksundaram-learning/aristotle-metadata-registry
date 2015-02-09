@@ -1,12 +1,17 @@
 {% extends 'aristotle_mdr/base.html' %}
-{% load aristotle_tags %}
+{% load aristotle_tags i18n %}
 
 {% block title %}Creation List{% endblock %}
 
 {% block content %}
 
 <p>
-    Below is a list of all posible objects you can create in this metadata registry.
+    Below is a list of all concepts managed within this registry, as submitter you
+    can create and propose a new object in your workgroups by clicking the links below.
+    {% if user.is_staff %}
+        You may be able to make additional items through the
+        <a href="{% url 'admin:index' %}">{% trans 'Management interface' %}</a>.
+    {% endif %}
 </p>
 {% for app,app_models in models.items %}
 <h2>{{ app }}</h2>

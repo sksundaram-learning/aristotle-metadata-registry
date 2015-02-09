@@ -10,6 +10,21 @@ from aristotle_mdr.utils import url_slugify_concept
 from django.test.utils import setup_test_environment
 setup_test_environment()
 
+class CreateListPageTests(utils.LoggedInViewPages,TestCase):
+    def test_create_list_active(self):
+        self.logout()
+        response = self.client.get(reverse('aristotle:createList'))
+        self.assertEqual(response.status_code,302) # redirect to login
+
+        self.login_viewer()
+        response = self.client.get(reverse('aristotle:createList'))
+        self.assertEqual(response.status_code,403) # unauthorised
+
+        self.login_editor()
+        response = self.client.get(reverse('aristotle:createList'))
+        self.assertEqual(response.status_code,200)
+
+
 class ConceptWizard_TestInvalidUrls(utils.LoggedInViewPages,TestCase):
     def tearDown(self):
         call_command('clear_index', interactive=False, verbosity=0)

@@ -234,7 +234,7 @@ def unauthorised(request, path=''):
 
 
 
-def createList(request):
+def create_list(request):
     if request.user.is_anonymous():
         return redirect(reverse('django.contrib.auth.views.login')+'?next=%s' % request.path)
     if not perms.user_is_editor(request.user):
@@ -248,7 +248,8 @@ def createList(request):
     models = ContentType.objects.filter(app_label__in=aristotle_apps).all()
     out = {}
     for m in models:
-        if not m.model.startswith("_"):
+        if issubclass(m.model_class(),MDR._concept) and not m.model.startswith("_"):
+            # Dont
             app_models = out.get(m.app_label,[])
             app_models.append((m,m.model_class()))
             out[m.app_label] = app_models
