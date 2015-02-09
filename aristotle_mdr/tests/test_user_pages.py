@@ -11,7 +11,6 @@ class UserHomePages(utils.LoggedInViewPages,TestCase):
         super(UserHomePages, self).setUp()
 
     def check_generic_pages(self):
-        self.login_viewer()
         response = self.client.get(reverse('aristotle:userHome',))
         self.assertEqual(response.status_code,200)
         response = self.client.get(reverse('aristotle:userEdit',))
@@ -25,6 +24,7 @@ class UserHomePages(utils.LoggedInViewPages,TestCase):
         response = self.client.get(reverse('aristotle:userWorkgroups',))
         self.assertEqual(response.status_code,200)
 
+    def test_user_can_edit_own_details(self):
         self.login_viewer()
         new_email = 'my_new@email.com'
         response = self.client.post(reverse('aristotle:userEdit'),
