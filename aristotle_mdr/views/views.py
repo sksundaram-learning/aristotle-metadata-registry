@@ -425,7 +425,7 @@ from django.forms.models import modelformset_factory
 
 def valuedomain_value_edit(request,iid,value_type):
     item = get_object_or_404(MDR._concept,pk=iid).item
-    if not (item and user_can_edit(request.user,item)):
+    if not user_can_edit(request.user,item):
         if request.user.is_anonymous():
             return redirect(reverse('django.contrib.auth.views.login')+'?next=%s' % request.path)
         else:

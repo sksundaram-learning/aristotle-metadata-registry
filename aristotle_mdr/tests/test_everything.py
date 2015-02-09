@@ -419,16 +419,48 @@ class ValueDomainViewPage(LoggedInViewConceptPages,TestCase):
         self.loggedin_user_can_use_value_page(value_type,self.item1,200)
         self.loggedin_user_can_use_value_page(value_type,self.item2,403)
         self.loggedin_user_can_use_value_page(value_type,self.item3,200)
+
+        data = {}
+        num_vals = getattr(self.item1,value_type+"Values").count()
+        i=0
+        for i,v in enumerate(getattr(self.item1,value_type+"Values").all()):
+            data.update({"form-%d-id"%i: v.pk, "form-%d-order"%i : v.order, "form-%d-value"%i : v.value, "form-%d-meaning"%i : v.meaning+" -updated"})
+        data.update({"form-%d-DELETE"%i: 'checked', "form-%d-meaning"%i : v.meaning+" - deleted"}) # delete the last one.
+        # now add a new one
+        i=i+1
+        data.update({"form-%d-order"%i : i, "form-%d-value"%i : 100, "form-%d-meaning"%i : "new value -updated"})
+
+        data.update({
+            "form-TOTAL_FORMS":num_vals+1, "form-INITIAL_FORMS": num_vals, "form-MAX_NUM_FORMS":1000,
+
+            })
+        response = self.client.post(reverse('aristotle:valueDomain_edit_values',args=[self.item1.id,value_type]),data)
+        self.item1 = models.ValueDomain.objects.get(pk=self.item1.pk)
+
+        self.assertTrue(num_vals == getattr(self.item1,value_type+"Values").count())
+        new_value_seen = False
+        for v in getattr(self.item1,value_type+"Values").all():
+            self.assertTrue('updated' in v.meaning) # This will fail if the deleted item isn't deleted
+            if v.value == '100':
+                new_value_seen = True
+        self.assertTrue(new_value_seen)
+
+
+
+
+        # Item is now locked, submitter is no longer able to edit
         models.Status.objects.create(
                 concept=self.item1,
                 registrationAuthority=self.ra,
                 registrationDate=timezone.now(),
                 state=self.ra.locked_state
                 )
-        item = models.ValueDomain.objects.get(pk=self.item1.pk)
-        self.assertTrue(item.is_locked())
-        self.assertFalse(perms.user_can_edit(self.editor,item))
-        self.loggedin_user_can_use_value_page(value_type,item,403)
+
+        self.item1 = models.ValueDomain.objects.get(pk=self.item1.pk)
+        self.assertTrue(self.item1.is_locked())
+        self.assertFalse(perms.user_can_edit(self.editor,self.item1))
+        self.loggedin_user_can_use_value_page(value_type,self.item1,403)
+
 
     def test_submitter_can_use_permissible_value_edit_page(self):
         self.submitter_user_can_use_value_edit_page('permissible')
@@ -443,14 +475,14 @@ class ValueDomainViewPage(LoggedInViewConceptPages,TestCase):
         response = self.client.get(reverse('aristotle:download',args=['csv-vd',self.item2.id]))
         self.assertEqual(response.status_code,200)
 
-    def test_editor_can_download_pdf(self):
+    def test_editor_can_download_csv(self):
         self.login_editor()
         response = self.client.get(reverse('aristotle:download',args=['csv-vd',self.item1.id]))
         self.assertEqual(response.status_code,200)
         response = self.client.get(reverse('aristotle:download',args=['csv-vd',self.item2.id]))
         self.assertEqual(response.status_code,403)
 
-    def test_viewer_can_download_pdf(self):
+    def test_viewer_can_download_csv(self):
         self.login_viewer()
         response = self.client.get(reverse('aristotle:download',args=['csv-vd',self.item1.id]))
         self.assertEqual(response.status_code,200)
