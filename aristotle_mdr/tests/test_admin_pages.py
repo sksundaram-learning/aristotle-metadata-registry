@@ -99,7 +99,6 @@ class AdminPageForConcept(utils.LoggedInViewPages):
 
     def create_items(self):
         self.item1 = self.itemType.objects.create(name="admin_page_test_oc",description=" ",workgroup=self.wg1,**self.create_defaults)
-        self.item2 = self.itemType.objects.create(name="admin_page_test_oc_2",description=" ",workgroup=self.wg1,**self.create_defaults)
 
     def test_editor_make_item(self):
         self.login_editor()
@@ -204,6 +203,7 @@ class AdminPageForConcept(utils.LoggedInViewPages):
 
 #deprecated
     def test_supersedes_saves(self):
+        self.item2 = self.itemType.objects.create(name="admin_page_test_oc_2",description=" ",workgroup=self.wg1,**self.create_defaults)
         self.item3 = self.itemType.objects.create(name="admin_page_test_oc_2",description=" ",workgroup=self.wg1,**self.create_defaults)
 
         from django.forms import model_to_dict
@@ -230,6 +230,7 @@ class AdminPageForConcept(utils.LoggedInViewPages):
         self.assertTrue(self.item3 in self.item1.supersedes.all())
 
     def test_superseded_by_saves(self):
+        self.item2 = self.itemType.objects.create(name="admin_page_test_oc_2",description=" ",workgroup=self.wg1,**self.create_defaults)
 
         from django.forms import model_to_dict
         self.login_editor()

@@ -42,14 +42,15 @@ class PermissionsAutocomplete(autocomplete_light.AutocompleteModelTemplate):
 # When autocomplete respects queryset all of these can be removed
 autocompletesToRegister = [
         MDR._concept,
+        MDR.ConceptualDomain,
         MDR.DataElement,
         MDR.DataElementConcept,
-        MDR.ConceptualDomain,
+        MDR.DataElementDerivation,
+        MDR.DataType,
+        MDR.GlossaryItem,
         MDR.ObjectClass,
         MDR.Property,
         MDR.ValueDomain,
-        MDR.DataType,
-        MDR.GlossaryItem,
     ]
 for cls in autocompletesToRegister:
     # This will generate a PersonAutocomplete class
