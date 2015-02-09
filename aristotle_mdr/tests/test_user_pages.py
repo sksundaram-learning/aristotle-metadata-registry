@@ -1,4 +1,5 @@
 from django.test import TestCase
+from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 import aristotle_mdr.tests.utils as utils
 
@@ -10,6 +11,7 @@ class UserHomePages(utils.LoggedInViewPages,TestCase):
         super(UserHomePages, self).setUp()
 
     def check_generic_pages(self):
+        self.login_viewer()
         response = self.client.get(reverse('aristotle:userHome',))
         self.assertEqual(response.status_code,200)
         response = self.client.get(reverse('aristotle:userEdit',))
@@ -23,10 +25,17 @@ class UserHomePages(utils.LoggedInViewPages,TestCase):
         response = self.client.get(reverse('aristotle:userWorkgroups',))
         self.assertEqual(response.status_code,200)
 
+        self.login_viewer()
         new_email = 'my_new@email.com'
-        response = self.client.get(reverse('aristotle:userEdit'),{'email': new_email})
-        self.assertEqual(response.status_code,200)
-        # TODO: check this saves correctly
+        response = self.client.post(reverse('aristotle:userEdit'),
+            {
+                'first_name':self.viewer.first_name,
+                'last_name':self.viewer.last_name,
+                'email': new_email,
+            })
+        self.assertEqual(response.status_code,302)
+        self.viewer = User.objects.get(pk=self.viewer.pk)
+        self.assertEqual(self.viewer.email,new_email)
 
     def test_viewer_can_access_homepages(self):
         self.login_viewer()
