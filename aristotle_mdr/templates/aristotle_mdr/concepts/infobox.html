@@ -52,8 +52,9 @@
             <dd>
                 {#% if request.user.is_superuser or item.workgroup in request.user.workgroups %#}
                 {% if request.user.is_superuser or request.user.is_staff and item.workgroup in request.user.workgroups %}
-                    <a title ="{{item.modified}}"
-                    href="{% historyLink item %}">{{item.modified|naturaltime}}</a>
+                    <time title="{{ item.modified }}" datetime="{{ item.modified|date:'c' }}">
+                        <a href="{% historyLink item %}">{{item.modified|naturaltime}}</a>
+                    </time>
                 {% else %}
                     {{item.modified|naturaltime}}
                 {% endif %}
@@ -64,7 +65,7 @@
                 </span>
                 {% endif %}
             </dd>
-            <dt>{% trans 'Created'%}</dt><dd title="{{ item.created }}">{{item.created|date}}</dd>
+            <dt>{% trans 'Created'%}</dt><dd><time title="{{ item.created }}" datetime="{{ item.created|date:'c' }}">{{item.created|date}}</time></dd>
 
         {% block asideContent %}{% endblock %}
 
