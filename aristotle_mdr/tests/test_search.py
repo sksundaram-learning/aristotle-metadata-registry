@@ -186,7 +186,16 @@ class TestSearch(utils.LoggedInViewPages,TestCase):
 
 
 class TestTokenSearch(TestCase):
+    def tearDown(self):
+        call_command('clear_index', interactive=False, verbosity=0)
+
     def setUp(self):
+        # These are really terrible Object Classes, but I was bored and needed to spice things up.
+        # Technically, the Object Class would be "Mutant"
+        super(TestTokenSearch, self).setUp()
+        import haystack
+        haystack.connections.reload('default')
+
         from django.test import Client
 
         self.client = Client()
@@ -201,12 +210,30 @@ class TestTokenSearch(TestCase):
         self.item_xmen = [
             models.ObjectClass.objects.create(name=t,version="0.%d.0"%(v+1),description="known x-man",workgroup=self.xmen_wg,readyToReview=True)
             for v,t in enumerate(xmen.split()) ]
+        self.item_xmen.append(
+            models.Property.objects.create(name="Power",description="What power a mutant has?",workgroup=self.xmen_wg,readyToReview=True)
+            )
+
         for item in self.item_xmen:
             self.ra.register(item,models.STATES.standard,self.registrar)
-    def test_token_search(self):
+
+    def test_token_version_search(self):
 
         response = self.client.get(reverse('aristotle:search')+"?q=version:0.1.0")
         self.assertEqual(response.status_code,200)
         objs = response.context['page'].object_list
         self.assertEqual(len(objs),1)
         self.assertTrue(objs[0].object.name,"wolverine")
+
+    def test_token_type_search(self):
+        response = self.client.get(reverse('aristotle:search')+"?q=type:property")
+        self.assertEqual(response.status_code,200)
+        objs = response.context['page'].object_list
+        self.assertEqual(len(objs),1)
+        self.assertTrue(objs[0].object.name,"Power")
+
+        response = self.client.get(reverse('aristotle:search')+"?q=type:p")
+        self.assertEqual(response.status_code,200)
+        objs = response.context['page'].object_list
+        self.assertEqual(len(objs),1)
+        self.assertTrue(objs[0].object.name,"Power")
