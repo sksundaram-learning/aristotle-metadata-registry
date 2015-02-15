@@ -11,13 +11,10 @@ function getGlossaryList() {
         url: '/api/v1/glossarylist/?limit=0&format=json',
         dataType : 'json'
     }).done(function(data) {
-        console.log(data['objects']);
         glossaryList=[]
         items = data['objects']
-        console.log(items.length);
         for (var i = 0; i < items.length; i++) {
             item=items[i];
-            console.log(item);
             glossaryLookup[item.id] = i;
             glossaryList.push({text:item.name,value:item.id});
         }
