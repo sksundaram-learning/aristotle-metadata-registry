@@ -91,7 +91,6 @@ class WorkgroupAdmin(CompareVersionAdmin):
         else:
             return super(WorkgroupAdmin, self).has_change_permission(request,obj=None)
 
-
 class ConceptAdmin(CompareVersionAdmin):
     class Media:
         js = [
@@ -121,9 +120,6 @@ class ConceptAdmin(CompareVersionAdmin):
             })
     ]
     name_suggest_fields = []
-    light_autocomplete_lookup_fields = {
-        'fk': [],
-    }
     actions_on_top = True; actions_on_bottom = False
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
@@ -139,7 +135,6 @@ class ConceptAdmin(CompareVersionAdmin):
         class ModelFormMetaClass(conceptForm):
             def __new__(cls, *args, **kwargs):
                 kwargs['request'] = request
-                kwargs['auto_fields'] = self.light_autocomplete_lookup_fields
                 kwargs['name_suggest_fields'] = self.name_suggest_fields
                 if self.name_suggest_fields:
                     SEPARATORS = getattr(settings, 'ARISTOTLE_SETTINGS', {}).get('SEPARATORS',{})
@@ -196,32 +191,23 @@ class DataElementAdmin(ConceptAdmin):
     fieldsets = ConceptAdmin.fieldsets + [
             ('Components', {'fields': ['dataElementConcept','valueDomain']}),
     ]
-    raw_id_fields = ConceptAdmin.raw_id_fields + ('dataElementConcept','valueDomain')
-    light_autocomplete_lookup_fields = {
-        'fk': [
-            ('dataElementConcept',MDR.DataElementConcept ),
-            ('valueDomain',MDR.ValueDomain ),
-            ] +ConceptAdmin.light_autocomplete_lookup_fields['fk'],
-    }
+
+class DataElementDerivationAdmin(ConceptAdmin):
+    fieldsets = ConceptAdmin.fieldsets + [
+            ('Components', {'fields': ['derivation_rule','derives','inputs']}),
+    ]
 
 class DataElementConceptAdmin(ConceptAdmin):
-
     name_suggest_fields = ['objectClass','property']
     fieldsets = ConceptAdmin.fieldsets + [
             ('Components', {'fields': ['objectClass','property']}),
     ]
-    raw_id_fields = ConceptAdmin.raw_id_fields + ('objectClass','property',)
-    light_autocomplete_lookup_fields = {
-        'fk': [
-            ('objectClass',MDR.ObjectClass ),
-            ('property',MDR.Property ),
-            ] +ConceptAdmin.light_autocomplete_lookup_fields['fk'],
-    }
 
 class ObjectClassAdmin(ConceptAdmin):       pass
 class ConceptualDomainAdmin(ConceptAdmin):  pass
 class PackageAdmin(ConceptAdmin):           pass
 class PropertyAdmin(ConceptAdmin):          pass
+class DataTypeAdmin(ConceptAdmin):          pass
 
 class CodeValueInline(admin.TabularInline):
     form = MDRForms.PermissibleValueForm
@@ -267,6 +253,8 @@ class RegistrationAuthorityAdmin(admin.ModelAdmin):
 # Register your models here.
 admin.site.register(MDR.ConceptualDomain,ConceptualDomainAdmin)
 admin.site.register(MDR.DataElement,DataElementAdmin)
+admin.site.register(MDR.DataType,DataTypeAdmin)
+admin.site.register(MDR.DataElementDerivation,DataElementDerivationAdmin)
 admin.site.register(MDR.DataElementConcept,DataElementConceptAdmin)
 admin.site.register(MDR.GlossaryItem,GlossaryItemAdmin)
 admin.site.register(MDR.Package,PackageAdmin)
@@ -284,7 +272,6 @@ class UnitOfMeasureAdmin(admin.ModelAdmin):
 
 admin.site.register(MDR.UnitOfMeasure,UnitOfMeasureAdmin)
 admin.site.register(MDR.Measure)
-admin.site.register(MDR.DataType)
 #admin.site.register(MDR.)
 
 # Define an inline admin descriptor for Employee model
@@ -313,3 +300,5 @@ if User in admin.site._registry:
     admin.site.unregister(User)
 admin.site.register(User, AristotleUserAdmin)
 
+#reversion.unregister(MDR.ValueDomain)
+#reversion.register(MDR.ValueDomain) #, follow=["permissibleValues","supplementaryValues"])

@@ -16,7 +16,7 @@
 
 <h1>Edit comment on post "{{ post.title }}"</h1>
 
-<form enctype="multipart/form-data" action="{% url 'aristotle:discussionsPostNewComment' post.id %} " method='post'>
+<form enctype="multipart/form-data" method='post'>
     {% csrf_token %}
     {% include 'aristotle_mdr/discussions/comment_form.html' %}
     <button class="btn btn-primary" type='submit' value='Submit'><i class="fa fa-save fa-fw"></i>Save changes</button>

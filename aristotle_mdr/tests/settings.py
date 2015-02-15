@@ -1,5 +1,9 @@
-import os
+import os, sys
 from aristotle_mdr.required_settings import *
+BASE = os.path.dirname(os.path.dirname(__file__))
+
+sys.path.insert(1,BASE)
+sys.path.insert(1,os.path.join(BASE, "tests"))
 
 SECRET_KEY = 'inara+vtkprm7@0(fsc$+grbz9-s+tmo9d)e#k(9uf8m281&$7xhdkjr'
 SOUTH_TESTS_MIGRATE = True
@@ -14,7 +18,9 @@ DATABASES = {
 INSTALLED_APPS = (
     #The good stuff
     'haystack',
+    'extension_test',
     'aristotle_mdr',
+    'text_download_test',
 ) + INSTALLED_APPS
 
 HAYSTACK_CONNECTIONS = {
@@ -32,3 +38,8 @@ PASSWORD_HASHERS = (
 )
 
 ARISTOTLE_SETTINGS['SEPARATORS']['DataElementConcept'] = '--'
+ARISTOTLE_SETTINGS['CONTENT_EXTENSIONS'] = ARISTOTLE_SETTINGS['CONTENT_EXTENSIONS'] +['extension_test']
+ARISTOTLE_DOWNLOADS = ARISTOTLE_DOWNLOADS +[
+    ('txt','Text','fa-file-pdf-o','text_download_test'),
+    ]
+ROOT_URLCONF = 'extension_test.urls'

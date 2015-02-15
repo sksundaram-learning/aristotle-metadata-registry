@@ -12,14 +12,7 @@ from haystack.views import search_view_factory
 
 sqs = SearchQuerySet()
 
-urlpatterns = patterns('aristotle_mdr.views',
-    url(r'^/?$', TemplateView.as_view(template_name='aristotle_mdr/static/home.html'),name="home"),
-
-    # all the below take on the same form:
-    # url(r'^itemType/(?P<iid>\d+)?/?
-    # Allowing for a blank ItemId (iid) allows aristotle to redirect to /about/itemtype instead of 404ing
-    url(r'^objectclass/(?P<iid>\d+)?/?$', views.items.objectclass, name='objectClass'),
-    #url(r'^objectclass/(?P<iid>\d+)?(?:/(?P<subpage>\w+))?/?$', views.objectclass, name='objectClass'),
+"""
     url(r'^property/(?P<iid>\d+)?/?$', views.items.property, name='property'),
     url(r'^valuedomain/(?P<iid>\d+)?/?$', views.items.valuedomain, name='valueDomain'),
     url(r'^conceptualdomain/(?P<iid>\d+)?/?$', views.items.conceptualdomain, name='conceptualDomain'),
@@ -29,11 +22,17 @@ urlpatterns = patterns('aristotle_mdr.views',
     url(r'^datatype/(?P<iid>\d+)/?$', views.items.datatype, name='dataType'),
     url(r'^unitofmeasure/(?P<iid>\d+)/?$', views.items.unitofmeasure, name='unitOfMeasure'),
     url(r'^package/(?P<iid>\d+)/?$', views.items.package, name='package'),
+    """
+
+urlpatterns = patterns('aristotle_mdr.views',
+    url(r'^/?$', TemplateView.as_view(template_name='aristotle_mdr/static/home.html'),name="home"),
+
+    # all the below take on the same form:
+    # url(r'^itemType/(?P<iid>\d+)?/?
+    # Allowing for a blank ItemId (iid) allows aristotle to redirect to /about/itemtype instead of 404ing
+    url(r'^valuedomain/(?P<iid>\d+)?/edit/values/(?P<value_type>permissible|supplementary)/?$', views.valuedomain_value_edit, name='valueDomain_edit_values'),
 
     url(r'^glossary/?$', views.glossary, name='glossary'),
-    url(r'^glossaryItem/(?P<iid>\d+)?/?$', views.items.glossaryById, name='glossaryItem'),
-    #url(r'^glossary/(?P<slug>\w+)/?$', views.glossaryBySlug, name='glossary_by_slug'),
-    url(r'^glossary/ajaxlist?$', views.glossaryAjaxlist, name='glossaryAjaxlist'), # For TinyMCE
 
     url(r'^workgroup/(?P<iid>\d+)/?$', views.workgroups.workgroup, name='workgroup'),
     url(r'^workgroup/(?P<iid>\d+)/members/?$', views.workgroups.members, name='workgroupMembers'),
@@ -46,21 +45,23 @@ urlpatterns = patterns('aristotle_mdr.views',
     url(r'^discussions/workgroup/(?P<wgid>\d+)/?$', views.discussions.workgroup, name='discussionsWorkgroup'),
     url(r'^discussions/post/(?P<pid>\d+)/?$', views.discussions.post, name='discussionsPost'),
     url(r'^discussions/post/(?P<pid>\d+)/newcomment/?$', views.discussions.new_comment, name='discussionsPostNewComment'),
-    url(r'^discussions/delete/comment/(?P<cid>\d+)?$', views.discussions.delete_comment, name='discussionsDeleteComment'),
-    url(r'^discussions/delete/post/(?P<pid>\d+)?$', views.discussions.delete_post, name='discussionsDeletePost'),
-    url(r'^discussions/edit/comment/(?P<cid>\d+)?$', views.discussions.edit_comment, name='discussionsEditComment'),
-    url(r'^discussions/edit/post/(?P<pid>\d+)?$', views.discussions.edit_post, name='discussionsEditPost'),
-    url(r'^discussions/post/(?P<pid>\d+)/toggle?$', views.discussions.toggle_post, name='discussionsPostToggle'),
+    url(r'^discussions/delete/comment/(?P<cid>\d+)/?$', views.discussions.delete_comment, name='discussionsDeleteComment'),
+    url(r'^discussions/delete/post/(?P<pid>\d+)/?$', views.discussions.delete_post, name='discussionsDeletePost'),
+    url(r'^discussions/edit/comment/(?P<cid>\d+)/?$', views.discussions.edit_comment, name='discussionsEditComment'),
+    url(r'^discussions/edit/post/(?P<pid>\d+)/?$', views.discussions.edit_post, name='discussionsEditPost'),
+    url(r'^discussions/post/(?P<pid>\d+)/toggle/?$', views.discussions.toggle_post, name='discussionsPostToggle'),
 
-    url(r'^item/(?P<iid>\d+)/?$', views.items.concept, name='item'),
+    #url(r'^item/(?P<iid>\d+)/?$', views.items.concept, name='item'),
+    url(r'^item/(?P<iid>\d+)(?:\/(?P<model_slug>\w+)\/(?P<name_slug>.+))?/?$', views.concept, name='item'),
     url(r'^item/(?P<iid>\d+)/edit/?$', views.edit_item, name='edit_item'),
     url(r'^item/(?P<iid>\d+)/packages/?$', views.itemPackages, name='itemPackages'),
     url(r'^item/(?P<iid>\d+)/registrationHistory/?$', views.registrationHistory, name='registrationHistory'),
+    url(r'^item/(?P<iid>\d+)(?:\/.*)?$', views.concept, name='item'), # Catch every other 'item' URL and throw it for a redirect
 
     #url(r'^create/?$', views.item, name='item'),
-    url(r'^create/?$', views.allRegistrationAuthorities, name='createList'),
-    url(r'^create/dataelementconcept$', views.wizards.DataElementConceptWizard.as_view(), name='createDataElementConcept'),
-    url(r'^create/dataelement$', views.wizards.DataElementWizard.as_view(), name='createDataElement'),
+    url(r'^create/?$', views.create_list, name='createList'),
+    url(r'^create/(aristotle_mdr/)?dataelementconcept$', views.wizards.DataElementConceptWizard.as_view(), name='createDataElementConcept'),
+    url(r'^create/(aristotle_mdr/)?dataelement$', views.wizards.DataElementWizard.as_view(), name='createDataElement'),
     url(r'^create/(?P<app_label>.+)/(?P<model_name>.+)/?$', views.wizards.create_item, name='createItem'),
     url(r'^create/(?P<model_name>.+)/?$', views.wizards.create_item, name='createItem'),
 

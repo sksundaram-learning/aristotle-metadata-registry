@@ -29,6 +29,10 @@ class NewPostForm(forms.ModelForm):
         return relatedItems
 
 class EditPostForm(forms.ModelForm):
+    relatedItems = forms.ModelMultipleChoiceField(
+                queryset=MDR._concept.objects.all(),
+                label="Related items",required=False,
+                widget=autocomplete_light.MultipleChoiceWidget('Autocomplete_concept'))
     class Meta:
         model = MDR.DiscussionPost
         exclude = ['author','workgroup','closed']

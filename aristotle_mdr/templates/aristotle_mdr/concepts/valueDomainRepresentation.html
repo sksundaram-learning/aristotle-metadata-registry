@@ -12,7 +12,7 @@ So we've split this out into its own template.
 {% if item.dataType %}
 <tr>
   <th>Data Type</th>
-  <td><a href="{% url 'aristotle:dataType' item.dataType.id %}">{% inplace_edit 'item.dataType' %}</a></dd>
+  <td><a href="{% url 'aristotle:item' item.dataType.id %}">{% inplace_edit 'item.dataType' %}</a></dd>
 </tr>
 {% endif %}
 {% if item.unitOfMeasure %}
@@ -52,19 +52,15 @@ So we've split this out into its own template.
             {% for perm in item.permissibleValues.all %}
                 <tr>
                     {% if forloop.first %}
-                    <th rowspan="{{ item.permissibleValues.count }}">Permissable Values
+                    <th rowspan="{{ item.permissibleValues.count }}">Permissible Values
                         {% if item|can_edit:request.user %}
-                            <a class="inline_action" href="{% adminEdit item %}#permissibleValues-group">edit</a>
+                            <a class="inline_action" data-toggle="modal" data-target="#value_domain_modal"
+                            href="{% url 'aristotle:valueDomain_edit_values' item.id 'permissible' %}">edit</a>
                         {% endif %}
                     </th>
                     {% endif %}
-                    {% if allowEditing %}
-                        <td>{% inplace_edit 'perm.value' %}</td>
-                        <td>{% inplace_edit 'perm.meaning' %}</td>
-                    {% else %}
-                        <td>{{ perm.value }}</td>
-                        <td>{{ perm.meaning }}</td>
-                    {% endif%}
+                    <td>{{ perm.value }}</td>
+                    <td>{{ perm.meaning }}</td>
                 </tr>
             {% endfor %}
         </tbody>
@@ -76,20 +72,22 @@ So we've split this out into its own template.
                     {% if forloop.first %}
                     <th rowspan="{{ item.supplementaryValues.count }}">Supplementary Values
                         {% if item|can_edit:request.user %}
-                            <a class="inline_action" href="{% adminEdit item %}#supplementaryValues-group">edit</a>
+                            <a class="inline_action" data-toggle="modal" data-target="#value_domain_modal"
+                            href="{% url 'aristotle:valueDomain_edit_values' item.id 'supplementary' %}">edit</a>
                         {% endif %}
                     </th>
                     {% endif %}
-                    {% if allowEditing %}
-                        <td>{% inplace_edit 'perm.value' %}</td>
-                        <td>{% inplace_edit 'perm.meaning' %}</td>
-                    {% else %}
-                        <td>{{ perm.value }}</td>
-                        <td>{{ perm.meaning }}</td>
-                    {% endif%}
+                    <td>{{ perm.value }}</td>
+                    <td>{{ perm.meaning }}</td>
                 </tr>
             {% endfor %}
         </tbody>
         {% endif %}
     </table>
+    <div id="value_domain_modal" class="modal fade">
+      <div class="modal-dialog">
+          <div class="modal-content">
+          </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
 {% endif %}

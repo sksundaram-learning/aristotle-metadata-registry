@@ -120,8 +120,9 @@ ARISTOTLE_SETTINGS = {
     'PDF_PAGE_SIZE': 'A4',
     }
 ARISTOTLE_DOWNLOADS = [
-    #(fileType,menu,font-awesome-icon,module-(unused))
+    #(fileType,menu,font-awesome-icon,module)
     ('pdf','PDF','fa-file-pdf-o','aristotle_mdr'),
+    ('csv-vd','CSV list of values','fa-file-excel-o','aristotle_mdr'),
     ]
 
 

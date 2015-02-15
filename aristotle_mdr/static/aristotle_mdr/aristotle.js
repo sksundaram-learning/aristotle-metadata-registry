@@ -8,16 +8,27 @@ var glossaryLookup = {}
 
 function getGlossaryList() {
     $.ajax({
-        url: '/glossary/ajaxlist',
+        url: '/api/v1/glossarylist/?limit=0&format=json',
         dataType : 'json'
     }).done(function(data) {
+        console.log(data['objects']);
         glossaryList=[]
-        for (var i = 0; i < data.length; i++) {
-            i=data[i];
-            console.log(i);
-            glossaryLookup[i.id] = i;
-            glossaryList.push({text:i.name,value:i.id});
+        items = data['objects']
+        console.log(items.length);
+        for (var i = 0; i < items.length; i++) {
+            item=items[i];
+            console.log(item);
+            glossaryLookup[item.id] = i;
+            glossaryList.push({text:item.name,value:item.id});
         }
     })
     return glossaryList;
 }
+
+$(document).ajaxSend(function(event, request, settings) {
+    $('#loading_indicator').show().addClass('loading').removeClass('hidden');
+});
+
+$(document).ajaxComplete(function(event, request, settings) {
+    $('#loading_indicator').hide().removeClass('loading');
+});

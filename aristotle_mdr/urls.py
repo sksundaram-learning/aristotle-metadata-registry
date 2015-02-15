@@ -1,3 +1,6 @@
+import aristotle_mdr.api as api
+from tastypie.api import Api
+
 import notifications
 import autocomplete_light
 # import every app/autocomplete_light_registry.py
@@ -7,6 +10,10 @@ from django.conf.urls import patterns, include, url
 from django.contrib.auth.views import password_reset
 from django.contrib import admin
 admin.autodiscover()
+
+v1_api = Api(api_name='v1')
+v1_api.register(api.GlossaryListResource())
+
 
 urlpatterns = patterns('',
     # Examples:
@@ -20,7 +27,7 @@ urlpatterns = patterns('',
     url(r'^tinymce/', include('tinymce.urls')),
     url(r'^inplaceeditform/', include('inplaceeditform.urls')),
     url(r'^account/notifications/', include(notifications.urls)),
-
+    url(r'^api/', include(v1_api.urls)),
     url(r'^account/password/reset/$', password_reset), #, {'template_name': 'my_templates/password_reset.html'}
     url(r'^account/password/reset_done/$', password_reset), #, {'template_name': 'my_templates/password_reset.html'}
     url(r'^', include('aristotle_mdr.urls_aristotle',app_name="aristotle_mdr",namespace="aristotle")),

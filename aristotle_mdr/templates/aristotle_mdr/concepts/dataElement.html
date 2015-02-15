@@ -71,6 +71,27 @@
         available at "{% include "aristotle_mdr/helpers/itemLink.html" with item=item.valueDomain %}".
             {% include "aristotle_mdr/concepts/valueDomainRepresentation.html" with item=item.valueDomain %}
     {% endif %}
+    {% if item.input_to_derivation or item.derived_from %}
+        <h2>Derivations</h2>
+        <dl>
+            <dt>Input to</dt>
+                {% for ded in item.input_to_derivation.all %}
+                <dd>
+                    {% include "aristotle_mdr/helpers/inlineDetails.html" with item=ded %}
+                </dd>
+                {% empty %}
+                    <dd><em>None</em></dd>
+                {% endfor %}
+            <dt>Derived from</dt>
+            {% for ded in item.derived_from.all %}
+                <dd>
+                    {% include "aristotle_mdr/helpers/inlineDetails.html" with item=ded %}
+                </dd>
+                {% empty %}
+                    <dd><em>None</em></dd>
+                {% endfor %}
+        </dl>
+    {% endif %}
 {% endif %}
 {% endblock %}
 

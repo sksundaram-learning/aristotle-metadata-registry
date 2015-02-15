@@ -45,35 +45,29 @@
                 {% trans 'Create' %}
                 </a>
                 <ul class="dropdown-menu" role="menu" >
-                    <li><a href="{% url 'admin:aristotle_mdr_objectclass_add' %}">Object Class</a></li>
-                    <li><a href="{% url 'admin:aristotle_mdr_property_add' %}">Property</a></li>
-                    <li><a href="{% url 'admin:aristotle_mdr_valuedomain_add' %}">Value Domain</a></li>
-
-                    <li><a href="{% url 'admin:aristotle_mdr_dataelementconcept_add' %}">Data Element Concept</a></li>
-                    <li><a href="{% url 'admin:aristotle_mdr_dataelement_add' %}">Data Element</a></li>
-                    {% comment %}
-                    {# Pulling the wizard-based creation tools until a later release #}
-                    <li><a href="{% url 'aristotle:createObjectClass'%}">Object Class</a></li>
-                    <li><a href="{% url 'aristotle:createProperty'%}">Property</a></li>
-                    <li><a href="{% url 'aristotle:createValueDomain'%}">Value Domain</a></li>
-                    <li><a href="{% url 'aristotle:createDataElementConcept'%}">Data Element Concept</a></li>
-                    <li><a href="{% url 'aristotle:createDataElement'%}">Data Element</a></li>
+                    <li><a href="{% url 'aristotle:createItem' 'aristotle_mdr' 'objectclass'%}">Object Class</a></li>
+                    <li><a href="{% url 'aristotle:createItem' 'aristotle_mdr' 'property'%}">Property</a></li>
+                    <li><a href="{% url 'aristotle:createItem' 'aristotle_mdr' 'valuedomain'%}">Value Domain</a></li>
+                    <li><a href="{% url 'aristotle:createItem' 'aristotle_mdr' 'dataelementconcept'%}">Data Element Concept</a></li>
+                    <li><a href="{% url 'aristotle:createItem' 'aristotle_mdr' 'dataelement'%}">Data Element</a></li>
                     {# <li><a href="{% url 'aristotle:createDataElement'%}"></a></li> #}
-                    {% endcomment %}
 
                     {% if request.user.is_superuser %}
                         <li role="presentation" class="divider"></li>
                         <li role="presentation" class="dropdown-header"><i class="fa fa-user-md fa-2x fa-fw"></i> Admin only</li>
                         <li>
-                            <a href="{% url 'admin:aristotle_mdr_workgroup_add'%}">Workgroup</a>
+                            <a href="{% url 'admin:aristotle_mdr_workgroup_add'%}">
+                                <i class="fa fa-users fa-fw"></i> {% trans 'Workgroup' %}</a>
                         </li>
                         <li>
-                            <a href="{% url 'admin:aristotle_mdr_registrationauthority_add'%}">Registration Authority</a>
+                            <a href="{% url 'admin:auth_user_add'%}">
+                                <i class="fa fa-user fa-fw"></i> {% trans 'User' %}
+                            </a>
                         </li>
                     {% endif %}
                     <li role="presentation" class="divider"></li>
                     <li>
-                        <a href="{% url 'admin:index' %}">{% trans 'See all'%}...</a>
+                        <a href="{% url 'aristotle:createList' %}">{% trans 'See all'%}...</a>
                     </li>
                 </ul>
             </li>

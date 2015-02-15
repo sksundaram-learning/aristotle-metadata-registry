@@ -3,7 +3,7 @@
 {% block title %}{{ item.name }} ({{item.status}}){% endblock %}
 {% block objSpecific %}
     <h2>Representational attributes</h2>
-    {% include "aristotle_mdr/concepts/valueDomainRepresentation.html" %}
+    {% include "aristotle_mdr/downloads/pdf/inline/valueDomainRepresentation.html" %}
 
     <h2>Relational attributes</h2>
     {% if item.dataelement_set.all %}

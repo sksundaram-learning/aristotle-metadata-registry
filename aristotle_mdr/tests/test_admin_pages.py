@@ -84,77 +84,215 @@ class AdminPage(utils.LoggedInViewPages,TestCase):
             self.assertEqual(rel.count(),0)
 
 
-    def test_supersede_saves(self):
-        pass
+    def test_editor_can_view_admin_page(self):
+        self.login_editor()
+        response = self.client.get(reverse("admin:index"))
+        self.assertEqual(response.status_code,200)
 
-    def test_editor_change_item(self):
-        pass
+class AdminPageForConcept(utils.LoggedInViewPages):
+    form_defaults = {}
+    create_defaults = {}
+    def setUp(self,instant_create=True):
+        super(AdminPageForConcept, self).setUp()
+        if instant_create:
+            self.create_items()
+
+    def create_items(self):
+        self.item1 = self.itemType.objects.create(name="admin_page_test_oc",description=" ",workgroup=self.wg1,**self.create_defaults)
 
     def test_editor_make_item(self):
         self.login_editor()
-        response = self.client.get(reverse("admin:aristotle_mdr_objectclass_changelist"))
+
+        before_count = self.wg1.items.count()
+        response = self.client.get(reverse("admin:%s_%s_changelist"%(self.itemType._meta.app_label,self.itemType._meta.model_name)))
         self.assertEqual(response.status_code,200)
-        response = self.client.get(reverse("admin:aristotle_mdr_objectclass_add"))
+        response = self.client.get(reverse("admin:%s_%s_add"%(self.itemType._meta.app_label,self.itemType._meta.model_name)))
         self.assertEqual(response.status_code,200)
         # make an item
-        response = self.client.get(reverse("admin:aristotle_mdr_objectclass_add"))
+        response = self.client.get(reverse("admin:%s_%s_add"%(self.itemType._meta.app_label,self.itemType._meta.model_name)))
 
-        response = self.client.post(reverse("admin:aristotle_mdr_objectclass_add"),
-                    {'name':"admin_page_test_oc",'description':"test","workgroup":self.wg1.id,
-                        'statuses-TOTAL_FORMS': 0, 'statuses-INITIAL_FORMS': 0 #no substatuses
-                    }
-                )
+        data = {'name':"admin_page_test_oc",'description':"test","workgroup":self.wg1.id,
+                    'statuses-TOTAL_FORMS': 0, 'statuses-INITIAL_FORMS': 0 #no substatuses
+                }
+        data.update(self.form_defaults)
+
+        response = self.client.post(reverse("admin:%s_%s_add"%(self.itemType._meta.app_label,self.itemType._meta.model_name)),data)
+
         self.assertEqual(response.status_code,302)
-        self.assertRedirects(response,reverse("admin:aristotle_mdr_objectclass_changelist"))
+        self.assertRedirects(response,reverse("admin:%s_%s_changelist"%(self.itemType._meta.app_label,self.itemType._meta.model_name)))
         self.assertEqual(self.wg1.items.first().name,"admin_page_test_oc")
-        self.assertEqual(self.wg1.items.count(),1)
+        self.assertEqual(self.wg1.items.count(),before_count+1)
 
         # Editor can't save in WG2, so this won't redirect.
-        response = self.client.post(reverse("admin:aristotle_mdr_objectclass_add"),
-                    {'name':"admin_page_test_oc",'description':"test","workgroup":self.wg2.id,
-                        'statuses-TOTAL_FORMS': 0, 'statuses-INITIAL_FORMS': 0 #no substatuses
-                    }
-                )
+        data.update({"workgroup":self.wg2.id})
+        response = self.client.post(reverse("admin:%s_%s_add"%(self.itemType._meta.app_label,self.itemType._meta.model_name)),data)
+
         self.assertEqual(self.wg2.items.count(),0)
         self.assertEqual(response.status_code,200)
 
-    def test_editor_deleting(self):
+    def test_editor_deleting_allowed_item(self):
         self.login_editor()
         # make some items
-        self.item1 = models.ObjectClass.objects.create(name="OC1",workgroup=self.wg1)
-        self.item2 = models.ObjectClass.objects.create(name="OC2",workgroup=self.wg2)
 
+        before_count = self.wg1.items.count()
         self.assertEqual(self.wg1.items.count(),1)
-        response = self.client.get(reverse("admin:aristotle_mdr_objectclass_delete",args=(str(self.item1.id))))
+        response = self.client.get(reverse("admin:%s_%s_delete"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=(str(self.item1.id))))
         self.assertEqual(response.status_code,200)
         response = self.client.post(
-            reverse("admin:aristotle_mdr_objectclass_delete",args=(str(self.item1.id))),
+            reverse("admin:%s_%s_delete"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=(str(self.item1.id))),
             {'post':'yes'}
             )
-        self.assertRedirects(response,reverse("admin:aristotle_mdr_objectclass_changelist"))
-        self.assertEqual(self.wg1.items.count(),0)
+        self.assertRedirects(response,reverse("admin:%s_%s_changelist"%(self.itemType._meta.app_label,self.itemType._meta.model_name)))
+        self.assertEqual(self.wg1.items.count(),before_count-1)
 
-        self.item1 = models.ObjectClass.objects.create(name="OC1",workgroup=self.wg1,readyToReview=True)
+        self.item1 = self.itemType.objects.create(name="OC1",workgroup=self.wg1,readyToReview=True, **self.create_defaults)
         self.assertEqual(self.wg1.items.count(),1)
+        before_count = self.wg1.items.count()
         self.ra.register(self.item1,models.STATES.standard,self.registrar)
         self.assertTrue(self.item1.is_registered)
 
-        response = self.client.get(reverse("admin:aristotle_mdr_objectclass_delete",args=(str(self.item1.id))))
+        before_count = self.wg1.items.count()
+        response = self.client.get(reverse("admin:%s_%s_delete"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=(str(self.item1.id))))
         self.assertEqual(response.status_code,404)
-        self.assertEqual(self.wg1.items.count(),1)
+        self.assertEqual(self.wg1.items.count(),before_count)
         response = self.client.post(
-            reverse("admin:aristotle_mdr_objectclass_delete",args=(str(self.item1.id))),
+            reverse("admin:%s_%s_delete"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=(str(self.item1.id))),
             {'post':'yes'}
             )
         self.assertEqual(response.status_code,404)
-        self.assertEqual(self.wg1.items.count(),1)
+        self.assertEqual(self.wg1.items.count(),before_count)
 
-        response = self.client.get(reverse("admin:aristotle_mdr_objectclass_delete",args=(str(self.item2.id))))
+    def test_editor_deleting_forbidden_item(self):
+        self.login_editor()
+        self.item2 = self.itemType.objects.create(name="OC2",workgroup=self.wg2, **self.create_defaults)
+
+        before_count = self.wg2.items.count()
+        response = self.client.get(reverse("admin:%s_%s_delete"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=(str(self.item2.id))))
         self.assertEqual(response.status_code,404)
-        self.assertEqual(self.wg2.items.count(),1)
+        self.assertEqual(self.wg2.items.count(),before_count)
+
+        before_count = self.wg2.items.count()
         response = self.client.post(
-            reverse("admin:aristotle_mdr_objectclass_delete",args=(str(self.item2.id))),
+            reverse("admin:%s_%s_delete"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=(str(self.item2.id))),
             {'post':'yes'}
             )
         self.assertEqual(response.status_code,404)
-        self.assertEqual(self.wg2.items.count(),1)
+        self.assertEqual(self.wg2.items.count(),before_count)
+
+    def test_editor_change_item(self):
+        from django.forms import model_to_dict
+        self.login_editor()
+        response = self.client.get(reverse("admin:%s_%s_change"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=(str(self.item1.id))))
+        self.assertEqual(response.status_code,200)
+
+        updated_item = dict((k,v) for (k,v) in model_to_dict(self.item1).items() if v is not None)
+        updated_name = updated_item['name'] + " updated!"
+        updated_item['name'] = updated_name
+
+        updated_item.update({
+            'statuses-TOTAL_FORMS': 0, 'statuses-INITIAL_FORMS': 0 #no statuses
+        })
+        updated_item.update(self.form_defaults)
+
+        response = self.client.post(
+                reverse("admin:%s_%s_change"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=(str(self.item1.id))),
+                updated_item
+                )
+        self.item1 = self.itemType.objects.get(pk=self.item1.pk)
+        self.assertEqual(self.item1.name,updated_name)
+
+#deprecated
+    def test_supersedes_saves(self):
+        self.item2 = self.itemType.objects.create(name="admin_page_test_oc_2",description=" ",workgroup=self.wg1,**self.create_defaults)
+        self.item3 = self.itemType.objects.create(name="admin_page_test_oc_2",description=" ",workgroup=self.wg1,**self.create_defaults)
+
+        from django.forms import model_to_dict
+        self.login_editor()
+        response = self.client.get(reverse("admin:%s_%s_change"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=(str(self.item1.id))))
+        self.assertEqual(response.status_code,200)
+
+        updated_item = dict((k,v) for (k,v) in model_to_dict(self.item1).items() if v is not None)
+        updated_name = updated_item['name'] + " updated!"
+        updated_item['name'] = updated_name
+
+        updated_item.update({
+            'statuses-TOTAL_FORMS': 0, 'statuses-INITIAL_FORMS': 0, #no statuses
+            'deprecated':[self.item2.id,self.item3.id]
+        })
+        updated_item.update(self.form_defaults)
+
+        response = self.client.post(
+                reverse("admin:%s_%s_change"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=(str(self.item1.id))),
+                updated_item
+                )
+        self.item1 = self.itemType.objects.get(pk=self.item1.pk)
+        self.assertTrue(self.item2 in self.item1.supersedes.all())
+        self.assertTrue(self.item3 in self.item1.supersedes.all())
+
+    def test_superseded_by_saves(self):
+        self.item2 = self.itemType.objects.create(name="admin_page_test_oc_2",description=" ",workgroup=self.wg1,**self.create_defaults)
+
+        from django.forms import model_to_dict
+        self.login_editor()
+        response = self.client.get(reverse("admin:%s_%s_change"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=(str(self.item1.id))))
+        self.assertEqual(response.status_code,200)
+
+        updated_item = dict((k,v) for (k,v) in model_to_dict(self.item1).items() if v is not None)
+        updated_name = updated_item['name'] + " updated!"
+        updated_item['name'] = updated_name
+
+        updated_item.update({
+            'statuses-TOTAL_FORMS': 0, 'statuses-INITIAL_FORMS': 0, #no statuses
+            'superseded_by':self.item2.id
+        })
+        updated_item.update(self.form_defaults)
+
+        response = self.client.post(
+                reverse("admin:%s_%s_change"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=(str(self.item1.id))),
+                updated_item
+                )
+        self.item1 = self.itemType.objects.get(pk=self.item1.pk)
+        self.assertTrue(self.item2 == self.item1.superseded_by)
+
+
+
+class ObjectClassAdminPage(AdminPageForConcept,TestCase):
+    itemType=models.ObjectClass
+class PropertyAdminPage(AdminPageForConcept,TestCase):
+    itemType=models.Property
+class ValueDomainAdminPage(AdminPageForConcept,TestCase):
+    itemType=models.ValueDomain
+    form_defaults={
+        'permissibleValues-TOTAL_FORMS':0,
+        'permissibleValues-INITIAL_FORMS':0,
+        'permissibleValues-MAX_NUM_FORMS':1,
+        'supplementaryValues-TOTAL_FORMS':0,
+        'supplementaryValues-INITIAL_FORMS':0,
+        'supplementaryValues-MAX_NUM_FORMS':1,
+        }
+class ConceptualDomainAdminPage(AdminPageForConcept,TestCase):
+    itemType=models.ConceptualDomain
+class DataElementConceptAdminPage(AdminPageForConcept,TestCase):
+    itemType=models.DataElementConcept
+class DataElementAdminPage(AdminPageForConcept,TestCase):
+    itemType=models.DataElement
+class DataTypeAdminPage(AdminPageForConcept,TestCase):
+    itemType=models.DataType
+class DataElementDerivationAdminPage(AdminPageForConcept,TestCase):
+    itemType=models.DataElementDerivation
+    def setUp(self):
+        super(DataElementDerivationAdminPage, self).setUp(instant_create=False)
+        self.ded_wg = models.Workgroup.objects.create(name="Derived WG")
+        self.derived_de = models.DataElement.objects.create(name='derivedDE',description="",workgroup=self.ded_wg)
+        self.ra.register(self.derived_de,models.STATES.standard,self.registrar)
+        self.create_defaults = {'derives':self.derived_de}
+        self.form_defaults = {'derives':self.derived_de.id}
+        self.create_items()
+
+class GlossaryItemAdminPage(AdminPageForConcept,TestCase):
+    itemType=models.GlossaryItem
+    form_defaults={
+        'alternate_definitions-TOTAL_FORMS':0,
+        'alternate_definitions-INITIAL_FORMS':0,
+        'alternate_definitions-MAX_NUM_FORMS':1,
+        }

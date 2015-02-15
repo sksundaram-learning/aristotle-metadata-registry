@@ -1,5 +1,5 @@
 {% extends "aristotle_mdr/base.html" %}
-{% load inplace_edit %}
+{% load aristotle_tags %}
 {% load staticfiles %}
 {% load compile_static %}
 
@@ -33,10 +33,14 @@
 </nav>
 <div class="col-sm-9 col-md-10">
     {% block page %}
-    <h1><a href="#">My Dashboard</a> <small>- {{ user.first_name }} {{ user.last_name }} ({{ user.username }})</small></h1>
+
     <div class='row'>
 
-        <section class="col-md-6">
+        <section class="col-md-8 col-lg-8">
+        <div class='row'>
+        <h1><a href="#">My Dashboard</a> <small>- {{ user.first_name }} {{ user.last_name }} ({{ user.username }})</small></h1>
+
+        <section class="col-md-6 col-lg-4">
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <i class="fa fa-envelope fa-fw"></i> <a class="panel-title" href="{% url 'aristotle:userInbox' %}">Recent Notifications</a>
@@ -55,7 +59,7 @@
             </div>
         </section>
 
-        <section class="col-md-6">
+        <section class="col-md-6 col-lg-4">
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <i class="fa fa-bookmark fa-fw"></i> <a class="panel-title" href="{% url 'aristotle:userFavourites' %}">Recently Favourited Items</a>
@@ -75,27 +79,55 @@
                 <div class="panel-footer"><a href="{% url 'aristotle:userFavourites' %}">See all favourites...</a></div>
             </div>
         </section>
-    </div>
-    <div class='row'>
-        <section class="col-md-6">
+        <section class="col-md-6 col-lg-4">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <i class="fa fa-users fa-fw"></i> Recent Workgroups
+                </div>
+                <ul class="list-group">
+                {% for item in user.profile.myWorkgroups.all %}
+                  <li class="list-group-item" ><a href="{% url 'aristotle:workgroup' item.id %}/">{{ item }}</a>
+                    </li>
+                {% empty %}
+                    <li class="list-group-item"> No workgroups </li>
+                {% endfor %}
+                </ul>
+                <div class="panel-footer"><a href="{% url 'aristotle:userWorkgroups' %}">See all workgroups...</a></div>
+            </div>
+        </section>
+
+        </div>
+        </section>
+        <section class="col-sm-4 col-md-4">
         <div class="panel panel-default">
             <div class="panel-heading">
-                <i class="fa fa-users fa-fw"></i> Recent Workgroups
+                <i class="fa fa-history fa-fw"></i> My Recent Actions
             </div>
             <ul class="list-group">
-            {% for item in user.profile.myWorkgroups.all %}
-              <li class="list-group-item" ><a href="{% url 'aristotle:workgroup' item.id %}/">{{ item }}</a>
+            {% for revision in recent %}
+                <li class="list-group-item">
+                    <span>{{ revision.comment }}</span>
+                    <ul>
+                        {% for item in revision.version_set.all|unique_recent %}
+                            {% if item.object.get_absolute_url %}
+                                {# things with a 'parentitem' are components and probably shouldn't be shown. #}
+                                <li><a href="{{ item.object.get_absolute_url }}">{{ item }} ({{ item.object.id }})</a></li>
+                            {% endif %}
+                        {% endfor %}
+                    </ul>
                 </li>
             {% empty %}
-                <li class="list-group-item"> No workgroups </li>
+                <li class="list-group-item"> No recent items </li>
             {% endfor %}
             </ul>
             <div class="panel-footer"><a href="{% url 'aristotle:userWorkgroups' %}">See all workgroups...</a></div>
-            </div>
-        </section>
+        </div>
+    </section>
     </div>
     {% endblock %}
 </div>
+
+
 </div>
 
 {% endblock %}

@@ -19,6 +19,7 @@ from django.dispatch import receiver
 import datetime
 from tinymce.models import HTMLField
 from aristotle_mdr import perms
+from aristotle_mdr.utils import url_slugify_concept
 
 # 11179 States
 # When used these MUST be used as IntegerFields to allow status comparison
@@ -69,11 +70,14 @@ class baseAristotleObject(TimeStampedModel):
         return self._meta.verbose_name.title()
     def get_verbose_name_plural(self):
         return self._meta.verbose_name_plural.title()
+    #@property
+    #def url_name(self):
+    #    s = self._meta.object_name
+    #    s = s[0].lower() + s[1:]
+    #    return s
     @property
     def url_name(self):
-        s = self._meta.object_name
-        s = s[0].lower() + s[1:]
-        return s
+        return "item" # TODO: Changed as we've altered URL handling,but will refactor calls to this away later
     @property
     def help_name(self):
         return self._meta.model_name
@@ -310,7 +314,6 @@ class discussionAbstract(TimeStampedModel):
     body = models.TextField()
     author = models.ForeignKey(User)
     class Meta:
-        ordering = ['-modified']
         abstract = True
     @property
     def edited(self):
@@ -323,12 +326,18 @@ class DiscussionPost(discussionAbstract):
                     related_name='relatedDiscussions',
                     )
     closed = models.BooleanField(default=False)
+    class Meta:
+        ordering = ['-modified']
+
     @property
     def active(self):
         return not self.closed
 
 class DiscussionComment(discussionAbstract):
     post = models.ForeignKey(DiscussionPost, related_name='comments')
+    class Meta:
+        ordering = ['-created']
+
 
 #class ReferenceDocument(models.Model):
 #    url = models.URLField()
@@ -485,7 +494,7 @@ class _concept(baseAristotleObject):
     def autocomplete_search_fields(self):
         return ("name__icontains",)
     def get_absolute_url(self):
-        return reverse("aristotle:item",args=[self.id])
+        return url_slugify_concept(self)
 
     # This returns the items that can be registered along with the this item.
     # Reimplementations of this MUST return lists
@@ -791,11 +800,11 @@ class PossumProfile(models.Model):
     def is_workgroup_manager(self,wg):
         return perms.user_is_workgroup_manager(self.user,wg)
 
-    def isFavourite(self,iid):
-        return self.favourites.filter(pk=iid).exists()
+    def is_favourite(self,item):
+        return self.favourites.filter(pk=item.id).exists()
 
     def toggleFavourite(self, item):
-        if self.isFavourite(item):
+        if self.is_favourite(item):
             self.favourites.remove(item)
         else:
             self.favourites.add(item)
@@ -842,11 +851,14 @@ def defaultData():
        ("Number","A sequence of numeric characters which may contain decimals, excluding codes with 'leading' characters e.g. '01','02','03'. "),
        ("String","A sequence of alphabetic and/or numeric characters, including 'leading' characters e.g. '01','02','03'."),
        ]
+    print "making datatypes:  ",
     for name,desc in dataTypes:
         dt,created = DataType.objects.get_or_create(name=name,description=desc,workgroup=iso_wg)
         iso.register(dt,STATES.standard,system,datetime.date(2000,1,1))
         iso_package.items.add(dt)
-        print "making datatype: {name}".format(name=name)
+        print "{name} ".format(name=name),
+    print ""
+
     reprClasses = [
        ("Code","A system of valid symbols that substitute for specified values e.g. alpha, numeric, symbols and/or combinations."),
        ("Count","Non-monetary numeric value arrived at by counting."),
@@ -859,9 +871,11 @@ def defaultData():
        ("Text","A text field that is usually unformatted."),
        ("Time","Time of day or duration eg HH:MM:SS.SSSS."),
        ]
+    print "making representation class: ",
     for name,desc in reprClasses:
         rc,created = RepresentationClass.objects.get_or_create(name=name,description=desc)
-        print "making representation class: {name}".format(name=name)
+        print "{name} ".format(name=name),
+    print ""
     unitsOfMeasure = [
         ("Length", [
          ("Centimetre", "cm"),
@@ -886,11 +900,12 @@ def defaultData():
     ]
     for measure,units in unitsOfMeasure:
         m,created = Measure.objects.get_or_create(name=measure,description="")
-        print "making measure: {name}".format(name=name)
+        print "making measure: {name}".format(name=measure),
+        print "  : units of measure:  ",
         for name,symbol in units:
             u,created = UnitOfMeasure.objects.get_or_create(name=name,symbol=symbol,measure=m)
-            print "   making unit of measure: {name}".format(name=name)
-
+            print "{name}".format(name=name),
+        print ""
 
 def favourite_updated(recipient,obj):
     notify.send(recipient, recipient=recipient, verb="changed a favourited item", target=obj)

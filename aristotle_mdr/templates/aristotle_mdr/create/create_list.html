@@ -1,0 +1,31 @@
+{% extends 'aristotle_mdr/base.html' %}
+{% load aristotle_tags i18n %}
+
+{% block title %}Creation List{% endblock %}
+
+{% block content %}
+
+<p>
+    Below is a list of all concepts managed within this registry, as submitter you
+    can create and propose a new object in your workgroups by clicking the links below.
+    {% if user.is_staff %}
+        You may be able to make additional items through the
+        <a href="{% url 'admin:index' %}">{% trans 'Management interface' %}</a>.
+    {% endif %}
+</p>
+{% for app,app_models in models.items %}
+<h2>{{ app }}</h2>
+    <ul>
+    {% for m,model in app_models %}
+        {% if model.help_name %}
+        <li>
+            <a href="{% url 'aristotle:createItem' m.app_label m.model %}">
+                {{ model.get_verbose_name }}
+            </a>
+        </li>
+        {% endif %}
+    {% endfor %}
+    </ul>
+{% endfor %}
+
+{% endblock %}
