@@ -122,6 +122,7 @@ ARISTOTLE_SETTINGS = {
 ARISTOTLE_DOWNLOADS = [
     #(fileType,menu,font-awesome-icon,module)
     ('pdf','PDF','fa-file-pdf-o','aristotle_mdr'),
+    ('csv-vd','CSV list of values','fa-file-excel-o','aristotle_mdr'),
     ]
 
 

@@ -1,5 +1,7 @@
 from aristotle_mdr import models as MDR
 from aristotle_mdr import forms as MDRForms
+from aristotle_mdr.utils import url_slugify_concept
+
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured, ObjectDoesNotExist
 from django.core.urlresolvers import reverse
@@ -126,7 +128,7 @@ class ConceptWizard(PermissionWizard):
         item = None
         for form in form_list:
             item = form.save()
-        return HttpResponseRedirect(reverse("aristotle:item",args=[item.id]))
+        return HttpResponseRedirect(url_slugify_concept(item))
 
     def find_duplicates(self):
         if hasattr(self,'duplicate_items'):
@@ -401,7 +403,7 @@ class DataElementConceptWizard(MultiStepAristotleWizard):
                 pr = saved_item
                 messages.success(self.request,
                         mark_safe(_("New Property '{name}' Saved - <a href='{url}'>id:{id}</a>").format(
-                            url=reverse("aristotle:item",args=[saved_item.id]),
+                            url=url_slugify_concept(saved_item),
                             name=saved_item.name,id=saved_item.id
                             ))
                 )
@@ -409,7 +411,7 @@ class DataElementConceptWizard(MultiStepAristotleWizard):
                 oc = saved_item
                 messages.success(self.request,
                         mark_safe(_("New Object Class '{name}' Saved - <a href='{url}'>id:{id}</a>").format(
-                            url=reverse("aristotle:item",args=[saved_item.id]),
+                            url=url_slugify_concept(saved_item),
                             name=saved_item.name,id=saved_item.id
                             ))
                 )
@@ -417,7 +419,7 @@ class DataElementConceptWizard(MultiStepAristotleWizard):
                 dec = saved_item
                 messages.success(self.request,
                         mark_safe(_("New Data Element Concept '{name}' Saved - <a href='{url}'>id:{id}</a>").format(
-                            url=reverse("aristotle:item",args=[saved_item.id]),
+                            url=url_slugify_concept(saved_item),
                             name=saved_item.name,id=saved_item.id
                             ))
                 )
@@ -425,7 +427,7 @@ class DataElementConceptWizard(MultiStepAristotleWizard):
             dec.objectClass = oc
             dec.property = pr
             dec.save()
-        return HttpResponseRedirect(reverse("aristotle:%s"%dec.url_name,args=[dec.id]))
+        return HttpResponseRedirect(url_slugify_concept(dec))
 
 def no_valid_data_element_concept(wizard):
     return not wizard.get_data_element_concept()
@@ -715,7 +717,7 @@ class DataElementWizard(MultiStepAristotleWizard):
                 pr = saved_item
                 messages.success(self.request,
                         mark_safe(_("New Property '{name}' Saved - <a href='{url}'>id:{id}</a>").format(
-                            url=reverse("aristotle:item",args=[saved_item.id]),
+                            url=url_slugify_concept(saved_item),
                             name=saved_item.name,id=saved_item.id
                             ))
                 )
@@ -723,7 +725,7 @@ class DataElementWizard(MultiStepAristotleWizard):
                 oc = saved_item
                 messages.success(self.request,
                         mark_safe(_("New Object Class '{name}' Saved - <a href='{url}'>id:{id}</a>").format(
-                            url=reverse("aristotle:item",args=[saved_item.id]),
+                            url=url_slugify_concept(saved_item),
                             name=saved_item.name,id=saved_item.id
                             ))
                 )
@@ -731,7 +733,7 @@ class DataElementWizard(MultiStepAristotleWizard):
                 dec = saved_item
                 messages.success(self.request,
                         mark_safe(_("New Data Element Concept '{name}' Saved - <a href='{url}'>id:{id}</a>").format(
-                            url=reverse("aristotle:item",args=[saved_item.id]),
+                            url=url_slugify_concept(saved_item),
                             name=saved_item.name,id=saved_item.id
                             ))
                 )
@@ -739,7 +741,7 @@ class DataElementWizard(MultiStepAristotleWizard):
                 vd = saved_item
                 messages.success(self.request,
                         mark_safe(_("New ValueDomain '{name}' Saved - <a href='{url}'>id:{id}</a>").format(
-                            url=reverse("aristotle:item",args=[saved_item.id]),
+                            url=url_slugify_concept(saved_item),
                             name=saved_item.name,id=saved_item.id
                             ))
                 )
@@ -747,7 +749,7 @@ class DataElementWizard(MultiStepAristotleWizard):
                 de = saved_item
                 messages.success(self.request,
                         mark_safe(_("New Data Element '{name}' Saved - <a href='{url}'>id:{id}</a>").format(
-                            url=reverse("aristotle:item",args=[saved_item.id]),
+                            url=url_slugify_concept(saved_item),
                             name=saved_item.name,id=saved_item.id
                             ))
                 )
@@ -759,4 +761,4 @@ class DataElementWizard(MultiStepAristotleWizard):
             de.dataElementConcept = dec
             de.valueDomain = vd
             de.save()
-        return HttpResponseRedirect(reverse("aristotle:%s"%de.url_name,args=[de.id]))
+        return HttpResponseRedirect(url_slugify_concept(de))

@@ -7,9 +7,15 @@ from aristotle_mdr import forms as MDRForms
 from aristotle_mdr import models as MDR
 from aristotle_mdr.views.utils import paginated_list
 
+from reversion.models import Revision, Version
+
 @login_required
 def home(request):
-    page = render(request,"aristotle_mdr/user/userHome.html",{"item":request.user})
+    #recent = Revision.objects.filter(user=request.user)
+
+    #recent = Version.objects.filter(revision__user=request.user).order_by('-revision__date_created')[0:10]
+    recent = Revision.objects.filter(user=request.user).order_by('-date_created')[0:10]
+    page = render(request,"aristotle_mdr/user/userHome.html",{"item":request.user,'recent':recent})
     return page
 
 @login_required

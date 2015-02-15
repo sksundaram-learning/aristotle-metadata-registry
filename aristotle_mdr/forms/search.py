@@ -152,9 +152,16 @@ class TokenSearchForm(SearchForm):
 
                     from django.contrib.contenttypes.models import ContentType
                     arg = arg.lower().replace('_','').replace('-','')
-                    mods = ContentType.objects.filter(app_label__in=aristotle_apps,model=arg).all()
+                    mods = ContentType.objects.filter(app_label__in=aristotle_apps).all()
                     for i in mods:
-                        token_models.append(i.model_class())
+                        first_letter = lambda j: j[0]
+                        if hasattr(i.model_class(),'get_verbose_name'):
+                            model_short_code = "".join(map(first_letter,i.model_class()._meta.verbose_name.split(" "))).lower()
+                            if arg == model_short_code:
+                                token_models.append(i.model_class())
+                        if arg == i.model:
+                            token_models.append(i.model_class())
+
             else:
                 query_text.append(word)
         self.models = token_models

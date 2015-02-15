@@ -91,7 +91,6 @@ class WorkgroupAdmin(CompareVersionAdmin):
         else:
             return super(WorkgroupAdmin, self).has_change_permission(request,obj=None)
 
-
 class ConceptAdmin(CompareVersionAdmin):
     class Media:
         js = [
@@ -121,9 +120,6 @@ class ConceptAdmin(CompareVersionAdmin):
             })
     ]
     name_suggest_fields = []
-    light_autocomplete_lookup_fields = {
-        'fk': [],
-    }
     actions_on_top = True; actions_on_bottom = False
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
@@ -139,7 +135,6 @@ class ConceptAdmin(CompareVersionAdmin):
         class ModelFormMetaClass(conceptForm):
             def __new__(cls, *args, **kwargs):
                 kwargs['request'] = request
-                kwargs['auto_fields'] = self.light_autocomplete_lookup_fields
                 kwargs['name_suggest_fields'] = self.name_suggest_fields
                 if self.name_suggest_fields:
                     SEPARATORS = getattr(settings, 'ARISTOTLE_SETTINGS', {}).get('SEPARATORS',{})
@@ -305,3 +300,5 @@ if User in admin.site._registry:
     admin.site.unregister(User)
 admin.site.register(User, AristotleUserAdmin)
 
+#reversion.unregister(MDR.ValueDomain)
+#reversion.register(MDR.ValueDomain) #, follow=["permissibleValues","supplementaryValues"])

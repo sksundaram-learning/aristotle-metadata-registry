@@ -182,6 +182,9 @@ class WorkgroupMembersCanMakePostsAndComments(utils.LoggedInViewPages,TestCase):
         self.assertEqual(p2.comments.count(),0)
         self.assertEqual(response.status_code,403)
 
+        response = self.client.get(reverse('aristotle:discussionsPostNewComment',args=[p1.id]))
+        self.assertRedirects(response,reverse('aristotle:discussionsPost',args=[p1.id]))
+
         response = self.client.post(reverse('aristotle:discussionsPostNewComment',args=[p1.id]),
             {'body':"I am a member of this workgroup, so I can comment."}
         )

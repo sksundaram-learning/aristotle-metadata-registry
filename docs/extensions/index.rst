@@ -18,6 +18,7 @@ the `Python programming language <https://www.python.org/about/gettingstarted/>`
    :maxdepth: 2
 
    new_content_type.rst
+   modelling_weak_relationships.rst
    downloads.rst
    templates.rst
    including_extra_content.rst

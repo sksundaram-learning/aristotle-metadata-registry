@@ -245,7 +245,7 @@ This tutorial has covered how to create new items when inheriting from the base
 So if you wished to extend and improve on 11179 item it would be perfectly possible
 to do so by inheriting from the appropriate class, rather than the abstract ``concept``.
 For example, if you wished to extend a Data Element to create a internationalised
-DatElement that was only applicable in specific countries, this could be done like so::
+DataElement that was only applicable in specific countries, this could be done like so::
 
     class Country(model.Models):
         name = models.TextField
@@ -257,40 +257,32 @@ DatElement that was only applicable in specific countries, this could be done li
 Aristotle does not prevent you from doing so, however there are a few issues that
 can arise when extending from non-abstract classes:
 
-* All objects subclassed from a concrete model, will also exist in the database as
-  an item that belongs to the parent model.
+* Due to the way that Django handles subclassing, all objects subclassed from a
+  concrete model, will also exist in the database as the subclass and an item that
+  belongs to the parent superclass.
 
   So a ``CountrySpecificDataElement`` would also be a ``DataElement``, so a query like this::
 
      aristotle.models.DataElement.objects.all()
 
-  Would return both ``DataElement`` s and ``CountrySpecificDataElement`` s, likewise
-  if a ``CountrySpecificDataElement`` is created with the id ``543210``, if a user
-  browsed to::
-
-     example.com/your_app_path/countryspecificdataelement/543210
-
-  They would go to the correct page for a ``CountrySpecificDataElement``, however
-  if they browsed to::
-
-     example.com/dataelement/543210
-
-  They would be returned a page that showed item ``543210`` as a ``DataElement``.
-  Depending on the domain and objects, this may be desired behaviour.
+  Would return both ``DataElement`` s and its subclasses, such as ``CountrySpecificDataElement`` s, however
+  depending on the domain and objects, this may be desired behaviour.
 
 * Following from the above, restricted searches for only objects of the parent item type will return
   results from the subclassed item. For example, all searches restricted to a ``DataElement``
   would also return results for ``CountrySpecificDataElement``, and they will
   be displayed in the list as ``DataElement`` *not* as ``CountrySpecificDataElement``.
 
-* Items that inherit from non-abstract classes do not inherit the Django object Mangers,
-  this is one of the reasons for the decision to make ``concept`` an abstact class.
-  As such, it is **strongly adviced** that any items that inherit from concrete classes
+* Items that inherit from non-abstract classes do not inherit the Django object Managers,
+  this is one of the reasons for the decision to make ``concept`` an abstract class.
+  As such, it is **strongly adviced** that any new item types that inherit from concrete classes
   specify the :doc:`Aristotle-MDR concept manager</extensions/using_concept_manager>`, like so::
 
     class CountrySpecificDataElement(aristotle.models.DataElement):
         countries = models.ManyToManyField(Country)
         objects = aristotle_mdr.models.ConceptManager()
+
+    Failure to include this may lead to broken code or pages that expose private items.
 
 Creating ``unmanagedContent`` types
 -----------------------------------

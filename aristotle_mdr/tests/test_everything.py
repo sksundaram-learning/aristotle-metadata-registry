@@ -4,11 +4,11 @@ from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 import aristotle_mdr.models as models
 import aristotle_mdr.perms as perms
+from aristotle_mdr.utils import url_slugify_concept
 
 from django.test.utils import setup_test_environment
 setup_test_environment()
 from aristotle_mdr.tests import utils
-from aristotle_mdr.tests.utils import ManagedObjectVisibility
 #  Create your tests here.
 
 class SuperuserPermissions(TestCase):
@@ -39,151 +39,16 @@ class SuperuserPermissions(TestCase):
     def test_in_workgroup(self):
         self.assertTrue(perms.user_in_workgroup(self.su,None))
 
-# Since all managed objects have the same rules, these can be used to cover everything
-# This isn't an actual TestCase, we'll just pretend it is
-class ManagedObjectVisibility(object):
-    def test_object_is_public(self):
-        ra = models.RegistrationAuthority.objects.create(name="Test RA")
-        self.wg = models.Workgroup.objects.create(name="Test WG")
 
-        self.assertEqual(self.item.is_public(),False)
-        s = models.Status.objects.create(
-                concept=self.item,
-                registrationAuthority=ra,
-                registrationDate=timezone.now(),
-                state=ra.public_state
-                )
-        self.assertEqual(s.registrationAuthority,ra)
-        self.assertEqual(self.item.is_public(),True)
-        ra.public_state = models.STATES.standard
-        ra.save()
-
-        self.item = models._concept.objects.get(id=self.item.id) # Stupid cache
-        self.assertEqual(self.item.is_public(),False)
-        self.item.statuses.first().state = models.STATES.standard
-        self.item.save()
-        self.assertEqual(self.item.is_public(),False)
-
-    def test_registrar_can_view(self):
-        # set up
-        ra = models.RegistrationAuthority.objects.create(name="Test RA")
-
-        # make editor for wg1
-        r1 = User.objects.create_user('reggie','','reg')
-
-        self.assertEqual(perms.user_can_view(r1,self.item),False)
-        s = models.Status.objects.create(
-                concept=self.item,
-                registrationAuthority=ra,
-                registrationDate=timezone.now(),
-                state=ra.locked_state
-                )
-        self.assertEqual(perms.user_can_view(r1,self.item),False)
-        # Caching issue, refresh from DB with correct permissions
-        ra.giveRoleToUser('registrar',r1)
-        r1 = User.objects.get(pk=r1.pk)
-
-        self.assertEqual(perms.user_can_view(r1,self.item),True)
-
-    def test_object_submitter_can_view(self):
-        # set up
-        ra = models.RegistrationAuthority.objects.create(name="Test RA")
-
-        # make editor for wg1
-        wg1 = models.Workgroup.objects.create(name="Test WG 1")
-        e1 = User.objects.create_user('editor1','','editor1')
-        wg1.giveRoleToUser('submitter',e1)
-
-        # make editor for wg2
-        wg2 = models.Workgroup.objects.create(name="Test WG 2")
-        e2 = User.objects.create_user('editor2','','editor2')
-        wg2.giveRoleToUser('submitter',e2)
-
-        # ensure object is in wg1
-        self.item.workgroup = wg1
-        self.item.save()
-
-        # test editor 1 can view, editor 2 cannot
-        self.assertEqual(perms.user_can_view(e1,self.item),True)
-        self.assertEqual(perms.user_can_view(e2,self.item),False)
-
-        # move object to wg2
-        self.item.workgroup = wg2
-        self.item.save()
-
-        # test editor 2 can view, editor 1 cannot
-        self.assertEqual(perms.user_can_view(e2,self.item),True)
-        self.assertEqual(perms.user_can_view(e1,self.item),False)
-
-        s = models.Status.objects.create(
-                concept=self.item,
-                registrationAuthority=ra,
-                registrationDate=timezone.now(),
-                state=ra.locked_state
-                )
-        # Editor 2 can view. Editor 1 cannot
-        self.assertEqual(perms.user_can_view(e2,self.item),True)
-        self.assertEqual(perms.user_can_view(e1,self.item),False)
-
-        # Set status to a public state
-        s.state = ra.public_state
-        s.save()
-        # Both can view, neither can edit.
-        self.assertEqual(perms.user_can_view(e1,self.item),True)
-        self.assertEqual(perms.user_can_view(e2,self.item),True)
-
-    def test_object_submitter_can_edit(self):
-        # set up
-        ra = models.RegistrationAuthority.objects.create(name="Test RA")
-        registrar = User.objects.create_user('registrar','','registrar')
-        ra.registrars.add(registrar)
-
-        # make editor for wg1
-        wg1 = models.Workgroup.objects.create(name="Test WG 1")
-        e1 = User.objects.create_user('editor1','','editor1')
-        wg1.giveRoleToUser('submitter',e1)
-
-        # make editor for wg2
-        wg2 = models.Workgroup.objects.create(name="Test WG 2")
-        e2 = User.objects.create_user('editor2','','editor2')
-        wg2.giveRoleToUser('submitter',e2)
-
-        # ensure object is in wg1
-        self.item.workgroup = wg1
-        self.item.save()
-
-        # test editor 1 can edit, editor 2 cannot
-        self.assertEqual(perms.user_can_edit(e1,self.item),True)
-        self.assertEqual(perms.user_can_edit(e2,self.item),False)
-
-        # move Object Class to wg2
-        self.item.workgroup = wg2
-        self.item.save()
-
-        # test editor 2 can edit, editor 1 cannot
-        self.assertEqual(perms.user_can_edit(e2,self.item),True)
-        self.assertEqual(perms.user_can_edit(e1,self.item),False)
-
-        #ra.register(self.item,ra.locked_state,registrar,timezone.now(),)
-        s = models.Status.objects.create(
-                concept=self.item,
-                registrationAuthority=ra,
-                registrationDate=timezone.now(),
-                state=ra.locked_state
-                )
-        # Editor 2 can no longer edit. Neither can Editor 1
-        self.assertEqual(perms.user_can_edit(e2,self.item),False)
-        self.assertEqual(perms.user_can_view(e1,self.item),False)
-
-class ObjectClassVisibility(TestCase,ManagedObjectVisibility):
+class ObjectClassVisibility(TestCase,utils.ManagedObjectVisibility):
     def setUp(self):
         self.wg = models.Workgroup.objects.create(name="Setup WG")
         self.item = models.ObjectClass.objects.create(name="Test OC",workgroup=self.wg)
-class PropertyVisibility(TestCase,ManagedObjectVisibility):
+class PropertyVisibility(TestCase,utils.ManagedObjectVisibility):
     def setUp(self):
         self.wg = models.Workgroup.objects.create(name="Setup WG")
         self.item = models.Property.objects.create(name="Test P",workgroup=self.wg)
-class ValueDomainVisibility(TestCase,ManagedObjectVisibility):
+class ValueDomainVisibility(TestCase,utils.ManagedObjectVisibility):
     def setUp(self):
         self.wg = models.Workgroup.objects.create(name="Setup WG")
         self.item = models.ValueDomain.objects.create(name="Test VD",
@@ -192,31 +57,31 @@ class ValueDomainVisibility(TestCase,ManagedObjectVisibility):
                 maximumLength = 3,
                 dataType = models.DataType.objects.create(name="Test DT",workgroup=self.wg)
                 )
-class DataElementConceptVisibility(TestCase,ManagedObjectVisibility):
+class DataElementConceptVisibility(TestCase,utils.ManagedObjectVisibility):
     def setUp(self):
         self.wg = models.Workgroup.objects.create(name="Setup WG")
         self.item = models.DataElementConcept.objects.create(name="Test DEC",
             workgroup=self.wg,
             )
-class DataElementVisibility(TestCase,ManagedObjectVisibility):
+class DataElementVisibility(TestCase,utils.ManagedObjectVisibility):
     def setUp(self):
         self.wg = models.Workgroup.objects.create(name="Setup WG")
         self.item = models.DataElement.objects.create(name="Test DE",
             workgroup=self.wg,
             )
-class DataTypeVisibility(TestCase,ManagedObjectVisibility):
+class DataTypeVisibility(TestCase,utils.ManagedObjectVisibility):
     def setUp(self):
         self.wg = models.Workgroup.objects.create(name="Setup WG")
         self.item = models.DataType.objects.create(name="Test DT",
             workgroup=self.wg,
             )
-class PackageVisibility(TestCase,ManagedObjectVisibility):
+class PackageVisibility(TestCase,utils.ManagedObjectVisibility):
     def setUp(self):
         self.wg = models.Workgroup.objects.create(name="Setup WG")
         self.item = models.Package.objects.create(name="Test Package",
             workgroup=self.wg,
             )
-class GlossaryVisibility(TestCase,ManagedObjectVisibility):
+class GlossaryVisibility(TestCase,utils.ManagedObjectVisibility):
     def setUp(self):
         self.wg = models.Workgroup.objects.create(name="Setup WG")
         self.item = models.GlossaryItem.objects.create(name="Test Glossary",
@@ -290,12 +155,12 @@ class AnonymousUserViewingThePages(TestCase):
                 registrationDate=timezone.now(),
                 state=ra.locked_state
                 )
-        home = self.client.get("/item/%s"%item.id)
+        home = self.client.get(url_slugify_concept(item))
         #Anonymous users requesting a hidden page will be redirected to login
         self.assertEqual(home.status_code,302)
         s.state = ra.public_state
         s.save()
-        home = self.client.get("/item/%s"%item.id)
+        home = self.client.get(url_slugify_concept(item))
         self.assertEqual(home.status_code,200)
 
 class LoggedInViewConceptPages(utils.LoggedInViewPages):
@@ -303,9 +168,9 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
     def setUp(self):
         super(LoggedInViewConceptPages, self).setUp()
 
-        self.item1 = self.itemType.objects.create(name="OC1",workgroup=self.wg1,**self.defaults)
-        self.item2 = self.itemType.objects.create(name="OC2",workgroup=self.wg2,**self.defaults)
-        self.item3 = self.itemType.objects.create(name="OC2",workgroup=self.wg1,**self.defaults)
+        self.item1 = self.itemType.objects.create(name="OC1",description=" ",workgroup=self.wg1,**self.defaults)
+        self.item2 = self.itemType.objects.create(name="OC2",description=" ",workgroup=self.wg2,**self.defaults)
+        self.item3 = self.itemType.objects.create(name="OC2",description=" ",workgroup=self.wg1,**self.defaults)
 
     def test_su_can_view(self):
         self.login_superuser()
@@ -327,6 +192,15 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.assertEqual(response.status_code,200)
         response = self.client.get(self.get_page(self.item2))
         self.assertEqual(response.status_code,403)
+
+    def test_stubs_redirect_correctly(self):
+        self.login_viewer()
+        response = self.client.get(reverse('aristotle:item',args=[self.item1.id]))
+        self.assertRedirects(response,url_slugify_concept(self.item1))
+        response = self.client.get(reverse('aristotle:item',args=[self.item1.id])+"/not-a-model/fake-name")
+        self.assertRedirects(response,url_slugify_concept(self.item1))
+        response = self.client.get(reverse('aristotle:item',args=[self.item1.id])+"/this-isnt-even-a-proper-stub")
+        self.assertRedirects(response,url_slugify_concept(self.item1))
 
     def test_viewer_can_view_related_packages(self):
         self.login_viewer()
@@ -360,6 +234,19 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.assertEqual(response.status_code,200)
         response = self.client.get(reverse('aristotle:edit_item',args=[self.item2.id]))
         self.assertEqual(response.status_code,403)
+
+    def test_submitter_can_save_via_edit_page(self):
+        from django.forms import model_to_dict
+        self.login_editor()
+        response = self.client.get(reverse('aristotle:edit_item',args=[self.item1.id]))
+        self.assertEqual(response.status_code,200)
+        updated_item = dict((k,v) for (k,v) in model_to_dict(response.context['item']).items() if v is not None)
+        updated_name = updated_item['name'] + " updated!"
+        updated_item['name'] = updated_name
+        response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
+        self.item1 = self.itemType.objects.get(pk=self.item1.pk)
+        self.assertRedirects(response,url_slugify_concept(self.item1))
+        self.assertEqual(self.item1.name,updated_name)
 
     def test_su_can_download_pdf(self):
         self.login_superuser()
@@ -409,7 +296,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
 
         self.assertFalse(self.item1.readyToReview)
         response = self.client.post(reverse('aristotle:mark_ready_to_review',args=[self.item1.id]))
-        self.assertRedirects(response,reverse("aristotle:item",args=[self.item1.id]))
+        self.assertRedirects(response,url_slugify_concept(self.item1))
         self.item1 = self.itemType.objects.get(id=self.item1.id) # Stupid cache
         self.assertTrue(self.item1.readyToReview)
 
@@ -432,7 +319,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
     def test_help_page_exists(self):
         self.logout()
         response = self.client.get(self.get_help_page())
-        self.assertRedirects(response,reverse("aristotle:about",args=[self.item1.help_name])) # This should redirect
+        self.assertEqual(response.status_code,200)
 
     def test_viewer_can_view_registration_history(self):
         self.login_viewer()
@@ -457,12 +344,12 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.assertEqual(self.viewer.profile.favourites.count(),0)
 
         response = self.client.get(reverse('aristotle:toggleFavourite', args=[self.item1.id]))
-        self.assertRedirects(response,reverse("aristotle:item", args=[self.item1.id]))
+        self.assertRedirects(response,url_slugify_concept(self.item1))
         self.assertEqual(self.viewer.profile.favourites.count(),1)
         self.assertEqual(self.viewer.profile.favourites.first().item,self.item1)
 
         response = self.client.get(reverse('aristotle:toggleFavourite', args=[self.item1.id]))
-        self.assertRedirects(response,reverse("aristotle:item", args=[self.item1.id]))
+        self.assertRedirects(response,url_slugify_concept(self.item1))
         self.assertEqual(self.viewer.profile.favourites.count(),0)
 
     def test_registrar_can_change_status(self):
@@ -488,7 +375,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
                         'cascadeRegistration': 0, #no
                     }
                 )
-        self.assertRedirects(response,reverse("aristotle:item", args=[self.item1.id]))
+        self.assertRedirects(response,url_slugify_concept(self.item1))
 
         self.assertEqual(self.item1.statuses.count(),1)
         self.item1 = self.itemType.objects.get(pk=self.item1.pk)
@@ -511,6 +398,97 @@ class PropertyViewPage(LoggedInViewConceptPages,TestCase):
 class ValueDomainViewPage(LoggedInViewConceptPages,TestCase):
     url_name='valueDomain'
     itemType=models.ValueDomain
+    def setUp(self):
+        super(ValueDomainViewPage, self).setUp()
+
+        for i in range(4):
+            models.PermissibleValue.objects.create(
+                value=i,meaning="test %d"%i,order=i,valueDomain=self.item1
+                )
+        for i in range(4):
+            models.SupplementaryValue.objects.create(
+                value=i,meaning="test %d"%i,order=i,valueDomain=self.item1
+                )
+
+    def loggedin_user_can_use_value_page(self,value_type,current_item,http_code):
+        response = self.client.get(reverse('aristotle:valueDomain_edit_values',args=[current_item.id,value_type]))
+        self.assertEqual(response.status_code,http_code)
+
+    def submitter_user_can_use_value_edit_page(self,value_type):
+        self.login_editor()
+        self.loggedin_user_can_use_value_page(value_type,self.item1,200)
+        self.loggedin_user_can_use_value_page(value_type,self.item2,403)
+        self.loggedin_user_can_use_value_page(value_type,self.item3,200)
+
+        data = {}
+        num_vals = getattr(self.item1,value_type+"Values").count()
+        i=0
+        for i,v in enumerate(getattr(self.item1,value_type+"Values").all()):
+            data.update({"form-%d-id"%i: v.pk, "form-%d-order"%i : v.order, "form-%d-value"%i : v.value, "form-%d-meaning"%i : v.meaning+" -updated"})
+        data.update({"form-%d-DELETE"%i: 'checked', "form-%d-meaning"%i : v.meaning+" - deleted"}) # delete the last one.
+        # now add a new one
+        i=i+1
+        data.update({"form-%d-order"%i : i, "form-%d-value"%i : 100, "form-%d-meaning"%i : "new value -updated"})
+
+        data.update({
+            "form-TOTAL_FORMS":num_vals+1, "form-INITIAL_FORMS": num_vals, "form-MAX_NUM_FORMS":1000,
+
+            })
+        response = self.client.post(reverse('aristotle:valueDomain_edit_values',args=[self.item1.id,value_type]),data)
+        self.item1 = models.ValueDomain.objects.get(pk=self.item1.pk)
+
+        self.assertTrue(num_vals == getattr(self.item1,value_type+"Values").count())
+        new_value_seen = False
+        for v in getattr(self.item1,value_type+"Values").all():
+            self.assertTrue('updated' in v.meaning) # This will fail if the deleted item isn't deleted
+            if v.value == '100':
+                new_value_seen = True
+        self.assertTrue(new_value_seen)
+
+
+
+
+        # Item is now locked, submitter is no longer able to edit
+        models.Status.objects.create(
+                concept=self.item1,
+                registrationAuthority=self.ra,
+                registrationDate=timezone.now(),
+                state=self.ra.locked_state
+                )
+
+        self.item1 = models.ValueDomain.objects.get(pk=self.item1.pk)
+        self.assertTrue(self.item1.is_locked())
+        self.assertFalse(perms.user_can_edit(self.editor,self.item1))
+        self.loggedin_user_can_use_value_page(value_type,self.item1,403)
+
+
+    def test_submitter_can_use_permissible_value_edit_page(self):
+        self.submitter_user_can_use_value_edit_page('permissible')
+
+    def test_submitter_can_use_supplementary_value_edit_page(self):
+        self.submitter_user_can_use_value_edit_page('supplementary')
+
+    def test_su_can_download_pdf(self):
+        self.login_superuser()
+        response = self.client.get(reverse('aristotle:download',args=['csv-vd',self.item1.id]))
+        self.assertEqual(response.status_code,200)
+        response = self.client.get(reverse('aristotle:download',args=['csv-vd',self.item2.id]))
+        self.assertEqual(response.status_code,200)
+
+    def test_editor_can_download_csv(self):
+        self.login_editor()
+        response = self.client.get(reverse('aristotle:download',args=['csv-vd',self.item1.id]))
+        self.assertEqual(response.status_code,200)
+        response = self.client.get(reverse('aristotle:download',args=['csv-vd',self.item2.id]))
+        self.assertEqual(response.status_code,403)
+
+    def test_viewer_can_download_csv(self):
+        self.login_viewer()
+        response = self.client.get(reverse('aristotle:download',args=['csv-vd',self.item1.id]))
+        self.assertEqual(response.status_code,200)
+        response = self.client.get(reverse('aristotle:download',args=['csv-vd',self.item2.id]))
+        self.assertEqual(response.status_code,403)
+
 class ConceptualDomainViewPage(LoggedInViewConceptPages,TestCase):
     url_name='conceptualDomain'
     itemType=models.ConceptualDomain
@@ -537,11 +515,12 @@ class GlossaryViewPage(LoggedInViewConceptPages,TestCase):
         response = self.client.get(reverse('aristotle:glossary'))
         self.assertTrue(response.status_code,200)
 
-    def test_glossary_ajax_list(self):
+    def test_glossary_ajax_list(self): #TODO: Fix to use new api
+        self.login_editor()
         import json
         gitem = models.GlossaryItem(name="Glossary item",workgroup=self.wg1)
-        response = self.client.get(reverse('aristotle:glossaryAjaxlist'))
-        data = json.loads(str(response.content))
+        response = self.client.get('/api/v1/glossarylist/?format=json&limit=0')
+        data = json.loads(str(response.content))['objects']
         self.assertEqual(data,[])
 
         gitem.readyToReview = True
@@ -553,8 +532,8 @@ class GlossaryViewPage(LoggedInViewConceptPages,TestCase):
 
         self.assertTrue(gitem.is_public())
 
-        response = self.client.get(reverse('aristotle:glossaryAjaxlist'))
-        data = json.loads(str(response.content))
+        response = self.client.get('/api/v1/glossarylist/?format=json&limit=0')
+        data = json.loads(str(response.content))['objects']
         self.assertEqual(len(data),1)
         self.assertEqual(data[0]['id'],gitem.id)
 
@@ -564,10 +543,15 @@ class LoggedInViewUnmanagedPages(utils.LoggedInViewPages):
         super(LoggedInViewUnmanagedPages, self).setUp()
         self.item1 = self.itemType.objects.create(name="OC1",**self.defaults)
 
+    def get_page(self,item):
+        url_name = "".join(item._meta.verbose_name.title().split())
+        url_name = url_name[0].lower() + url_name[1:]
+        return reverse('aristotle:%s'%url_name,args=[item.id])
+
     def test_help_page_exists(self):
         self.logout()
         response = self.client.get(self.get_help_page())
-        self.assertRedirects(response,reverse("aristotle:about",args=[self.item1.help_name])) # This should redirect
+        self.assertEqual(response.status_code,200)
 
     def test_item_page_exists(self):
         self.logout()

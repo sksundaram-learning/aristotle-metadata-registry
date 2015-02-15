@@ -1,4 +1,4 @@
-{% extends "aristotle_mdr/pdf/inline/managedContent.html" %}
+{% extends "aristotle_mdr/downloads/pdf/inline/managedContent.html" %}
 {% block objSpecific %}
 <dl>
     <dt>Data Element Concept -
@@ -24,6 +24,7 @@
     </dt>
     <dd>
         {% include "aristotle_mdr/helpers/inlineDetails.html" with item=item.valueDomain %}
+        {% include "aristotle_mdr/downloads/pdf/inline/valueDomainRepresentation.html" with item=item.valueDomain %}
     </dd>
 </dl>
 {% endblock %}

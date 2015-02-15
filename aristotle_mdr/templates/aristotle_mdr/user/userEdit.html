@@ -8,6 +8,7 @@
 
 {% block page %}
     <h1>Edit my account details</h1>
+    {{ form.errors }}
     <form method="post">{% csrf_token %}
     {% if saved %}
     <div class="message info">

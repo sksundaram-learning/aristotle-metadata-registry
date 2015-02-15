@@ -84,12 +84,6 @@ class AdminPage(utils.LoggedInViewPages,TestCase):
             self.assertEqual(rel.count(),0)
 
 
-    def test_supersede_saves(self):
-        pass
-
-    def test_editor_change_item(self):
-        pass
-
     def test_editor_can_view_admin_page(self):
         self.login_editor()
         response = self.client.get(reverse("admin:index"))
@@ -98,11 +92,18 @@ class AdminPage(utils.LoggedInViewPages,TestCase):
 class AdminPageForConcept(utils.LoggedInViewPages):
     form_defaults = {}
     create_defaults = {}
-    def setUp(self):
+    def setUp(self,instant_create=True):
         super(AdminPageForConcept, self).setUp()
+        if instant_create:
+            self.create_items()
+
+    def create_items(self):
+        self.item1 = self.itemType.objects.create(name="admin_page_test_oc",description=" ",workgroup=self.wg1,**self.create_defaults)
 
     def test_editor_make_item(self):
         self.login_editor()
+
+        before_count = self.wg1.items.count()
         response = self.client.get(reverse("admin:%s_%s_changelist"%(self.itemType._meta.app_label,self.itemType._meta.model_name)))
         self.assertEqual(response.status_code,200)
         response = self.client.get(reverse("admin:%s_%s_add"%(self.itemType._meta.app_label,self.itemType._meta.model_name)))
@@ -120,7 +121,7 @@ class AdminPageForConcept(utils.LoggedInViewPages):
         self.assertEqual(response.status_code,302)
         self.assertRedirects(response,reverse("admin:%s_%s_changelist"%(self.itemType._meta.app_label,self.itemType._meta.model_name)))
         self.assertEqual(self.wg1.items.first().name,"admin_page_test_oc")
-        self.assertEqual(self.wg1.items.count(),1)
+        self.assertEqual(self.wg1.items.count(),before_count+1)
 
         # Editor can't save in WG2, so this won't redirect.
         data.update({"workgroup":self.wg2.id})
@@ -132,7 +133,6 @@ class AdminPageForConcept(utils.LoggedInViewPages):
     def test_editor_deleting_allowed_item(self):
         self.login_editor()
         # make some items
-        self.item1 = self.itemType.objects.create(name="OC1",workgroup=self.wg1, **self.create_defaults)
 
         before_count = self.wg1.items.count()
         self.assertEqual(self.wg1.items.count(),1)
@@ -179,6 +179,81 @@ class AdminPageForConcept(utils.LoggedInViewPages):
         self.assertEqual(response.status_code,404)
         self.assertEqual(self.wg2.items.count(),before_count)
 
+    def test_editor_change_item(self):
+        from django.forms import model_to_dict
+        self.login_editor()
+        response = self.client.get(reverse("admin:%s_%s_change"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=(str(self.item1.id))))
+        self.assertEqual(response.status_code,200)
+
+        updated_item = dict((k,v) for (k,v) in model_to_dict(self.item1).items() if v is not None)
+        updated_name = updated_item['name'] + " updated!"
+        updated_item['name'] = updated_name
+
+        updated_item.update({
+            'statuses-TOTAL_FORMS': 0, 'statuses-INITIAL_FORMS': 0 #no statuses
+        })
+        updated_item.update(self.form_defaults)
+
+        response = self.client.post(
+                reverse("admin:%s_%s_change"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=(str(self.item1.id))),
+                updated_item
+                )
+        self.item1 = self.itemType.objects.get(pk=self.item1.pk)
+        self.assertEqual(self.item1.name,updated_name)
+
+#deprecated
+    def test_supersedes_saves(self):
+        self.item2 = self.itemType.objects.create(name="admin_page_test_oc_2",description=" ",workgroup=self.wg1,**self.create_defaults)
+        self.item3 = self.itemType.objects.create(name="admin_page_test_oc_2",description=" ",workgroup=self.wg1,**self.create_defaults)
+
+        from django.forms import model_to_dict
+        self.login_editor()
+        response = self.client.get(reverse("admin:%s_%s_change"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=(str(self.item1.id))))
+        self.assertEqual(response.status_code,200)
+
+        updated_item = dict((k,v) for (k,v) in model_to_dict(self.item1).items() if v is not None)
+        updated_name = updated_item['name'] + " updated!"
+        updated_item['name'] = updated_name
+
+        updated_item.update({
+            'statuses-TOTAL_FORMS': 0, 'statuses-INITIAL_FORMS': 0, #no statuses
+            'deprecated':[self.item2.id,self.item3.id]
+        })
+        updated_item.update(self.form_defaults)
+
+        response = self.client.post(
+                reverse("admin:%s_%s_change"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=(str(self.item1.id))),
+                updated_item
+                )
+        self.item1 = self.itemType.objects.get(pk=self.item1.pk)
+        self.assertTrue(self.item2 in self.item1.supersedes.all())
+        self.assertTrue(self.item3 in self.item1.supersedes.all())
+
+    def test_superseded_by_saves(self):
+        self.item2 = self.itemType.objects.create(name="admin_page_test_oc_2",description=" ",workgroup=self.wg1,**self.create_defaults)
+
+        from django.forms import model_to_dict
+        self.login_editor()
+        response = self.client.get(reverse("admin:%s_%s_change"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=(str(self.item1.id))))
+        self.assertEqual(response.status_code,200)
+
+        updated_item = dict((k,v) for (k,v) in model_to_dict(self.item1).items() if v is not None)
+        updated_name = updated_item['name'] + " updated!"
+        updated_item['name'] = updated_name
+
+        updated_item.update({
+            'statuses-TOTAL_FORMS': 0, 'statuses-INITIAL_FORMS': 0, #no statuses
+            'superseded_by':self.item2.id
+        })
+        updated_item.update(self.form_defaults)
+
+        response = self.client.post(
+                reverse("admin:%s_%s_change"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=(str(self.item1.id))),
+                updated_item
+                )
+        self.item1 = self.itemType.objects.get(pk=self.item1.pk)
+        self.assertTrue(self.item2 == self.item1.superseded_by)
+
 
 
 class ObjectClassAdminPage(AdminPageForConcept,TestCase):
@@ -206,12 +281,14 @@ class DataTypeAdminPage(AdminPageForConcept,TestCase):
 class DataElementDerivationAdminPage(AdminPageForConcept,TestCase):
     itemType=models.DataElementDerivation
     def setUp(self):
-        super(DataElementDerivationAdminPage, self).setUp()
+        super(DataElementDerivationAdminPage, self).setUp(instant_create=False)
         self.ded_wg = models.Workgroup.objects.create(name="Derived WG")
         self.derived_de = models.DataElement.objects.create(name='derivedDE',description="",workgroup=self.ded_wg)
         self.ra.register(self.derived_de,models.STATES.standard,self.registrar)
         self.create_defaults = {'derives':self.derived_de}
         self.form_defaults = {'derives':self.derived_de.id}
+        self.create_items()
+
 class GlossaryItemAdminPage(AdminPageForConcept,TestCase):
     itemType=models.GlossaryItem
     form_defaults={
