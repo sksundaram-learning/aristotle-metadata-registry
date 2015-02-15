@@ -60,11 +60,12 @@ urlpatterns = patterns('aristotle_mdr.views',
 
     #url(r'^create/?$', views.item, name='item'),
     url(r'^create/?$', views.create_list, name='createList'),
-    url(r'^create/glossary_search/?$',  views.wizards.glossary_search, name='glossary_search'),
     url(r'^create/(aristotle_mdr/)?dataelementconcept$', views.wizards.DataElementConceptWizard.as_view(), name='createDataElementConcept'),
     url(r'^create/(aristotle_mdr/)?dataelement$', views.wizards.DataElementWizard.as_view(), name='createDataElement'),
     url(r'^create/(?P<app_label>.+)/(?P<model_name>.+)/?$', views.wizards.create_item, name='createItem'),
     url(r'^create/(?P<model_name>.+)/?$', views.wizards.create_item, name='createItem'),
+
+    url(r'^dialog/glossary_search/?$',  views.wizards.glossary_search, name='glossary_search'),
 
     url(r'^download/(?P<downloadType>[a-zA-Z0-9\-\.]+)/(?P<iid>\d+)/?$', views.download, name='download'),
 
