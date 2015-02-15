@@ -53,6 +53,21 @@ class TestSearch(utils.LoggedInViewPages,TestCase):
         self.assertEqual(response.status_code,200)
         self.assertEqual(len(response.context['page'].object_list),0)
 
+    def test_search_delete_signal(self):
+        self.login_superuser()
+        cable = models.ObjectClass.objects.create(name="cable",description="known xman",workgroup=self.xmen_wg,readyToReview=True)
+        self.ra.register(cable,models.STATES.standard,self.registrar)
+        cable.save()
+        self.assertTrue(cable.is_public())
+        response = self.client.get(reverse('aristotle:search')+"?q=cable")
+        self.assertEqual(response.status_code,200)
+        print response.context['page'].object_list
+        self.assertEqual(len(response.context['page'].object_list),1)
+        cable.delete()
+        response = self.client.get(reverse('aristotle:search')+"?q=cable")
+        self.assertEqual(response.status_code,200)
+        self.assertEqual(len(response.context['page'].object_list),0)
+
     def test_public_search(self):
         self.logout()
         response = self.client.get(reverse('aristotle:search')+"?q=xman")
