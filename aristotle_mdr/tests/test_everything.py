@@ -515,12 +515,12 @@ class GlossaryViewPage(LoggedInViewConceptPages,TestCase):
         response = self.client.get(reverse('aristotle:glossary'))
         self.assertTrue(response.status_code,200)
 
-    """
-    def dont_test_glossary_ajax_list(self): #TODO: Fix to use new api
+    def test_glossary_ajax_list(self): #TODO: Fix to use new api
+        self.login_editor()
         import json
         gitem = models.GlossaryItem(name="Glossary item",workgroup=self.wg1)
-        response = self.client.get(reverse('aristotle:glossaryAjaxlist'))
-        data = json.loads(str(response.content))
+        response = self.client.get('/api/v1/glossarylist/?format=json&limit=0')
+        data = json.loads(str(response.content))['objects']
         self.assertEqual(data,[])
 
         gitem.readyToReview = True
@@ -532,11 +532,10 @@ class GlossaryViewPage(LoggedInViewConceptPages,TestCase):
 
         self.assertTrue(gitem.is_public())
 
-        response = self.client.get(reverse('aristotle:glossaryAjaxlist'))
-        data = json.loads(str(response.content))
+        response = self.client.get('/api/v1/glossarylist/?format=json&limit=0')
+        data = json.loads(str(response.content))['objects']
         self.assertEqual(len(data),1)
         self.assertEqual(data[0]['id'],gitem.id)
-    """
 
 class LoggedInViewUnmanagedPages(utils.LoggedInViewPages):
     defaults = {}
