@@ -91,7 +91,8 @@ def new_comment(request,pid):
             new.save()
             return HttpResponseRedirect(reverse("aristotle:discussionsPost",args=[new.post.pk])+"#comment_%s"%new.id)
     else:
-        form = MDRForms.discussions.CommentForm(initial={'post':pid})
+        # It makes no sense to "GET" this comment, so push them back to the discussion
+        return HttpResponseRedirect(reverse("aristotle:discussionsPost",args=[post.pk]))
     return render(request,"aristotle_mdr/discussions/new.html",{"form":form,})
 
 @login_required
