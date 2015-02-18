@@ -2,10 +2,12 @@
 Aristotle MetaData Registry (Aristotle-MDR)
 =====
 
-|build-status| |docs| |coveralls| |codecov|
+|build-status| |docs| |coveralls| |codecov| |demoserver|
 
+Introduction and mission statement
+----------------------------------
 Aristotle-MDR is an open-source metadata registry as laid out by the requirements
-of the ISO/IEC 11179:2013 specification.
+of the `ISO/IEC 11179:2013 specification <http://metadata-standards.org/11179/>`_.
 
 Aristotle-MDR represents a new way to manage and federate content built on and extending
 the principles of leading metadata registries. The code of Aristotle is completely open-source,
@@ -17,6 +19,12 @@ By allowing organisations to run their own independant registries they are able 
 expose authoritative metadata along with the governance processes behind its creation,
 and by building upon known and open systems agencies, can deliver a stable platform
 for the sharing of metadata.
+
+Extensions
+++++++++++
+Aristotle-MDR aims to be compliant to the core model described within ISO/IEC 11179,
+however `a number of extensions are available to extend functionality and add additional content types <https://github.com/LegoStormtroopr/aristotle-metadata-registry/wiki/Available-Extensions>`_.
+
 
 Quick start
 -----------
@@ -54,7 +62,7 @@ Quick start
 For a complete example of how to successfully include Aristotle, see the `aristotle_mdr/tests/settings.py` settings file.
 
 **A live Aristotle-MDR instance is available for review on PythonAnywhere at:** ``http://aristotle.pythonanywhere.com/``.
-Be aware, this is an active development instance and may go down occasionally.
+Be aware, this is an active development instance and may sporadically be unavailble.
 
 .. |build-status| image:: https://travis-ci.org/LegoStormtroopr/aristotle-metadata-registry.svg?branch=master
     :alt: build status
@@ -75,3 +83,9 @@ Be aware, this is an active development instance and may go down occasionally.
     :alt: Code coverage on code cov (includes branch checks)
     :scale: 100%
     :target: https://codecov.io/github/LegoStormtroopr/aristotle-metadata-registry?branch=master
+
+.. |demoserver| image:: https://img.shields.io/badge/Demo_server-available-blue.svg
+    :alt: visit the live demonstration server on PythonAnywhere
+    :scale: 100%
+    :target: http://aristotle.pythonanywhere.com
+
