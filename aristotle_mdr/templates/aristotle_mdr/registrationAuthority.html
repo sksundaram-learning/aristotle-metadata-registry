@@ -29,7 +29,7 @@
                 <dt>{{ state }}</dt>
                 <dd>
                 {% if text %}
-                    {{ text }}
+                    {{ text | linebreaks }}
                 {% else %}
                     <em>No description given</em>
                 {% endif %}

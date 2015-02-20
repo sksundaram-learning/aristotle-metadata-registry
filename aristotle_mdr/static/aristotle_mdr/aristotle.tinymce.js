@@ -1,42 +1,37 @@
+var my_node = ''
 tinyMCE.init({
     mode: "textareas",
     theme: "advanced",
-    theme_advanced_buttons1 : "bold,italic,underline,separator,undo,redo,separator,bullist,numlist,separator,glossary,link,unlink",
+    theme_advanced_buttons1 : "bold,italic,underline,separator,undo,redo,separator,bullist,numlist,separator,mdr_glossary,link,unlink",
 
     plugins: "spellchecker,directionality,paste,searchreplace,inlinepopups",
 
-    setup:function(editor) {
-    getGlossaryList(); 
+    setup: function(editor) {
+        editor.addButton('mdr_glossary', {
+            title : 'Insert glossary item',
+            text: 'Glossary',
+            label: 'Glossary',
+            icons:false,
+            'class': 'mce_anchor',
+            onclick: function() {
+                editor.windowManager.open( {
+                    inline: true,
+                    title: 'Insert glossary item',
+                    url: '/create/glossary_search/',
+                });
+            }
+        });
 
-    editor.addButton('glossary', {
-        title : 'Insert glossary item',
-        text: 'Glossary',
-        classes: 'widget btn aristotle-icon aristotle-glossary',
-        onclick: function() {
-            editor.windowManager.open( {
-                inline: true,
-                title: 'Insert glossary item',
-                url: '/create/glossary_search/',
-                body: [{
-                    type: 'listbox',
-                    name: 'term',
-                    label: 'Select a term',
-                    'values':getGlossaryList()
-                },
-                {
-                    type: 'textbox',
-                    name: 'text',
-                    label: 'Link text (leave blank to use to the glossary name)'
-                }],
-                onsubmit: function( e ) {
-                    alert('HELP!!');
-                    i = e.data.term;
-                    text = e.data.text || glossaryLookup[i].name;
-                    editor.insertContent( '<a class="aristotle_glossary" data-aristotle_glossary_id="'+i+'" href="'+glossaryLookup[i].url+'">' + text + '</a>');
-                }
-            });
-        }
-    });
-
-}
+        editor.onNodeChange.add(function(ed, cm, node) {
+            //console.log(node.attr("data-aristotle_glossary_id"));
+            my_node = node
+            glossary_id = node.getAttribute('data-aristotle_glossary_id');
+            console.log(glossary_id != null)
+            //cm.setDisabled('mdr_glossary', (node.nodeName != 'A'));
+            cm.setDisabled('mdr_glossary',  (node.nodeName == 'A' && glossary_id == null)); // Don't allow the glossary editor if its a link, and not a glossary link
+            cm.setDisabled('link',          (node.nodeName == 'A' && glossary_id != null)); // Don't allow the link editor if its a link, and is a glossary link
+            //cm.setDisabled('unlink',        (node.nodeName == 'A' && glossary_id != null)); // Don't allow the unlink editor if its a link, and is a glossary link
+        });
+    }
 });
+

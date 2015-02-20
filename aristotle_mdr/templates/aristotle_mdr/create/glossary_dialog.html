@@ -4,6 +4,7 @@
     <head>
         <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
         <script type="text/javascript" src="/static/tiny_mce/tiny_mce_popup.js"></script>
+        <script type="text/javascript" src="/static/aristotle_mdr/aristotle.tinymce.dialogs.js"></script>
         {{ form.media }}
         {% bootstrap_css %}
         {% include 'autocomplete_light/static.html' %}
@@ -17,18 +18,10 @@
             // Get the parameters passed into the window from the top frame
             // var args = top.tinymce.activeEditor.windowManager.getParams();
             // console.log(args.arg1, args.arg2);
-            $('#add-glossary-item').bind('click', function(){
-                var image_url = $('#id_link').val();
-
-                // in case you are using a real popup window
-                //window.opener.tinymce.activeEditor.selection.setContent(image_url);
-
-                // in case you use a modal dialog
-                tinymce.activeEditor.selection.setContent(image_url);
-                tinyMCEPopup.close();
-
-                return false;
-            });
+            text = top.tinymce.activeEditor.selection.getContent();
+            $('#id_link').val(text);
+            $('#id_items-autocomplete').val(text);
+            $('#add-glossary-item').bind('click', glossary_submit_click_handler);
         </script>
     </body>
 </html>

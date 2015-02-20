@@ -2,7 +2,7 @@
 $(document).on('hidden.bs.modal', function (e) {
     $(e.target).removeData('bs.modal');
 });
-
+/*
 var glossaryList = [];
 var glossaryLookup = {}
 
@@ -20,7 +20,7 @@ function getGlossaryList() {
         }
     })
     return glossaryList;
-}
+}*/
 
 $(document).ajaxSend(function(event, request, settings) {
     $('#loading_indicator').show().addClass('loading').removeClass('hidden');

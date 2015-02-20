@@ -80,29 +80,37 @@
     </h1>
     <div class="btn-group pull-right">
         {% if item|can_edit:request.user %}
-            <div class="btn-group">
-              <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                <i class="fa fa-pencil-square-o"></i> {% trans 'Edit'%} <span class="caret"></span>
-              </button>
-              <ul class="dropdown-menu" role="menu">
-                <li><a id="ActivateInplaceEdit" class=""></a></li>
-                <li><a class="" href="{% url 'aristotle:edit_item' item.id %}"
-                                data-toggle="modal" data-target="#infobox_adv_edit">
-                    <i class="fa fa-pencil-square"></i> {% trans 'Advanced editor'%}
-                </a></li>
-                {% if request.user.is_staff %}
-                <li><a class="" href="{% adminEdit item %}">
-                    <i class="fa fa-sliders"></i> {% trans 'Edit in admin'%}
-                </a></li>
-                {% endif %}
-                <li class="divider"></li>
-                <li><a class="" href="{% clone item %}">
-                    <i class="fa fa-code-fork"></i> {% trans 'Clone this item'%}
-                </a></li>
-              </ul>
-            </div>
+            {% if request.user.is_staff %}
+                <div class="btn-group">
+                  <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                    <i class="fa fa-pencil-square-o"></i> {% trans 'Edit'%} <span class="caret"></span>
+                  </button>
+                  <ul class="dropdown-menu" role="menu">
+                    <!-- li><a id="ActivateInplaceEdit" class=""></a></li -->
+                    <li><a class="" href="{% url 'aristotle:edit_item' item.id %}"
+                                    data-toggle="modal" data-target="#infobox_adv_edit">
+                        <i class="fa fa-pencil-square"></i> {% trans 'Advanced editor'%}
+                    </a></li>
+                    <li><a class="" href="{% adminEdit item %}">
+                        <i class="fa fa-sliders"></i> {% trans 'Edit in admin'%}
+                    </a></li>
+                    {# % endif % #}
+                    <li class="divider"></li>
+                    <li><a class="" href="{% clone item %}">
+                        <i class="fa fa-code-fork"></i> {% trans 'Clone this item'%}
+                    </a></li>
+                  </ul>
+                </div>
+            {% else %}
+                <button class="btn btn-default" href="{% url 'aristotle:edit_item' item.id %}"
+                        accesskey='e'
+                        data-toggle="modal" data-target="#infobox_adv_edit">
+                    <i class="fa fa-pencil-square"></i> {% trans 'Edit'%}
+                </button>
+            {% endif %}
+
             <div id="infobox_adv_edit" class="modal fade">
-              <div class="modal-dialog">
+              <div class="modal-dialog modal-lg">
                   <div class="modal-content">
                   </div><!-- /.modal-content -->
                 </div><!-- /.modal-dialog -->
