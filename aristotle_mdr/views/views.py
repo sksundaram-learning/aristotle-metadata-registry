@@ -212,6 +212,7 @@ def edit_item(request,iid,*args,**kwargs):
 
     if request.method == 'POST': # If the form has been submitted...
         form = MDRForms.wizards.subclassed_modelform(item.__class__)(request.POST,instance=item,user=request.user)
+        print form.data['description']
         if form.is_valid():
             with transaction.atomic(), reversion.create_revision():
                 item = form.save()

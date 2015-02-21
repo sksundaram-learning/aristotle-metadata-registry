@@ -154,6 +154,17 @@ ADAPTOR_INPLACEEDIT = {
     'aristotle': 'aristotle_mdr.fields.AristotleRichTextField',
 }
 
+TINYMCE_DEFAULT_CONFIG = {
+    'theme': "advanced",
+    'theme_advanced_buttons1' : "bold,italic,underline,separator,undo,redo,separator,bullist,numlist,separator,mdr_glossary,link,unlink",
+    'plugins': "spellchecker,directionality,paste,searchreplace,inlinepopups,aristotle_glossary",
+    'relative_urls': False,
+
+    'cleanup_on_startup': True,
+    'custom_undo_redo_levels': 10,
+}
+
+
 HAYSTACK_SIGNAL_PROCESSOR = 'aristotle_mdr.signals.AristotleSignalProcessor'
 #HAYSTACK_SEARCH_RESULTS_PER_PAGE = 10
 HAYSTACK_CONNECTIONS = {

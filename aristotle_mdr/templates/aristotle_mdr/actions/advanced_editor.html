@@ -2,7 +2,6 @@
 {% load compile_static i18n %}
 
 {% block title %}Editing {{ item.name }}{% endblock %}
-{% block content %}
 {% block extra_head_scripts %}
     <link rel="stylesheet" href="{{ STATIC_URL }}{% compile 'aristotle_mdr/aristotle.wizard.less' %}" />
     <link rel="stylesheet" href="{{ STATIC_URL }}{% compile 'aristotle_mdr/aristotle_search.less' %}" />
@@ -11,6 +10,8 @@
     {% endif %}
     {% include 'autocomplete_light/static.html' %}
 {% endblock %}
+
+{% block content %}
 
 <form method="post" action="{% url 'aristotle:edit_item' item.id %}">{% csrf_token %}
     <div class="modal-body">
