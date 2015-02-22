@@ -28,7 +28,7 @@ function itemFromId (msg,id) {
 }
 
 $(document).ready(function () {
-
+    generateGlossaryPopovers();
 });
 
 function generateGlossaryPopovers() {

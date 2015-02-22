@@ -5,7 +5,6 @@ from tastypie.authorization import DjangoAuthorization, ReadOnlyAuthorization
 from tastypie.authentication import MultiAuthentication, BasicAuthentication, SessionAuthentication
 from tastypie.resources import ModelResource
 
-
 class GlossaryListResource(ModelResource):
     url = fields.CharField(readonly=True)
     class Meta:
