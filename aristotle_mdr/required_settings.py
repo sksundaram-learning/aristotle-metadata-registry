@@ -48,6 +48,7 @@ INSTALLED_APPS = (
     'inplaceeditform',
     'inplaceeditform_extra_fields',
     'tinymce',
+    'ckeditor',
 
     'static_precompiler',
     'bootstrap3',
@@ -156,7 +157,7 @@ ADAPTOR_INPLACEEDIT = {
 
 TINYMCE_DEFAULT_CONFIG = {
     'theme': "advanced",
-    'theme_advanced_buttons1' : "bold,italic,underline,separator,undo,redo,separator,bullist,numlist,separator,mdr_glossary,link,unlink",
+    'theme_advanced_buttons1' : "bold,italic,underline,separator,undo,redo,separator,bullist,numlist,separator,mdr_glossary,link,unlink,separator,image",
     'plugins': "spellchecker,directionality,paste,searchreplace,inlinepopups,aristotle_glossary",
     'relative_urls': False,
 
@@ -164,6 +165,11 @@ TINYMCE_DEFAULT_CONFIG = {
     'custom_undo_redo_levels': 10,
 }
 
+CKEDITOR_CONFIGS = {
+    'default': {
+        #'toolbar': 'full',
+    },
+}
 
 HAYSTACK_SIGNAL_PROCESSOR = 'aristotle_mdr.signals.AristotleSignalProcessor'
 #HAYSTACK_SEARCH_RESULTS_PER_PAGE = 10

@@ -18,7 +18,7 @@ So we've split this out into its own template.
 {% if item.unitOfMeasure %}
 <tr>
   <th>Unit Of Measure</th>
-  <td><a href="{% url 'aristotle:unitOfMeasure' item.unitOfMeasure.id %}">
+  <td><a href="{% url 'aristotle:item' item.unitOfMeasure.id %}">
     {% inplace_edit 'item.unitOfMeasure' %}
     {% if item.unitOfMeasure.symbol %}<tt>({{ item.unitOfMeasure.symbol }})</tt>{% endif %}
   </td>

@@ -17,7 +17,8 @@ from notifications import notify
 from django.dispatch import receiver
 
 import datetime
-from tinymce.models import HTMLField
+#from tinymce.models import HTMLField
+from ckeditor.fields import RichTextField as HTMLField
 from aristotle_mdr import perms
 from aristotle_mdr.utils import url_slugify_concept
 
@@ -640,6 +641,7 @@ class Property(concept):
 
 class Measure(unmanagedObject):
     pass
+#class UnitOfMeasure(concept):
 class UnitOfMeasure(unmanagedObject):
     template="aristotle_mdr/unmanaged/unitOfMeasure.html"
 

@@ -5,6 +5,17 @@ from tastypie.authorization import DjangoAuthorization, ReadOnlyAuthorization
 from tastypie.authentication import MultiAuthentication, BasicAuthentication, SessionAuthentication
 from tastypie.resources import ModelResource
 
+class MyAuthentication(SessionAuthentication):
+    """
+    Authenticates everyone if the request is GET otherwise performs
+    ApiKeyAuthentication.
+    """
+
+    def is_authenticated(self, request, **kwargs):
+        if request.method == 'GET':
+            return True
+        return super(MyAuthentication, self).is_authenticated(request, **kwargs)
+
 class GlossaryListResource(ModelResource):
     url = fields.CharField(readonly=True)
     class Meta:
@@ -12,7 +23,8 @@ class GlossaryListResource(ModelResource):
         resource_name = 'glossarylist'
         fields = ['id','name','description','url']
         authorization = ReadOnlyAuthorization()
-        authentication = MultiAuthentication(BasicAuthentication(), SessionAuthentication())
+        #authentication = MultiAuthentication(BasicAuthentication(), SessionAuthentication())
+        authentication = MyAuthentication()
         filtering = {
             'name': ('exact', 'startswith', 'contains',),
             'id': ('exact','in'),
