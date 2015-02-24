@@ -17,8 +17,7 @@ from notifications import notify
 from django.dispatch import receiver
 
 import datetime
-#from tinymce.models import HTMLField
-from ckeditor.fields import RichTextField as HTMLField
+from ckeditor.fields import RichTextField
 from aristotle_mdr import perms
 from aristotle_mdr.utils import url_slugify_concept
 
@@ -39,7 +38,7 @@ VERY_RECENTLY_SECONDS = 15
 
 class baseAristotleObject(TimeStampedModel):
     name = models.TextField(help_text=_("The primary name used for human identification purposes."))
-    description = HTMLField(_('definition'),help_text=_("A rich text field for describing the metadata item."))
+    description = RichTextField(_('definition'),help_text=_("A rich text field for describing the metadata item."))
     objects = InheritanceManager()
 
     class Meta:
@@ -549,9 +548,9 @@ class concept(_concept):
     shortName = models.CharField(max_length=100,blank=True)
     version = models.CharField(max_length=20,blank=True)
     synonyms = models.CharField(max_length=200, blank=True)
-    references = HTMLField(blank=True)
+    references = RichTextField(blank=True)
     originURI = models.URLField(blank=True,help_text="If imported, the original location of the item")
-    comments = HTMLField(help_text="Descriptive comments about the metadata item.", blank=True)
+    comments = RichTextField(help_text="Descriptive comments about the metadata item.", blank=True)
     submittingOrganisation = models.CharField(max_length=256, blank=True)
     responsibleOrganisation = models.CharField(max_length=256, blank=True)
 

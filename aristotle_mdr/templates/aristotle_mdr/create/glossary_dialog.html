@@ -1,27 +1,16 @@
-{% load bootstrap3 %}
-{# in an iframe, hence the duplication of stuff #}
-<html>
-    <head>
-        <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
-        <script type="text/javascript" src="/static/tiny_mce/tiny_mce_popup.js"></script>
-        <script type="text/javascript" src="/static/aristotle_mdr/aristotle.tinymce.dialogs.js"></script>
-        {{ form.media }}
-        {% bootstrap_css %}
-        {% include 'autocomplete_light/static.html' %}
-    </head>
-    <body>
-        <form>
-        {{ form }}
-        <input id="add-glossary-item" type="submit"/>
-        </form>
-        <script>
-            // Get the parameters passed into the window from the top frame
-            // var args = top.tinymce.activeEditor.windowManager.getParams();
-            // console.log(args.arg1, args.arg2);
-            text = top.tinymce.activeEditor.selection.getContent();
-            $('#id_link').val(text);
-            $('#id_items-autocomplete').val(text);
-            $('#add-glossary-item').bind('click', glossary_submit_click_handler);
-        </script>
-    </body>
-</html>
+<div>
+    <style>
+        .cke_reset_all .autocomplete-light-widget {
+            background-color:white;
+        }
+        .cke_reset_all .autocomplete-light-widget, .cke_reset_all .autocomplete-light-widget * {
+            white-space:normal;
+        }
+        .cke_reset_all .fa:before, .cke_reset_all .fa:after {
+            font: normal normal normal 14px/1 FontAwesome
+        }
+        .cke_reset_all a.ac_preview_link * {
+            color:#428bca;
+        }
+    </style>
+    {{ form.as_p }}</div>

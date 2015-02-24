@@ -43,7 +43,7 @@ setup(
         'Whoosh',
 
         #Rich text editors
-        'django-tinymce',
+        'django-ckeditor',
         'django-inplaceedit',
         'django-inplaceedit-extra-fields',
 

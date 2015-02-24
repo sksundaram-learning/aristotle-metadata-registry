@@ -47,7 +47,6 @@ INSTALLED_APPS = (
     'south',
     'inplaceeditform',
     'inplaceeditform_extra_fields',
-    'tinymce',
     'ckeditor',
 
     'static_precompiler',
@@ -168,6 +167,15 @@ TINYMCE_DEFAULT_CONFIG = {
 CKEDITOR_CONFIGS = {
     'default': {
         #'toolbar': 'full',
+        'toolbar' : [
+            { 'name': 'document', 'items': [ 'Source' ] },
+            { 'name': 'clipboard', 'items': [ 'Cut', 'Copy', 'Paste', 'PasteText', '-', 'Undo', 'Redo' ] },
+            { 'name': 'basicstyles', 'items': [ 'Bold', 'Italic' ] },
+            { 'name': 'links', 'items' : [ 'Link','Unlink' ] },
+    	    { 'name': 'insert', 'items' : [ 'Image','Table','HorizontalRule','SpecialChar'] },
+            { 'name': 'aristotletoolbar', 'items': [ 'Glossary' ] }
+        ],
+        'extraPlugins' : 'aristotle_glossary',
     },
 }
 
