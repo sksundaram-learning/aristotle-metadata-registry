@@ -43,6 +43,7 @@ setup(
         'Whoosh',
 
         #Rich text editors
+        'django-tinymce', # Only needed for south migrations.
         'django-ckeditor',
         'django-inplaceedit',
         'django-inplaceedit-extra-fields',
