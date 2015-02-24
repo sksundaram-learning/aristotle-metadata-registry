@@ -82,13 +82,8 @@ if issues with permissions they can be idenitified and rectified immediately.
 
 Easy content creation
 ---------------------
-The `Django inplace edit <https://pypi.python.org/pypi/django-inplaceedit>`_ module gives
-users the ability to edit content directly on the site and instantly see how content will look.
-Using the the `TinyMCE <http://www.tinymce.com/>`_ WYSIWYG (What-You-See-Is-What-You-Get)
-editor, users get instant feedback on changes to content.
-
-While not in Aristotle-MDR yet, the Django inplace edit team have also produced
-`an inline translation module for django <https://pypi.python.org/pypi/django-inlinetrans>`_ that
-allows user to add translations for content without having to navigate away from the content.
-Once integrated with Aristotle-MDR this will allow metadata managers to create and manage
-multilingual descriptions of data.
+Aristotle-MDR includes an easy to use editing system, that uses the  robust
+`CKEditor <http://ckeditor.com//>`_ WYSIWYG (What-You-See-Is-What-You-Get)
+editor, that gives users instant feedback on changes to content. The in-built editor
+gives access to a rich-text editor, easy insertion of links to content and an image
+upload and linking facility.
