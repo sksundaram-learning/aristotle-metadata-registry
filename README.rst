@@ -2,7 +2,7 @@
 Aristotle MetaData Registry (Aristotle-MDR)
 =====
 
-|build-status| |docs| |coveralls| |codecov| |demoserver|
+|build-status| |docs| |coveralls| |demoserver|
 
 Introduction and mission statement
 ----------------------------------
@@ -64,6 +64,23 @@ For a complete example of how to successfully include Aristotle, see the `aristo
 **A live Aristotle-MDR instance is available for review on PythonAnywhere at:** ``http://aristotle.pythonanywhere.com/``.
 Be aware, this is an active development instance and may sporadically be unavailble.
 
+Information for developers
+--------------------------
+
+Aristotle-MDR is free open-source software, and contributions are welcome on front-end web development,
+back-end server development, translation and content creation (such as more documentation).
+Review the wiki, open issues and existing documentation to get started.
+
+About the badges (plus some extras):
+++++++++++++++++++++++++++++++++++++
+* |build-status| - Travis-CI, showing the details of the continuous testing suite
+* |docs| - Rad the docs, with details on installing, configuring and extending Aristotle-MDR
+* |coveralls| - Coveralls, showing in-depth code coverage
+* |codecov| - Codecov.io, showing even more in-depther code coverage with branch coverage
+* |demoserver| - A link to a live demo and development server
+* |gitter| - Gitter, a git-powered chat room for developers
+
+
 .. |build-status| image:: https://travis-ci.org/LegoStormtroopr/aristotle-metadata-registry.svg?branch=master
     :alt: build status
     :scale: 100%
@@ -86,6 +103,10 @@ Be aware, this is an active development instance and may sporadically be unavail
 
 .. |demoserver| image:: https://img.shields.io/badge/Demo_server-available-blue.svg
     :alt: visit the live demonstration server on PythonAnywhere
-    :scale: 100%
+    :scale: 98%
     :target: http://aristotle.pythonanywhere.com
 
+.. |gitter| image:: https://badges.gitter.im/Join%20Chat.svg
+    :alt: visit the gitter chat room for this project
+    :scale: 100%
+    :target: https://gitter.im/LegoStormtroopr/aristotle-metadata-registry?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge
