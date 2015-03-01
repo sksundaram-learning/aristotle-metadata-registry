@@ -61,7 +61,6 @@ class TestSearch(utils.LoggedInViewPages,TestCase):
         self.assertTrue(cable.is_public())
         response = self.client.get(reverse('aristotle:search')+"?q=cable")
         self.assertEqual(response.status_code,200)
-        print response.context['page'].object_list
         self.assertEqual(len(response.context['page'].object_list),1)
         cable.delete()
         response = self.client.get(reverse('aristotle:search')+"?q=cable")

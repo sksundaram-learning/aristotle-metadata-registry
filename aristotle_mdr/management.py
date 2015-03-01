@@ -19,7 +19,7 @@ signals.post_syncdb.connect(loadDefaultData, sender=aristotle_mdr.models)
 
 # These are not used during testing.
 def loadExampleData(**kwargs): # pragma: no cover
-    print "Loading Aristotle-MDR test data because DEBUG is set to True."
+    print("Loading Aristotle-MDR test data because DEBUG is set to True.")
     # Disable notification signals disabled as not everything will be setup yet.
     signals.post_save.disconnect(aristotle_mdr.models.concept_saved)
     aristotle_mdr.models.exampleData()

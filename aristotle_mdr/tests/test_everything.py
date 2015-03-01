@@ -88,7 +88,46 @@ class GlossaryVisibility(TestCase,utils.ManagedObjectVisibility):
             workgroup=self.wg,
             )
 
+class WorkgroupPermissions(TestCase):
+    def test_workgroup_add_members(self):
+        wg = models.Workgroup.objects.create(name="Test WG")
+        user = User.objects.create_user('user','','user')
+
+        wg.giveRoleToUser('manager',user)
+        self.assertTrue(user in wg.managers)
+        wg.removeRoleToUser('manager',user)
+        self.assertFalse(user in wg.managers)
+
+        wg.giveRoleToUser('viewer',user)
+        self.assertTrue(user in wg.viewers)
+        wg.removeRoleToUser('viewer',user)
+        self.assertFalse(user in wg.viewers)
+
+        wg.giveRoleToUser('submitter',user)
+        self.assertTrue(user in wg.submitters)
+        wg.removeRoleToUser('submitter',user)
+        self.assertFalse(user in wg.submitters)
+
+        wg.giveRoleToUser('steward',user)
+        self.assertTrue(user in wg.stewards)
+        wg.removeRoleToUser('steward',user)
+        self.assertFalse(user in wg.stewards)
+
 class RegistryGroupPermissions(TestCase):
+    def test_registration_add_members(self):
+        ra = models.RegistrationAuthority.objects.create(name="Test RA")
+        user = User.objects.create_user('user','','user')
+
+        ra.giveRoleToUser('registrar',user)
+        self.assertTrue(user in ra.registrars)
+        ra.giveRoleToUser('manager',user)
+        self.assertTrue(user in ra.managers)
+
+        ra.removeRoleToUser('registrar',user)
+        self.assertFalse(user in ra.registrars)
+        ra.removeRoleToUser('manager',user)
+        self.assertFalse(user in ra.managers)
+
     def test_RegistrationAuthority_name_change(self):
         ra = models.RegistrationAuthority.objects.create(name="Test RA")
         user = User.objects.create_user('registrar','','registrar')

@@ -1,4 +1,5 @@
 from __future__ import unicode_literals
+from __future__ import print_function
 
 from django.contrib.auth.models import User, Group, Permission
 from django.contrib.contenttypes.models import ContentType
@@ -732,8 +733,6 @@ class Package(concept):
 
 class GlossaryItem(concept):
     template = "aristotle_mdr/concepts/glossaryItem.html"
-    def json_link_list(self):
-        return dict(id=self.id,name=self.name,url=reverse("aristotle:glossaryItem",args=[self.id]))
 
 class GlossaryAdditionalDefinition(aristotleComponent):
     glossaryItem = models.ForeignKey(GlossaryItem,related_name="alternate_definitions")
@@ -853,13 +852,13 @@ def defaultData():
        ("Number","A sequence of numeric characters which may contain decimals, excluding codes with 'leading' characters e.g. '01','02','03'. "),
        ("String","A sequence of alphabetic and/or numeric characters, including 'leading' characters e.g. '01','02','03'."),
        ]
-    print "making datatypes:  ",
+    print("making datatypes:  ",end="")
     for name,desc in dataTypes:
         dt,created = DataType.objects.get_or_create(name=name,description=desc,workgroup=iso_wg)
         iso.register(dt,STATES.standard,system,datetime.date(2000,1,1))
         iso_package.items.add(dt)
-        print "{name} ".format(name=name),
-    print ""
+        print("{name} ".format(name=name),end="")
+    print("")
 
     reprClasses = [
        ("Code","A system of valid symbols that substitute for specified values e.g. alpha, numeric, symbols and/or combinations."),
@@ -873,11 +872,11 @@ def defaultData():
        ("Text","A text field that is usually unformatted."),
        ("Time","Time of day or duration eg HH:MM:SS.SSSS."),
        ]
-    print "making representation class: ",
+    print("making representation class: ",end="")
     for name,desc in reprClasses:
         rc,created = RepresentationClass.objects.get_or_create(name=name,description=desc)
-        print "{name} ".format(name=name),
-    print ""
+        print("{name} ".format(name=name),end="")
+    print("")
     unitsOfMeasure = [
         ("Length", [
          ("Centimetre", "cm"),
@@ -902,12 +901,12 @@ def defaultData():
     ]
     for measure,units in unitsOfMeasure:
         m,created = Measure.objects.get_or_create(name=measure,description="")
-        print "making measure: {name}".format(name=measure),
-        print "  : units of measure:  ",
+        print("making measure: {name}".format(name=measure),end="")
+        print("  : units of measure:  ",end="")
         for name,symbol in units:
             u,created = UnitOfMeasure.objects.get_or_create(name=name,symbol=symbol,measure=m)
-            print "{name}".format(name=name),
-        print ""
+            print("{name}".format(name=name),end="")
+        print("")
 
 def favourite_updated(recipient,obj):
     notify.send(recipient, recipient=recipient, verb="changed a favourited item", target=obj)
@@ -957,11 +956,11 @@ def new_comment_created(sender, **kwargs):
 # Loads example data, this is never used in formal testing.
 def exampleData(): # pragma: no cover
     #defaultData()
-    print "configuring users"
+    print("configuring users")
 
     if not User.objects.filter(username__iexact='possum').first():
         user = User.objects.create_superuser('possum','','pilches')
-        print "making superuser"
+        print("making superuser")
 
     #Set up based workgroup and workers
     pw,c = Workgroup.objects.get_or_create(name="Possum Workgroup")
@@ -974,10 +973,10 @@ def exampleData(): # pragma: no cover
         user = User.objects.filter(username__iexact=name).first()
         if not user:
             user = User.objects.create_user(name,'',role)
-            print "making user: {name}".format(name=name)
+            print("making user: {name}".format(name=name))
         user.first_name=name.title()
         user.last_name=role
-        print "updated user's name to {fn} {ln}".format(fn=user.first_name,ln=user.last_name)
+        print("updated user's name to {fn} {ln}".format(fn=user.first_name,ln=user.last_name))
         pw.giveRoleToUser(role.lower(),user)
         user.save()
 
@@ -1047,7 +1046,7 @@ def exampleData(): # pragma: no cover
     de.valueDomain=vd
     de.save()
 
-    print "Configuring registration authority"
+    print("Configuring registration authority")
     ra,c = RegistrationAuthority.objects.get_or_create(
                 name="Welfare",description="Welfare Authority")#,workflow=wf)
     ra,c = RegistrationAuthority.objects.get_or_create(
@@ -1060,7 +1059,7 @@ def exampleData(): # pragma: no cover
         user = User.objects.filter(username__iexact=name).first()
         if not user:
             user = User.objects.create_user(name,'',role)
-            print "making user: {name}".format(name=name)
+            print("making user: {name}".format(name=name))
         user.first_name=name.title()
         user.last_name=role
         ra.giveRoleToUser(role,user)
