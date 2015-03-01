@@ -1076,6 +1076,6 @@ def exampleData(): # pragma: no cover
     reg,c = Status.objects.get_or_create(
             concept=oc,
             registrationAuthority=ra,
-            registrationDate = datetime.date(2009,04,28),
+            registrationDate = datetime.date(2009,4,28),
             state =  STATES.standard
             )
