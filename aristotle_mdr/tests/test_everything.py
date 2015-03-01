@@ -168,9 +168,9 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
     def setUp(self):
         super(LoggedInViewConceptPages, self).setUp()
 
-        self.item1 = self.itemType.objects.create(name="OC1",description=" ",workgroup=self.wg1,**self.defaults)
-        self.item2 = self.itemType.objects.create(name="OC2",description=" ",workgroup=self.wg2,**self.defaults)
-        self.item3 = self.itemType.objects.create(name="OC2",description=" ",workgroup=self.wg1,**self.defaults)
+        self.item1 = self.itemType.objects.create(name="Test Item 1 (visible to tested viewers)",description=" ",workgroup=self.wg1,**self.defaults)
+        self.item2 = self.itemType.objects.create(name="Test Item 2 (NOT visible to tested viewers)",description=" ",workgroup=self.wg2,**self.defaults)
+        self.item3 = self.itemType.objects.create(name="Test Item 3 (visible to tested viewers)",description=" ",workgroup=self.wg1,**self.defaults)
 
     def test_su_can_view(self):
         self.login_superuser()
@@ -515,7 +515,7 @@ class GlossaryViewPage(LoggedInViewConceptPages,TestCase):
         response = self.client.get(reverse('aristotle:glossary'))
         self.assertTrue(response.status_code,200)
 
-    def test_glossary_ajax_list(self): #TODO: Fix to use new api
+    def test_glossary_ajax_list(self):
         self.logout()
         import json
         gitem = models.GlossaryItem(name="Glossary item",workgroup=self.wg1)
@@ -536,8 +536,12 @@ class GlossaryViewPage(LoggedInViewConceptPages,TestCase):
 
         response = self.client.get('/api/v1/glossarylist/?format=json&limit=0')
         data = json.loads(str(response.content))['objects']
-        self.assertEqual(len(data),1)
-        self.assertEqual(data[0]['id'],gitem.id)
+
+        self.assertEqual(len(data),models.GlossaryItem.objects.all().visible(self.editor).count())
+
+        for i in models.GlossaryItem.objects.filter(pk__in=[item['id'] for item in data]):
+            self.assertEqual(i.can_view(self.editor),1)
+
 
 class LoggedInViewUnmanagedPages(utils.LoggedInViewPages):
     defaults = {}

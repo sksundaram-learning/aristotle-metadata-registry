@@ -34,5 +34,4 @@ class GlossaryListResource(ModelResource):
         return url_slugify_concept(bundle.obj)
 
     def get_object_list(self, request):
-        print request.user
-        return super(GlossaryListResource, self).get_object_list(request).visible(request.user)
+        return self._meta.queryset.visible(request.user)
