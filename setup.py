@@ -43,8 +43,6 @@ setup(
 
         #Rich text editors
         'django-ckeditor',
-        'django-inplaceedit',
-        'django-inplaceedit-extra-fields',
 
         # Revision control
         "django-reversion>=1.8",
