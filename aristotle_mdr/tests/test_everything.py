@@ -94,24 +94,24 @@ class WorkgroupPermissions(TestCase):
         user = User.objects.create_user('user','','user')
 
         wg.giveRoleToUser('manager',user)
-        self.assertTrue(user in wg.managers)
+        self.assertTrue(user in wg.managers.all())
         wg.removeRoleToUser('manager',user)
-        self.assertFalse(user in wg.managers)
+        self.assertFalse(user in wg.managers.all())
 
         wg.giveRoleToUser('viewer',user)
-        self.assertTrue(user in wg.viewers)
+        self.assertTrue(user in wg.viewers.all())
         wg.removeRoleToUser('viewer',user)
-        self.assertFalse(user in wg.viewers)
+        self.assertFalse(user in wg.viewers.all())
 
         wg.giveRoleToUser('submitter',user)
-        self.assertTrue(user in wg.submitters)
+        self.assertTrue(user in wg.submitters.all())
         wg.removeRoleToUser('submitter',user)
-        self.assertFalse(user in wg.submitters)
+        self.assertFalse(user in wg.submitters.all())
 
         wg.giveRoleToUser('steward',user)
-        self.assertTrue(user in wg.stewards)
+        self.assertTrue(user in wg.stewards.all())
         wg.removeRoleToUser('steward',user)
-        self.assertFalse(user in wg.stewards)
+        self.assertFalse(user in wg.stewards.all())
 
 class RegistryGroupPermissions(TestCase):
     def test_registration_add_members(self):
@@ -119,14 +119,14 @@ class RegistryGroupPermissions(TestCase):
         user = User.objects.create_user('user','','user')
 
         ra.giveRoleToUser('registrar',user)
-        self.assertTrue(user in ra.registrars)
-        ra.giveRoleToUser('manager',user)
-        self.assertTrue(user in ra.managers)
-
+        self.assertTrue(user in ra.registrars.all())
         ra.removeRoleToUser('registrar',user)
-        self.assertFalse(user in ra.registrars)
+        self.assertFalse(user in ra.registrars.all())
+
+        ra.giveRoleToUser('manager',user)
+        self.assertTrue(user in ra.managers.all())
         ra.removeRoleToUser('manager',user)
-        self.assertFalse(user in ra.managers)
+        self.assertFalse(user in ra.managers.all())
 
     def test_RegistrationAuthority_name_change(self):
         ra = models.RegistrationAuthority.objects.create(name="Test RA")
