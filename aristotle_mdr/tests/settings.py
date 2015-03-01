@@ -4,10 +4,10 @@ BASE = os.path.dirname(os.path.dirname(__file__))
 
 sys.path.insert(1,BASE)
 sys.path.insert(1,os.path.join(BASE, "tests"))
+sys.path.insert(1,os.path.join(BASE, "../test_projects"))
 
 SECRET_KEY = 'inara+vtkprm7@0(fsc$+grbz9-s+tmo9d)e#k(9uf8m281&$7xhdkjr'
 SOUTH_TESTS_MIGRATE = True
-#SKIP_SOUTH_TESTS = True
 
 MEDIA_ROOT = os.path.join(BASE, "media")
 MEDIA_URL = '/media/'
@@ -19,6 +19,17 @@ DATABASES = {
         'NAME': ':memory:',
    }
 }
+
+class DisableMigrations(object):
+
+    def __contains__(self, item):
+        return True
+
+    def __getitem__(self, item):
+        return "notmigrations"
+
+MIGRATION_MODULES = DisableMigrations()
+
 INSTALLED_APPS = (
     #The good stuff
     'haystack',

@@ -462,10 +462,8 @@ def valuedomain_value_edit(request,iid,value_type):
                             value = form.save(commit=False) #Don't immediately save, we need to attach the value domain
                             value.valueDomain = item
                             value.save()
-                        #else:
-                        #    val = form.cleaned_data['id']
-                        #    if val and user_can_edit(request.user,val) and val.valueDomain==item:
-                        #        form.cleaned_data['id'].delete()
+                    for obj in formset.deleted_objects:
+                        obj.delete()
                     #formset.save(commit=True)
                     reversion.set_user(request.user)
                     reversion.set_comment(construct_change_message(request,None,[formset,]))

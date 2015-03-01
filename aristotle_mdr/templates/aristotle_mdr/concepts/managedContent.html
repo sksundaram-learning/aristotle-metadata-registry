@@ -213,10 +213,10 @@
         {{ item.comments | safe }}
     {% endif %}
 
-    {% if item.references | safe %}
+    {% if item.references %}
     <div>
     <h2>References</h2>
-        <p>{{ item.references }}</p>
+        <p>{{ item.references | safe }}</p>
         {% if item.submittingOrganisation %}
         <h3>Submitting Organisation</h3>
             <p>{{ item.submittingOrganisation }}</p>

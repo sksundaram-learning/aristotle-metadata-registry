@@ -25,7 +25,7 @@ class StatusInline(admin.TabularInline):
     has permission to change the status of objects.
     """
     def queryset(self, request):
-        qs = super(StatusInline, self).queryset(request)
+        qs = super(StatusInline, self).get_queryset(request)
         if not request.user.is_superuser:
             qs = qs.filter(registrationAuthority__in=request.user.registrar_in.all())
         return qs
