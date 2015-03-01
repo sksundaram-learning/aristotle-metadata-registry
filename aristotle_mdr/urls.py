@@ -24,9 +24,7 @@ urlpatterns = patterns('',
     url(r'^admin/', include(admin.site.urls)),
     url(r'^autocomplete/', include('autocomplete_light.urls')),
     url(r'^grappelli/', include('grappelli.urls')), # grappelli URLS
-    url(r'^tinymce/', include('tinymce.urls')),
     url(r'^ckeditor/', include('ckeditor.urls')),
-    url(r'^inplaceeditform/', include('inplaceeditform.urls')),
     url(r'^account/notifications/', include(notifications.urls)),
     url(r'^api/', include(v1_api.urls)),
     url(r'^account/password/reset/$', password_reset), #, {'template_name': 'my_templates/password_reset.html'}
