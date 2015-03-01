@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 from __future__ import print_function
+from __future__ import absolute_import
 
 from django.contrib.auth.models import User, Group, Permission
 from django.contrib.contenttypes.models import ContentType
@@ -63,6 +64,8 @@ class baseAristotleObject(TimeStampedModel):
            d = d[0:150] + "..."
        return d
 
+    def __str__(self):
+        return "{name}".format(name = self.name)
     def __unicode__(self):
         return "{name}".format(name = self.name)
 
