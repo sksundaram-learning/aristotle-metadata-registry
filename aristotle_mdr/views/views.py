@@ -481,7 +481,13 @@ def extensions(request):
 
     if aristotle_apps:
         for app_label in aristotle_apps:
-            content.append(apps.get_app_config(app_label))
+            app=apps.get_app_config(app_label)
+            try:
+                app.about_url = reverse('%s:about'%app_label)
+            except:
+                pass # if there is no about URL, thats ok.
+            content.append(app)
+
     content = list(set(content))
     aristotle_downloads = getattr(settings, 'ARISTOTLE_DOWNLOADS', [])
     downloads=dict()
@@ -492,6 +498,10 @@ def extensions(request):
                             app_label,
                             {'app':apps.get_app_config(app_label),'downloads':[]}
                         )
+            try:
+                app_details['about_url'] = reverse('%s:about'%app_label)
+            except:
+                pass # if there is no about URL, thats ok.
             app_details['downloads'].append(download)
             downloads[app_label]=app_details
 
