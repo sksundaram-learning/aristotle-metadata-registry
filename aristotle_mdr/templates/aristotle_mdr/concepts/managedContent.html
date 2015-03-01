@@ -203,17 +203,17 @@
     </dl>
     <h2>{% trans 'Definition'%}</h2>
     <div id="description" class="description">
-        {{ item.description }}
+        {{ item.description | safe}}
     </div>
 
     {% block objSpecific %}{% endblock %}
 
     {% if item.comments %}
         <h2>Comments</h2>
-        {{ item.comments }}
+        {{ item.comments | safe }}
     {% endif %}
 
-    {% if item.references %}
+    {% if item.references | safe %}
     <div>
     <h2>References</h2>
         <p>{{ item.references }}</p>

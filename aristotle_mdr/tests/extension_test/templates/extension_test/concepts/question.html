@@ -6,7 +6,7 @@
 <h2>Question Information</h2>
 
     <h3>Question Text</h3>
-    {{ item.questionText }}
+    {{ item.questionText | safe }}
 
     <h3>Response Length: {{ item.responseLength }}</h3>
 
