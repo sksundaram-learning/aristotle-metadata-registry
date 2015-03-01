@@ -5,21 +5,21 @@ So we've split this out into its own template.
 {% endcomment %}
 
 {% load aristotle_tags %}
-{% load inplace_edit %}
+
 
 <div>
 <table class="table table-striped valueDomainRepresentation">
 {% if item.dataType %}
 <tr>
   <th>Data Type</th>
-  <td><a href="{% url 'aristotle:item' item.dataType.id %}">{% inplace_edit 'item.dataType' %}</a></dd>
+  <td><a href="{% url 'aristotle:item' item.dataType.id %}">{{ item.dataType }}</a></dd>
 </tr>
 {% endif %}
 {% if item.unitOfMeasure %}
 <tr>
   <th>Unit Of Measure</th>
   <td><a href="{% url 'aristotle:item' item.unitOfMeasure.id %}">
-    {% inplace_edit 'item.unitOfMeasure' %}
+    {{ item.unitOfMeasure }}
     {% if item.unitOfMeasure.symbol %}<tt>({{ item.unitOfMeasure.symbol }})</tt>{% endif %}
   </td>
 </tr>
@@ -27,13 +27,13 @@ So we've split this out into its own template.
 {% if item.format %}
 <tr>
   <th>Format</th>
-  <td>{% inplace_edit 'item.format' %}</td>
+  <td>{{ item.format }}</td>
 </tr>
 {% endif %}
 {% if item.maximumLength %}
 <tr>
   <th>Maximum character length</th>
-  <td>{% inplace_edit 'item.maximumLength' %}</td>
+  <td>{{ item.maximumLength }}</td>
 </tr>
 {% endif %}
 </table>

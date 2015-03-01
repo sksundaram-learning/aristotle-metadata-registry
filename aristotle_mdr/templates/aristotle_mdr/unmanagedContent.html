@@ -1,14 +1,14 @@
 {% extends 'aristotle_mdr/base.html' %}
 {% load aristotle_tags %}
 
-{% load inplace_edit %}
+
 
 {% block title %}{{ item.name }}{% endblock %}
 {% block content %}
 
 <header class="unmanaged row">
     <h1 id="objectTitle"  class="pull-left">
-        <a href="#">{% inplace_edit 'item.name' %}</a>
+        <a href="#">{{ item.name }}</a>
         <span>({{ item.get_verbose_name }})</span>
     </h1>
     <div class="btn-group pull-right" >
@@ -46,7 +46,7 @@
 <div>
     <div class="description" id="description">
         <h2 class="sr-only">Description</h2>
-        {% inplace_edit 'item.description' adaptor='aristotle' %}
+        {{ item.description }}
     </div>
     <div>
         {% block objSpecific %}

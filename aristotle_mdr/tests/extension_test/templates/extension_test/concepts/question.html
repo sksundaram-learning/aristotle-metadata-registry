@@ -1,14 +1,14 @@
 {% extends "aristotle_mdr/concepts/managedContent.html" %}
-{% load inplace_edit %}
+
 {% load aristotle_tags %}
 
 {% block objSpecific %}
 <h2>Question Information</h2>
 
     <h3>Question Text</h3>
-    {% inplace_edit 'item.questionText' adaptor='aristotle' %}
+    {{ item.questionText }}
 
-    <h3>Response Length: {% inplace_edit 'item.responseLength' %}</h3>
+    <h3>Response Length: {{ item.responseLength }}</h3>
 
     <h3>Collected Data Element</h3>
     {% if item.collectedDataElement %}
