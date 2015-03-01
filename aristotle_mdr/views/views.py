@@ -1,5 +1,7 @@
+from django.apps import apps
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.conf import settings
 from django.core.exceptions import PermissionDenied, ImproperlyConfigured
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.urlresolvers import reverse
@@ -97,7 +99,6 @@ def download(request,downloadType,iid=None):
         else:
             raise PermissionDenied
 
-    from django.conf import settings
     downloadOpts = getattr(settings, 'ARISTOTLE_DOWNLOADS', "")
     module_name = ""
     for d in downloadOpts:
@@ -241,14 +242,12 @@ def create_list(request):
     if not perms.user_is_editor(request.user):
         raise PermissionDenied
 
-    from django.conf import settings
     aristotle_apps = getattr(settings, 'ARISTOTLE_SETTINGS', {}).get('CONTENT_EXTENSIONS',[])
     aristotle_apps += ["aristotle_mdr"]
 
     from django.contrib.contenttypes.models import ContentType
     models = ContentType.objects.filter(app_label__in=aristotle_apps).all()
     out = {}
-    from django.apps import apps
 
     for m in models:
         if issubclass(m.model_class(),MDR._concept) and not m.model.startswith("_"):
@@ -308,7 +307,6 @@ def glossary(request):
 
 def about_all_items(request):
 
-    from django.conf import settings
     aristotle_apps = getattr(settings, 'ARISTOTLE_SETTINGS', {}).get('CONTENT_EXTENSIONS',[])
     aristotle_apps += ["aristotle_mdr"]
 
@@ -476,6 +474,31 @@ def valuedomain_value_edit(request,iid,value_type):
     return render(request,"aristotle_mdr/actions/edit_value_domain_values.html",
             {'item':item,'formset': formset,'value_type':value_type,'value_model':value_model,}
         )
+
+def extensions(request):
+    content=[]
+    aristotle_apps = getattr(settings, 'ARISTOTLE_SETTINGS', {}).get('CONTENT_EXTENSIONS',[])
+
+    if aristotle_apps:
+        for app_label in aristotle_apps:
+            content.append(apps.get_app_config(app_label))
+    content = list(set(content))
+    aristotle_downloads = getattr(settings, 'ARISTOTLE_DOWNLOADS', [])
+    downloads=dict()
+    if aristotle_downloads:
+        for download in aristotle_downloads:
+            app_label = download[3]
+            app_details = downloads.get(
+                            app_label,
+                            {'app':apps.get_app_config(app_label),'downloads':[]}
+                        )
+            app_details['downloads'].append(download)
+            downloads[app_label]=app_details
+
+    return render(request,"aristotle_mdr/static/extensions.html",
+            {'content_extensions':content,'download_extensions':downloads,}
+        )
+
 
 def browse(request,oc_id=None,dec_id=None):
     if oc_id is None:

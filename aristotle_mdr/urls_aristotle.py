@@ -92,6 +92,7 @@ urlpatterns = patterns('aristotle_mdr.views',
     url(r'^account/toggleFavourite/(?P<iid>\d+)/?$', views.toggleFavourite, name='toggleFavourite'),
 
     url(r'^browse(?:/(?P<oc_id>\d+)(?:-[a-z\-]*)?(?:/(?P<dec_id>\d+)(?:-[a-z\-]*)?)?)?/?$', views.browse, name='browse'),
+    url(r'^extensions/?$', views.extensions, name='extensions'),
 
     url(r'^about/aristotle/?$', TemplateView.as_view(template_name='aristotle_mdr/static/aristotle_mdr.html'), name="aboutMain"),
     url(r'^about/all_items/?$', views.about_all_items, name='about_all_items'),
