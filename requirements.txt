@@ -1,17 +1,16 @@
 --index-url https://pypi.python.org/simple/
 
 #-e git://github.com/jedie/django-reversion-compare@ce4558ab700707d70401b89c824016e2e2584952#egg=django_reversion_compare-dev
--e git://github.com/LegoStormtroopr/django-reversion-compare
+-e git://github.com/LegoStormtroopr/django-reversion-compare#egg=django_reversion_compare-dev
 
 -e .
 
 #Some stuff fails on Django 1.7
 django-autocomplete-light==2.0.0a18
 
-Pillow==2.4.0
-#PyPDF2==1.22
-argparse==1.2.1
-html5lib==1.0b3
-reportlab==3.1.8
-six==1.7.3
-wsgiref==0.1.2
+#Pillow==2.4.0
+#argparse==1.2.1
+#html5lib==1.0b3
+#reportlab==3.1.8
+#six==1.7.3
+#wsgiref==0.1.2
