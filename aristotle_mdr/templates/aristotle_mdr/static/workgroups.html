@@ -3,8 +3,8 @@
 {% block title %}About: Workgroups{% endblock %}
 {% block item_name %}Workgroups{% endblock %}
 {% block breadcrumbs %}
-    <li><a href="About"></a></li>
-    <li><a href="Workgroups"></a></li>
+    <li><a href="{% url 'aristotle:about' 'about' %}">About</a></li>
+    <li><a href="#">Workgroups</a></li>
 {% endblock %}
 
 {% block description %}
@@ -23,7 +23,10 @@ rather than just the workgroup.
 <p>Workgroups usually have one or more <a href="{% url 'aristotle:about' 'registration_authorities' %}">registration authorities</a>
 associated with them, and the workgroup is presumed to be creating content on behalf of these registraion authorities.
 If a workgroup has no registration authority associated with it registration of items is not possible and items
-will be visible only to members of the workgroup and cannot be <a href="{% url 'aristotle:help' 'what_is_a_standard' %}">"standardised"</a>.
+will be visible only to members of the workgroup and cannot be <a href="{% url 'aristotle:help' 'what_is_a_standard' %}">standardised</a>.
 </p>
 
+{% if user.is_active %}
+<p>Every workgroup has a discussion group associated with it, that is accessible via your <a href="{% url 'aristotle:userHome' %}">dashboard</a>.</p>
+{% endif %}
 {% endblock %}

@@ -516,7 +516,7 @@ class GlossaryViewPage(LoggedInViewConceptPages,TestCase):
         self.assertTrue(response.status_code,200)
 
     def test_glossary_ajax_list(self): #TODO: Fix to use new api
-        self.login_editor()
+        self.logout()
         import json
         gitem = models.GlossaryItem(name="Glossary item",workgroup=self.wg1)
         response = self.client.get('/api/v1/glossarylist/?format=json&limit=0')
@@ -525,6 +525,8 @@ class GlossaryViewPage(LoggedInViewConceptPages,TestCase):
 
         gitem.readyToReview = True
         gitem.save()
+
+        self.login_editor()
 
         self.assertTrue(perms.user_can_change_status(self.registrar,gitem))
 

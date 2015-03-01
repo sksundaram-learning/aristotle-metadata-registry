@@ -154,26 +154,17 @@ ADAPTOR_INPLACEEDIT = {
     'aristotle': 'aristotle_mdr.fields.AristotleRichTextField',
 }
 
-TINYMCE_DEFAULT_CONFIG = {
-    'theme': "advanced",
-    'theme_advanced_buttons1' : "bold,italic,underline,separator,undo,redo,separator,bullist,numlist,separator,mdr_glossary,link,unlink,separator,image",
-    'plugins': "spellchecker,directionality,paste,searchreplace,inlinepopups,aristotle_glossary",
-    'relative_urls': False,
-
-    'cleanup_on_startup': True,
-    'custom_undo_redo_levels': 10,
-}
-
 CKEDITOR_CONFIGS = {
     'default': {
         #'toolbar': 'full',
         'toolbar' : [
-            { 'name': 'document', 'items': [ 'Source' ] },
             { 'name': 'clipboard', 'items': [ 'Cut', 'Copy', 'Paste', 'PasteText', '-', 'Undo', 'Redo' ] },
-            { 'name': 'basicstyles', 'items': [ 'Bold', 'Italic' ] },
+            { 'name': 'basicstyles', 'items' : [ 'Bold','Italic','Subscript','Superscript','-','RemoveFormat' ] },
             { 'name': 'links', 'items' : [ 'Link','Unlink' ] },
+	        { 'name': 'paragraph', 'items' : [ 'NumberedList','BulletedList','-','Blockquote' ] },
     	    { 'name': 'insert', 'items' : [ 'Image','Table','HorizontalRule','SpecialChar'] },
-            { 'name': 'aristotletoolbar', 'items': [ 'Glossary' ] }
+            { 'name': 'aristotletoolbar', 'items': [ 'Glossary' ] },
+            { 'name': 'document', 'items': [ 'Maximize','Source' ] },
         ],
         'extraPlugins' : 'aristotle_glossary',
     },

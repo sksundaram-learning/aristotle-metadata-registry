@@ -364,6 +364,7 @@ class ConceptQuerySet(InheritanceQuerySet):
         if user.profile.workgroups:
             # User can see everything in their workgroups.
             q |= Q(workgroup__in=user.profile.workgroups)
+            # q |= Q(workgroup__user__profile=user)
         if user.profile.is_registrar:
             # User can see everything that is "readyToReview" or registered in their workgroup
             q |= Q(workgroup__registrationAuthorities__in=user.profile.registrarAuthorities.all(),readyToReview=True)
