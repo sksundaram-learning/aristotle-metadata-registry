@@ -95,22 +95,22 @@ class WorkgroupPermissions(TestCase):
 
         wg.giveRoleToUser('manager',user)
         self.assertTrue(user in wg.managers.all())
-        wg.removeRoleToUser('manager',user)
+        wg.removeRoleFromUser('manager',user)
         self.assertFalse(user in wg.managers.all())
 
         wg.giveRoleToUser('viewer',user)
         self.assertTrue(user in wg.viewers.all())
-        wg.removeRoleToUser('viewer',user)
+        wg.removeRoleFromUser('viewer',user)
         self.assertFalse(user in wg.viewers.all())
 
         wg.giveRoleToUser('submitter',user)
         self.assertTrue(user in wg.submitters.all())
-        wg.removeRoleToUser('submitter',user)
+        wg.removeRoleFromUser('submitter',user)
         self.assertFalse(user in wg.submitters.all())
 
         wg.giveRoleToUser('steward',user)
         self.assertTrue(user in wg.stewards.all())
-        wg.removeRoleToUser('steward',user)
+        wg.removeRoleFromUser('steward',user)
         self.assertFalse(user in wg.stewards.all())
 
 class RegistryGroupPermissions(TestCase):
@@ -120,12 +120,12 @@ class RegistryGroupPermissions(TestCase):
 
         ra.giveRoleToUser('registrar',user)
         self.assertTrue(user in ra.registrars.all())
-        ra.removeRoleToUser('registrar',user)
+        ra.removeRoleFromUser('registrar',user)
         self.assertFalse(user in ra.registrars.all())
 
         ra.giveRoleToUser('manager',user)
         self.assertTrue(user in ra.managers.all())
-        ra.removeRoleToUser('manager',user)
+        ra.removeRoleFromUser('manager',user)
         self.assertFalse(user in ra.managers.all())
 
     def test_RegistrationAuthority_name_change(self):
