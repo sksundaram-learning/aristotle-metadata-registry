@@ -114,7 +114,6 @@ BOOTSTRAP3 = {
 # We need this to make sure users can see all extensions.
 AUTHENTICATION_BACKENDS = ('aristotle_mdr.backends.AristotleBackend',)
 
-
 ARISTOTLE_SETTINGS = {
     'SEPARATORS': { 'DataElement':', ',
                     'DataElementConcept':u'–'},
@@ -130,35 +129,6 @@ ARISTOTLE_DOWNLOADS = [
     ('pdf','PDF','fa-file-pdf-o','aristotle_mdr'),
     ('csv-vd','CSV list of values','fa-file-excel-o','aristotle_mdr'),
     ]
-
-
-# Used for in place editing
-INPLACEEDIT_EDIT_EMPTY_VALUE = 'Double click to edit'
-INPLACEEDIT_AUTO_SAVE = False
-INPLACEEDIT_EVENT = "dblclick"
-INPLACEEDIT_DISABLE_CLICK = True  # For inplace edit text into a link tag
-INPLACEEDIT_EDIT_MESSAGE_TRANSLATION = 'Write a translation' # transmeta option
-INPLACEEDIT_SUCCESS_TEXT = 'Successfully saved'
-INPLACEEDIT_UNSAVED_TEXT = 'You have unsaved changes'
-INPLACE_ENABLE_CLASS = 'enable'
-DEFAULT_INPLACE_EDIT_OPTIONS = {
-'menubar_item':"file",
-'auto_height':True,
-'auto_width':True,
-} # dictionnary of the optionals parameters that the templatetag can receive to change its behavior (see the Advanced usage section)
-DEFAULT_INPLACE_EDIT_OPTIONS_ONE_BY_ONE = True # modify the behavior of the DEFAULT_INPLACE_EDIT_OPTIONS usage, if True then it use the default values not specified in your template, if False it uses these options only when the dictionnary is empty (when you do put any options in your template)
-#ADAPTOR_INPLACEEDIT_EDIT = 'app_name.perms.MyAdaptorEditInline' # Explain in Permission Adaptor API
-#ADAPTOR_INPLACEEDIT = {'myadaptor': 'app_name.fields.MyAdaptor'} # Explain in Adaptor API
-INPLACE_GET_FIELD_URL = None # to change the url where django-inplaceedit use to get a field
-INPLACE_SAVE_URL = None # to change the url where django-inplaceedit use to save a field
-ADAPTOR_INPLACEEDIT_EDIT = 'aristotle_mdr.perms.MyAdaptorEditInline'
-ADAPTOR_INPLACEEDIT = {
-    'auto_fk': 'inplaceeditform_extra_fields.fields.AdaptorAutoCompleteForeingKeyField',
-    'auto_m2m': 'inplaceeditform_extra_fields.fields.AdaptorAutoCompleteManyToManyField',
-    'image_thumb': 'inplaceeditform_extra_fields.fields.AdaptorImageThumbnailField',
-    'tiny': 'inplaceeditform_extra_fields.fields.AdaptorTinyMCEField',
-    'aristotle': 'aristotle_mdr.fields.AristotleRichTextField',
-}
 
 CKEDITOR_CONFIGS = {
     'default': {
