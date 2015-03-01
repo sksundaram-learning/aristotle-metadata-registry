@@ -104,7 +104,7 @@ def download(request,downloadType,iid=None):
     for d in downloadOpts:
         dt = d[0]
         if dt == downloadType:
-            module_name = d[-1]
+            module_name = d[-3]
     if module_name:
         import re
         if not re.search('^[a-zA-Z0-9\-\.]+$',downloadType): # pragma: no cover
