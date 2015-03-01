@@ -248,11 +248,18 @@ def create_list(request):
     from django.contrib.contenttypes.models import ContentType
     models = ContentType.objects.filter(app_label__in=aristotle_apps).all()
     out = {}
+    from django.apps import apps
+
     for m in models:
         if issubclass(m.model_class(),MDR._concept) and not m.model.startswith("_"):
-            # Dont
-            app_models = out.get(m.app_label,[])
-            app_models.append((m,m.model_class()))
+            # Only output subclasses of 11179 concept
+            app_models = out.get(m.app_label,{'app':None,'models':[]})
+            if app_models['app'] is None:
+                try:
+                    app_models['app'] = getattr(apps.get_app_config(m.app_label),'verbose_name')
+                except:
+                    app_models['app'] = "No name" # Where no name is configured in the app_config, set a dummy so we don't keep trying
+            app_models['models'].append((m,m.model_class()))
             out[m.app_label] = app_models
 
     return render(request,"aristotle_mdr/create/create_list.html",

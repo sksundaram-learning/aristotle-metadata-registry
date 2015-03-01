@@ -29,8 +29,7 @@ setup(
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
     ],
     install_requires = [
-        'django',
-        'South',
+        "Django>=1.7,<1.8",
         'pytz',
 
         'django-model-utils',
@@ -43,13 +42,12 @@ setup(
         'Whoosh',
 
         #Rich text editors
-        'django-tinymce', # Only needed for south migrations.
         'django-ckeditor',
         'django-inplaceedit',
         'django-inplaceedit-extra-fields',
 
         # Revision control
-        'django-reversion',
+        "django-reversion>=1.8",
         'django-reversion-compare',
         'diff-match-patch',
 

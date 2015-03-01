@@ -1,4 +1,3 @@
-from django import forms
 from django.db.models import Q
 from django.conf import settings
 from django.contrib import admin
@@ -11,24 +10,12 @@ from aristotle_mdr import perms
 from django.core.urlresolvers import reverse
 from reversion_compare.admin import CompareVersionAdmin
 
-# Thanks http://stackoverflow.com/questions/6727372/
-class RegistrationAuthoritySelect(forms.Select):
-    def render(self, name, value, attrs=None, choices=()):
-        if value is not None:
-            attrs['disabled']='disabled'
-        return super(RegistrationAuthoritySelect, self).render(name, value, attrs, choices)
-
-class StatusInlineForm(forms.ModelForm):
-    registrationAuthority = forms.ModelChoiceField(label='Registration Authority',queryset=MDR.RegistrationAuthority.objects,widget=RegistrationAuthoritySelect)
-    class Meta:
-        model = MDR.Status
-
 """
 Inline editor for registration status records
 """
 class StatusInline(admin.TabularInline):
     model = MDR.Status
-    form = StatusInlineForm
+    form = MDRForms.admin.StatusInlineForm
     extra=0
 
     """

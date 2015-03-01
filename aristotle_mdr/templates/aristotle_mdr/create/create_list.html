@@ -14,9 +14,9 @@
     {% endif %}
 </p>
 {% for app,app_models in models.items %}
-<h2>{{ app }}</h2>
+<h2>{{ app_models.app }}</h2>
     <ul>
-    {% for m,model in app_models %}
+    {% for m,model in app_models.models %}
         {% if model.help_name %}
         <li>
             <a href="{% url 'aristotle:createItem' m.app_label m.model %}">

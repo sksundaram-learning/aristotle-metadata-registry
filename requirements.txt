@@ -1,9 +1,7 @@
 --index-url https://pypi.python.org/simple/
 
-Django==1.6.8
-
 #-e git://github.com/jedie/django-reversion-compare@ce4558ab700707d70401b89c824016e2e2584952#egg=django_reversion_compare-dev
--e git://github.com/LegoStormtroopr/django-reversion-compare@52b292384640d064f6dbd27d57b54791381df1da#egg=django_reversion_compare-dev
+-e git://github.com/LegoStormtroopr/django-reversion-compare
 
 -e .
 

@@ -166,3 +166,4 @@ class PermissibleValueForm(forms.ModelForm):
         self.fields['order'].widget = forms.HiddenInput()
     class Meta:
         model = MDR.PermissibleValue
+        fields = "__all__"

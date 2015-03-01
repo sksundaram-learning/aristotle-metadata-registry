@@ -27,6 +27,15 @@ CACHES = {
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
+if DEBUG:
+    STATIC_ROOT =os.path.join(BASE_DIR, "static")
+
+    MEDIA_ROOT = '/home/aristotle/aristotle/possum-mdr/media/'
+    MEDIA_URL = '/media/'
+
+    CKEDITOR_UPLOAD_PATH = 'uploads/'
+
+
 # Required for admindocs, see: https://code.djangoproject.com/ticket/21386
 SITE_ID=None
 
@@ -44,9 +53,6 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'django.contrib.humanize',
 
-    'south',
-    'inplaceeditform',
-    'inplaceeditform_extra_fields',
     'ckeditor',
 
     'static_precompiler',
