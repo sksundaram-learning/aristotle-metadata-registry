@@ -32,6 +32,6 @@ class TextDownloader(utils.LoggedInViewPages,TestCase):
         # This item is not visible to the logged in user and will throw an error
         self.assertEqual(response.status_code,403)
 
-        with self.assertRaises(ImproperlyConfigured):
+        with self.assertRaises(TemplateSyntaxError):
             # This template is broken on purpose and will throw an error
             response = self.client.get(reverse('aristotle:download',args=['txt',dec.id]))
