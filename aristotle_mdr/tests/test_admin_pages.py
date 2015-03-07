@@ -263,12 +263,12 @@ class PropertyAdminPage(AdminPageForConcept,TestCase):
 class ValueDomainAdminPage(AdminPageForConcept,TestCase):
     itemType=models.ValueDomain
     form_defaults={
-        'permissibleValues-TOTAL_FORMS':0,
-        'permissibleValues-INITIAL_FORMS':0,
-        'permissibleValues-MAX_NUM_FORMS':1,
-        'supplementaryValues-TOTAL_FORMS':0,
-        'supplementaryValues-INITIAL_FORMS':0,
-        'supplementaryValues-MAX_NUM_FORMS':1,
+        'permissiblevalue_set-TOTAL_FORMS':0,
+        'permissiblevalue_set-INITIAL_FORMS':0,
+        'permissiblevalue_set-MAX_NUM_FORMS':1,
+        'supplementaryvalue_set-TOTAL_FORMS':0,
+        'supplementaryvalue_set-INITIAL_FORMS':0,
+        'supplementaryvalue_set-MAX_NUM_FORMS':1,
         }
 class ConceptualDomainAdminPage(AdminPageForConcept,TestCase):
     itemType=models.ConceptualDomain
