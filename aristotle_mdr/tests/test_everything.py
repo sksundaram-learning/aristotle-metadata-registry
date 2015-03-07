@@ -59,7 +59,7 @@ class ValueDomainVisibility(TestCase,utils.ManagedObjectVisibility):
         self.item = models.ValueDomain.objects.create(name="Test VD",
                 workgroup=self.wg,
                 format = "X" ,
-                maximumLength = 3,
+                maximum_length = 3,
                 data_type = models.DataType.objects.create(name="Test DT",workgroup=self.wg)
                 )
 class DataElementConceptVisibility(TestCase,utils.ManagedObjectVisibility):
@@ -713,7 +713,7 @@ class RegistryCascadeTest(TestCase):
         self.vd = models.ValueDomain.objects.create(name="Test VD",readyToReview=True,
                 workgroup=self.wg,
                 format = "X" ,
-                maximumLength = 3,
+                maximum_length = 3,
                 data_type = models.DataType.objects.create(name="Test DT",workgroup=self.wg)
                 )
         self.dec = models.DataElementConcept.objects.create(name="Test DEC",readyToReview=True,

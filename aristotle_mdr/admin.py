@@ -211,7 +211,7 @@ class SupplementaryValueInline(CodeValueInline):
 
 class ValueDomainAdmin(ConceptAdmin):
     fieldsets = ConceptAdmin.fieldsets + [
-            ('Representation', {'fields': ['format','maximumLength','unit_of_measure','data_type']}),
+            ('Representation', {'fields': ['format','maximum_length','unit_of_measure','data_type']}),
     ]
     inlines = ConceptAdmin.inlines + [PermissibleValueInline,SupplementaryValueInline]
 
