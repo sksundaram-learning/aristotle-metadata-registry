@@ -9,18 +9,24 @@ So we've split this out into its own template.
 
 <div>
 <table class="table table-striped valueDomainRepresentation">
-{% if item.dataType %}
+{% if item.value_description %}
 <tr>
-  <th>Data Type</th>
-  <td><a href="{% url 'aristotle:item' item.dataType.id %}">{{ item.dataType }}</a></dd>
+  <th>Description</th>
+  <td>{{ item.value_description }}</a></td>
 </tr>
 {% endif %}
-{% if item.unitOfMeasure %}
+{% if item.data_type %}
+<tr>
+  <th>Data Type</th>
+  <td><a href="{% url 'aristotle:item' item.data_type.id %}">{{ item.data_type }}</a></td>
+</tr>
+{% endif %}
+{% if item.unit_of_measure %}
 <tr>
   <th>Unit Of Measure</th>
-  <td><a href="{% url 'aristotle:item' item.unitOfMeasure.id %}">
-    {{ item.unitOfMeasure }}
-    {% if item.unitOfMeasure.symbol %}<tt>({{ item.unitOfMeasure.symbol }})</tt>{% endif %}
+  <td><a href="{% url 'aristotle:item' item.unit_of_measure.id %}">
+    {{ item.unit_of_measure }}
+    {% if item.unit_of_measure.symbol %}<tt>({{ item.unit_of_measure.symbol }})</tt>{% endif %}
   </td>
 </tr>
 {% endif %}
@@ -30,15 +36,15 @@ So we've split this out into its own template.
   <td>{{ item.format }}</td>
 </tr>
 {% endif %}
-{% if item.maximumLength %}
+{% if item.maximum_length %}
 <tr>
   <th>Maximum character length</th>
-  <td>{{ item.maximumLength }}</td>
+  <td>{{ item.maximum_length }}</td>
 </tr>
 {% endif %}
 </table>
 </div>
-{% if item.permissibleValues.count > 0 %}
+{% if item.permissible_values.count > 0 %}
   <strong>Permissible Values</strong>
     <table class="codeList table table-striped">
         <thead>
@@ -47,12 +53,12 @@ So we've split this out into its own template.
                 <th>Value</th><th>Meaning</th>
             </tr>
         </thead>
-        {% if item.permissibleValues.count > 0 %}
+        {% if item.permissible_values.count > 0 %}
         <tbody>
-            {% for perm in item.permissibleValues.all %}
+            {% for perm in item.permissible_values.all %}
                 <tr>
                     {% if forloop.first %}
-                    <th rowspan="{{ item.permissibleValues.count }}">Permissible Values
+                    <th rowspan="{{ item.permissible_values.count }}">Permissible Values
                         {% if item|can_edit:request.user %}
                             <a class="inline_action" data-toggle="modal" data-target="#value_domain_modal"
                             href="{% url 'aristotle:valueDomain_edit_values' item.id 'permissible' %}">edit</a>
@@ -65,12 +71,12 @@ So we've split this out into its own template.
             {% endfor %}
         </tbody>
         {% endif %}
-        {% if item.supplementaryValues.count > 0 %}
+        {% if item.supplementary_values.count > 0 %}
         <tbody>
-            {% for perm in item.supplementaryValues.all %}
+            {% for perm in item.supplementary_values.all %}
                 <tr>
                     {% if forloop.first %}
-                    <th rowspan="{{ item.supplementaryValues.count }}">Supplementary Values
+                    <th rowspan="{{ item.supplementary_values.count }}">Supplementary Values
                         {% if item|can_edit:request.user %}
                             <a class="inline_action" data-toggle="modal" data-target="#value_domain_modal"
                             href="{% url 'aristotle:valueDomain_edit_values' item.id 'supplementary' %}">edit</a>

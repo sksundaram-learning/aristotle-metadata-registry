@@ -40,6 +40,11 @@ class SuperuserPermissions(TestCase):
         self.assertTrue(perms.user_in_workgroup(self.su,None))
 
 
+class UnitOfMeasureVisibility(TestCase,utils.ManagedObjectVisibility):
+    def setUp(self):
+        self.wg = models.Workgroup.objects.create(name="Setup WG")
+        self.item = models.UnitOfMeasure.objects.create(name="Test UOM",workgroup=self.wg)
+
 class ObjectClassVisibility(TestCase,utils.ManagedObjectVisibility):
     def setUp(self):
         self.wg = models.Workgroup.objects.create(name="Setup WG")
@@ -434,6 +439,9 @@ class ObjectClassViewPage(LoggedInViewConceptPages,TestCase):
 class PropertyViewPage(LoggedInViewConceptPages,TestCase):
     url_name='property'
     itemType=models.Property
+class UnitOfMeasureViewPage(LoggedInViewConceptPages,TestCase):
+    url_name='unitOfMeasure'
+    itemType=models.UnitOfMeasure
 class ValueDomainViewPage(LoggedInViewConceptPages,TestCase):
     url_name='valueDomain'
     itemType=models.ValueDomain

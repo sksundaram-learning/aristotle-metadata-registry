@@ -24,7 +24,7 @@ class StatusInline(admin.TabularInline):
     they are in a Registration Authority in which the current user
     has permission to change the status of objects.
     """
-    def queryset(self, request):
+    def get_queryset(self, request):
         qs = super(StatusInline, self).get_queryset(request)
         if not request.user.is_superuser:
             qs = qs.filter(registrationAuthority__in=request.user.registrar_in.all())
@@ -56,7 +56,7 @@ class WorkgroupAdmin(CompareVersionAdmin):
         ('Members',         {'fields': ['managers','stewards','submitters','viewers',]}),
     ]
     filter_horizontal = ['managers','stewards','submitters','viewers','registrationAuthorities']
-    def queryset(self, request):
+    def get_queryset(self, request):
         qs = super(WorkgroupAdmin, self).queryset(request)
         if request.user.is_superuser:
             return qs
@@ -98,12 +98,12 @@ class ConceptAdmin(CompareVersionAdmin):
         (None,              {'fields': ['name','description','workgroup']}),
         ('Additional names',{
                 'classes':('grp-collapse grp-closed',),
-                'fields': ['synonyms','shortName','version',]
+                'fields': ['synonyms','short_name','version',]
             }),
         #('Registry',        {'fields': ['workgroup']}),
         ('Relationships',   {
                 'classes':('grp-collapse grp-closed',),
-                'fields': ['originURI','superseded_by','deprecated'],
+                'fields': ['origin_URI','superseded_by','deprecated'],
             })
     ]
     name_suggest_fields = []
@@ -190,11 +190,12 @@ class DataElementConceptAdmin(ConceptAdmin):
             ('Components', {'fields': ['objectClass','property']}),
     ]
 
-class ObjectClassAdmin(ConceptAdmin):       pass
 class ConceptualDomainAdmin(ConceptAdmin):  pass
+class DataTypeAdmin(ConceptAdmin):          pass
+class ObjectClassAdmin(ConceptAdmin):       pass
 class PackageAdmin(ConceptAdmin):           pass
 class PropertyAdmin(ConceptAdmin):          pass
-class DataTypeAdmin(ConceptAdmin):          pass
+class UnitOfMeasureAdmin(ConceptAdmin):     pass
 
 class CodeValueInline(admin.TabularInline):
     form = MDRForms.PermissibleValueForm
@@ -248,16 +249,11 @@ admin.site.register(MDR.Package,PackageAdmin)
 admin.site.register(MDR.Property,PropertyAdmin)
 admin.site.register(MDR.ObjectClass,ObjectClassAdmin)
 admin.site.register(MDR.RegistrationAuthority,RegistrationAuthorityAdmin)
+admin.site.register(MDR.UnitOfMeasure,UnitOfMeasureAdmin)
 admin.site.register(MDR.ValueDomain,ValueDomainAdmin)
 admin.site.register(MDR.Workgroup,WorkgroupAdmin)
 
 
-class UnitOfMeasureAdmin(admin.ModelAdmin):
-    list_display = ['name', 'measure', 'created','modified']
-    search_fields = ['name','measure']
-    list_filter = ['measure', 'created','modified']
-
-admin.site.register(MDR.UnitOfMeasure,UnitOfMeasureAdmin)
 admin.site.register(MDR.Measure)
 #admin.site.register(MDR.)
 

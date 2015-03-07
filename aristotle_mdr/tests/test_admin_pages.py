@@ -31,7 +31,7 @@ class AdminPage(utils.LoggedInViewPages,TestCase):
         prop = models.Property.objects.create(name="Prop1",workgroup=self.wg1)
         dec = models.DataElementConcept.objects.create(name="DEC1",objectClass=oc,property=prop,workgroup=self.wg1)
 
-        response = self.client.get(reverse("admin:aristotle_mdr_dataelementconcept_change",args=(str(dec.id))))
+        response = self.client.get(reverse("admin:aristotle_mdr_dataelementconcept_change",args=[dec.pk]))
         self.assertEqual(response.status_code,200)
 
     def test_su_can_add_new_user(self):
@@ -136,10 +136,10 @@ class AdminPageForConcept(utils.LoggedInViewPages):
 
         before_count = self.wg1.items.count()
         self.assertEqual(self.wg1.items.count(),1)
-        response = self.client.get(reverse("admin:%s_%s_delete"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=(str(self.item1.id))))
+        response = self.client.get(reverse("admin:%s_%s_delete"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=[self.item1.pk]))
         self.assertEqual(response.status_code,200)
         response = self.client.post(
-            reverse("admin:%s_%s_delete"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=(str(self.item1.id))),
+            reverse("admin:%s_%s_delete"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=[self.item1.pk]),
             {'post':'yes'}
             )
         self.assertRedirects(response,reverse("admin:%s_%s_changelist"%(self.itemType._meta.app_label,self.itemType._meta.model_name)))
@@ -152,11 +152,11 @@ class AdminPageForConcept(utils.LoggedInViewPages):
         self.assertTrue(self.item1.is_registered)
 
         before_count = self.wg1.items.count()
-        response = self.client.get(reverse("admin:%s_%s_delete"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=(str(self.item1.id))))
+        response = self.client.get(reverse("admin:%s_%s_delete"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=[self.item1.pk]))
         self.assertEqual(response.status_code,404)
         self.assertEqual(self.wg1.items.count(),before_count)
         response = self.client.post(
-            reverse("admin:%s_%s_delete"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=(str(self.item1.id))),
+            reverse("admin:%s_%s_delete"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=[self.item1.pk]),
             {'post':'yes'}
             )
         self.assertEqual(response.status_code,404)
@@ -167,13 +167,13 @@ class AdminPageForConcept(utils.LoggedInViewPages):
         self.item2 = self.itemType.objects.create(name="OC2",workgroup=self.wg2, **self.create_defaults)
 
         before_count = self.wg2.items.count()
-        response = self.client.get(reverse("admin:%s_%s_delete"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=(str(self.item2.id))))
+        response = self.client.get(reverse("admin:%s_%s_delete"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=[self.item2.pk]))
         self.assertEqual(response.status_code,404)
         self.assertEqual(self.wg2.items.count(),before_count)
 
         before_count = self.wg2.items.count()
         response = self.client.post(
-            reverse("admin:%s_%s_delete"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=(str(self.item2.id))),
+            reverse("admin:%s_%s_delete"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=[self.item2.pk]),
             {'post':'yes'}
             )
         self.assertEqual(response.status_code,404)
@@ -182,7 +182,7 @@ class AdminPageForConcept(utils.LoggedInViewPages):
     def test_editor_change_item(self):
         from django.forms import model_to_dict
         self.login_editor()
-        response = self.client.get(reverse("admin:%s_%s_change"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=(str(self.item1.id))))
+        response = self.client.get(reverse("admin:%s_%s_change"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=[self.item1.pk]))
         self.assertEqual(response.status_code,200)
 
         updated_item = dict((k,v) for (k,v) in model_to_dict(self.item1).items() if v is not None)
@@ -195,7 +195,7 @@ class AdminPageForConcept(utils.LoggedInViewPages):
         updated_item.update(self.form_defaults)
 
         response = self.client.post(
-                reverse("admin:%s_%s_change"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=(str(self.item1.id))),
+                reverse("admin:%s_%s_change"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=[self.item1.pk]),
                 updated_item
                 )
         self.item1 = self.itemType.objects.get(pk=self.item1.pk)
@@ -208,7 +208,7 @@ class AdminPageForConcept(utils.LoggedInViewPages):
 
         from django.forms import model_to_dict
         self.login_editor()
-        response = self.client.get(reverse("admin:%s_%s_change"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=(str(self.item1.id))))
+        response = self.client.get(reverse("admin:%s_%s_change"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=[self.item1.pk]))
         self.assertEqual(response.status_code,200)
 
         updated_item = dict((k,v) for (k,v) in model_to_dict(self.item1).items() if v is not None)
@@ -222,7 +222,7 @@ class AdminPageForConcept(utils.LoggedInViewPages):
         updated_item.update(self.form_defaults)
 
         response = self.client.post(
-                reverse("admin:%s_%s_change"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=(str(self.item1.id))),
+                reverse("admin:%s_%s_change"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=[self.item1.pk]),
                 updated_item
                 )
         self.item1 = self.itemType.objects.get(pk=self.item1.pk)
@@ -234,7 +234,7 @@ class AdminPageForConcept(utils.LoggedInViewPages):
 
         from django.forms import model_to_dict
         self.login_editor()
-        response = self.client.get(reverse("admin:%s_%s_change"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=(str(self.item1.id))))
+        response = self.client.get(reverse("admin:%s_%s_change"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=[self.item1.pk]))
         self.assertEqual(response.status_code,200)
 
         updated_item = dict((k,v) for (k,v) in model_to_dict(self.item1).items() if v is not None)
@@ -248,7 +248,7 @@ class AdminPageForConcept(utils.LoggedInViewPages):
         updated_item.update(self.form_defaults)
 
         response = self.client.post(
-                reverse("admin:%s_%s_change"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=(str(self.item1.id))),
+                reverse("admin:%s_%s_change"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=[self.item1.pk]),
                 updated_item
                 )
         self.item1 = self.itemType.objects.get(pk=self.item1.pk)

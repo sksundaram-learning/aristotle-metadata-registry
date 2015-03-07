@@ -217,13 +217,13 @@
     <div>
     <h2>References</h2>
         <p>{{ item.references | safe }}</p>
-        {% if item.submittingOrganisation %}
+        {% if item.submitting_organisation %}
         <h3>Submitting Organisation</h3>
-            <p>{{ item.submittingOrganisation }}</p>
+            <p>{{ item.submitting_organisation }}</p>
         {% endif %}
-        {% if item.responsibleOrganisation %}
+        {% if item.responsible_organisation %}
         <h3>Responsible Organisation</h3>
-            <p>{{ item.responsibleOrganisation }}</p>
+            <p>{{ item.responsible_organisation }}</p>
         {% endif %}
     </div>
     {% endif %}

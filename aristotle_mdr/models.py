@@ -40,7 +40,9 @@ VERY_RECENTLY_SECONDS = 15
 
 class baseAristotleObject(TimeStampedModel):
     name = models.TextField(help_text=_("The primary name used for human identification purposes."))
-    description = RichTextField(_('definition'),help_text=_("A rich text field for describing the metadata item."))
+    #TODO: Below needs to be changed to 'definition' but that change will break a lot of stuff. See also value_description
+    # At the moment, this is just impacting the database and relations, as the UI uses the name of the field 'definition'
+    description = RichTextField(_('definition'),help_text=_("Representation of a concept by a descriptive statement which serves to differentiate it from related concepts"))
     objects = InheritanceManager()
 
     class Meta:
@@ -204,7 +206,7 @@ class RegistrationAuthority(registryGroup):
             reg.registrationDate = registrationDate
             reg.save()
         if cascade:
-            for i in item.registryCascadeItems:
+            for i in item.registry_cascade_items:
                 if i is not None and perms.user_can_change_status(user,i):
                    self.register(i,state,user,registrationDate=registrationDate,cascade=cascade,changeDetails=changeDetails)
         return reg
@@ -228,7 +230,7 @@ class RegistrationAuthority(registryGroup):
         if self.tracker.has_changed('public_state') or self.tracker.has_changed('locked_state'):
             instance = self
             for s in Status.objects.filter(registrationAuthority=instance):
-                item = _concept.objects.get(id=s.concept.id)
+                item = _concept.objects.get(pk=s.concept.pk)
                 item._is_public = True in [ s.state >= s.registrationAuthority.public_state
                                             for s in item.statuses.all()
                                             if  s.registrationAuthority != instance
@@ -487,7 +489,7 @@ class _concept(baseAristotleObject):
         Performs a lookup using ``model_utils.managers.InheritanceManager`` to find the
         subclassed item
         """
-        return _concept.objects.get_subclass(pk=self.id)
+        return _concept.objects.get_subclass(pk=self.pk)
 
     def relatedItems(self,user=None):
         return []
@@ -501,11 +503,17 @@ class _concept(baseAristotleObject):
     def get_absolute_url(self):
         return url_slugify_concept(self)
 
-    # This returns the items that can be registered along with the this item.
-    # Reimplementations of this MUST return lists
     @property
-    def registryCascadeItems(self):
+    def registry_cascade_items(self):
+        """
+        This returns the items that can be registered along with the this item.
+        If a subclass of _concept (eg. X) defines this method, then when an item
+        of class X is registered with `cascade=True` then that item, and item
+        with returned by this method will all recieve the same registration.
+        Reimplementations of this MUST return lists
+        """
         return []
+
     @property
     def is_registered(self):
         return self.statuses.count() > 0
@@ -550,14 +558,14 @@ class concept(_concept):
     fields and the self-referential ``superseded_by`` field. It is not possible to include this
     model in a ``ForeignKey`` or ``ManyToManyField``.
     """
-    shortName = models.CharField(max_length=100,blank=True)
+    short_name = models.CharField(max_length=100,blank=True)
     version = models.CharField(max_length=20,blank=True)
     synonyms = models.CharField(max_length=200, blank=True)
     references = RichTextField(blank=True)
-    originURI = models.URLField(blank=True,help_text="If imported, the original location of the item")
+    origin_URI = models.URLField(blank=True,help_text="If imported, the original location of the item")
     comments = RichTextField(help_text="Descriptive comments about the metadata item.", blank=True)
-    submittingOrganisation = models.CharField(max_length=256, blank=True)
-    responsibleOrganisation = models.CharField(max_length=256, blank=True)
+    submitting_organisation = models.CharField(max_length=256, blank=True)
+    responsible_organisation = models.CharField(max_length=256, blank=True)
 
     superseded_by = models.ForeignKey('self', related_name='supersedes',blank=True,null=True)
 
@@ -587,7 +595,6 @@ class Status(TimeStampedModel):
     registrationDate = models.DateField()
     tracker=FieldTracker()
 
-    # TODO: Make it so that an object can only have one status per authority
     class Meta:
         unique_together = ('concept', 'registrationAuthority',)
         verbose_name_plural = "Statuses"
@@ -600,22 +607,6 @@ class Status(TimeStampedModel):
                     }
         else:
             return super(Status, self).unique_error_message(model_class, unique_check)
-
-    def save(self, *args, **kwargs):
-        prev_state=self.tracker.previous('state')
-        if prev_state is None:
-            prev_state_name = 'Unregistered'
-        else:
-            prev_state_name=STATES[prev_state]
-        obj = super(Status, self).save(*args, **kwargs)
-        if prev_state != self.state:
-            pass
-            #for p in self.concept.favourited_by.all():
-                #pass
-                #notify.send(p.user, recipient=p.user, verb="changed the status of a favourite item", target=self.concept,
-                #description='The state has gone from %s to %s in Registration Authority "%s"'%(prev_state_name,self.state_name,self.registrationAuthority.name)
-                #)
-        return obj
 
     @property
     def state_name(self):
@@ -634,10 +625,6 @@ class ObjectClass(concept):
     class Meta:
         verbose_name_plural = "Object Classes"
 
-    def relatedItems(self,user=None):
-        # TODO Switch to visible queryset
-        return [s for s in self.dataelementconcept_set.all() if perms.user_can_view(user,s)]
-
 class Property(concept):
     template = "aristotle_mdr/concepts/property.html"
     class Meta:
@@ -645,56 +632,105 @@ class Property(concept):
 
 class Measure(unmanagedObject):
     pass
-#class UnitOfMeasure(concept):
-class UnitOfMeasure(unmanagedObject):
-    template="aristotle_mdr/unmanaged/unitOfMeasure.html"
+class UnitOfMeasure(concept):
+    class Meta:
+        verbose_name_plural = "Units Of Measure"
 
-    measure = models.ForeignKey(Measure)
+    template="aristotle_mdr/concepts/unitOfMeasure.html"
+    measure = models.ForeignKey(Measure, blank=True, null=True)
     symbol =  models.CharField(max_length=20,blank=True)
+
 class DataType(concept):
     template = "aristotle_mdr/concepts/dataType.html"
 
 class ConceptualDomain(concept):
-    template = "aristotle_mdr/concepts/conceptualDomain.html"
+    """
+    Implementation note: Since a Conceptual domain "must be either one or
+    both an Enumerated Conceptual or a Described_Conceptual_Domain" there is
+    no reason to model them separately.
+    """
 
-class RepresentationClass(unmanagedObject):
-   pass
+    template = "aristotle_mdr/concepts/conceptualDomain.html"
+    #TODO: This needs to be changed to just 'description'
+    value_description = models.TextField(_('description'),blank=True,
+            help_text='Description or specification of a rule, reference, or range for a set of all value meanings for a Conceptual Domain')
+
+class ValueMeaning(aristotleComponent):
+    class Meta:
+        ordering = ['order']
+    meaning = models.CharField(max_length=255)
+    conceptual_domain = models.ForeignKey(ConceptualDomain)
+    order = models.PositiveSmallIntegerField("Position")
+    start_date = models.DateField(blank=True,null=True,
+            help_text='Date at which the value meaning became valid')
+    end_date = models.DateField(blank=True,null=True,
+            help_text='Date at which the value meaning ceased to be valid')
+    def __unicode__(self):
+        return "%s: %s - %s"%(self.conceptual_domain.name,self.value,self.meaning)
+
+    @property
+    def parentItem(self):
+        return self.conceptual_domain
+
 
 class ValueDomain(concept):
+    """
+    Implementation note: Since a Value domain "must be either one or
+    both an Enumerated Valued or a Described_Value_Domain" there is
+    no reason to model them separately.
+    """
+
     template = "aristotle_mdr/concepts/valueDomain.html"
+
+    data_type = models.ForeignKey(DataType,blank=True,null=True)
     format = models.CharField(max_length=100,blank=True,null=True)
-    maximumLength = models.PositiveIntegerField(blank=True,null=True)
-    unitOfMeasure = models.ForeignKey(UnitOfMeasure,blank=True,null=True)
-    dataType = models.ForeignKey(DataType,blank=True,null=True)
+    maximum_length = models.PositiveIntegerField(blank=True,null=True)
+    unit_of_measure = models.ForeignKey(UnitOfMeasure,blank=True,null=True)
 
-    conceptualDomain = models.ForeignKey(ConceptualDomain,blank=True,null=True)
-    representationClass =  models.ForeignKey(RepresentationClass,blank=True,null=True)
+    conceptual_domain = models.ForeignKey(ConceptualDomain,blank=True,null=True)
+    #TODO: This needs to be changed to just 'description'
+    value_description = models.TextField(_('description'),blank=True,
+            help_text='Description or specification of a rule, reference, or range for a set of all values for a Value Domain')
+    #Below is a dirty, dirty hack that came from re-designing permissible values
+    # TODO: Fix references to permissible and supplementary values
+    @property
+    def permissibleValues(self):
+        return self.permissiblevalue_set.all()
+    @property
+    def supplementaryValues(self):
+        return self.supplementaryvalue_set.all()
 
-class PermissibleValue(aristotleComponent):
+class AbstractValue(aristotleComponent):
+    """
+    Implementation note: Not the best name, but there will be times to
+    subclass a "value" when its not just a permissible value.
+    """
+
+    class Meta:
+        abstract = True
+        ordering = ['order']
     value = models.CharField(max_length=32)
     meaning = models.CharField(max_length=255)
-    valueDomain = models.ForeignKey(ValueDomain,related_name="permissibleValues")
+    value_meaning = models.ForeignKey(ValueMeaning, blank=True, null=True) 
+    valueDomain = models.ForeignKey(ValueDomain)
     order = models.PositiveSmallIntegerField("Position")
+    start_date = models.DateField(blank=True,null=True,
+            help_text='Date at which the value became valid')
+    end_date = models.DateField(blank=True,null=True,
+            help_text='Date at which the value ceased to be valid')
     def __unicode__(self):
         return "%s: %s - %s"%(self.valueDomain.name,self.value,self.meaning)
-    @property
-    def parentItem(self):
-        return self.valueDomain
-    class Meta:
-        ordering = ['order']
 
-class SupplementaryValue(aristotleComponent):
-    value = models.CharField(max_length=32)
-    meaning = models.CharField(max_length=255)
-    valueDomain = models.ForeignKey(ValueDomain,related_name="supplementaryValues")
-    order = models.PositiveSmallIntegerField("Position")
-    def __unicode__(self):
-        return "%s: %s - %s"%(self.valueDomain.name,self.value,self.meaning)
     @property
     def parentItem(self):
-        return self.valueDomain
-    class Meta:
-        ordering = ['order']
+        return self.value_domain
+
+class PermissibleValue(AbstractValue):
+    pass
+class SupplementaryValue(AbstractValue):
+    pass
+
+
 
 class DataElementConcept(concept):
     property_ = property #redefine in this context as we need 'property' for the 11179 terminology
@@ -704,7 +740,7 @@ class DataElementConcept(concept):
     conceptualDomain = models.ForeignKey(ConceptualDomain,blank=True,null=True)
 
     @property_
-    def registryCascadeItems(self):
+    def registry_cascade_items(self):
         return [self.objectClass,self.property]
 
 # Yes this name looks bad - blame 11179:3:2013 for renaming "administered item" to "concept"
@@ -714,12 +750,13 @@ class DataElement(concept):
     valueDomain = models.ForeignKey(ValueDomain,verbose_name = "Value Domain",blank=True,null=True)
 
     @property
-    def registryCascadeItems(self):
+    def registry_cascade_items(self):
         return [self.dataElementConcept,self.valueDomain]
 
 
 class DataElementDerivation(concept):
-    derives = models.ForeignKey(DataElement,related_name="derived_from")
+    derives = models.ForeignKey(DataElement,related_name="derived_from",
+                blank=True,null=True)
     inputs = models.ManyToManyField(DataElement,
                 related_name="input_to_derivation",
                 blank=True,null=True)
@@ -805,7 +842,7 @@ class PossumProfile(models.Model):
         return perms.user_is_workgroup_manager(self.user,wg)
 
     def is_favourite(self,item):
-        return self.favourites.filter(pk=item.id).exists()
+        return self.favourites.filter(pk=item.pk).exists()
 
     def toggleFavourite(self, item):
         if self.is_favourite(item):
@@ -824,18 +861,15 @@ post_save.connect(recache_concept_states, sender=Status)
 
 
 #"""
-#A collection is a user specified ad-hoc, sharable collections of content.
+#A collection is a user specified sharable collections of content.
 #Collection owners can add and remove other owners, editors and viewers
 #                  and add or remove content from the collection
-#           editors can add or remove content from the collection
 #           viewers can see content in the collection
 #In all cases, people can only see or add content they have permission to view in the wider registry.
 #"""
 #class Collection(models.Model):
-#    managedObject = models.ForeignKey(trebleObject,related_name='in_collections')
-#    public = models.BooleanField(default=False)
+#    items = models.ManyToManyField(_concept,related_name='in_collections')
 #    owner = models.ManyToManyField(User, related_name='owned_collections')
-#    editors = models.ManyToManyField(User, related_name='editable_collections')
 #    viewer = models.ManyToManyField(User, related_name='subscribed_collections')
 
 def defaultData():
@@ -863,23 +897,7 @@ def defaultData():
         print("{name} ".format(name=name),end="")
     print("")
 
-    reprClasses = [
-       ("Code","A system of valid symbols that substitute for specified values e.g. alpha, numeric, symbols and/or combinations."),
-       ("Count","Non-monetary numeric value arrived at by counting."),
-       ("Currency","Monetary representation."),
-       ("Date","Calendar representation e.g. YYYY-MM-DD"),
-       ("Graphic","Diagrams, graphs, mathematical curves, or the like . usually a vector image."),
-       ("Icon","A sign or representation that stands for its object by virtue of a resemblance or analogy to it."),
-       ("Picture","A visual representation of a person, object, or scene - usually a raster image."),
-       ("Quantity","A continuous number such as the linear dimensions, capacity/amount (non-monetary) of an object."),
-       ("Text","A text field that is usually unformatted."),
-       ("Time","Time of day or duration eg HH:MM:SS.SSSS."),
-       ]
-    print("making representation class: ",end="")
-    for name,desc in reprClasses:
-        rc,created = RepresentationClass.objects.get_or_create(name=name,description=desc)
-        print("{name} ".format(name=name),end="")
-    print("")
+    sys_wg,c = Workgroup.objects.get_or_create(name="System Workgroup")
     unitsOfMeasure = [
         ("Length", [
          ("Centimetre", "cm"),
@@ -892,9 +910,7 @@ def defaultData():
          ("Second", "s"),
          ("Minute", "min"),
          ("Hour", "h"),
-         ("Hour and minute", ""),
          ("Day", "D"),
-         ("Week", ""),
          ("Year", "Y"),
         ]),
         ("Weight", [
@@ -907,7 +923,7 @@ def defaultData():
         print("making measure: {name}".format(name=measure),end="")
         print("  : units of measure:  ",end="")
         for name,symbol in units:
-            u,created = UnitOfMeasure.objects.get_or_create(name=name,symbol=symbol,measure=m)
+            u,created = UnitOfMeasure.objects.get_or_create(name=name,symbol=symbol,measure=m,workgroup=sys_wg)
             print("{name}".format(name=name),end="")
         print("")
 
@@ -958,6 +974,25 @@ def new_comment_created(sender, **kwargs):
 
 # Loads example data, this is never used in formal testing.
 def exampleData(): # pragma: no cover
+
+    sys_wg,c = Workgroup.objects.get_or_create(name="System Workgroup")
+    unitsOfMeasure = [
+        ("Length", [
+         ("Millimetre", "mm"),
+        ]),
+        ("Time", [
+         ("Hour and minute", ""),
+         ("Week", ""),
+        ]),
+    ]
+    for measure,units in unitsOfMeasure:
+        m,created = Measure.objects.get_or_create(name=measure,description="")
+        print("making measure: {name}".format(name=measure),end="")
+        print("  : units of measure:  ",end="")
+        for name,symbol in units:
+            u,created = UnitOfMeasure.objects.get_or_create(name=name,symbol=symbol,measure=m,workgroup=sys_wg)
+            print("{name}".format(name=name),end="")
+        print("")
     #defaultData()
     print("configuring users")
 

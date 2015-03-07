@@ -121,9 +121,6 @@ def download(request,downloadType,iid=None):
         except TemplateDoesNotExist:
             # If the template doesn't exist lets tell the user not to try again
             raise Http404
-        except:
-            # Every other error raises an ImproperlyConfigured because the download-dev has done something wrong (probably).
-            raise ImproperlyConfigured
 
     raise Http404
 
