@@ -43,23 +43,27 @@ Quick start
    If you want to take advantage of Aristotle's access-key shortcut improvements for the admin interface,
    make sure it is installed *before* ``grappelli``.
 
-2. Include the Aristotle-MDR URLconf in your project ``urls.py``. Because Aristotle will
+#. Include the Aristotle-MDR URLconf in your project ``urls.py``. Because Aristotle will
    form the majority of the interactions with the site, and the Aristotle includes a
    number of URLconfs for supporting apps its recommended to included it at the
    server root, like this::
 
     url(r'^/', include('aristotle_mdr.urls')),
 
-3. Run ``python manage.py migrate`` to create the Aristotle-MDR Database.
+#. Run ``python manage.py migrate`` to create the Aristotle-MDR Database.
 
-4. (Optional) Compile the multilingual resource files for improved performance, like so::
+#. Install `lessc` for your system (eg. ``apt-get install node-less``) or
+   configure django-static-precompiler to use your LESS pre-processor of choice.
+   (This step is not required if you are running from PythonAnywhere)
+
+#. (Optional) Compile the multilingual resource files for improved performance, like so::
 
      django-admin.py compilemessages
 
-5. Start the development server and visit ``http://127.0.0.1:8000/``
+#. Start the development server and visit ``http://127.0.0.1:8000/``
    to see the home page.
 
-For a complete example of how to successfully include Aristotle, see the `aristotle_mdr/tests/settings.py` settings file.
+For a complete example of how to successfully include Aristotle, see the `tests/settings.py` settings file.
 
 **A live Aristotle-MDR instance is available for review on PythonAnywhere at:** ``http://aristotle.pythonanywhere.com/``.
 Be aware, this is an active development instance and may sporadically be unavailble.
