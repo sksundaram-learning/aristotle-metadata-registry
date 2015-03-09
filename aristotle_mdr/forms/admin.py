@@ -64,6 +64,14 @@ class AdminConceptForm(autocomplete_light.ModelForm):
     # Although concept is an abstract class, we still need this to have a reverse one-to-many edit field.
     class Meta:
         model = MDR._concept
+        fields = "__all__"
+    def _media(self):
+        js = ('/static/aristotle_mdr/aristotle.tinymce.js',)
+        media = forms.Media(js=js)
+        for field in self.fields.values():
+            media = media + field.widget.media
+        return media
+    media = property(_media)
 
     deprecated = forms.ModelMultipleChoiceField(queryset=MDR._concept.objects.all())
 
@@ -105,3 +113,12 @@ class AdminConceptForm(autocomplete_light.ModelForm):
                 instance.supersedes.add(i)
 
         return instance
+
+
+class StatusInlineForm(forms.ModelForm):
+    registrationAuthority = forms.ModelChoiceField( label='Registration Authority',
+                                                    queryset=MDR.RegistrationAuthority.objects,
+                                                    widget=widgets.RegistrationAuthoritySelect)
+    class Meta:
+        model = MDR.Status
+        fields = "__all__"

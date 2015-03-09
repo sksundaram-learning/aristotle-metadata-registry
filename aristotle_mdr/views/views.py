@@ -1,5 +1,7 @@
+from django.apps import apps
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.conf import settings
 from django.core.exceptions import PermissionDenied, ImproperlyConfigured
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.urlresolvers import reverse
@@ -97,13 +99,12 @@ def download(request,downloadType,iid=None):
         else:
             raise PermissionDenied
 
-    from django.conf import settings
     downloadOpts = getattr(settings, 'ARISTOTLE_DOWNLOADS', "")
     module_name = ""
     for d in downloadOpts:
         dt = d[0]
         if dt == downloadType:
-            module_name = d[-1]
+            module_name = d[3]
     if module_name:
         import re
         if not re.search('^[a-zA-Z0-9\-\.]+$',downloadType): # pragma: no cover
@@ -120,9 +121,6 @@ def download(request,downloadType,iid=None):
         except TemplateDoesNotExist:
             # If the template doesn't exist lets tell the user not to try again
             raise Http404
-        except:
-            # Every other error raises an ImproperlyConfigured because the download-dev has done something wrong (probably).
-            raise ImproperlyConfigured
 
     raise Http404
 
@@ -212,6 +210,7 @@ def edit_item(request,iid,*args,**kwargs):
 
     if request.method == 'POST': # If the form has been submitted...
         form = MDRForms.wizards.subclassed_modelform(item.__class__)(request.POST,instance=item,user=request.user)
+
         if form.is_valid():
             with transaction.atomic(), reversion.create_revision():
                 item = form.save()
@@ -240,18 +239,23 @@ def create_list(request):
     if not perms.user_is_editor(request.user):
         raise PermissionDenied
 
-    from django.conf import settings
     aristotle_apps = getattr(settings, 'ARISTOTLE_SETTINGS', {}).get('CONTENT_EXTENSIONS',[])
     aristotle_apps += ["aristotle_mdr"]
 
     from django.contrib.contenttypes.models import ContentType
     models = ContentType.objects.filter(app_label__in=aristotle_apps).all()
     out = {}
+
     for m in models:
         if issubclass(m.model_class(),MDR._concept) and not m.model.startswith("_"):
-            # Dont
-            app_models = out.get(m.app_label,[])
-            app_models.append((m,m.model_class()))
+            # Only output subclasses of 11179 concept
+            app_models = out.get(m.app_label,{'app':None,'models':[]})
+            if app_models['app'] is None:
+                try:
+                    app_models['app'] = getattr(apps.get_app_config(m.app_label),'verbose_name')
+                except:
+                    app_models['app'] = "No name" # Where no name is configured in the app_config, set a dummy so we don't keep trying
+            app_models['models'].append((m,m.model_class()))
             out[m.app_label] = app_models
 
     return render(request,"aristotle_mdr/create/create_list.html",
@@ -300,7 +304,6 @@ def glossary(request):
 
 def about_all_items(request):
 
-    from django.conf import settings
     aristotle_apps = getattr(settings, 'ARISTOTLE_SETTINGS', {}).get('CONTENT_EXTENSIONS',[])
     aristotle_apps += ["aristotle_mdr"]
 
@@ -454,10 +457,8 @@ def valuedomain_value_edit(request,iid,value_type):
                             value = form.save(commit=False) #Don't immediately save, we need to attach the value domain
                             value.valueDomain = item
                             value.save()
-                        #else:
-                        #    val = form.cleaned_data['id']
-                        #    if val and user_can_edit(request.user,val) and val.valueDomain==item:
-                        #        form.cleaned_data['id'].delete()
+                    for obj in formset.deleted_objects:
+                        obj.delete()
                     #formset.save(commit=True)
                     reversion.set_user(request.user)
                     reversion.set_comment(construct_change_message(request,None,[formset,]))
@@ -470,6 +471,41 @@ def valuedomain_value_edit(request,iid,value_type):
     return render(request,"aristotle_mdr/actions/edit_value_domain_values.html",
             {'item':item,'formset': formset,'value_type':value_type,'value_model':value_model,}
         )
+
+def extensions(request):
+    content=[]
+    aristotle_apps = getattr(settings, 'ARISTOTLE_SETTINGS', {}).get('CONTENT_EXTENSIONS',[])
+
+    if aristotle_apps:
+        for app_label in aristotle_apps:
+            app=apps.get_app_config(app_label)
+            try:
+                app.about_url = reverse('%s:about'%app_label)
+            except:
+                pass # if there is no about URL, thats ok.
+            content.append(app)
+
+    content = list(set(content))
+    aristotle_downloads = getattr(settings, 'ARISTOTLE_DOWNLOADS', [])
+    downloads=dict()
+    if aristotle_downloads:
+        for download in aristotle_downloads:
+            app_label = download[3]
+            app_details = downloads.get(
+                            app_label,
+                            {'app':apps.get_app_config(app_label),'downloads':[]}
+                        )
+            try:
+                app_details['about_url'] = reverse('%s:about'%app_label)
+            except:
+                pass # if there is no about URL, thats ok.
+            app_details['downloads'].append(download)
+            downloads[app_label]=app_details
+
+    return render(request,"aristotle_mdr/static/extensions.html",
+            {'content_extensions':content,'download_extensions':downloads,}
+        )
+
 
 def browse(request,oc_id=None,dec_id=None):
     if oc_id is None:

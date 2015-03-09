@@ -1,7 +1,11 @@
+import datetime
+from django.apps import apps
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
+from django.core.cache import cache
 from django.core.exceptions import PermissionDenied
-from django.shortcuts import render, redirect
 from django.core.urlresolvers import reverse
+from django.shortcuts import render, redirect
 
 from aristotle_mdr import forms as MDRForms
 from aristotle_mdr import models as MDR
@@ -36,8 +40,108 @@ def inbox(request,folder=None):
 def admin_tools(request):
     if not request.user.is_superuser:
         raise PermissionDenied
-    page = render(request,"aristotle_mdr/user/userAdminTools.html",{"item":request.user})
+
+    aristotle_apps = getattr(settings, 'ARISTOTLE_SETTINGS', {}).get('CONTENT_EXTENSIONS',[])
+    aristotle_apps += ["aristotle_mdr"]
+
+    from django.contrib.contenttypes.models import ContentType
+    models = ContentType.objects.filter(app_label__in=aristotle_apps).all()
+    model_stats = {}
+
+    for m in models:
+        if issubclass(m.model_class(),MDR._concept) and not m.model.startswith("_"):
+            # Only output subclasses of 11179 concept
+            app_models = model_stats.get(m.app_label,{'app':None,'models':[]})
+            if app_models['app'] is None:
+                app_models['app'] = getattr(apps.get_app_config(m.app_label),'verbose_name')
+            app_models['models'].append(
+                    (m.model_class(),
+                     get_cached_object_count(m),
+                     reverse("admin:%s_%s_changelist" % (m.app_label, m.model))
+                    )
+                )
+            model_stats[m.app_label] = app_models
+
+    page = render(request,"aristotle_mdr/user/userAdminTools.html",
+            {"item":request.user,"models":model_stats})
     return page
+
+@login_required
+def admin_stats(request):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+
+    aristotle_apps = getattr(settings, 'ARISTOTLE_SETTINGS', {}).get('CONTENT_EXTENSIONS',[])
+    aristotle_apps += ["aristotle_mdr"]
+
+    from django.contrib.contenttypes.models import ContentType
+    models = ContentType.objects.filter(app_label__in=aristotle_apps).all()
+    model_stats = {}
+
+    # Get datetime objects for '7 days ago' and '30 days ago'
+    t7 = datetime.date.today() - datetime.timedelta(days=7)
+    t30 = datetime.date.today() - datetime.timedelta(days=30)
+    mod_counts = [] # used to get the maximum count
+
+    use_cache = True # We still cache but its much, much shorter
+    for m in models:
+        if issubclass(m.model_class(),MDR._concept) and not m.model.startswith("_"):
+            # Only output subclasses of 11179 concept
+            app_models = model_stats.get(m.app_label,{'app':None,'models':[]})
+            if app_models['app'] is None:
+                app_models['app'] = getattr(apps.get_app_config(m.app_label),'verbose_name')
+            if use_cache:
+                total   = get_cached_query_count(
+                        qs=m.model_class().objects,
+                        key=model_to_cache_key(m)+"__all_time",
+                        ttl=60
+                        )
+                t7_val  = get_cached_query_count(
+                        qs=m.model_class().objects.filter(created__gte=t7),
+                        key=model_to_cache_key(m)+"__t7",
+                        ttl=60
+                        )
+                t30_val = get_cached_query_count(
+                        qs=m.model_class().objects.filter(created__gte=t30),
+                        key=model_to_cache_key(m)+"__t30",
+                        ttl=60
+                        )
+            else:
+                total   = m.model_class().objects.count()
+                t7_val  = m.model_class().objects.filter(created__gte=t7).count()
+                t30_val = m.model_class().objects.filter(created__gte=t30).count()
+
+            mod_counts.append(total)
+            app_models['models'].append(
+                    (m.model_class(),
+                     {  'all_time': total,
+                        't7':t7_val,
+                        't30':t30_val
+                     },
+                     reverse("admin:%s_%s_changelist" % (m.app_label, m.model))
+                    )
+                )
+            model_stats[m.app_label] = app_models
+
+    page = render(request,"aristotle_mdr/user/userAdminStats.html",
+            {"item":request.user,"model_stats":model_stats,'model_max':max(mod_counts)})
+    return page
+
+def get_cached_query_count(qs,key,ttl):
+    count = cache.get(key, None)
+    if not count:
+        count = qs.count()
+        cache.set(key, count, ttl)
+    return count
+
+def model_to_cache_key(model_type):
+    return 'aristotle_adminpage_object_count_%s_%s'%(model_type.app_label, model_type.model)
+
+def get_cached_object_count(model_type):
+    CACHE_KEY = model_to_cache_key(model_type)
+    query = model_type.model_class().objects
+    return get_cached_query_count(query,CACHE_KEY, 60*60*12) # Cache for 12 hours
+
 
 @login_required
 def edit(request):

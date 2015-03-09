@@ -27,6 +27,15 @@ CACHES = {
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
+if DEBUG:
+    STATIC_ROOT =os.path.join(BASE_DIR, "static")
+
+    MEDIA_ROOT = '/home/aristotle/aristotle/possum-mdr/media/'
+    MEDIA_URL = '/media/'
+
+    CKEDITOR_UPLOAD_PATH = 'uploads/'
+
+
 # Required for admindocs, see: https://code.djangoproject.com/ticket/21386
 SITE_ID=None
 
@@ -44,10 +53,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'django.contrib.humanize',
 
-    'south',
-    'inplaceeditform',
-    'inplaceeditform_extra_fields',
-    'tinymce',
+    'ckeditor',
 
     'static_precompiler',
     'bootstrap3',
@@ -108,7 +114,6 @@ BOOTSTRAP3 = {
 # We need this to make sure users can see all extensions.
 AUTHENTICATION_BACKENDS = ('aristotle_mdr.backends.AristotleBackend',)
 
-
 ARISTOTLE_SETTINGS = {
     'SEPARATORS': { 'DataElement':', ',
                     'DataElementConcept':u'–'},
@@ -121,37 +126,24 @@ ARISTOTLE_SETTINGS = {
     }
 ARISTOTLE_DOWNLOADS = [
     #(fileType,menu,font-awesome-icon,module)
-    ('pdf','PDF','fa-file-pdf-o','aristotle_mdr'),
-    ('csv-vd','CSV list of values','fa-file-excel-o','aristotle_mdr'),
+    ('pdf','PDF','fa-file-pdf-o','aristotle_mdr','Downloads for various content types in the PDF format'),
+    ('csv-vd','CSV list of values','fa-file-excel-o','aristotle_mdr','CSV downloads for value domain codelists'),
     ]
 
-
-# Used for in place editing
-INPLACEEDIT_EDIT_EMPTY_VALUE = 'Double click to edit'
-INPLACEEDIT_AUTO_SAVE = False
-INPLACEEDIT_EVENT = "dblclick"
-INPLACEEDIT_DISABLE_CLICK = True  # For inplace edit text into a link tag
-INPLACEEDIT_EDIT_MESSAGE_TRANSLATION = 'Write a translation' # transmeta option
-INPLACEEDIT_SUCCESS_TEXT = 'Successfully saved'
-INPLACEEDIT_UNSAVED_TEXT = 'You have unsaved changes'
-INPLACE_ENABLE_CLASS = 'enable'
-DEFAULT_INPLACE_EDIT_OPTIONS = {
-'menubar_item':"file",
-'auto_height':True,
-'auto_width':True,
-} # dictionnary of the optionals parameters that the templatetag can receive to change its behavior (see the Advanced usage section)
-DEFAULT_INPLACE_EDIT_OPTIONS_ONE_BY_ONE = True # modify the behavior of the DEFAULT_INPLACE_EDIT_OPTIONS usage, if True then it use the default values not specified in your template, if False it uses these options only when the dictionnary is empty (when you do put any options in your template)
-#ADAPTOR_INPLACEEDIT_EDIT = 'app_name.perms.MyAdaptorEditInline' # Explain in Permission Adaptor API
-#ADAPTOR_INPLACEEDIT = {'myadaptor': 'app_name.fields.MyAdaptor'} # Explain in Adaptor API
-INPLACE_GET_FIELD_URL = None # to change the url where django-inplaceedit use to get a field
-INPLACE_SAVE_URL = None # to change the url where django-inplaceedit use to save a field
-ADAPTOR_INPLACEEDIT_EDIT = 'aristotle_mdr.perms.MyAdaptorEditInline'
-ADAPTOR_INPLACEEDIT = {
-    'auto_fk': 'inplaceeditform_extra_fields.fields.AdaptorAutoCompleteForeingKeyField',
-    'auto_m2m': 'inplaceeditform_extra_fields.fields.AdaptorAutoCompleteManyToManyField',
-    'image_thumb': 'inplaceeditform_extra_fields.fields.AdaptorImageThumbnailField',
-    'tiny': 'inplaceeditform_extra_fields.fields.AdaptorTinyMCEField',
-    'aristotle': 'aristotle_mdr.fields.AristotleRichTextField',
+CKEDITOR_CONFIGS = {
+    'default': {
+        #'toolbar': 'full',
+        'toolbar' : [
+            { 'name': 'clipboard', 'items': [ 'Cut', 'Copy', 'Paste', 'PasteText', '-', 'Undo', 'Redo' ] },
+            { 'name': 'basicstyles', 'items' : [ 'Bold','Italic','Subscript','Superscript','-','RemoveFormat' ] },
+            { 'name': 'links', 'items' : [ 'Link','Unlink' ] },
+	        { 'name': 'paragraph', 'items' : [ 'NumberedList','BulletedList','-','Blockquote' ] },
+    	    { 'name': 'insert', 'items' : [ 'Image','Table','HorizontalRule','SpecialChar'] },
+            { 'name': 'aristotletoolbar', 'items': [ 'Glossary' ] },
+            { 'name': 'document', 'items': [ 'Maximize','Source' ] },
+        ],
+        'extraPlugins' : 'aristotle_glossary',
+    },
 }
 
 HAYSTACK_SIGNAL_PROCESSOR = 'aristotle_mdr.signals.AristotleSignalProcessor'

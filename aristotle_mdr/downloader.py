@@ -36,15 +36,15 @@ def download(request,downloadType,item):
             }
         )
 
-    if downloadType=="csv-vd":
+    elif downloadType=="csv-vd":
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="%s.csv"'%item.name
 
         writer = csv.writer(response)
-        writer.writerow(['value', 'meaning', 'role'])
+        writer.writerow(['value', 'meaning','start date','end date', 'role'])
         for v in item.permissibleValues.all():
-            writer.writerow([v.value, v.meaning,"permissible"])
+            writer.writerow([v.value, v.meaning,v.start_date,v.end_date,"permissible"])
         for v in item.supplementaryValues.all():
-            writer.writerow([v.value, v.meaning,"supplementary"])
+            writer.writerow([v.value, v.meaning,v.start_date,v.end_date,"supplementary"])
 
         return response

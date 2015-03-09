@@ -1,3 +1,4 @@
+from django import forms
 from django.forms.widgets import TextInput,CheckboxSelectMultiple,ChoiceFieldRenderer,ChoiceInput,CheckboxChoiceInput, RadioSelect
 from django.utils.encoding import force_text
 from django.utils.html import format_html
@@ -15,6 +16,12 @@ class NameSuggestInput(TextInput):
             out = u"<div class='suggest_name_wrapper'>{}{}</div>".format(out,button)
         return mark_safe(out)
 
+# Thanks http://stackoverflow.com/questions/6727372/
+class RegistrationAuthoritySelect(forms.Select):
+    def render(self, name, value, attrs=None, choices=()):
+        if value is not None:
+            attrs['disabled']='disabled'
+        return super(RegistrationAuthoritySelect, self).render(name, value, attrs, choices)
 
 class BootstrapChoiceInput(ChoiceInput):
     input_type = 'radio'
@@ -24,7 +31,7 @@ class BootstrapChoiceInput(ChoiceInput):
         value = value or self.value
         attrs = attrs or self.attrs
         if 'id' in self.attrs:
-            label_for = format_html(u' for="{0}_{1}"', self.attrs['id'], self.index)
+            label_for = format_html(u' for="{0}"', self.attrs['id'])
         else:
             label_for = ''
         return format_html(u'{1}<label{0} role="menuitem" tabindex="-1"> <span>{2}</span></label>', label_for, self.tag(), self.choice_label)

@@ -1,4 +1,3 @@
-from django import forms
 from django.db.models import Q
 from django.conf import settings
 from django.contrib import admin
@@ -11,24 +10,12 @@ from aristotle_mdr import perms
 from django.core.urlresolvers import reverse
 from reversion_compare.admin import CompareVersionAdmin
 
-# Thanks http://stackoverflow.com/questions/6727372/
-class RegistrationAuthoritySelect(forms.Select):
-    def render(self, name, value, attrs=None, choices=()):
-        if value is not None:
-            attrs['disabled']='disabled'
-        return super(RegistrationAuthoritySelect, self).render(name, value, attrs, choices)
-
-class StatusInlineForm(forms.ModelForm):
-    registrationAuthority = forms.ModelChoiceField(label='Registration Authority',queryset=MDR.RegistrationAuthority.objects,widget=RegistrationAuthoritySelect)
-    class Meta:
-        model = MDR.Status
-
 """
 Inline editor for registration status records
 """
 class StatusInline(admin.TabularInline):
     model = MDR.Status
-    form = StatusInlineForm
+    form = MDRForms.admin.StatusInlineForm
     extra=0
 
     """
@@ -37,8 +24,8 @@ class StatusInline(admin.TabularInline):
     they are in a Registration Authority in which the current user
     has permission to change the status of objects.
     """
-    def queryset(self, request):
-        qs = super(StatusInline, self).queryset(request)
+    def get_queryset(self, request):
+        qs = super(StatusInline, self).get_queryset(request)
         if not request.user.is_superuser:
             qs = qs.filter(registrationAuthority__in=request.user.registrar_in.all())
         return qs
@@ -69,7 +56,7 @@ class WorkgroupAdmin(CompareVersionAdmin):
         ('Members',         {'fields': ['managers','stewards','submitters','viewers',]}),
     ]
     filter_horizontal = ['managers','stewards','submitters','viewers','registrationAuthorities']
-    def queryset(self, request):
+    def get_queryset(self, request):
         qs = super(WorkgroupAdmin, self).queryset(request)
         if request.user.is_superuser:
             return qs
@@ -111,12 +98,12 @@ class ConceptAdmin(CompareVersionAdmin):
         (None,              {'fields': ['name','description','workgroup']}),
         ('Additional names',{
                 'classes':('grp-collapse grp-closed',),
-                'fields': ['synonyms','shortName','version',]
+                'fields': ['synonyms','short_name','version',]
             }),
         #('Registry',        {'fields': ['workgroup']}),
         ('Relationships',   {
                 'classes':('grp-collapse grp-closed',),
-                'fields': ['originURI','superseded_by','deprecated'],
+                'fields': ['origin_URI','superseded_by','deprecated'],
             })
     ]
     name_suggest_fields = []
@@ -203,11 +190,12 @@ class DataElementConceptAdmin(ConceptAdmin):
             ('Components', {'fields': ['objectClass','property']}),
     ]
 
-class ObjectClassAdmin(ConceptAdmin):       pass
 class ConceptualDomainAdmin(ConceptAdmin):  pass
+class DataTypeAdmin(ConceptAdmin):          pass
+class ObjectClassAdmin(ConceptAdmin):       pass
 class PackageAdmin(ConceptAdmin):           pass
 class PropertyAdmin(ConceptAdmin):          pass
-class DataTypeAdmin(ConceptAdmin):          pass
+class UnitOfMeasureAdmin(ConceptAdmin):     pass
 
 class CodeValueInline(admin.TabularInline):
     form = MDRForms.PermissibleValueForm
@@ -223,7 +211,7 @@ class SupplementaryValueInline(CodeValueInline):
 
 class ValueDomainAdmin(ConceptAdmin):
     fieldsets = ConceptAdmin.fieldsets + [
-            ('Representation', {'fields': ['format','maximumLength','unitOfMeasure','dataType']}),
+            ('Representation', {'fields': ['format','maximum_length','unit_of_measure','data_type']}),
     ]
     inlines = ConceptAdmin.inlines + [PermissibleValueInline,SupplementaryValueInline]
 
@@ -261,16 +249,11 @@ admin.site.register(MDR.Package,PackageAdmin)
 admin.site.register(MDR.Property,PropertyAdmin)
 admin.site.register(MDR.ObjectClass,ObjectClassAdmin)
 admin.site.register(MDR.RegistrationAuthority,RegistrationAuthorityAdmin)
+admin.site.register(MDR.UnitOfMeasure,UnitOfMeasureAdmin)
 admin.site.register(MDR.ValueDomain,ValueDomainAdmin)
 admin.site.register(MDR.Workgroup,WorkgroupAdmin)
 
 
-class UnitOfMeasureAdmin(admin.ModelAdmin):
-    list_display = ['name', 'measure', 'created','modified']
-    search_fields = ['name','measure']
-    list_filter = ['measure', 'created','modified']
-
-admin.site.register(MDR.UnitOfMeasure,UnitOfMeasureAdmin)
 admin.site.register(MDR.Measure)
 #admin.site.register(MDR.)
 

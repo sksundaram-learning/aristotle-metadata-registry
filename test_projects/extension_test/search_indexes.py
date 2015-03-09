@@ -2,7 +2,7 @@ from haystack import indexes
 
 from aristotle_mdr.search_indexes import conceptIndex
 
-import models
+from extension_test import models
 
 class QuestionIndex(conceptIndex, indexes.Indexable):
     def get_model(self):

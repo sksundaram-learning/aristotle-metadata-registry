@@ -133,7 +133,7 @@ class ChangeStatusForm(forms.Form):
         try:
             state = int(state)
             MDR.STATES[state]
-        except ValueError, IndexError:
+        except (ValueError, IndexError):
             # state is either not a string or not a valid STATE, so raise an error
             # Any other errors will be thrown accordingly
             raise forms.ValidationError("Please select a valid status.")
@@ -166,3 +166,4 @@ class PermissibleValueForm(forms.ModelForm):
         self.fields['order'].widget = forms.HiddenInput()
     class Meta:
         model = MDR.PermissibleValue
+        fields = "__all__"

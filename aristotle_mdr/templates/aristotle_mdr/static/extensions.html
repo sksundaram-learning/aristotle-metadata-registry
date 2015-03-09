@@ -4,25 +4,47 @@
 <h1>{% block title %}Aristotle Extensions{% endblock %}</h1>
 <div class="row">
 
-{% if config.CONTENT_EXTENSIONS or config.DOWNLOAD_EXTENSIONS %}
+{% if content_extensions or download_extensions %}
     <p>
     Below is a complete listing of the extensions that are used in {{ config.SITE_NAME }},
     click any of the headings below for more information.
     </p>
-    {% if config.CONTENT_EXTENSIONS %}
-
+    {% if content_extensions %}
         <dl>
-        {% for ext in config.CONTENT_EXTENSIONS %}
-
-            {% with ext|add:'/about_extension.html' as ext_template %}
-                {% include ext_template %}
-            {% endwith %}
-
+        {% for ext in content_extensions %}
+            <dt>
+                {% if ext.about_url %}
+                    <a href="{{ ext.about_url }}">{{ ext.verbose_name }}</a>
+                {% else %}
+                    {{ ext.verbose_name }}
+                {% endif %}
+            </dt>
+            <dd>{{ ext.description | safe }}</dd>
         {% endfor %}
         </dl>
-    {% else %}
-        No extensions extensions have been installed.
     {% endif %}
+
+    {% if download_extensions %}
+        <h4>The following download formats are availble in this registry</h4>
+        {% for key,ext in download_extensions.items %}
+        <strong>
+            {% if ext.about_url %}
+                <a href="{{ ext.about_url }}">{{ ext.app.verbose_name }}</a>
+            {% else %}
+                {{ ext.app.verbose_name }}
+            {% endif %}
+        </strong>
+        <p>{{ ext.app.description | safe}}</p>
+        <dl>
+        {% for d in ext.downloads %}
+            <dt><i class="fa {{d.2}}"></i> {{ d.1 }}</dt>
+            <dd>{{ d.4 | safe}}</dd>
+        {% endfor %}
+        </dl>
+        {% endfor %}
+    {% endif %}
+{% else %}
+    No extensions have been installed on this site.
 {% endif %}
 </div>
 

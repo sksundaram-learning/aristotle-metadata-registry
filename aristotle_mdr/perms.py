@@ -1,14 +1,6 @@
 from django.contrib.auth.models import User
 from django.core.cache import cache
 
-class MyAdaptorEditInline(object):
-
-    @classmethod
-    def can_edit(cls, adaptor_field):
-        user = adaptor_field.request.user
-        obj = adaptor_field.obj
-        return user_can_edit(user,obj)
-
 def user_can_alter_comment(user,comment):
     return user.is_superuser or user == comment.author or user_is_workgroup_manager(user,comment.post.workgroup)
 def user_can_alter_post(user,post):

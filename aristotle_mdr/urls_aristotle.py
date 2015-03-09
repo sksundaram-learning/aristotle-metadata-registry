@@ -65,6 +65,8 @@ urlpatterns = patterns('aristotle_mdr.views',
     url(r'^create/(?P<app_label>.+)/(?P<model_name>.+)/?$', views.wizards.create_item, name='createItem'),
     url(r'^create/(?P<model_name>.+)/?$', views.wizards.create_item, name='createItem'),
 
+    url(r'^dialog/glossary_search/?$',  views.wizards.glossary_search, name='glossary_search'),
+
     url(r'^download/(?P<downloadType>[a-zA-Z0-9\-\.]+)/(?P<iid>\d+)/?$', views.download, name='download'),
 
     url(r'^action/supersede/(?P<iid>\d+)$', views.supersede, name='supersede'),
@@ -76,7 +78,8 @@ urlpatterns = patterns('aristotle_mdr.views',
     #url(r'^remove/WorkgroupUser/(?P<iid>\d+)/(?P<userid>\d+)$', views.removeWorkgroupUser, name='removeWorkgroupUser'),
 
     url(r'^account/home/?$', views.user_pages.home, name='userHome'),
-    url(r'^account/userAdminTools/?$', views.user_pages.admin_tools, name='userAdminTools'),
+    url(r'^account/admin/?$', views.user_pages.admin_tools, name='userAdminTools'),
+    url(r'^account/admin/statistics/?$', views.user_pages.admin_stats, name='userAdminStats'),
     url(r'^account/edit/?$', views.user_pages.edit, name='userEdit'),
     url(r'^account/favourites/?$', views.user_pages.favourites, name='userFavourites'),
     url(r'^account/workgroups/?$', views.user_pages.workgroups, name='userWorkgroups'),
@@ -90,6 +93,7 @@ urlpatterns = patterns('aristotle_mdr.views',
     url(r'^account/toggleFavourite/(?P<iid>\d+)/?$', views.toggleFavourite, name='toggleFavourite'),
 
     url(r'^browse(?:/(?P<oc_id>\d+)(?:-[a-z\-]*)?(?:/(?P<dec_id>\d+)(?:-[a-z\-]*)?)?)?/?$', views.browse, name='browse'),
+    url(r'^extensions/?$', views.extensions, name='extensions'),
 
     url(r'^about/aristotle/?$', TemplateView.as_view(template_name='aristotle_mdr/static/aristotle_mdr.html'), name="aboutMain"),
     url(r'^about/all_items/?$', views.about_all_items, name='about_all_items'),

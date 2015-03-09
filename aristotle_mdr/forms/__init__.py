@@ -1,6 +1,8 @@
-from forms import *
-import creation_wizards as wizards
-import search
-import discussions
-import admin
-import bulk_actions
+from __future__ import absolute_import
+
+from .forms import *
+from . import creation_wizards as wizards
+from . import search
+from . import discussions
+from . import admin
+from . import bulk_actions

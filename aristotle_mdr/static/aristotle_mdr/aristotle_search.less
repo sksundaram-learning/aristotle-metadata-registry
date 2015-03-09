@@ -32,6 +32,16 @@ small.details {
     width:180px;
 }
 
+@screen-sm-min:600px;
+@media (min-width:@screen-sm-min)  {
+
+    #id_models, #id_ra {
+      -webkit-columns: 2;
+         -moz-columns: 2;
+              columns: 2;
+    }
+}
+
 li.dropdown-menu-form,li.dropdown-menu-date, .sort-order-box {
     label {
         font-weight:normal;

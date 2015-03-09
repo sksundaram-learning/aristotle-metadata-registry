@@ -69,23 +69,9 @@ function(editor) {
         classes: 'widget btn aristotle-icon aristotle-glossary',
         onclick: function() {
             editor.windowManager.open( {
+                inline: true,
                 title: 'Insert glossary item',
-                body: [{
-                    type: 'listbox',
-                    name: 'term',
-                    label: 'Select a term',
-                    'values':getGlossaryList()
-                },
-                {
-                    type: 'textbox',
-                    name: 'text',
-                    label: 'Link text (leave blank to use to the glossary name)'
-                }],
-                onsubmit: function( e ) {
-                    i = e.data.term;
-                    text = e.data.text || glossaryLookup[i].name;
-                    editor.insertContent( '<a class="aristotle_glossary" data-aristotle_glossary_id="'+i+'" href="'+glossaryLookup[i].url+'">' + text + '</a>');
-                }
+                url: '/create/glossary_search/',
             });
         }
     });

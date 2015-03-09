@@ -1,5 +1,4 @@
 {% extends "aristotle_mdr/user/userHome.html" %}
-{% load inplace_edit %}
 
 {% block collapse-link%}
     <i class="fa fa-users fa-fw"></i> Registry Administrator tools</a>
@@ -39,4 +38,36 @@
     </li>
 </ul>
 
+<h2>Basic item statistics</h2>
+<p>Below is a table of the various concepts managed within this registry.
+These values are updated approximately twice a day,
+therefore the counts below may be out of date due to caching.
+
+<br>For live updates, visit the <a href="{% url 'aristotle:userAdminStats' %}">Advanced concept statistics page</a>.
+</p>
+<table class='table'>
+    <thead>
+    <tr>
+        <th>Extension name</th>
+        <th>Concept type</th>
+        <th>#</th>
+    </thead>
+{% for app,app_models in models.items %}
+    <tbody>
+    {% for model,count,adminlink in app_models.models %}
+    <tr>
+        {% if forloop.first %}
+            <td rowspan="{{app_models.models|length }}">{{ app_models.app }}</td>
+        {% endif %}
+        <td>
+            <a href="{{ adminlink }}">
+                {{ model.get_verbose_name }}
+            </a>
+        </td>
+        <td>{{ count }}</td>
+    </tr>
+    {% endfor %}
+    <tbody>
+{% endfor %}
+</table>
 {% endblock %}

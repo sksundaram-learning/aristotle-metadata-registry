@@ -18,7 +18,7 @@
     <ul>
         {% for ra in registrationAuthorities %}
         <li>
-        {% include "aristotle_mdr/helpers/itemLink.html" with item=ra %}
+        <a href="{% url 'aristotle:registrationAuthority' ra.id %}">{{ ra.name }}</a>
         <div>
             {{ ra.description | striptags |truncatewords:50 }}
         </div>

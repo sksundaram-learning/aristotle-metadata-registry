@@ -1,6 +1,6 @@
 .wizard_field {
     margin-top:15px;
-    span {
+    &>span {
         display:block;
     }
     input, select,textarea {
@@ -81,4 +81,14 @@ fieldset.wizard {
     border-left:1px solid lightgray;
     border-right:1px solid lightgray;
     border-bottom:1px solid lightgray;
+}
+
+/* Adds icons for TinyMCE 3.x custom buttons */
+.aristotle-icon .mceButtonLabel:before {
+    font-family: FontAwesome;
+    font-size:110%;
+    padding-right:2px;
+}
+.aristotle-glossary .mceButtonLabel:before {
+    content: "\f02d";
 }

@@ -15,6 +15,20 @@ setup_test_environment()
 
 from extension_test.models import Question, Questionnaire
 
+class TestExtensionListVisibility(TestCase):
+    def test_extension_list_page(self):
+        from django.test import Client
+        from django.apps import apps
+        client = Client()
+        response = client.get(reverse('aristotle_mdr:extensions'))
+        self.assertEqual(response.status_code,200)
+        ext = apps.get_app_config('extension_test')
+        download = apps.get_app_config('text_download_test')
+        self.assertTrue(download.verbose_name in response.content)
+        self.assertTrue('text_download_test' in response.context['download_extensions'].keys())
+        self.assertTrue(ext.verbose_name in response.content)
+        self.assertTrue(ext in response.context['content_extensions'])
+
 class QuestionVisibility(TestCase,ManagedObjectVisibility):
     def setUp(self):
         self.wg = models.Workgroup.objects.create(name="Setup WG")

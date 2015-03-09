@@ -40,6 +40,11 @@ class SuperuserPermissions(TestCase):
         self.assertTrue(perms.user_in_workgroup(self.su,None))
 
 
+class UnitOfMeasureVisibility(TestCase,utils.ManagedObjectVisibility):
+    def setUp(self):
+        self.wg = models.Workgroup.objects.create(name="Setup WG")
+        self.item = models.UnitOfMeasure.objects.create(name="Test UOM",workgroup=self.wg)
+
 class ObjectClassVisibility(TestCase,utils.ManagedObjectVisibility):
     def setUp(self):
         self.wg = models.Workgroup.objects.create(name="Setup WG")
@@ -54,8 +59,8 @@ class ValueDomainVisibility(TestCase,utils.ManagedObjectVisibility):
         self.item = models.ValueDomain.objects.create(name="Test VD",
                 workgroup=self.wg,
                 format = "X" ,
-                maximumLength = 3,
-                dataType = models.DataType.objects.create(name="Test DT",workgroup=self.wg)
+                maximum_length = 3,
+                data_type = models.DataType.objects.create(name="Test DT",workgroup=self.wg)
                 )
 class DataElementConceptVisibility(TestCase,utils.ManagedObjectVisibility):
     def setUp(self):
@@ -88,7 +93,46 @@ class GlossaryVisibility(TestCase,utils.ManagedObjectVisibility):
             workgroup=self.wg,
             )
 
+class WorkgroupPermissions(TestCase):
+    def test_workgroup_add_members(self):
+        wg = models.Workgroup.objects.create(name="Test WG")
+        user = User.objects.create_user('user','','user')
+
+        wg.giveRoleToUser('manager',user)
+        self.assertTrue(user in wg.managers.all())
+        wg.removeRoleFromUser('manager',user)
+        self.assertFalse(user in wg.managers.all())
+
+        wg.giveRoleToUser('viewer',user)
+        self.assertTrue(user in wg.viewers.all())
+        wg.removeRoleFromUser('viewer',user)
+        self.assertFalse(user in wg.viewers.all())
+
+        wg.giveRoleToUser('submitter',user)
+        self.assertTrue(user in wg.submitters.all())
+        wg.removeRoleFromUser('submitter',user)
+        self.assertFalse(user in wg.submitters.all())
+
+        wg.giveRoleToUser('steward',user)
+        self.assertTrue(user in wg.stewards.all())
+        wg.removeRoleFromUser('steward',user)
+        self.assertFalse(user in wg.stewards.all())
+
 class RegistryGroupPermissions(TestCase):
+    def test_registration_add_members(self):
+        ra = models.RegistrationAuthority.objects.create(name="Test RA")
+        user = User.objects.create_user('user','','user')
+
+        ra.giveRoleToUser('registrar',user)
+        self.assertTrue(user in ra.registrars.all())
+        ra.removeRoleFromUser('registrar',user)
+        self.assertFalse(user in ra.registrars.all())
+
+        ra.giveRoleToUser('manager',user)
+        self.assertTrue(user in ra.managers.all())
+        ra.removeRoleFromUser('manager',user)
+        self.assertFalse(user in ra.managers.all())
+
     def test_RegistrationAuthority_name_change(self):
         ra = models.RegistrationAuthority.objects.create(name="Test RA")
         user = User.objects.create_user('registrar','','registrar')
@@ -168,9 +212,9 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
     def setUp(self):
         super(LoggedInViewConceptPages, self).setUp()
 
-        self.item1 = self.itemType.objects.create(name="OC1",description=" ",workgroup=self.wg1,**self.defaults)
-        self.item2 = self.itemType.objects.create(name="OC2",description=" ",workgroup=self.wg2,**self.defaults)
-        self.item3 = self.itemType.objects.create(name="OC2",description=" ",workgroup=self.wg1,**self.defaults)
+        self.item1 = self.itemType.objects.create(name="Test Item 1 (visible to tested viewers)",description=" ",workgroup=self.wg1,**self.defaults)
+        self.item2 = self.itemType.objects.create(name="Test Item 2 (NOT visible to tested viewers)",description=" ",workgroup=self.wg2,**self.defaults)
+        self.item3 = self.itemType.objects.create(name="Test Item 3 (visible to tested viewers)",description=" ",workgroup=self.wg1,**self.defaults)
 
     def test_su_can_view(self):
         self.login_superuser()
@@ -395,6 +439,9 @@ class ObjectClassViewPage(LoggedInViewConceptPages,TestCase):
 class PropertyViewPage(LoggedInViewConceptPages,TestCase):
     url_name='property'
     itemType=models.Property
+class UnitOfMeasureViewPage(LoggedInViewConceptPages,TestCase):
+    url_name='unitOfMeasure'
+    itemType=models.UnitOfMeasure
 class ValueDomainViewPage(LoggedInViewConceptPages,TestCase):
     url_name='valueDomain'
     itemType=models.ValueDomain
@@ -515,8 +562,8 @@ class GlossaryViewPage(LoggedInViewConceptPages,TestCase):
         response = self.client.get(reverse('aristotle:glossary'))
         self.assertTrue(response.status_code,200)
 
-    def test_glossary_ajax_list(self): #TODO: Fix to use new api
-        self.login_editor()
+    def test_glossary_ajax_list(self):
+        self.logout()
         import json
         gitem = models.GlossaryItem(name="Glossary item",workgroup=self.wg1)
         response = self.client.get('/api/v1/glossarylist/?format=json&limit=0')
@@ -526,6 +573,8 @@ class GlossaryViewPage(LoggedInViewConceptPages,TestCase):
         gitem.readyToReview = True
         gitem.save()
 
+        self.login_editor()
+
         self.assertTrue(perms.user_can_change_status(self.registrar,gitem))
 
         self.ra.register(gitem,models.STATES.standard,self.registrar)
@@ -534,8 +583,12 @@ class GlossaryViewPage(LoggedInViewConceptPages,TestCase):
 
         response = self.client.get('/api/v1/glossarylist/?format=json&limit=0')
         data = json.loads(str(response.content))['objects']
-        self.assertEqual(len(data),1)
-        self.assertEqual(data[0]['id'],gitem.id)
+
+        self.assertEqual(len(data),models.GlossaryItem.objects.all().visible(self.editor).count())
+
+        for i in models.GlossaryItem.objects.filter(pk__in=[item['id'] for item in data]):
+            self.assertEqual(i.can_view(self.editor),1)
+
 
 class LoggedInViewUnmanagedPages(utils.LoggedInViewPages):
     defaults = {}
@@ -660,8 +713,8 @@ class RegistryCascadeTest(TestCase):
         self.vd = models.ValueDomain.objects.create(name="Test VD",readyToReview=True,
                 workgroup=self.wg,
                 format = "X" ,
-                maximumLength = 3,
-                dataType = models.DataType.objects.create(name="Test DT",workgroup=self.wg)
+                maximum_length = 3,
+                data_type = models.DataType.objects.create(name="Test DT",workgroup=self.wg)
                 )
         self.dec = models.DataElementConcept.objects.create(name="Test DEC",readyToReview=True,
             objectClass=self.oc,

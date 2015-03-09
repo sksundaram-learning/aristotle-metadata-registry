@@ -20,13 +20,24 @@ class UserAwareModelForm(autocomplete_light.ModelForm):
         super(UserAwareModelForm, self).__init__(*args, **kwargs)
 
     def _media(self):
-        js = ('aristotle_mdr/aristotle.wizard.js','/static/tiny_mce/tiny_mce.js')
+        js = ('aristotle_mdr/aristotle.wizard.js','/static/tiny_mce/tiny_mce.js','/static/aristotle_mdr/aristotle.tinymce.js')
         #js = ('/static/admin/js/jquery.min.js','aristotle_mdr/aristotle.wizard.js','/static/tiny_mce/tiny_mce.js')
         media = forms.Media(js=js)
         for field in self.fields.values():
             media = media + field.widget.media
         return media
     media = property(_media)
+
+"""
+Technically not a real form, but a massive convenience for the glossary item TinyMCE bit
+Never saves.
+"""
+class GlossarySearchForm(UserAwareForm):
+    items = forms.ModelChoiceField(
+                queryset=MDR.GlossaryItem.objects.all(),
+                label="Glossary Item",
+                widget=autocomplete_light.ChoiceWidget('AutocompleteGlossaryItem'))
+    link  = forms.CharField(required=False,label=_('Link text'))
 
 class ConceptForm(UserAwareModelForm):
     """
