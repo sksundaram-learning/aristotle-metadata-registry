@@ -50,6 +50,8 @@ class UserHomePages(utils.LoggedInViewPages,TestCase):
         # A view is not a superuser
         response = self.client.get(reverse('aristotle:userAdminTools',))
         self.assertEqual(response.status_code,403)
+        response = self.client.get(reverse('aristotle:userAdminStats',))
+        self.assertEqual(response.status_code,403)
         self.logout()
 
     def test_registrar_can_access_tools(self):
@@ -74,5 +76,7 @@ class UserHomePages(utils.LoggedInViewPages,TestCase):
 
         self.assertTrue(self.su.is_superuser)
         response = self.client.get(reverse('aristotle:userAdminTools',))
+        self.assertEqual(response.status_code,200)
+        response = self.client.get(reverse('aristotle:userAdminStats',))
         self.assertEqual(response.status_code,200)
         self.logout()
