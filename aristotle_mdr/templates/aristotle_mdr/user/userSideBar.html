@@ -83,6 +83,15 @@
         <a href="{% url 'aristotle:userAdminTools' %}">
         <i class="fa fa-user-md fa-fw"></i> Super user tools
         </a>
+        {% if activeTab == 'adminTools' %}
+        <ul class="nav nav-pills nav-stacked nav-collapse dashSubMenu">
+            <li {% if adminSub == "stats" %}class="active"{% endif %}>
+                <a href="{% url 'aristotle:userAdminStats' %}">
+                    <i class="fa fa-bar-chart fa-fw"></i> {% trans 'Registry Statistics' %}
+                </a>
+            </li>
+        </ul>
+        {% endif %}
     </li>
     {% endif %}
 </ul>
