@@ -44,7 +44,11 @@
             {% endif %}
         </td>
         <td>
-            {{ notice.actor }}
+            {% if 'comment' in notice.verb %}
+                {{ notice.actor }}
+            {% else %}
+                Someone
+            {% endif %}
             {{ notice.verb }}
             {% if notice.target %} :
                 {% if 'item' in notice.verb %}

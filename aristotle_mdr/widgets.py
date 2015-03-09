@@ -31,7 +31,7 @@ class BootstrapChoiceInput(ChoiceInput):
         value = value or self.value
         attrs = attrs or self.attrs
         if 'id' in self.attrs:
-            label_for = format_html(u' for="{0}_{1}"', self.attrs['id'], self.index)
+            label_for = format_html(u' for="{0}"', self.attrs['id'])
         else:
             label_for = ''
         return format_html(u'{1}<label{0} role="menuitem" tabindex="-1"> <span>{2}</span></label>', label_for, self.tag(), self.choice_label)
