@@ -85,25 +85,25 @@ About the badges (plus some extras):
 * |gitter| - Gitter, a git-powered chat room for developers
 
 
-.. |build-status| image:: https://travis-ci.org/LegoStormtroopr/aristotle-metadata-registry.svg?branch=master
+.. |build-status| image:: https://travis-ci.org/aristotle-mdr/aristotle-metadata-registry.svg?branch=master
     :alt: build status
     :scale: 100%
-    :target: https://travis-ci.org/LegoStormtroopr/aristotle-metadata-registry
+    :target: https://travis-ci.org/aristotle-mdr/aristotle-metadata-registry
 
 .. |docs| image:: https://readthedocs.org/projects/aristotle-metadata-registry/badge/?version=latest
     :alt: Documentation Status
     :scale: 100%
     :target: https://readthedocs.org/projects/aristotle-metadata-registry/
 
-.. |coveralls| image:: https://coveralls.io/repos/LegoStormtroopr/aristotle-metadata-registry/badge.png?branch=master
+.. |coveralls| image:: https://coveralls.io/repos/aristotle-mdr/aristotle-metadata-registry/badge.png?branch=master
     :alt: Code coverage on coveralls
     :scale: 100%
-    :target: https://coveralls.io/r/LegoStormtroopr/aristotle-metadata-registry?branch=master
+    :target: https://coveralls.io/r/aristotle-mdr/aristotle-metadata-registry?branch=master
 
-.. |codecov| image:: https://codecov.io/github/LegoStormtroopr/aristotle-metadata-registry/coverage.svg?branch=master
+.. |codecov| image:: https://codecov.io/github/aristotle-mdr/aristotle-metadata-registry/coverage.svg?branch=master
     :alt: Code coverage on code cov (includes branch checks)
     :scale: 100%
-    :target: https://codecov.io/github/LegoStormtroopr/aristotle-metadata-registry?branch=master
+    :target: https://codecov.io/github/aristotle-mdr/aristotle-metadata-registry?branch=master
 
 .. |demoserver| image:: https://img.shields.io/badge/Demo_server-available-blue.svg
     :alt: visit the live demonstration server on PythonAnywhere

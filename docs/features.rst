@@ -74,9 +74,9 @@ Using a set of thoroughly tested custom permissions, content created within the
 Aristotle registry can be show or hidden from the public and registered users
 based on the well documented status workflow in part 6 of the ISO/IEC 11179 standard.
 
-Strict version control of the code on `GitHub <https://github.com/LegoStormtroopr/aristotle-metadata-registry/>`_,
-continuous testing of the code using `Travis-CI <https://travis-ci.org/LegoStormtroopr/aristotle-metadata-registry>`_
-and code coverage analysis using `Coveralls.io <https://coveralls.io/r/LegoStormtroopr/aristotle-metadata-registry>`_
+Strict version control of the code on `GitHub <https://github.com/aristotle-mdr/aristotle-metadata-registry/>`_,
+continuous testing of the code using `Travis-CI <https://travis-ci.org/aristotle-mdr/aristotle-metadata-registry>`_
+and code coverage analysis using `Coveralls.io <https://coveralls.io/r/aristotle-mdr/aristotle-metadata-registry>`_
 ensures that access permissions are clearly defined, and as changes are made
 if issues with permissions they can be idenitified and rectified immediately.
 
