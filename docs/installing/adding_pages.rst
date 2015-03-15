@@ -16,8 +16,8 @@ can be easily overriden, without requiring a separate django app or editing of
 the main Aristole codebase.
 
 When attempting to resolve templates, one of the first locations checked will be the
-directory stated in ``TEMPLATE_DIRS``. Examining the
-`Aristotle-MDR <https://github.com/LegoStormtroopr/aristotle-metadata-registry/>`_
+directory stated in ``TEMPLATE_DIRS``. Examining the code in the
+`Aristotle-MDR <https://github.com/aristotle-mdr/aristotle-metadata-registry/> code`_
 should give an understanding of how the templates are laid out if changes are necessary.
 
 Recommended pages
