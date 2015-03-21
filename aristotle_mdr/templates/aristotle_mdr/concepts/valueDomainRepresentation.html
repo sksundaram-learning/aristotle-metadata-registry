@@ -43,8 +43,7 @@ So we've split this out into its own template.
 </tr>
 {% endif %}
 </table>
-</div>
-{% if item.permissible_values.count > 0 %}
+{% if item.permissiblevalue_set.count > 0 or item.supplementaryvalue_set.count > 0 or item|can_edit:request.user %}
   <strong>Permissible Values</strong>
     <table class="codeList table table-striped">
         <thead>
@@ -53,12 +52,11 @@ So we've split this out into its own template.
                 <th>Value</th><th>Meaning</th>
             </tr>
         </thead>
-        {% if item.permissible_values.count > 0 %}
         <tbody>
-            {% for perm in item.permissible_values.all %}
+            {% for perm in item.permissiblevalue_set.all %}
                 <tr>
                     {% if forloop.first %}
-                    <th rowspan="{{ item.permissible_values.count }}">Permissible Values
+                    <th rowspan="{{ item.permissiblevalue_set.count }}">Permissible Values
                         {% if item|can_edit:request.user %}
                             <a class="inline_action" data-toggle="modal" data-target="#value_domain_modal"
                             href="{% url 'aristotle:valueDomain_edit_values' item.id 'permissible' %}">edit</a>
@@ -68,15 +66,26 @@ So we've split this out into its own template.
                     <td>{{ perm.value }}</td>
                     <td>{{ perm.meaning }}</td>
                 </tr>
+            {% empty %}
+                {% if item|can_edit:request.user %}
+                <tr>
+                    <th>
+                        {% if item|can_edit:request.user %}
+                            <a class="inline_action" data-toggle="modal" data-target="#value_domain_modal"
+                            href="{% url 'aristotle:valueDomain_edit_values' item.id 'permissible' %}">Add Permissible Values</a>
+                        {% endif %}
+                    </th>
+                    <td></td>
+                    <td></td>
+                </tr>
+                {% endif %}
             {% endfor %}
         </tbody>
-        {% endif %}
-        {% if item.supplementary_values.count > 0 %}
         <tbody>
-            {% for perm in item.supplementary_values.all %}
+            {% for perm in item.supplementaryvalue_set.all %}
                 <tr>
                     {% if forloop.first %}
-                    <th rowspan="{{ item.supplementary_values.count }}">Supplementary Values
+                    <th rowspan="{{ item.supplementaryvalue_set.count }}">Supplementary Values
                         {% if item|can_edit:request.user %}
                             <a class="inline_action" data-toggle="modal" data-target="#value_domain_modal"
                             href="{% url 'aristotle:valueDomain_edit_values' item.id 'supplementary' %}">edit</a>
@@ -86,9 +95,22 @@ So we've split this out into its own template.
                     <td>{{ perm.value }}</td>
                     <td>{{ perm.meaning }}</td>
                 </tr>
+            {% empty %}
+                {% if item|can_edit:request.user %}
+                <tr>
+                    <th>
+                        {% if item|can_edit:request.user %}
+                            <a class="inline_action" data-toggle="modal" data-target="#value_domain_modal"
+                            href="{% url 'aristotle:valueDomain_edit_values' item.id 'supplementary' %}">Add Supplementary Values</a>
+                        {% endif %}
+                    </th>
+                    <td></td>
+                    <td></td>
+                </tr>
+                {% endif %}
             {% endfor %}
         </tbody>
-        {% endif %}
+
     </table>
     <div id="value_domain_modal" class="modal fade">
       <div class="modal-dialog">
@@ -97,3 +119,4 @@ So we've split this out into its own template.
         </div><!-- /.modal-dialog -->
     </div><!-- /.modal -->
 {% endif %}
+</div>
