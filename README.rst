@@ -72,6 +72,7 @@ Screenshots for users
 ---------------------
 
 `More screenshots available in the Aristotle-MDR Wiki <https://github.com/aristotle-mdr/aristotle-metadata-registry/wiki/Screenshots>`_.
+
 A newly created data element.
 |newitemsample|
 
