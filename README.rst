@@ -68,6 +68,16 @@ For a complete example of how to successfully include Aristotle, see the `tests/
 **A live Aristotle-MDR instance is available for review on PythonAnywhere at:** ``http://aristotle.pythonanywhere.com/``.
 Be aware, this is an active development instance and may sporadically be unavailble.
 
+Screenshots for users
+---------------------
+
+`More screenshots available in the Aristotle-MDR Wiki <https://github.com/aristotle-mdr/aristotle-metadata-registry/wiki/Screenshots>`_.
+A newly created data element.
+|newitemsample|
+
+An item being without changing screens
+|itemeditsample|
+
 Information for developers
 --------------------------
 
@@ -114,3 +124,11 @@ About the badges (plus some extras):
     :alt: visit the gitter chat room for this project
     :scale: 100%
     :target: https://gitter.im/LegoStormtroopr/aristotle-metadata-registry?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge
+
+.. |newitemsample| image:: http://i.imgur.com/8mtkFQv.png
+    :alt: The newly created Data Element
+    :scale: 100%
+
+.. |itemeditsample| image:: http://i.imgur.com/dAEboRg.png
+    :alt: Edit screen for a Data Element
+    :scale: 100%
