@@ -474,7 +474,7 @@ def valuedomain_value_edit(request,iid,value_type):
     else:
         formset = ValuesFormSet(
             queryset=value_model.objects.filter(valueDomain=item.id),
-            initial=[{'order':num_values,'':'val','meaning':''}]
+            initial=[{'order':num_values,'value':'','meaning':''}]
             )
     return render(request,"aristotle_mdr/actions/edit_value_domain_values.html",
             {'item':item,'formset': formset,'value_type':value_type,'value_model':value_model,}
