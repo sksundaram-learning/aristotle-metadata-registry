@@ -37,7 +37,7 @@
     <div class="col-xs-12 col-sm-6 col-md-4 ">
         <div class="panel panel-default">
             <div class="panel-heading">
-                <h2 class="panel-title"><a href="about/">About <em>{{ config.SITE_NAME }}</em></a></h2>
+                <h2 class="panel-title"><a href="{% url 'aristotle:aboutThisSite' %}">About <em>{{ config.SITE_NAME }}</em></a></h2>
             </div>
             <div class="panel-body">
                 <a href="{% url 'aristotle:allRegistrationAuthorities' %}">Current registration authorities</a>

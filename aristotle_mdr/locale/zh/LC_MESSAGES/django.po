@@ -1,0 +1,789 @@
+# Aristotle-MDR translation file.
+# Copyright (C) 2015
+# This file is distributed under the same license as the Aristotle-MDR package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: 0.0.1a\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2015-03-22 05:23+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: forms/admin.py:21 forms/admin.py:22 forms/admin.py:23 forms/admin.py:24
+msgid "workgroups"
+msgstr ""
+
+#: forms/admin.py:27
+msgid "registration authorities"
+msgstr ""
+
+#: forms/creation_wizards.py:40
+msgid "Link text"
+msgstr ""
+
+#: forms/creation_wizards.py:98 forms/creation_wizards.py:228
+msgid ""
+"I've reviewed these items, and none of them meet my needs. Make me a new one."
+msgstr ""
+
+#: forms/creation_wizards.py:163 forms/creation_wizards.py:240
+msgid "I've reviewed these items, and wish to create them."
+msgstr ""
+
+#: forms/forms.py:19
+msgid "First Name"
+msgstr ""
+
+#: forms/forms.py:20
+msgid "Last Name"
+msgstr ""
+
+#: forms/forms.py:21
+msgid "Email Address"
+msgstr ""
+
+#: forms/forms.py:45
+msgid "Supersede older items"
+msgstr ""
+
+#: forms/forms.py:64 forms/forms.py:81
+#: templates/aristotle_mdr/concepts/infobox.html:92
+msgid "Superseded by"
+msgstr ""
+
+#: forms/forms.py:97
+msgid "Registration date"
+msgstr ""
+
+#: forms/forms.py:103
+msgid "Do you want to update the registration of associated items?"
+msgstr ""
+
+#: forms/forms.py:107
+msgid "Why is the status being changed for these items?"
+msgstr ""
+
+#: forms/search.py:19
+msgid "Any time"
+msgstr ""
+
+#: forms/search.py:20
+msgid "Last hour"
+msgstr ""
+
+#: forms/search.py:21
+msgid "Today"
+msgstr ""
+
+#: forms/search.py:22
+msgid "This week"
+msgstr ""
+
+#: forms/search.py:23
+msgid "This month"
+msgstr ""
+
+#: forms/search.py:24
+msgid "This year"
+msgstr ""
+
+#: forms/search.py:25
+msgid "Custom period"
+msgstr ""
+
+#: forms/search.py:29
+msgid "Ranking"
+msgstr ""
+
+#: forms/search.py:30
+msgid "Modified ascending"
+msgstr ""
+
+#: forms/search.py:31
+msgid "Modified descending"
+msgstr ""
+
+#: forms/search.py:32
+msgid "Created ascending"
+msgstr ""
+
+#: forms/search.py:33
+msgid "Created descending"
+msgstr ""
+
+#: forms/search.py:34
+msgid "Alphabetical"
+msgstr ""
+
+#: forms/search.py:35
+msgid "Registration state"
+msgstr ""
+
+#: forms/search.py:227
+msgid "Registration authority"
+msgstr ""
+
+#: forms/search.py:233 templates/aristotle_mdr/statuses.html:3
+msgid "Registration status"
+msgstr ""
+
+#: forms/search.py:242
+msgid "Item type"
+msgstr ""
+
+#: models.py:29
+msgid "Not Progressed"
+msgstr ""
+
+#: models.py:30
+msgid "Incomplete"
+msgstr ""
+
+#: models.py:31
+msgid "Candidate"
+msgstr ""
+
+#: models.py:32
+msgid "Recorded"
+msgstr ""
+
+#: models.py:33
+msgid "Qualified"
+msgstr ""
+
+#: models.py:34
+msgid "Standard"
+msgstr ""
+
+#: models.py:35
+msgid "Preferred Standard"
+msgstr ""
+
+#: models.py:36
+msgid "Superseded"
+msgstr ""
+
+#: models.py:37
+msgid "Retired"
+msgstr ""
+
+#: models.py:42
+msgid "The primary name used for human identification purposes."
+msgstr ""
+
+#: models.py:45
+msgid "definition"
+msgstr ""
+
+#: models.py:45
+msgid ""
+"Representation of a concept by a descriptive statement which serves to "
+"differentiate it from related concepts"
+msgstr ""
+
+#: models.py:156
+msgid "Registration Authorities"
+msgstr ""
+
+#: models.py:262
+msgid "Submitter"
+msgstr ""
+
+#: models.py:263
+msgid "Viewer"
+msgstr ""
+
+#: models.py:264
+msgid "Steward"
+msgstr ""
+
+#: models.py:265
+msgid "Manager"
+msgstr ""
+
+#: models.py:604
+#, python-format
+msgid ""
+"This Object %(obj)s already has a status in Registration Authority \"%(ra)s"
+"\". Please update the exisiting status field instead of creating a new one."
+msgstr ""
+
+#: models.py:655 models.py:692
+msgid "description"
+msgstr ""
+
+#: templates/admin/submit_line.html:6
+msgid "Delete"
+msgstr ""
+
+#: templates/admin/submit_line.html:10
+msgid "Cancel editing and return to main site"
+msgstr ""
+
+#: templates/admin/submit_line.html:12
+msgid "Exit without saving"
+msgstr ""
+
+#: templates/admin/submit_line.html:15
+msgid "Save and return to item"
+msgstr ""
+
+#: templates/admin/submit_line.html:18
+msgid "Save as new"
+msgstr ""
+
+#: templates/admin/submit_line.html:21
+msgid "Save and add another"
+msgstr ""
+
+#: templates/admin/submit_line.html:24
+msgid "Save and continue editing"
+msgstr ""
+
+#: templates/aristotle_mdr/actions/advanced_editor.html:24
+#: templates/aristotle_mdr/concepts/managedContent.html:139
+msgid "This item has been superseded by the newer version,"
+msgstr ""
+
+#: templates/aristotle_mdr/actions/advanced_editor.html:29
+#: templates/aristotle_mdr/concepts/managedContent.html:144
+msgid ""
+"This item has been retired and is not recommended for use by any "
+"registration authority."
+msgstr ""
+
+#: templates/aristotle_mdr/actions/advanced_editor.html:35
+#: templates/aristotle_mdr/concepts/managedContent.html:149
+msgid "This item is currently public."
+msgstr ""
+
+#: templates/aristotle_mdr/actions/advanced_editor.html:39
+#: templates/aristotle_mdr/concepts/managedContent.html:153
+msgid "This item is currently under development."
+msgstr ""
+
+#: templates/aristotle_mdr/actions/advanced_editor.html:43
+#: templates/aristotle_mdr/concepts/managedContent.html:157
+msgid "This item is under active development. Content may change frequently."
+msgstr ""
+
+#: templates/aristotle_mdr/actions/autocompleteItem.html:10
+msgid "Open in a new window"
+msgstr ""
+
+#: templates/aristotle_mdr/actions/mark_ready_to_review.html:35
+#: templates/aristotle_mdr/actions/mark_ready_to_review.html:37
+#: templates/aristotle_mdr/create/de_template_wrapper.html:49
+#: templates/aristotle_mdr/create/dec_template_wrapper.html:37
+#: templates/inplaceeditform/render_field.html:17
+msgid "Cancel"
+msgstr ""
+
+#: templates/aristotle_mdr/actions/mark_ready_to_review.html:41
+msgid "Remove ready to review flag"
+msgstr ""
+
+#: templates/aristotle_mdr/actions/mark_ready_to_review.html:43
+msgid "Ready to review"
+msgstr ""
+
+#: templates/aristotle_mdr/base.html:81
+msgid "Loading"
+msgstr ""
+
+#: templates/aristotle_mdr/concepts/infobox.html:21
+msgctxt "Object Type"
+msgid "Type"
+msgstr ""
+
+#: templates/aristotle_mdr/concepts/infobox.html:29
+#: templates/aristotle_mdr/concepts/managedContent.html:196
+msgid "Short name"
+msgstr ""
+
+#: templates/aristotle_mdr/concepts/infobox.html:32
+#: templates/aristotle_mdr/concepts/managedContent.html:68
+#: templates/aristotle_mdr/concepts/managedContent.html:199
+msgid "Version"
+msgstr ""
+
+#: templates/aristotle_mdr/concepts/infobox.html:35
+#: templates/aristotle_mdr/concepts/managedContent.html:202
+msgid "Synonyms"
+msgstr ""
+
+#: templates/aristotle_mdr/concepts/infobox.html:38
+msgid "Origin URI"
+msgstr ""
+
+#: templates/aristotle_mdr/concepts/infobox.html:44
+msgctxt "Aristotle Package"
+msgid "Package"
+msgstr ""
+
+#: templates/aristotle_mdr/concepts/infobox.html:51
+msgid "Last updated"
+msgstr ""
+
+#: templates/aristotle_mdr/concepts/infobox.html:63
+msgid "This may have been added during an import."
+msgstr ""
+
+#: templates/aristotle_mdr/concepts/infobox.html:63
+msgctxt "Unknown import user"
+msgid "Unknown"
+msgstr ""
+
+#: templates/aristotle_mdr/concepts/infobox.html:68
+msgid "Created"
+msgstr ""
+
+#: templates/aristotle_mdr/concepts/infobox.html:73
+msgid "Supersedes"
+msgstr ""
+
+#: templates/aristotle_mdr/concepts/infobox.html:87
+msgctxt "No older objects"
+msgid "None"
+msgstr ""
+
+#: templates/aristotle_mdr/concepts/infobox.html:102
+msgctxt "No newer objects"
+msgid "None"
+msgstr ""
+
+#: templates/aristotle_mdr/concepts/infobox.html:107
+#: templates/aristotle_mdr/header.html:61
+msgid "Workgroup"
+msgstr ""
+
+#: templates/aristotle_mdr/concepts/managedContent.html:76
+msgid "Admin editor"
+msgstr ""
+
+#: templates/aristotle_mdr/concepts/managedContent.html:78
+#: templates/aristotle_mdr/concepts/managedContent.html:92
+msgid "Advanced editor"
+msgstr ""
+
+#: templates/aristotle_mdr/concepts/managedContent.html:86
+#: templates/aristotle_mdr/concepts/managedContent.html:108
+msgid "Edit"
+msgstr ""
+
+#: templates/aristotle_mdr/concepts/managedContent.html:95
+msgid "Edit in admin"
+msgstr ""
+
+#: templates/aristotle_mdr/concepts/managedContent.html:100
+msgid "Clone this item"
+msgstr ""
+
+#: templates/aristotle_mdr/concepts/managedContent.html:129
+msgid "Download"
+msgstr ""
+
+#: templates/aristotle_mdr/concepts/managedContent.html:164
+msgid ""
+"This item has been marked as ready to review, but has not yet been "
+"registered in an authority."
+msgstr ""
+
+#: templates/aristotle_mdr/concepts/managedContent.html:166
+msgid ""
+"The visibility of this item is still restricted to your current workgroup."
+msgstr ""
+
+#: templates/aristotle_mdr/concepts/managedContent.html:171
+msgid ""
+"\n"
+"        <p>You can control the visibility of this item by indicating its "
+"review status.\n"
+"        If an item is marked \"ready for review\", registrars will be able "
+"to see this item and\n"
+"        begin the standardisation process according to their registration "
+"authority.\n"
+"        </p>\n"
+"        "
+msgstr ""
+
+#: templates/aristotle_mdr/concepts/managedContent.html:180
+msgid "Remove ready for review flag"
+msgstr ""
+
+#: templates/aristotle_mdr/concepts/managedContent.html:182
+msgid "Flag as ready for review"
+msgstr ""
+
+#: templates/aristotle_mdr/concepts/managedContent.html:205
+msgid "Definition"
+msgstr ""
+
+#: templates/aristotle_mdr/create/concept_editor.html:8
+msgctxt "creating items"
+msgid "Definition"
+msgstr ""
+
+#: templates/aristotle_mdr/create/concept_editor.html:14
+msgctxt "For making an item"
+msgid "Components"
+msgstr ""
+
+#: templates/aristotle_mdr/create/concept_editor.html:18
+msgctxt "creating items"
+msgid "Tips"
+msgstr ""
+
+#: templates/aristotle_mdr/create/concept_wizard_wrapper.html:24
+#: templates/aristotle_mdr/create/de_template_wrapper.html:46
+#: templates/aristotle_mdr/create/dec_template_wrapper.html:39
+msgid "First step"
+msgstr ""
+
+#: templates/aristotle_mdr/create/concept_wizard_wrapper.html:27
+#: templates/aristotle_mdr/create/de_template_wrapper.html:47
+#: templates/aristotle_mdr/create/dec_template_wrapper.html:40
+msgid "Back"
+msgstr ""
+
+#: templates/aristotle_mdr/create/concept_wizard_wrapper.html:30
+msgid "submit"
+msgstr ""
+
+#: templates/aristotle_mdr/create/concept_wizard_wrapper.html:31
+#: templates/aristotle_mdr/create/dec_template_wrapper.html:36
+#: views/wizards.py:590
+msgid "Next"
+msgstr ""
+
+#: templates/aristotle_mdr/create/create_list.html:13
+#: templates/aristotle_mdr/header.html:125
+msgid "Management interface"
+msgstr ""
+
+#: templates/aristotle_mdr/header.html:34
+#: templates/aristotle_mdr/static/home.html:17 templates/search/search.html:21
+#: templates/search/search.html.py:30 views/wizards.py:597
+msgid "Search"
+msgstr ""
+
+#: templates/aristotle_mdr/header.html:46
+msgid "Create"
+msgstr ""
+
+#: templates/aristotle_mdr/header.html:65
+msgid "User"
+msgstr ""
+
+#: templates/aristotle_mdr/header.html:71
+msgid "See all"
+msgstr ""
+
+#: templates/aristotle_mdr/header.html:76
+msgid "Open user menu"
+msgstr ""
+
+#: templates/aristotle_mdr/header.html:85
+msgid "New notifications"
+msgstr ""
+
+#: templates/aristotle_mdr/header.html:87
+msgid "No unread notifications"
+msgstr ""
+
+#: templates/aristotle_mdr/header.html:93
+msgid "My Dashboard"
+msgstr ""
+
+#: templates/aristotle_mdr/header.html:96
+msgid "My Favourites"
+msgstr ""
+
+#: templates/aristotle_mdr/header.html:100
+msgid "Notifications"
+msgstr ""
+
+#: templates/aristotle_mdr/header.html:106
+#: templates/aristotle_mdr/user/userSideBar.html:53
+msgid "Discussions"
+msgstr ""
+
+#: templates/aristotle_mdr/header.html:109
+msgid "Workgroups"
+msgstr ""
+
+#: templates/aristotle_mdr/header.html:113
+#: templates/aristotle_mdr/user/userSideBar.html:61
+msgid "Change password"
+msgstr ""
+
+#: templates/aristotle_mdr/header.html:119
+msgid "Registrar tools"
+msgstr ""
+
+#: templates/aristotle_mdr/header.html:130
+msgid "Admin tools"
+msgstr ""
+
+#: templates/aristotle_mdr/header.html:136
+msgid "Log out"
+msgstr ""
+
+#: templates/aristotle_mdr/header.html:145
+#: templates/registration/password_reset_complete.html:10
+msgid "Log in"
+msgstr ""
+
+#: templates/aristotle_mdr/static/home.html:4
+msgid "Home"
+msgstr ""
+
+#: templates/aristotle_mdr/static/home.html:15
+msgctxt "Front page search options"
+msgid "More options"
+msgstr ""
+
+#: templates/aristotle_mdr/statuses.html:17
+msgid "View registration history"
+msgstr ""
+
+#: templates/aristotle_mdr/statuses.html:25
+msgid "Not registered"
+msgstr ""
+
+#: templates/aristotle_mdr/user/userSideBar.html:24
+msgid "All messages"
+msgstr ""
+
+#: templates/aristotle_mdr/user/userSideBar.html:75
+msgid "Review list"
+msgstr ""
+
+#: templates/aristotle_mdr/user/userSideBar.html:90
+msgid "Registry Statistics"
+msgstr ""
+
+#: templates/aristotle_mdr/user/userWorkgroups.html:50
+msgid "Archived"
+msgstr ""
+
+#: templates/aristotle_mdr/user/userWorkgroups.html:52
+msgid "Active"
+msgstr ""
+
+#: templates/inplaceeditform/render_field.html:9
+msgid "Apply change"
+msgstr ""
+
+#: templates/inplaceeditform/render_field.html:11
+msgid "Save"
+msgstr ""
+
+#: templates/inplaceeditform/render_field.html:15
+msgid "Cancel change"
+msgstr ""
+
+#: templates/registration/password_reset_complete.html:9
+msgid "Your password has been set.  You may go ahead and log in now."
+msgstr ""
+
+#: templates/search/search.html:21
+msgctxt "Search results"
+msgid "results"
+msgstr ""
+
+#: templates/search/search.html:61
+msgid "Toggle navigation"
+msgstr ""
+
+#: templates/search/search.html:66
+msgctxt "Advanced search"
+msgid "Advanced"
+msgstr ""
+
+#: templates/search/search.html:66
+msgctxt "Clear search filters"
+msgid "Clear filters"
+msgstr ""
+
+#: templates/search/search.html:75
+msgctxt "Metadata item type"
+msgid "Item type"
+msgstr ""
+
+#: templates/search/search.html:83
+msgctxt "Registration Status"
+msgid "Status"
+msgstr ""
+
+#: templates/search/search.html:91
+msgctxt "Registration Authority"
+msgid "Authority"
+msgstr ""
+
+#: templates/search/search.html:99
+msgctxt "Modified date"
+msgid "Modified"
+msgstr ""
+
+#: templates/search/search.html:119
+msgctxt "Created date"
+msgid "Created"
+msgstr ""
+
+#: utils.py:29
+msgid " (clone)"
+msgstr ""
+
+#: utils.py:51
+#, python-format
+msgid "Changed %s."
+msgstr ""
+
+#: utils.py:51 utils.py:61
+msgid "and"
+msgstr ""
+
+#: utils.py:56
+#, python-format
+msgid "Added %(name)s \"%(object)s\"."
+msgstr ""
+
+#: utils.py:60
+#, python-format
+msgid "Changed %(list)s for %(name)s \"%(object)s\"."
+msgstr ""
+
+#: utils.py:65
+#, python-format
+msgid "Deleted %(name)s \"%(object)s\"."
+msgstr ""
+
+#: utils.py:69
+msgid "No fields changed."
+msgstr ""
+
+#: views/wizards.py:260 views/wizards.py:263
+msgid "No object class name found"
+msgstr ""
+
+#: views/wizards.py:261 views/wizards.py:264
+msgid "No object class description found"
+msgstr ""
+
+#: views/wizards.py:275 views/wizards.py:278 views/wizards.py:695
+#: views/wizards.py:698
+msgid "No property name found"
+msgstr ""
+
+#: views/wizards.py:276 views/wizards.py:279 views/wizards.py:696
+#: views/wizards.py:699
+msgid "No property description found"
+msgstr ""
+
+#: views/wizards.py:292
+#, python-brace-format
+msgid "<p>{pr} of {oc}</p> - This was an autogenerated definition."
+msgstr ""
+
+#: views/wizards.py:366 views/wizards.py:596
+msgid "Search for components"
+msgstr ""
+
+#: views/wizards.py:367 views/wizards.py:599
+msgid "Refine components"
+msgstr ""
+
+#: views/wizards.py:368 views/wizards.py:603
+msgid "Create Object Class"
+msgstr ""
+
+#: views/wizards.py:369 views/wizards.py:608
+msgid "Create Property"
+msgstr ""
+
+#: views/wizards.py:370
+msgid "Review Data Element Concept"
+msgstr ""
+
+#: views/wizards.py:371 views/wizards.py:624
+msgid "Complete and Save"
+msgstr ""
+
+#: views/wizards.py:413 views/wizards.py:727
+#, python-brace-format
+msgid "New Property '{name}' Saved - <a href='{url}'>id:{id}</a>"
+msgstr ""
+
+#: views/wizards.py:421 views/wizards.py:735
+#, python-brace-format
+msgid "New Object Class '{name}' Saved - <a href='{url}'>id:{id}</a>"
+msgstr ""
+
+#: views/wizards.py:429 views/wizards.py:743
+#, python-brace-format
+msgid "New Data Element Concept '{name}' Saved - <a href='{url}'>id:{id}</a>"
+msgstr ""
+
+#: views/wizards.py:600 views/wizards.py:621
+msgid "Review Data Element"
+msgstr ""
+
+#: views/wizards.py:604
+msgid "Save Object Class"
+msgstr ""
+
+#: views/wizards.py:609
+msgid "Save Property"
+msgstr ""
+
+#: views/wizards.py:611
+msgid "Select Data Element Concept"
+msgstr ""
+
+#: views/wizards.py:614
+msgid "Create Data Element Concept"
+msgstr ""
+
+#: views/wizards.py:615
+msgid "Save Data Element Concept"
+msgstr ""
+
+#: views/wizards.py:619
+msgid "Create Value Domain"
+msgstr ""
+
+#: views/wizards.py:625
+msgid "Save and Finish"
+msgstr ""
+
+#: views/wizards.py:680 views/wizards.py:683
+msgid "No value domain name found"
+msgstr ""
+
+#: views/wizards.py:681 views/wizards.py:684
+msgid "No value domain description found"
+msgstr ""
+
+#: views/wizards.py:710
+#, python-brace-format
+msgid "<p>{dec}, recorded as {vd}</p> - This was an autogenerated definition."
+msgstr ""
+
+#: views/wizards.py:751
+#, python-brace-format
+msgid "New ValueDomain '{name}' Saved - <a href='{url}'>id:{id}</a>"
+msgstr ""
+
+#: views/wizards.py:759
+#, python-brace-format
+msgid "New Data Element '{name}' Saved - <a href='{url}'>id:{id}</a>"
+msgstr ""
