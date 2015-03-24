@@ -440,11 +440,16 @@ def valuedomain_value_edit(request,iid,value_type):
     if not value_model:
         raise Http404
 
+    num_values = value_model.objects.filter(valueDomain=item.id).count()
+    if num_values > 0:
+        extra = 0
+    else:
+        extra = 1
     ValuesFormSet = modelformset_factory(
         value_model,
         can_delete=True, # dont need can_order is we have an order field
         fields=('order','value','meaning'),
-        extra=0
+        extra=extra
         )
     if request.method == 'POST':
         formset = ValuesFormSet(request.POST, request.FILES)
@@ -453,6 +458,8 @@ def valuedomain_value_edit(request,iid,value_type):
                     item.save() # do this to ensure we are saving reversion records for the value domain, not just the values
                     formset.save(commit=False)
                     for form in formset.forms:
+                        if form['value'].value() == '' and form['meaning'].value() == '':
+                            continue # Skip over completely blank entries.
                         if form['id'].value() not in [deleted_record['id'].value() for deleted_record in formset.deleted_forms]:
                             value = form.save(commit=False) #Don't immediately save, we need to attach the value domain
                             value.valueDomain = item
@@ -466,7 +473,8 @@ def valuedomain_value_edit(request,iid,value_type):
                 return redirect(reverse("aristotle_mdr:item",args=[item.id]))
     else:
         formset = ValuesFormSet(
-            queryset=value_model.objects.filter(valueDomain=item.id)
+            queryset=value_model.objects.filter(valueDomain=item.id),
+            initial=[{'order':num_values,'value':'','meaning':''}]
             )
     return render(request,"aristotle_mdr/actions/edit_value_domain_values.html",
             {'item':item,'formset': formset,'value_type':value_type,'value_model':value_model,}
