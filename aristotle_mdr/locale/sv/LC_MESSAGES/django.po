@@ -32,19 +32,19 @@ msgstr ""
 
 #: models.py:27
 msgid "Incomplete"
-msgstr ""
+msgstr "Inkomplett"
 
 #: models.py:28
 msgid "Candidate"
-msgstr ""
+msgstr "Kandidat"
 
 #: models.py:29
 msgid "Recorded"
-msgstr ""
+msgstr "Noterad"
 
 #: models.py:30
 msgid "Qualified"
-msgstr ""
+msgstr "Kvalificerad"
 
 #: models.py:31
 msgid "Standard"
@@ -52,15 +52,15 @@ msgstr "Standard"
 
 #: models.py:32
 msgid "Preferred Standard"
-msgstr ""
+msgstr "Önskad standard"
 
 #: models.py:33
 msgid "Superseded"
-msgstr ""
+msgstr "Ersatt"
 
 #: models.py:34
 msgid "Retired"
-msgstr ""
+msgstr "Pensionerad"
 
 #: models.py:146
 msgid "Registration Authorities"
@@ -68,19 +68,19 @@ msgstr ""
 
 #: models.py:252
 msgid "Submitter"
-msgstr ""
+msgstr "Inlämnare"
 
 #: models.py:253
 msgid "Viewer"
-msgstr ""
+msgstr "Granskare"
 
 #: models.py:254
 msgid "Steward"
-msgstr ""
+msgstr "Förvaltare"
 
 #: models.py:255
 msgid "Manager"
-msgstr ""
+msgstr "Manager"
 
 #: models.py:583
 #, python-format
@@ -116,16 +116,16 @@ msgstr "Efternamn"
 
 #: forms/forms.py:21
 msgid "Email Address"
-msgstr ""
+msgstr "E-post adress"
 
 #: forms/forms.py:40
 msgid "Supersede older items"
-msgstr ""
+msgstr "Ersätt äldre objekt"
 
 #: forms/forms.py:59 forms/forms.py:70
 #: templates/aristotle_mdr/concepts/infobox.html:90
 msgid "Superseded by"
-msgstr ""
+msgstr "Ersatt av"
 
 #: forms/forms.py:86
 msgid "Registration date"
@@ -133,15 +133,15 @@ msgstr "Registrationsdatum"
 
 #: forms/forms.py:92
 msgid "Do you want to update the registration of associated items?"
-msgstr ""
+msgstr "Vill du uppdatera registreringen av tillhörande objekt?"
 
 #: forms/forms.py:96
 msgid "Why is the status being changed for these items?"
-msgstr ""
+msgstr "Varför ändras statusen för dessa objekt?"
 
 #: forms/search.py:19
 msgid "Any time"
-msgstr "varje gång"
+msgstr "När som helst"
 
 #: forms/search.py:20
 msgid "Last hour"
@@ -169,35 +169,35 @@ msgstr "Anpassad tidsperiod"
 
 #: forms/search.py:29
 msgid "Ranking"
-msgstr ""
+msgstr "Rank"
 
 #: forms/search.py:30
 msgid "Modified ascending"
-msgstr ""
+msgstr "Modifierad stigande"
 
 #: forms/search.py:31
 msgid "Modified descending"
-msgstr ""
+msgstr "Modifierad fallande"
 
 #: forms/search.py:32
 msgid "Created ascending"
-msgstr ""
+msgstr "Skapad stigande"
 
 #: forms/search.py:33
 msgid "Created descending"
-msgstr ""
+msgstr "Skapad fallande"
 
 #: forms/search.py:34
 msgid "Alphabetical"
-msgstr ""
+msgstr "Alfabetisk"
 
 #: forms/search.py:35
 msgid "Registration state"
-msgstr ""
+msgstr "Registeringsstatus"
 
 #: forms/search.py:212
 msgid "Item type"
-msgstr ""
+msgstr "Typ av objekt"
 
 #: templates/admin/submit_line.html:6
 msgid "Delete"
@@ -205,15 +205,15 @@ msgstr "Radera"
 
 #: templates/admin/submit_line.html:10
 msgid "Cancel editing and return to main site"
-msgstr ""
+msgstr "Avbryt editering och gå tillbaka till startsidan"
 
 #: templates/admin/submit_line.html:12
 msgid "Exit without saving"
-msgstr ""
+msgstr "Avsluta utan att spara"
 
 #: templates/admin/submit_line.html:15
 msgid "Save and return to item"
-msgstr ""
+msgstr "Spara och återgå till objekt"
 
 #: templates/admin/submit_line.html:18
 msgid "Save as new"
@@ -221,17 +221,17 @@ msgstr "Spara som ny"
 
 #: templates/admin/submit_line.html:21
 msgid "Save and add another"
-msgstr ""
+msgstr "Spara och lägg till en till"
 
 #: templates/admin/submit_line.html:24
 msgid "Save and continue editing"
-msgstr ""
+msgstr "Spara och fortsätt editera"
 
 #: templates/aristotle_mdr/header.html:34
 #: templates/aristotle_mdr/static/home.html:14 templates/search/search.html:19
 #: templates/search/search.html.py:28
 msgid "Search"
-msgstr ""
+msgstr "Sök"
 
 #: templates/aristotle_mdr/header.html:46
 msgid "Create"
@@ -247,7 +247,7 @@ msgstr "Öppna användarmenyn"
 
 #: templates/aristotle_mdr/header.html:92
 msgid "New notifications"
-msgstr ""
+msgstr "Nya notifikationer"
 
 #: templates/aristotle_mdr/header.html:94
 msgid "No unread notifications"
@@ -263,7 +263,7 @@ msgstr "Mina favoriter"
 
 #: templates/aristotle_mdr/header.html:107
 msgid "Notifications"
-msgstr "Underrättelse"
+msgstr "Notifikationer"
 
 #: templates/aristotle_mdr/header.html:113
 #: templates/aristotle_mdr/user/userSideBar.html:53
@@ -285,7 +285,7 @@ msgstr "Registrera verktyg"
 
 #: templates/aristotle_mdr/header.html:132
 msgid "Management interface"
-msgstr ""
+msgstr "Administrationsgränssnitt"
 
 #: templates/aristotle_mdr/header.html:137
 msgid "Admin tools"
@@ -301,11 +301,11 @@ msgstr "Logga in"
 
 #: templates/aristotle_mdr/statuses.html:2
 msgid "Registration status"
-msgstr ""
+msgstr "Registeringsstatus"
 
 #: templates/aristotle_mdr/statuses.html:16
 msgid "View registration history"
-msgstr ""
+msgstr "Visa registeringshistoria"
 
 #: templates/aristotle_mdr/statuses.html:24
 msgid "Not registered"
@@ -338,7 +338,7 @@ msgstr "Synonymer"
 
 #: templates/aristotle_mdr/concepts/infobox.html:38
 msgid "Origin URI"
-msgstr ""
+msgstr "Källans URL"
 
 #: templates/aristotle_mdr/concepts/infobox.html:44
 msgctxt "Aristotle Package"
@@ -384,7 +384,7 @@ msgstr "Arbetsgrupp"
 
 #: templates/aristotle_mdr/concepts/managedContent.html:40
 msgid "Admin editor"
-msgstr ""
+msgstr "Adimistratörs editor"
 
 #: templates/aristotle_mdr/concepts/managedContent.html:48
 msgid "Edit menu"
@@ -396,7 +396,7 @@ msgstr "Avancerad editor"
 
 #: templates/aristotle_mdr/concepts/managedContent.html:58
 msgid "Clone this item"
-msgstr ""
+msgstr "Kopiera objekt"
 
 #: templates/aristotle_mdr/concepts/managedContent.html:64
 msgid "Simple View"
@@ -412,7 +412,7 @@ msgstr "Hämta"
 
 #: templates/aristotle_mdr/concepts/managedContent.html:80
 msgid "This item has been superseded by the newer version,"
-msgstr ""
+msgstr "Det här objektet av bilvit ersatt av en nyare version,"
 
 #: templates/aristotle_mdr/concepts/managedContent.html:85
 msgid ""
@@ -422,7 +422,7 @@ msgstr ""
 
 #: templates/aristotle_mdr/concepts/managedContent.html:90
 msgid "This item is currently public."
-msgstr ""
+msgstr "Det här objektet är just nu publikt"
 
 #: templates/aristotle_mdr/concepts/managedContent.html:94
 msgid "This item is currently under development."
