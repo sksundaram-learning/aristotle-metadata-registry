@@ -86,6 +86,9 @@ Aristotle-MDR is free open-source software, and contributions are welcome on fro
 back-end server development, translation and content creation (such as more documentation).
 Review the wiki, open issues and existing documentation to get started.
 
+**If you are looking to contribute**, `a good place to start is checking out the open issues labeled "help wanted" <https://github.com/aristotle-mdr/aristotle-metadata-registry/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22>`_
+or reviewing the `documentation <http://aristotle-metadata-registry.readthedocs.org/en/latest/>`_ and `wiki  <https://github.com/aristotle-mdr/aristotle-metadata-registry/wiki>`_ and identifying (and even adding) content that isn't there.
+
 About the badges (plus some extras):
 ++++++++++++++++++++++++++++++++++++
 * |build-status| - Travis-CI, showing the details of the continuous testing suite
