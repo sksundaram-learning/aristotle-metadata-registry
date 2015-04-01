@@ -292,7 +292,7 @@ class CustomConceptQuerySetTest(TestCase):
         invalid_items = []
         for user in self.wg_users + self.ra_users:
             for item in models.ObjectClass.objects.all().public():
-                if not item.public():
+                if not item.is_public():
                     invalid_items.append(item)
         if len(invalid_items) > 0:
             print("These items failed the check for ConceptQuerySet.public")
