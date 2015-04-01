@@ -478,8 +478,6 @@ class _concept(baseAristotleObject):
                 if ra.registrars.filter(pk=user.pk).exists():
                     return True
         if self.readyToReview:
-            if self.workgroup.stewards.filter(pk=user.pk).exists():
-                return True
             for ra in self.workgroup.registrationAuthorities.all():
                 if ra.registrars.filter(pk=user.pk).exists():
                     return True

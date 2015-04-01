@@ -9,21 +9,24 @@ from aristotle_mdr.utils import url_slugify_concept
 # Since all managed objects have the same rules, these can be used to cover everything
 # This isn't an actual TestCase, we'll just pretend it is
 class ManagedObjectVisibility(object):
-    def test_object_is_public(self):
-        ra = models.RegistrationAuthority.objects.create(name="Test RA")
+    def setUp(self):
+        self.ra = models.RegistrationAuthority.objects.create(name="Test RA")
         self.wg = models.Workgroup.objects.create(name="Test WG")
+        self.wg.registrationAuthorities.add(ra)
 
+
+    def test_object_is_public(self):
         self.assertEqual(self.item.is_public(),False)
         s = models.Status.objects.create(
                 concept=self.item,
                 registrationAuthority=ra,
                 registrationDate=timezone.now(),
-                state=ra.public_state
+                state=self.ra.public_state
                 )
         self.assertEqual(s.registrationAuthority,ra)
         self.assertEqual(self.item.is_public(),True)
-        ra.public_state = models.STATES.standard
-        ra.save()
+        self.ra.public_state = models.STATES.standard
+        self.ra.save()
 
         self.item = models._concept.objects.get(id=self.item.id) # Stupid cache
         self.assertEqual(self.item.is_public(),False)
@@ -32,9 +35,6 @@ class ManagedObjectVisibility(object):
         self.assertEqual(self.item.is_public(),False)
 
     def test_registrar_can_view(self):
-        # set up
-        ra = models.RegistrationAuthority.objects.create(name="Test RA")
-
         # make editor for wg1
         r1 = User.objects.create_user('reggie','','reg')
 
@@ -43,20 +43,17 @@ class ManagedObjectVisibility(object):
                 concept=self.item,
                 registrationAuthority=ra,
                 registrationDate=timezone.now(),
-                state=ra.locked_state
+                state=self.ra.locked_state
                 )
         self.assertEqual(perms.user_can_view(r1,self.item),False)
         # Caching issue, refresh from DB with correct permissions
-        ra.giveRoleToUser('registrar',r1)
+        self.ra.giveRoleToUser('registrar',r1)
         r1 = User.objects.get(pk=r1.pk)
 
         self.assertEqual(perms.user_can_view(r1,self.item),True)
 
 
     def test_object_submitter_can_view(self):
-        # set up
-        ra = models.RegistrationAuthority.objects.create(name="Test RA")
-
         # make editor for wg1
         wg1 = models.Workgroup.objects.create(name="Test WG 1")
         e1 = User.objects.create_user('editor1','','editor1')
@@ -87,24 +84,22 @@ class ManagedObjectVisibility(object):
                 concept=self.item,
                 registrationAuthority=ra,
                 registrationDate=timezone.now(),
-                state=ra.locked_state
+                state=self.ra.locked_state
                 )
         # Editor 2 can view. Editor 1 cannot
         self.assertEqual(perms.user_can_view(e2,self.item),True)
         self.assertEqual(perms.user_can_view(e1,self.item),False)
 
         # Set status to a public state
-        s.state = ra.public_state
+        s.state = self.ra.public_state
         s.save()
         # Both can view, neither can edit.
         self.assertEqual(perms.user_can_view(e1,self.item),True)
         self.assertEqual(perms.user_can_view(e2,self.item),True)
 
     def test_object_submitter_can_edit(self):
-        # set up
-        ra = models.RegistrationAuthority.objects.create(name="Test RA")
         registrar = User.objects.create_user('registrar','','registrar')
-        ra.registrars.add(registrar)
+        self.ra.registrars.add(registrar)
 
         # make editor for wg1
         wg1 = models.Workgroup.objects.create(name="Test WG 1")
@@ -132,12 +127,12 @@ class ManagedObjectVisibility(object):
         self.assertEqual(perms.user_can_edit(e2,self.item),True)
         self.assertEqual(perms.user_can_edit(e1,self.item),False)
 
-        #ra.register(self.item,ra.locked_state,registrar,timezone.now(),)
+        #self.ra.register(self.item,self.ra.locked_state,registrar,timezone.now(),)
         s = models.Status.objects.create(
                 concept=self.item,
                 registrationAuthority=ra,
                 registrationDate=timezone.now(),
-                state=ra.locked_state
+                state=self.ra.locked_state
                 )
         # Editor 2 can no longer edit. Neither can Editor 1
         self.assertEqual(perms.user_can_edit(e2,self.item),False)
