@@ -391,13 +391,16 @@ class ConceptQuerySet(InheritanceQuerySet):
         if user.is_superuser:
             return self.all()
         if user.is_anonymous():
-            return None
+            return self.none()
         q = Q()
-        if user.submitter_in.exists():
-            q |= Q(_is_locked=False,workgroup__in=user.submitter_in.all())
-        if user.steward_in.exists():
-            q |= Q(workgroup__in=user.steward_in.all())
-        return self.filter(q)
+        if user.submitter_in.exists() or user.steward_in.exists():
+            if user.submitter_in.exists():
+                q |= Q(_is_locked=False,workgroup__in=user.submitter_in.all())
+            if user.steward_in.exists():
+                q |= Q(workgroup__in=user.steward_in.all())
+            return self.filter(q)
+        else:
+            return self.none()
     def public(self):
         """
         Returns a list of public items from the queryset.
@@ -711,7 +714,7 @@ class AbstractValue(aristotleComponent):
         ordering = ['order']
     value = models.CharField(max_length=32)
     meaning = models.CharField(max_length=255)
-    value_meaning = models.ForeignKey(ValueMeaning, blank=True, null=True) 
+    value_meaning = models.ForeignKey(ValueMeaning, blank=True, null=True)
     valueDomain = models.ForeignKey(ValueDomain)
     order = models.PositiveSmallIntegerField("Position")
     start_date = models.DateField(blank=True,null=True,
