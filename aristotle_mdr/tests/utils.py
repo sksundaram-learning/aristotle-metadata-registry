@@ -12,18 +12,17 @@ class ManagedObjectVisibility(object):
     def setUp(self):
         self.ra = models.RegistrationAuthority.objects.create(name="Test RA")
         self.wg = models.Workgroup.objects.create(name="Test WG")
-        self.wg.registrationAuthorities.add(ra)
-
+        self.wg.registrationAuthorities.add(self.ra)
 
     def test_object_is_public(self):
         self.assertEqual(self.item.is_public(),False)
         s = models.Status.objects.create(
                 concept=self.item,
-                registrationAuthority=ra,
+                registrationAuthority=self.ra,
                 registrationDate=timezone.now(),
                 state=self.ra.public_state
                 )
-        self.assertEqual(s.registrationAuthority,ra)
+        self.assertEqual(s.registrationAuthority,self.ra)
         self.assertEqual(self.item.is_public(),True)
         self.ra.public_state = models.STATES.standard
         self.ra.save()
@@ -41,7 +40,7 @@ class ManagedObjectVisibility(object):
         self.assertEqual(perms.user_can_view(r1,self.item),False)
         s = models.Status.objects.create(
                 concept=self.item,
-                registrationAuthority=ra,
+                registrationAuthority=self.ra,
                 registrationDate=timezone.now(),
                 state=self.ra.locked_state
                 )
@@ -64,6 +63,9 @@ class ManagedObjectVisibility(object):
         e2 = User.objects.create_user('editor2','','editor2')
         wg2.giveRoleToUser('submitter',e2)
 
+        wg1.registrationAuthorities.add(self.ra)
+        wg2.registrationAuthorities.add(self.ra)
+
         # ensure object is in wg1
         self.item.workgroup = wg1
         self.item.save()
@@ -82,7 +84,7 @@ class ManagedObjectVisibility(object):
 
         s = models.Status.objects.create(
                 concept=self.item,
-                registrationAuthority=ra,
+                registrationAuthority=self.ra,
                 registrationDate=timezone.now(),
                 state=self.ra.locked_state
                 )
@@ -111,6 +113,9 @@ class ManagedObjectVisibility(object):
         e2 = User.objects.create_user('editor2','','editor2')
         wg2.giveRoleToUser('submitter',e2)
 
+        wg1.registrationAuthorities.add(self.ra)
+        wg2.registrationAuthorities.add(self.ra)
+
         # ensure object is in wg1
         self.item.workgroup = wg1
         self.item.save()
@@ -130,7 +135,7 @@ class ManagedObjectVisibility(object):
         #self.ra.register(self.item,self.ra.locked_state,registrar,timezone.now(),)
         s = models.Status.objects.create(
                 concept=self.item,
-                registrationAuthority=ra,
+                registrationAuthority=self.ra,
                 registrationDate=timezone.now(),
                 state=self.ra.locked_state
                 )

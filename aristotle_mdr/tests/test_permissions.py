@@ -42,55 +42,55 @@ class SuperuserPermissions(TestCase):
         self.assertTrue(perms.user_in_workgroup(self.su,None))
 
 
-class UnitOfMeasureVisibility(TestCase,utils.ManagedObjectVisibility):
+class UnitOfMeasureVisibility(utils.ManagedObjectVisibility,TestCase):
     def setUp(self):
-        self.wg = models.Workgroup.objects.create(name="Setup WG")
+        super(UnitOfMeasureVisibility, self).setUp()
         self.item = models.UnitOfMeasure.objects.create(name="Test UOM",workgroup=self.wg)
 
-class ObjectClassVisibility(TestCase,utils.ManagedObjectVisibility):
+class ObjectClassVisibility(utils.ManagedObjectVisibility,TestCase):
     def setUp(self):
-        self.wg = models.Workgroup.objects.create(name="Setup WG")
+        super(ObjectClassVisibility, self).setUp()
         self.item = models.ObjectClass.objects.create(name="Test OC",workgroup=self.wg)
-class PropertyVisibility(TestCase,utils.ManagedObjectVisibility):
+class PropertyVisibility(utils.ManagedObjectVisibility,TestCase):
     def setUp(self):
-        self.wg = models.Workgroup.objects.create(name="Setup WG")
+        super(PropertyVisibility, self).setUp()
         self.item = models.Property.objects.create(name="Test P",workgroup=self.wg)
-class ValueDomainVisibility(TestCase,utils.ManagedObjectVisibility):
+class ValueDomainVisibility(utils.ManagedObjectVisibility,TestCase):
     def setUp(self):
-        self.wg = models.Workgroup.objects.create(name="Setup WG")
+        super(ValueDomainVisibility, self).setUp()
         self.item = models.ValueDomain.objects.create(name="Test VD",
                 workgroup=self.wg,
                 format = "X" ,
                 maximum_length = 3,
                 data_type = models.DataType.objects.create(name="Test DT",workgroup=self.wg)
                 )
-class DataElementConceptVisibility(TestCase,utils.ManagedObjectVisibility):
+class DataElementConceptVisibility(utils.ManagedObjectVisibility,TestCase):
     def setUp(self):
-        self.wg = models.Workgroup.objects.create(name="Setup WG")
+        super(DataElementConceptVisibility, self).setUp()
         self.item = models.DataElementConcept.objects.create(name="Test DEC",
             workgroup=self.wg,
             )
-class DataElementVisibility(TestCase,utils.ManagedObjectVisibility):
+class DataElementVisibility(utils.ManagedObjectVisibility,TestCase):
     def setUp(self):
-        self.wg = models.Workgroup.objects.create(name="Setup WG")
+        super(DataElementVisibility, self).setUp()
         self.item = models.DataElement.objects.create(name="Test DE",
             workgroup=self.wg,
             )
-class DataTypeVisibility(TestCase,utils.ManagedObjectVisibility):
+class DataTypeVisibility(utils.ManagedObjectVisibility,TestCase):
     def setUp(self):
-        self.wg = models.Workgroup.objects.create(name="Setup WG")
+        super(DataTypeVisibility, self).setUp()
         self.item = models.DataType.objects.create(name="Test DT",
             workgroup=self.wg,
             )
-class PackageVisibility(TestCase,utils.ManagedObjectVisibility):
+class PackageVisibility(utils.ManagedObjectVisibility,TestCase):
     def setUp(self):
-        self.wg = models.Workgroup.objects.create(name="Setup WG")
+        super(PackageVisibility, self).setUp()
         self.item = models.Package.objects.create(name="Test Package",
             workgroup=self.wg,
             )
-class GlossaryVisibility(TestCase,utils.ManagedObjectVisibility):
+class GlossaryVisibility(utils.ManagedObjectVisibility,TestCase):
     def setUp(self):
-        self.wg = models.Workgroup.objects.create(name="Setup WG")
+        super(GlossaryVisibility, self).setUp()
         self.item = models.GlossaryItem.objects.create(name="Test Glossary",
             workgroup=self.wg,
             )
