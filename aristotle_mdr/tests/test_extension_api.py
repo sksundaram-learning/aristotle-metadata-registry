@@ -29,9 +29,9 @@ class TestExtensionListVisibility(TestCase):
         self.assertTrue(ext.verbose_name in response.content)
         self.assertTrue(ext in response.context['content_extensions'])
 
-class QuestionVisibility(TestCase,ManagedObjectVisibility):
+class QuestionVisibility(utils.ManagedObjectVisibility,TestCase):
     def setUp(self):
-        self.wg = models.Workgroup.objects.create(name="Setup WG")
+        super(QuestionVisibility, self).setUp()
         self.item = Question.objects.create(name="Test Question",
             workgroup=self.wg,
             )
@@ -51,9 +51,9 @@ class QuestionViewPage(LoggedInViewExtensionConceptPages,TestCase):
         response = self.client.get(self.get_help_page())
         self.assertEqual(response.status_code,200)
 
-class QuestionnaireVisibility(TestCase,ManagedObjectVisibility):
+class QuestionnaireVisibility(utils.ManagedObjectVisibility,TestCase):
     def setUp(self):
-        self.wg = models.Workgroup.objects.create(name="Setup WG")
+        super(QuestionnaireVisibility, self).setUp()
         self.item = Questionnaire.objects.create(name="Test Question",
             workgroup=self.wg,
             )
