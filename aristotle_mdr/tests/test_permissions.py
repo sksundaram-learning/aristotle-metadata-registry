@@ -295,13 +295,14 @@ class CustomConceptQuerySetTest_Slow(TestCase):
             for item in models.ObjectClass.objects.all().public():
                 if not item.is_public(): #pragma: no cover
                     # This branch needs no coverage as it shouldn't be hit
-                    invalid_items.append(item)
+                    invalid_items.append((user,item))
         if len(invalid_items) > 0: #pragma: no cover
             # This branch needs no coverage as it shouldn't be hit
             print("These items failed the check for ConceptQuerySet.public")
-            print("user=",user)
-            print("item=",item)
-            print("     ",item.statuses.all())
+            for user,item in invalid_items:
+                print("user=",user)
+                print("item=",item)
+                print("     ",item.statuses.all())
 
     def abstract_queryset_check(self,queryset,permission,name):
         invalid_items = []
@@ -313,12 +314,13 @@ class CustomConceptQuerySetTest_Slow(TestCase):
         for user in self.wg_users + self.ra_users:
             for item in queryset(user):
                 if not permission(user,item):
-                    invalid_items.append(item)
-        if len(invalid_items) > 0:
-            print("These items failed the check for %s"%name)
-            print("user=",user)
-            print("item=",item)
-            print("     ",item.statuses.all())
+                    invalid_items.append((user,item))
+        if len(invalid_items) > 0: #pragma: no cover
+            print("These items failed the check for %s:"%name)
+            for user,item in invalid_items:
+                print("user=",user)
+                print("item=",item)
+                print("     ",item.statuses.all())
         self.assertEqual(len(invalid_items),0)
 
     def test_is_editable(self):
