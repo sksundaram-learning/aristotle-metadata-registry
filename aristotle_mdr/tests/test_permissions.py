@@ -186,26 +186,26 @@ class CustomConceptQuerySetTest(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.super_user = User.objects.create_superuser('super','','user')
+        cls.super_user = User.objects.create_superuser('permission_check_super','','user')
         cls.wg_users = []
         cls.ra_users = []
         cls.ras = {}
-
+        p = "permission_check "
         # Default settings for locked/public
-        cls.ras['default'] = models.RegistrationAuthority.objects.create(name="Default RA")
+        cls.ras['default'] = models.RegistrationAuthority.objects.create(name=p+"Default RA")
 
         # Locked standards are visible standards
-#        cls.ras['standard'] = models.RegistrationAuthority.objects.create(name="Standard RA",public_state=models.STATES.standard,locked_state=models.STATES.standard)
+#        cls.ras['standard'] = models.RegistrationAuthority.objects.create(name=p+"Standard RA",public_state=models.STATES.standard,locked_state=models.STATES.standard)
 
         # Always public, hard to lock
-        cls.ras['wiki_like'] = models.RegistrationAuthority.objects.create(name="Wiki RA",public_state=models.STATES.candidate,locked_state=models.STATES.standard)
+        cls.ras['wiki_like'] = models.RegistrationAuthority.objects.create(name=p+"Wiki RA",public_state=models.STATES.candidate,locked_state=models.STATES.standard)
 
         # Only public on retirement
-        cls.ras['top_secret'] = models.RegistrationAuthority.objects.create(name="CIA RA",public_state=models.STATES.retired)
+        cls.ras['top_secret'] = models.RegistrationAuthority.objects.create(name=p+"CIA RA",public_state=models.STATES.retired)
 
         for key,ra in cls.ras.items():
             role = 'registrar'
-            u = User.objects.create_user(role+key,'','user')
+            u = User.objects.create_user(p+role+key,'','user')
             ra.giveRoleToUser(role,u)
             cls.ra_users.append(u)
 
@@ -251,7 +251,7 @@ class CustomConceptQuerySetTest(TestCase):
                 for states in [s for s in itertools.product(used_choices,repeat=len(keys))]:
                     # we create an item registered with that set of states in a bunch of RAs
                     item = models.ObjectClass.objects.create(name="Concept %s"%(prefix),description="",workgroup=wg)
-
+                    print('+', end="")
                     # Then register it
                     for ra,state in zip(keys,states):
                         ra = cls.ras[ra_key]
