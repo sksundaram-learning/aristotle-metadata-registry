@@ -183,6 +183,36 @@ class UserEditTesting(TestCase):
 
 
 class CustomConceptQuerySetTest(TestCase):
+    def test_is_public_as_changes_happen(self):
+        # Uses ValueDomain so the querysets don't return things created in `setUpClass`.
+        ra = models.RegistrationAuthority.objects.create(name="Test RA",public_state=models.STATES.standard)
+        wg = models.Workgroup.objects.create(name="Setup WG")
+        wg.registrationAuthorities.add(ra)
+        wg.save()
+        oc1 = models.ValueDomain.objects.create(name="Test OC1",workgroup=wg,readyToReview=True)
+        oc2 = models.ValueDomain.objects.create(name="Test OC2",workgroup=wg)
+        user = User.objects.create_superuser('super','','user')
+
+        # Assert no public items
+        self.assertEqual(len(models.ValueDomain.objects.all().public()),0)
+
+        # Register OC1 only
+        ra.register(oc1,models.STATES.standard,user)
+
+        # Assert only OC1 is public
+        self.assertEqual(len(models.ValueDomain.objects.all().public()),1)
+        self.assertTrue(oc1 in models.ValueDomain.objects.all().public())
+        self.assertTrue(oc2 not in models.ValueDomain.objects.all().public())
+
+        # Deregister OC1
+        state=models.STATES.incomplete
+        ra.register(oc1,state,user)
+
+        # Assert no public items
+        self.assertEqual(len(models.ValueDomain.objects.all().public()),0)
+
+
+class CustomConceptQuerySetTest_Slow(TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -258,35 +288,6 @@ class CustomConceptQuerySetTest(TestCase):
                         state = state[0]
                         ra.register(item,models.STATES.standard,cls.super_user)
         print("Created this many things to test against:", models.ObjectClass.objects.count())
-
-
-    def test_is_public_as_changes_happen(self):
-        # Uses ValueDomain so the querysets don't return things created in `setUpClass`.
-        ra = models.RegistrationAuthority.objects.create(name="Test RA",public_state=models.STATES.standard)
-        wg = models.Workgroup.objects.create(name="Setup WG")
-        wg.registrationAuthorities.add(ra)
-        wg.save()
-        oc1 = models.ValueDomain.objects.create(name="Test OC1",workgroup=wg,readyToReview=True)
-        oc2 = models.ObjectClass.objects.create(name="Test OC2",workgroup=wg)
-        user = User.objects.create_superuser('super','','user')
-
-        # Assert no public items
-        self.assertEqual(len(models.ValueDomain.objects.all().public()),0)
-
-        # Register OC1 only
-        ra.register(oc1,models.STATES.standard,user)
-
-        # Assert only OC1 is public
-        self.assertEqual(len(models.ValueDomain.objects.all().public()),1)
-        self.assertTrue(oc1 in models.ValueDomain.objects.all().public())
-        self.assertTrue(oc2 not in models.ValueDomain.objects.all().public())
-
-        # Deregister OC1
-        state=models.STATES.incomplete
-        ra.register(oc1,state,user)
-
-        # Assert no public items
-        self.assertEqual(len(models.ValueDomain.objects.all().public()),0)
 
     def test_is_public(self):
         invalid_items = []

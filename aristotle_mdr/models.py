@@ -531,18 +531,23 @@ class _concept(baseAristotleObject):
 
     def check_is_public(self):
         """
-            An object is public if any registration authority has advanced it to a public state for THAT RA.
-            TODO: Limit this so onlt RAs who are part of the "owning" workgroup are checked
-                  This would prevent someone from a different work group who can see it advance it in THEIR RA to public.
+            A concept is public if any registration authority that a Registration Authority of the workgroup
+            has advanced it to a public state in that RA.
         """
-        return True in [s.state >= s.registrationAuthority.public_state for s in self.statuses.all()]
+        return True in [s.state >= s.registrationAuthority.public_state
+                            for s in self.statuses.filter(registrationAuthority__in=self.workgroup.registrationAuthorities.all())]
     def is_public(self):
         return self._is_public
     is_public.boolean = True
     is_public.short_description = 'Public'
 
     def check_is_locked(self):
-        return True in [s.state >= s.registrationAuthority.locked_state for s in self.statuses.all()]
+        """
+            A concept is locked if any registration authority that a Registration Authority of the workgroup
+            has advanced it to a locked state in that RA.
+        """
+        return True in [s.state >= s.registrationAuthority.locked_state
+                            for s in self.statuses.filter(registrationAuthority__in=self.workgroup.registrationAuthorities.all())]
     def is_locked(self):
         return self._is_locked
 
