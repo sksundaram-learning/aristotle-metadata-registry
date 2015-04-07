@@ -120,7 +120,7 @@ class registryGroup(unmanagedObject):
     class Meta:
         abstract = True
     def can_edit(self,user):
-        return user.is_superuser or user in self.managers
+        return user.is_superuser or self.managers.filter(pk=user.pk).exists()
 
 """
 A registration authority is a proxy group that describes a governance process for "standardising" metadata.
@@ -990,7 +990,7 @@ def new_post_created(sender, **kwargs):
         if user == post.author:
             return # We don't need to tell someone they made a post
         notify.send(post.author, recipient=post.author, verb="comment on post", target=post.workgroup,
-                    comment=_('%(op)s made a new post "%(post)s" in the workgroup "%(workgroup)" ')
+                    comment=_('%(op)s made a new post "%(post)s" in the workgroup "%(workgroup)s" ')
                     % {'op':post.author, 'post':post.title, 'workgroup':post.workgroup})
 
 # Loads example data, this is never used in formal testing.
