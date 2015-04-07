@@ -120,7 +120,7 @@ class registryGroup(unmanagedObject):
     class Meta:
         abstract = True
     def can_edit(self,user):
-        return self.managers.filter(pk=user.pk).exists()
+        return user.is_superuser or user in self.managers
 
 """
 A registration authority is a proxy group that describes a governance process for "standardising" metadata.
@@ -934,11 +934,14 @@ def defaultData():
         print("")
 
 def favourite_updated(recipient,obj):
-    notify.send(recipient, recipient=recipient, verb="changed a favourited item", target=obj)
+    notify.send(obj, recipient=recipient, verb="changed a favourited item",
+                comment=_('A favourite item (%(item)) has been changed.') % {'item': obj})
 def workgroup_item_updated(recipient,obj):
-    notify.send(recipient, recipient=recipient, verb="changed a item in the workgroup", target=obj)
+    notify.send(obj, recipient=recipient, verb="motified item in workgroup", target=obj.workgroup,
+                comment=_('An item (%(item)) has been updated in the workgroup "%(workgroup)"') % {'item':obj, 'workgroup': obj.workgroup})
 def workgroup_item_new(recipient,obj):
-    notify.send(recipient, recipient=recipient, verb="a new item in the workgroup", target=obj)
+    notify.send(obj, recipient=recipient, verb="new item in workgroup", target=obj.workgroup,
+                comment=_('An new item (%(item)) is in the workgroup "%(workgroup)"') % {'item':obj, 'workgroup': obj.workgroup})
 
 @receiver(post_save)
 def concept_saved(sender, instance, created, **kwargs):
@@ -969,14 +972,26 @@ def concept_saved(sender, instance, created, **kwargs):
         pass
 @receiver(post_save,sender=DiscussionComment)
 def new_comment_created(sender, **kwargs):
-
     comment = kwargs['instance']
     post = comment.post
     if not kwargs['created']:
         return # We don't need to notify a topic poster of an edit.
     if comment.author == post.author:
         return # We don't need to tell someone they replied to themselves
-    notify.send(comment.author, recipient=post.author, verb="made a comment on your post", target=post)
+    notify.send(comment.author, recipient=post.author, verb="comment on post", target=post,
+                comment=_('%(commenter)) commented on the post "%(post)"') % {'commenter':comment.author, 'post':post.title})
+
+@receiver(post_save,sender=DiscussionPost)
+def new_post_created(sender, **kwargs):
+    post = kwargs['instance']
+    if not kwargs['created']:
+        return # We don't need to notify a topic poster of an edit.
+    for user in post.workgroup.viewers.all():
+        if user == post.author:
+            return # We don't need to tell someone they made a post
+        notify.send(post.author, recipient=post.author, verb="comment on post", target=post.workgroup,
+                    comment=_('%(op)) made a new post "%(post)" in the workgroup "%(workgroup)" ')
+                    % {'op':post.author, 'post':post.title, 'workgroup':post.workgroup})
 
 # Loads example data, this is never used in formal testing.
 def exampleData(): # pragma: no cover
