@@ -935,13 +935,13 @@ def defaultData():
 
 def favourite_updated(recipient,obj):
     notify.send(obj, recipient=recipient, verb="changed a favourited item",
-                comment=_('A favourite item (%(item)) has been changed.') % {'item': obj})
+                comment=_('A favourite item (%(item)s) has been changed.') % {'item': obj})
 def workgroup_item_updated(recipient,obj):
     notify.send(obj, recipient=recipient, verb="motified item in workgroup", target=obj.workgroup,
-                comment=_('An item (%(item)) has been updated in the workgroup "%(workgroup)"') % {'item':obj, 'workgroup': obj.workgroup})
+                comment=_('An item (%(item)s) has been updated in the workgroup "%(workgroup)s"') % {'item':obj, 'workgroup': obj.workgroup})
 def workgroup_item_new(recipient,obj):
     notify.send(obj, recipient=recipient, verb="new item in workgroup", target=obj.workgroup,
-                comment=_('An new item (%(item)) is in the workgroup "%(workgroup)"') % {'item':obj, 'workgroup': obj.workgroup})
+                comment=_('An new item (%(item)s) is in the workgroup "%(workgroup)s"') % {'item':obj, 'workgroup': obj.workgroup})
 
 @receiver(post_save)
 def concept_saved(sender, instance, created, **kwargs):
@@ -979,7 +979,7 @@ def new_comment_created(sender, **kwargs):
     if comment.author == post.author:
         return # We don't need to tell someone they replied to themselves
     notify.send(comment.author, recipient=post.author, verb="comment on post", target=post,
-                comment=_('%(commenter)) commented on the post "%(post)"') % {'commenter':comment.author, 'post':post.title})
+                comment=_('%(commenter)s) commented on the post "%(post)s"') % {'commenter':comment.author, 'post':post.title})
 
 @receiver(post_save,sender=DiscussionPost)
 def new_post_created(sender, **kwargs):
@@ -990,7 +990,7 @@ def new_post_created(sender, **kwargs):
         if user == post.author:
             return # We don't need to tell someone they made a post
         notify.send(post.author, recipient=post.author, verb="comment on post", target=post.workgroup,
-                    comment=_('%(op)) made a new post "%(post)" in the workgroup "%(workgroup)" ')
+                    comment=_('%(op)s made a new post "%(post)s" in the workgroup "%(workgroup)" ')
                     % {'op':post.author, 'post':post.title, 'workgroup':post.workgroup})
 
 # Loads example data, this is never used in formal testing.
