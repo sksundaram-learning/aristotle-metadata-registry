@@ -365,7 +365,7 @@ class ConceptQuerySet(InheritanceQuerySet):
         if user.is_superuser:
             return self.all()
         if user.is_anonymous():
-            return self.filter(_is_public=True)
+            return self.public()
         q = Q(_is_public=True)
         if user.profile.workgroups:
             # User can see everything in their workgroups.

@@ -40,7 +40,9 @@ class SuperuserPermissions(TestCase):
         self.assertTrue(perms.user_can_edit(self.su,None))
     def test_in_workgroup(self):
         self.assertTrue(perms.user_in_workgroup(self.su,None))
-
+    def test_can_edit_registration_authority(self):
+        ra = models.RegistrationAuthority.objects.create(name="Test RA")
+        self.assertTrue(ra.can_edit(self.su))
 
 class UnitOfMeasureVisibility(utils.ManagedObjectVisibility,TestCase):
     def setUp(self):
@@ -313,9 +315,11 @@ class CustomConceptQuerySetTest_Slow(TestCase):
         # TODO: Expand the below.
         for user in self.wg_users + self.ra_users:
             for item in queryset(user):
-                if not permission(user,item):
+                if not permission(user,item): #pragma: no cover
+                    # This branch needs no coverage as it shouldn't be hit
                     invalid_items.append((user,item))
         if len(invalid_items) > 0: #pragma: no cover
+            # This branch needs no coverage as it shouldn't be hit
             print("These items failed the check for %s:"%name)
             for user,item in invalid_items:
                 print("user=",user)
@@ -336,6 +340,27 @@ class CustomConceptQuerySetTest_Slow(TestCase):
                 permission=perms.user_can_view,
                 name="ConceptQuerySet.visible()"
             )
+
+    def abstract_queryset_check_superuser(self,queryset,permission,name):
+        invalid_items = []
+        for user in self.wg_users + self.ra_users:
+            for item in queryset(user):
+                if not permission(user,item): #pragma: no cover
+                    # This branch needs no coverage as it shouldn't be hit
+                    invalid_items.append((user,item))
+        if len(invalid_items) > 0: #pragma: no cover
+            # This branch needs no coverage as it shouldn't be hit
+            print("These items failed the check for %s:"%name)
+            for user,item in invalid_items:
+                print("user=",user)
+                print("item=",item)
+                print("     ",item.statuses.all())
+        self.assertEqual(len(invalid_items),0)
+
+    def test_is_querysets_for_superuser(self):
+        user = User.objects.create_superuser('super','','user')
+        self.assertTrue(models.ObjectClass.objects.visible(user).count() == models.ObjectClass.objects.all().count())
+        self.assertTrue(models.ObjectClass.objects.editable(user).count() == models.ObjectClass.objects.all().count())
 
 
 class RegistryCascadeTest(TestCase):
