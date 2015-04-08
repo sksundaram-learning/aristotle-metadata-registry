@@ -37,29 +37,37 @@ def members(request, iid):
         raise PermissionDenied
     return render(request,"aristotle_mdr/workgroupMembers.html",renderDict)
 
+@login_required
 def remove_role(request,iid,role,userid):
     workgroup = get_object_or_404(MDR.Workgroup,pk=iid)
     if not (workgroup and user_is_workgroup_manager(request.user,workgroup)):
-        if request.user.is_anonymous():
-            return redirect(reverse('django.contrib.auth.views.login')+'?next=%s' % request.path)
-        else:
-            raise PermissionDenied
+        raise PermissionDenied
     try:
         user = User.objects.get(id=userid)
         workgroup.removeRoleFromUser(role,user)
     except:
         pass
-    return HttpResponseRedirect('/workgroup/%s/members'%(workgroup.id))
+    return HttpResponseRedirect(reverse("aristotle:workgroupMembers",args=[workgroup.pk]))
 
+@login_required
+def archive(request,iid):
+    workgroup = get_object_or_404(MDR.Workgroup,pk=iid)
+    if not (workgroup and user_is_workgroup_manager(request.user,workgroup)):
+        raise PermissionDenied
+    if request.method == 'POST': # If the form has been submitted...
+        workgroup.archived = not workgroup.archived
+        workgroup.save()
+        return HttpResponseRedirect(reverse("aristotle:workgroup",args=[workgroup.pk]))
+    else:
+        return render(request,"aristotle_mdr/actions/archive_workgroup.html",{"item":workgroup})
+
+@login_required
 def add_members(request,iid):
     workgroup = get_object_or_404(MDR.Workgroup,pk=iid)
     if not (workgroup and user_is_workgroup_manager(request.user,workgroup)):
-        if request.user.is_anonymous():
-            return redirect(reverse('django.contrib.auth.views.login')+'?next=%s' % request.path)
-        else:
-            raise PermissionDenied
+        raise PermissionDenied
     if request.method == 'POST': # If the form has been submitted...
-        form = MDRForms.AddWorkgroupMembers(request.POST) # A form bound to the POST data
+        form = MDRForms.workgroups.AddMembers(request.POST) # A form bound to the POST data
         if form.is_valid():
             # process the data in form.cleaned_data as required
             users = form.cleaned_data['users']
@@ -67,14 +75,13 @@ def add_members(request,iid):
             for user in users:
                 for role in roles:
                     workgroup.giveRoleToUser(role,user)
-            return HttpResponseRedirect('/workgroup/%s/members'%(workgroup.id))
+            return HttpResponseRedirect(reverse("aristotle:workgroupMembers",args=[workgroup.pk]))
     else:
-        form = MDRForms.AddWorkgroupMembers(initial={'roles':request.GET.getlist('role')})
-
+        form = MDRForms.workgroups.AddMembers(initial={'roles':request.GET.getlist('role')})
 
     return render(request,"aristotle_mdr/actions/addWorkgroupMember.html",
             {"item":workgroup,
              "form":form,
              "role":request.GET.get('role')
-                }
-            )
+            }
+        )
