@@ -341,23 +341,7 @@ class CustomConceptQuerySetTest_Slow(TestCase):
                 name="ConceptQuerySet.visible()"
             )
 
-    def abstract_queryset_check_superuser(self,queryset,permission,name):
-        invalid_items = []
-        for user in self.wg_users + self.ra_users:
-            for item in queryset(user):
-                if not permission(user,item): #pragma: no cover
-                    # This branch needs no coverage as it shouldn't be hit
-                    invalid_items.append((user,item))
-        if len(invalid_items) > 0: #pragma: no cover
-            # This branch needs no coverage as it shouldn't be hit
-            print("These items failed the check for %s:"%name)
-            for user,item in invalid_items:
-                print("user=",user)
-                print("item=",item)
-                print("     ",item.statuses.all())
-        self.assertEqual(len(invalid_items),0)
-
-    def test_is_querysets_for_superuser(self):
+    def test_querysets_for_superuser(self):
         user = User.objects.create_superuser('super','','user')
         self.assertTrue(models.ObjectClass.objects.visible(user).count() == models.ObjectClass.objects.all().count())
         self.assertTrue(models.ObjectClass.objects.editable(user).count() == models.ObjectClass.objects.all().count())
