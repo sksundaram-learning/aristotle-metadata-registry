@@ -26,37 +26,19 @@ register = template.Library()
 def can_alter_comment(user,comment):
     try:
         return perms.user_can_alter_comment(user,comment)
-    except:
+    except: #pragma: no cover
         return False
 
 @register.filter
 def can_alter_post(user,post):
     try:
         return perms.user_can_alter_post(user,post)
-    except:
+    except: #pragma: no cover
         return False
 
 @register.filter
 def is_in(item,iterable):
     return item in iterable
-
-@register.filter
-def is_workgroup_manager(user,workgroup):
-    """
-    A filter that acts as a wrapper around ``aristotle_mdr.perms.user_is_workgroup_manager``.
-    Returns true if the user has permission to administer the workgroup, otherwise it returns False.
-    If calling ``user_is_workgroup_manager`` throws an exception it safely returns False.
-
-    For example::
-
-      {% if request.user|is_workgroup_manager:workgroup %}
-        {{ something }}
-      {% endif %}
-    """
-    try:
-        return perms.user_is_workgroup_manager(user,workgroup)
-    except:
-        return False
 
 @register.filter
 def in_workgroup(user,workgroup):
@@ -73,25 +55,7 @@ def in_workgroup(user,workgroup):
     """
     try:
         return perms.user_in_workgroup(user,workgroup)
-    except:
-        return False
-
-@register.filter
-def can_view(item,user):
-    """
-    A filter that acts as a wrapper around ``aristotle_mdr.perms.user_can_edit``.
-    Returns true if the user has permission to view the item, otherwise it returns False.
-    If calling ``user_can_view`` throws an exception it safely returns False.
-
-    For example::
-
-      {% if myItem|can_view:request.user %}
-        {{ item }}
-      {% endif %}
-    """
-    try:
-        return perms.user_can_view(user,item)
-    except:
+    except: #pragma: no cover
         return False
 
 @register.filter
@@ -110,7 +74,7 @@ def can_edit(item,user):
     #return perms.user_can_edit(user,item)
     try:
         return perms.user_can_edit(user,item)
-    except:
+    except:  #pragma: no cover -- passing a bad item or user is the template authors fault
         return None
 
 @register.filter
@@ -131,7 +95,7 @@ def can_view_iter(qs,user):
     """
     try:
         return qs.visible(user)
-    except:
+    except: #pragma: no cover -- passing a bad queryset is the template authors fault
         return []
 
 @register.filter

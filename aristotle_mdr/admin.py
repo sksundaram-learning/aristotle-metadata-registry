@@ -135,8 +135,6 @@ class ConceptAdmin(CompareVersionAdmin):
         else:
             if perms.user_can_edit(request.user,obj):
                 return True
-            if perms.user_can_change_status(request.user,obj):
-                return True
             else:
                 return super(ConceptAdmin, self).has_change_permission(request,obj=None)
     def has_add_permission(self, request):

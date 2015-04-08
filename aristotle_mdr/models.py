@@ -120,7 +120,7 @@ class registryGroup(unmanagedObject):
     class Meta:
         abstract = True
     def can_edit(self,user):
-        return self.managers.filter(pk=user.pk).exists()
+        return user.is_superuser or self.managers.filter(pk=user.pk).exists()
 
 """
 A registration authority is a proxy group that describes a governance process for "standardising" metadata.
@@ -365,7 +365,7 @@ class ConceptQuerySet(InheritanceQuerySet):
         if user.is_superuser:
             return self.all()
         if user.is_anonymous():
-            return self.filter(_is_public=True)
+            return self.public()
         q = Q(_is_public=True)
         if user.profile.workgroups:
             # User can see everything in their workgroups.
@@ -391,13 +391,16 @@ class ConceptQuerySet(InheritanceQuerySet):
         if user.is_superuser:
             return self.all()
         if user.is_anonymous():
-            return None
+            return self.none()
         q = Q()
-        if user.submitter_in.exists():
-            q |= Q(_is_locked=False,workgroup__in=user.submitter_in.all())
-        if user.steward_in.exists():
-            q |= Q(workgroup__in=user.steward_in.all())
-        return self.filter(q)
+        if user.submitter_in.exists() or user.steward_in.exists():
+            if user.submitter_in.exists():
+                q |= Q(_is_locked=False,workgroup__in=user.submitter_in.all())
+            if user.steward_in.exists():
+                q |= Q(workgroup__in=user.steward_in.all())
+            return self.filter(q)
+        else:
+            return self.none()
     def public(self):
         """
         Returns a list of public items from the queryset.
@@ -475,8 +478,6 @@ class _concept(baseAristotleObject):
                 if ra.registrars.filter(pk=user.pk).exists():
                     return True
         if self.readyToReview:
-            if self.workgroup.stewards.filter(pk=user.pk).exists():
-                return True
             for ra in self.workgroup.registrationAuthorities.all():
                 if ra.registrars.filter(pk=user.pk).exists():
                     return True
@@ -528,18 +529,23 @@ class _concept(baseAristotleObject):
 
     def check_is_public(self):
         """
-            An object is public if any registration authority has advanced it to a public state for THAT RA.
-            TODO: Limit this so onlt RAs who are part of the "owning" workgroup are checked
-                  This would prevent someone from a different work group who can see it advance it in THEIR RA to public.
+            A concept is public if any registration authority that a Registration Authority of the workgroup
+            has advanced it to a public state in that RA.
         """
-        return True in [s.state >= s.registrationAuthority.public_state for s in self.statuses.all()]
+        return True in [s.state >= s.registrationAuthority.public_state
+                            for s in self.statuses.filter(registrationAuthority__in=self.workgroup.registrationAuthorities.all())]
     def is_public(self):
         return self._is_public
     is_public.boolean = True
     is_public.short_description = 'Public'
 
     def check_is_locked(self):
-        return True in [s.state >= s.registrationAuthority.locked_state for s in self.statuses.all()]
+        """
+            A concept is locked if any registration authority that a Registration Authority of the workgroup
+            has advanced it to a locked state in that RA.
+        """
+        return True in [s.state >= s.registrationAuthority.locked_state
+                            for s in self.statuses.filter(registrationAuthority__in=self.workgroup.registrationAuthorities.all())]
     def is_locked(self):
         return self._is_locked
 
@@ -711,7 +717,7 @@ class AbstractValue(aristotleComponent):
         ordering = ['order']
     value = models.CharField(max_length=32)
     meaning = models.CharField(max_length=255)
-    value_meaning = models.ForeignKey(ValueMeaning, blank=True, null=True) 
+    value_meaning = models.ForeignKey(ValueMeaning, blank=True, null=True)
     valueDomain = models.ForeignKey(ValueDomain)
     order = models.PositiveSmallIntegerField("Position")
     start_date = models.DateField(blank=True,null=True,
@@ -928,11 +934,14 @@ def defaultData():
         print("")
 
 def favourite_updated(recipient,obj):
-    notify.send(recipient, recipient=recipient, verb="changed a favourited item", target=obj)
+    notify.send(obj, recipient=recipient, verb="changed a favourited item",
+                comment=_('A favourite item (%(item)s) has been changed.') % {'item': obj})
 def workgroup_item_updated(recipient,obj):
-    notify.send(recipient, recipient=recipient, verb="changed a item in the workgroup", target=obj)
+    notify.send(obj, recipient=recipient, verb="motified item in workgroup", target=obj.workgroup,
+                comment=_('An item (%(item)s) has been updated in the workgroup "%(workgroup)s"') % {'item':obj, 'workgroup': obj.workgroup})
 def workgroup_item_new(recipient,obj):
-    notify.send(recipient, recipient=recipient, verb="a new item in the workgroup", target=obj)
+    notify.send(obj, recipient=recipient, verb="new item in workgroup", target=obj.workgroup,
+                comment=_('An new item (%(item)s) is in the workgroup "%(workgroup)s"') % {'item':obj, 'workgroup': obj.workgroup})
 
 @receiver(post_save)
 def concept_saved(sender, instance, created, **kwargs):
@@ -963,14 +972,26 @@ def concept_saved(sender, instance, created, **kwargs):
         pass
 @receiver(post_save,sender=DiscussionComment)
 def new_comment_created(sender, **kwargs):
-
     comment = kwargs['instance']
     post = comment.post
     if not kwargs['created']:
         return # We don't need to notify a topic poster of an edit.
     if comment.author == post.author:
         return # We don't need to tell someone they replied to themselves
-    notify.send(comment.author, recipient=post.author, verb="made a comment on your post", target=post)
+    notify.send(comment.author, recipient=post.author, verb="comment on post", target=post,
+                comment=_('%(commenter)s) commented on the post "%(post)s"') % {'commenter':comment.author, 'post':post.title})
+
+@receiver(post_save,sender=DiscussionPost)
+def new_post_created(sender, **kwargs):
+    post = kwargs['instance']
+    if not kwargs['created']:
+        return # We don't need to notify a topic poster of an edit.
+    for user in post.workgroup.viewers.all():
+        if user == post.author:
+            return # We don't need to tell someone they made a post
+        notify.send(post.author, recipient=post.author, verb="comment on post", target=post.workgroup,
+                    comment=_('%(op)s made a new post "%(post)s" in the workgroup "%(workgroup)s" ')
+                    % {'op':post.author, 'post':post.title, 'workgroup':post.workgroup})
 
 # Loads example data, this is never used in formal testing.
 def exampleData(): # pragma: no cover

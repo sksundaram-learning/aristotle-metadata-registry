@@ -1,12 +1,17 @@
-from django.test import TestCase
-from django.utils import timezone
+from __future__ import print_function
+
 from django.contrib.auth.models import User
+from django.test import TestCase
+from django.test.utils import setup_test_environment
+from django.utils.translation import ugettext_lazy as _
+
+from model_utils import Choices
+
 import aristotle_mdr.models as models
 import aristotle_mdr.perms as perms
-
-from django.test.utils import setup_test_environment
-setup_test_environment()
 from aristotle_mdr.tests import utils
+
+setup_test_environment()
 
 class SuperuserPermissions(TestCase):
     # All of the below are called with None as a Superuser, by definition *must* be able to edit, view and managed everything. Since a is_superuser chcek is cheap is should be called first, so calling with None checks that there is no other database calls going on.
@@ -35,57 +40,59 @@ class SuperuserPermissions(TestCase):
         self.assertTrue(perms.user_can_edit(self.su,None))
     def test_in_workgroup(self):
         self.assertTrue(perms.user_in_workgroup(self.su,None))
+    def test_can_edit_registration_authority(self):
+        ra = models.RegistrationAuthority.objects.create(name="Test RA")
+        self.assertTrue(ra.can_edit(self.su))
 
-
-class UnitOfMeasureVisibility(TestCase,utils.ManagedObjectVisibility):
+class UnitOfMeasureVisibility(utils.ManagedObjectVisibility,TestCase):
     def setUp(self):
-        self.wg = models.Workgroup.objects.create(name="Setup WG")
+        super(UnitOfMeasureVisibility, self).setUp()
         self.item = models.UnitOfMeasure.objects.create(name="Test UOM",workgroup=self.wg)
 
-class ObjectClassVisibility(TestCase,utils.ManagedObjectVisibility):
+class ObjectClassVisibility(utils.ManagedObjectVisibility,TestCase):
     def setUp(self):
-        self.wg = models.Workgroup.objects.create(name="Setup WG")
+        super(ObjectClassVisibility, self).setUp()
         self.item = models.ObjectClass.objects.create(name="Test OC",workgroup=self.wg)
-class PropertyVisibility(TestCase,utils.ManagedObjectVisibility):
+class PropertyVisibility(utils.ManagedObjectVisibility,TestCase):
     def setUp(self):
-        self.wg = models.Workgroup.objects.create(name="Setup WG")
+        super(PropertyVisibility, self).setUp()
         self.item = models.Property.objects.create(name="Test P",workgroup=self.wg)
-class ValueDomainVisibility(TestCase,utils.ManagedObjectVisibility):
+class ValueDomainVisibility(utils.ManagedObjectVisibility,TestCase):
     def setUp(self):
-        self.wg = models.Workgroup.objects.create(name="Setup WG")
+        super(ValueDomainVisibility, self).setUp()
         self.item = models.ValueDomain.objects.create(name="Test VD",
                 workgroup=self.wg,
                 format = "X" ,
                 maximum_length = 3,
                 data_type = models.DataType.objects.create(name="Test DT",workgroup=self.wg)
                 )
-class DataElementConceptVisibility(TestCase,utils.ManagedObjectVisibility):
+class DataElementConceptVisibility(utils.ManagedObjectVisibility,TestCase):
     def setUp(self):
-        self.wg = models.Workgroup.objects.create(name="Setup WG")
+        super(DataElementConceptVisibility, self).setUp()
         self.item = models.DataElementConcept.objects.create(name="Test DEC",
             workgroup=self.wg,
             )
-class DataElementVisibility(TestCase,utils.ManagedObjectVisibility):
+class DataElementVisibility(utils.ManagedObjectVisibility,TestCase):
     def setUp(self):
-        self.wg = models.Workgroup.objects.create(name="Setup WG")
+        super(DataElementVisibility, self).setUp()
         self.item = models.DataElement.objects.create(name="Test DE",
             workgroup=self.wg,
             )
-class DataTypeVisibility(TestCase,utils.ManagedObjectVisibility):
+class DataTypeVisibility(utils.ManagedObjectVisibility,TestCase):
     def setUp(self):
-        self.wg = models.Workgroup.objects.create(name="Setup WG")
+        super(DataTypeVisibility, self).setUp()
         self.item = models.DataType.objects.create(name="Test DT",
             workgroup=self.wg,
             )
-class PackageVisibility(TestCase,utils.ManagedObjectVisibility):
+class PackageVisibility(utils.ManagedObjectVisibility,TestCase):
     def setUp(self):
-        self.wg = models.Workgroup.objects.create(name="Setup WG")
+        super(PackageVisibility, self).setUp()
         self.item = models.Package.objects.create(name="Test Package",
             workgroup=self.wg,
             )
-class GlossaryVisibility(TestCase,utils.ManagedObjectVisibility):
+class GlossaryVisibility(utils.ManagedObjectVisibility,TestCase):
     def setUp(self):
-        self.wg = models.Workgroup.objects.create(name="Setup WG")
+        super(GlossaryVisibility, self).setUp()
         self.item = models.GlossaryItem.objects.create(name="Test Glossary",
             workgroup=self.wg,
             )
@@ -178,37 +185,166 @@ class UserEditTesting(TestCase):
 
 
 class CustomConceptQuerySetTest(TestCase):
-    def test_is_public(self):
+    def test_is_public_as_changes_happen(self):
+        # Uses ValueDomain so the querysets don't return things created in `setUpClass`.
         ra = models.RegistrationAuthority.objects.create(name="Test RA",public_state=models.STATES.standard)
         wg = models.Workgroup.objects.create(name="Setup WG")
         wg.registrationAuthorities.add(ra)
         wg.save()
-        oc1 = models.ObjectClass.objects.create(name="Test OC1",workgroup=wg,readyToReview=True)
-        oc2 = models.ObjectClass.objects.create(name="Test OC2",workgroup=wg)
+        oc1 = models.ValueDomain.objects.create(name="Test OC1",workgroup=wg,readyToReview=True)
+        oc2 = models.ValueDomain.objects.create(name="Test OC2",workgroup=wg)
         user = User.objects.create_superuser('super','','user')
 
         # Assert no public items
-        self.assertEqual(len(models.ObjectClass.objects.all().public()),0)
+        self.assertEqual(len(models.ValueDomain.objects.all().public()),0)
 
         # Register OC1 only
         ra.register(oc1,models.STATES.standard,user)
 
         # Assert only OC1 is public
-        self.assertEqual(len(models.ObjectClass.objects.all().public()),1)
-        self.assertTrue(oc1 in models.ObjectClass.objects.all().public())
-        self.assertTrue(oc2 not in models.ObjectClass.objects.all().public())
+        self.assertEqual(len(models.ValueDomain.objects.all().public()),1)
+        self.assertTrue(oc1 in models.ValueDomain.objects.all().public())
+        self.assertTrue(oc2 not in models.ValueDomain.objects.all().public())
 
         # Deregister OC1
         state=models.STATES.incomplete
         ra.register(oc1,state,user)
 
         # Assert no public items
-        self.assertEqual(len(models.ObjectClass.objects.all().public()),0)
+        self.assertEqual(len(models.ValueDomain.objects.all().public()),0)
+
+
+class CustomConceptQuerySetTest_Slow(TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.super_user = User.objects.create_superuser('permission_check_super','','user')
+        cls.wg_users = []
+        cls.ra_users = []
+        cls.ras = {}
+        p = "permission_check "
+        # Default settings for locked/public
+        cls.ras['default'] = models.RegistrationAuthority.objects.create(name=p+"Default RA")
+
+        # Locked standards are visible standards
+#        cls.ras['standard'] = models.RegistrationAuthority.objects.create(name=p+"Standard RA",public_state=models.STATES.standard,locked_state=models.STATES.standard)
+
+        # Always public, hard to lock
+        cls.ras['wiki_like'] = models.RegistrationAuthority.objects.create(name=p+"Wiki RA",public_state=models.STATES.candidate,locked_state=models.STATES.standard)
+
+        # Only public on retirement
+        cls.ras['top_secret'] = models.RegistrationAuthority.objects.create(name=p+"CIA RA",public_state=models.STATES.retired)
+
+        for key,ra in cls.ras.items():
+            role = 'registrar'
+            u = User.objects.create_user(p+role+key,'','user')
+            ra.giveRoleToUser(role,u)
+            cls.ra_users.append(u)
+
+        cls.wgs = []
+
+        # We use a cut back version of only states needed for the above items, just to reduce the number of items needed to be made.
+        used_choices = Choices (
+# -exclude (0,'notprogressed',_('Not Progressed')),
+# -exclude (1,'incomplete',_('Incomplete')),
+           (2,'candidate',_('Candidate')),
+           (3,'recorded',_('Recorded')),
+# -exclude (4,'qualified',_('Qualified')),
+           (5,'standard',_('Standard')),
+# -exclude (6,'preferred',_('Preferred Standard')),
+# -exclude (7,'superseded',_('Superseded')),
+           (8,'retired',_('Retired')),
+         )
+
+        print("About to make a *LOT* of items. This may appear to lock up, but it still working.")
+        import itertools
+        # http://en.wikipedia.org/wiki/Combinatorial_explosion
+        for i in range(1,4):
+            # Generate a number of different workgroups with different numbers of RAs
+            # Each workgroup can have at most 2 RAs in this test, and the third will be
+            #  a "non-member" workgroup that we also register the item in to confirm
+            #  that "non-members" don't alter the visibility.
+            for keys in itertools.combinations(cls.ras.keys(), i):
+                prefix = "%d %s"%(len(keys),"-".join(keys))
+                wg = models.Workgroup.objects.create(name="WG "+prefix)
+
+                for role in ['viewer','submitter','steward']:
+                    u = User.objects.create_user(role+prefix,'','user')
+                    wg.giveRoleToUser(role,u)
+                    cls.wg_users.append(u)
+
+                max_ra_index = min(2,len(keys))
+                for ra_key in keys[:max_ra_index]:
+                    wg.registrationAuthorities.add(cls.ras[ra_key])
+                cls.wgs.append(wg)
+
+                # now we create every possible combination of states for the keys
+                # eg. the cartesian product of the States
+                for states in [s for s in itertools.product(used_choices,repeat=len(keys))]:
+                    # we create an item registered with that set of states in a bunch of RAs
+                    item = models.ObjectClass.objects.create(name="Concept %s"%(prefix),description="",workgroup=wg)
+                    print('+', end="")
+                    # Then register it
+                    for ra,state in zip(keys,states):
+                        ra = cls.ras[ra_key]
+                        state = state[0]
+                        ra.register(item,models.STATES.standard,cls.super_user)
+        print("Created this many things to test against:", models.ObjectClass.objects.count())
+
+    def test_is_public(self):
+        invalid_items = []
+        for user in self.wg_users + self.ra_users:
+            for item in models.ObjectClass.objects.all().public():
+                if not item.is_public(): #pragma: no cover
+                    # This branch needs no coverage as it shouldn't be hit
+                    invalid_items.append((user,item))
+        if len(invalid_items) > 0: #pragma: no cover
+            # This branch needs no coverage as it shouldn't be hit
+            print("These items failed the check for ConceptQuerySet.public")
+            for user,item in invalid_items:
+                print("user=",user)
+                print("item=",item)
+                print("     ",item.statuses.all())
+
+    def abstract_queryset_check(self,queryset,permission,name):
+        invalid_items = []
+        # This verifies that everything that is returned in the given QuerySet has the right permission
+        # However, it doesn't verify that every item has that permisison for a the user will be returned.
+        # i.e. We assure that nothing "uneditable" is returned, not that everything "editable" is.
+        # i.e. We assure that nothing "invisible" is returned, not that everything "visible" is.
+        # TODO: Expand the below.
+        for user in self.wg_users + self.ra_users:
+            for item in queryset(user):
+                if not permission(user,item): #pragma: no cover
+                    # This branch needs no coverage as it shouldn't be hit
+                    invalid_items.append((user,item))
+        if len(invalid_items) > 0: #pragma: no cover
+            # This branch needs no coverage as it shouldn't be hit
+            print("These items failed the check for %s:"%name)
+            for user,item in invalid_items:
+                print("user=",user)
+                print("item=",item)
+                print("     ",item.statuses.all())
+        self.assertEqual(len(invalid_items),0)
 
     def test_is_editable(self):
-        pass #TODO: This needs to be checked
+        self.abstract_queryset_check(
+                queryset=models.ObjectClass.objects.editable,
+                permission=perms.user_can_edit,
+                name="ConceptQuerySet.editable()"
+            )
+
     def test_is_visible(self):
-        pass #TODO: This needs to be checked
+        self.abstract_queryset_check(
+                queryset=models.ObjectClass.objects.visible,
+                permission=perms.user_can_view,
+                name="ConceptQuerySet.visible()"
+            )
+
+    def test_querysets_for_superuser(self):
+        user = User.objects.create_superuser('super','','user')
+        self.assertTrue(models.ObjectClass.objects.visible(user).count() == models.ObjectClass.objects.all().count())
+        self.assertTrue(models.ObjectClass.objects.editable(user).count() == models.ObjectClass.objects.all().count())
 
 
 class RegistryCascadeTest(TestCase):
