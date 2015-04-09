@@ -34,7 +34,7 @@ setup(
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
     ],
     install_requires = [
-        "Django>=1.7,<1.8",
+        "Django>=1.7",
         'pytz',
 
         'django-model-utils',
