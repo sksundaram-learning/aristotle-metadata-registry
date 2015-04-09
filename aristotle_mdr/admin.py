@@ -213,15 +213,6 @@ class ValueDomainAdmin(ConceptAdmin):
     ]
     inlines = ConceptAdmin.inlines + [PermissibleValueInline,SupplementaryValueInline]
 
-class GlossaryAlternateDefinitionInline(admin.TabularInline):
-    model = MDR.GlossaryAdditionalDefinition
-    extra=0
-
-class GlossaryItemAdmin(ConceptAdmin):
-    model = MDR.GlossaryItem
-    fieldsets = ConceptAdmin.fieldsets
-    inlines = ConceptAdmin.inlines + [GlossaryAlternateDefinitionInline]
-
 class RegistrationAuthorityAdmin(admin.ModelAdmin):
     list_display = ['name', 'description','created','modified']
     list_filter = ['created','modified',]
@@ -242,7 +233,6 @@ admin.site.register(MDR.DataElement,DataElementAdmin)
 admin.site.register(MDR.DataType,DataTypeAdmin)
 admin.site.register(MDR.DataElementDerivation,DataElementDerivationAdmin)
 admin.site.register(MDR.DataElementConcept,DataElementConceptAdmin)
-admin.site.register(MDR.GlossaryItem,GlossaryItemAdmin)
 admin.site.register(MDR.Package,PackageAdmin)
 admin.site.register(MDR.Property,PropertyAdmin)
 admin.site.register(MDR.ObjectClass,ObjectClassAdmin)

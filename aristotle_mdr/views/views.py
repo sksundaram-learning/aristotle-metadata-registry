@@ -293,15 +293,6 @@ def allRegistrationAuthorities(request):
         {'registrationAuthorities':ras}
         )
 
-def glossary(request):
-    return render(request,"aristotle_mdr/glossary.html",
-        {'terms':MDR.GlossaryItem.objects.all().order_by('name').visible(request.user)
-        })
-
-#def glossaryBySlug(request,slug):
-#    term = get_object_or_404(MDR.GlossaryItem,id=iid)
-#    return render(request,"aristotle_mdr/glossaryItem.html",{'item':term})
-
 def about_all_items(request):
 
     aristotle_apps = getattr(settings, 'ARISTOTLE_SETTINGS', {}).get('CONTENT_EXTENSIONS',[])

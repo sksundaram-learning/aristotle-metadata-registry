@@ -96,10 +96,6 @@ class ObjectClassIndex(conceptIndex, indexes.Indexable):
     def get_model(self):
         return models.ObjectClass
 
-class GlossaryItemIndex(conceptIndex, indexes.Indexable):
-    def get_model(self):
-        return models.GlossaryItem
-
 class PropertyIndex(conceptIndex, indexes.Indexable):
     def get_model(self):
         return models.Property

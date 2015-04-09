@@ -777,19 +777,6 @@ class Package(concept):
     def classedItems(self):
         return self.items.select_subclasses()
 
-class GlossaryItem(concept):
-    template = "aristotle_mdr/concepts/glossaryItem.html"
-
-class GlossaryAdditionalDefinition(aristotleComponent):
-    glossaryItem = models.ForeignKey(GlossaryItem,related_name="alternate_definitions")
-    registrationAuthority = models.ForeignKey(RegistrationAuthority)
-    description = models.TextField()
-    @property
-    def parentItem(self):
-        return self.glossaryItem
-    class Meta:
-        unique_together = ('glossaryItem', 'registrationAuthority',)
-
 # Create a 1-1 user profile so we don't need to extend user
 # Thanks to http://stackoverflow.com/a/965883/764357
 class PossumProfile(models.Model):
@@ -949,11 +936,15 @@ def concept_saved(sender, instance, created, **kwargs):
         return
     for p in instance.favourited_by.all():
         favourite_updated(recipient=p.user,obj=instance)
-    for user in instance.workgroup.viewers.all():
-        if created:
-            workgroup_item_new(recipient=user,obj=instance)
-        else:
-            workgroup_item_updated(recipient=user,obj=instance)
+    try:
+        for user in instance.workgroup.viewers.all():
+            if created:
+                workgroup_item_new(recipient=user,obj=instance)
+            else:
+                workgroup_item_updated(recipient=user,obj=instance)
+    except Exception as e:
+        print("borked instance is: ",instance.id,instance.name)
+        raise e
     try:
         # This will fail during first load, and if admins delete aristotle.
         system = User.objects.get(username="aristotle")
@@ -1074,9 +1065,9 @@ def exampleData(): # pragma: no cover
     vd,c   = ValueDomain.objects.get_or_create(name="Total years N[NN]",
             workgroup=pw,description="Total number of completed years.",
             format = "X[XX]" ,
-            maximumLength = 3,
-            unitOfMeasure = UnitOfMeasure.objects.filter(name__iexact='Week').first(),
-            dataType = DataType.objects.filter(name__iexact='Number').first(),
+            maximum_length = 3,
+            unit_of_measure = UnitOfMeasure.objects.filter(name__iexact='Week').first(),
+            data_type = DataType.objects.filter(name__iexact='Number').first(),
             )
     de,c = DataElement.objects.get_or_create(name="Person-age, total years N[NN]",
             workgroup=pw,description="The age of the person in (completed) years at a specific point in time.",
@@ -1091,9 +1082,9 @@ def exampleData(): # pragma: no cover
     vd,c   = ValueDomain.objects.get_or_create(name="Sex Code",
             workgroup=pw,description="A code for sex.",
             format = "X" ,
-            maximumLength = 3,
-            unitOfMeasure = UnitOfMeasure.objects.filter(name__iexact='Week').first(),
-            dataType = DataType.objects.filter(name__iexact='Number').first(),
+            maximum_length = 3,
+            unit_of_measure = UnitOfMeasure.objects.filter(name__iexact='Week').first(),
+            data_type = DataType.objects.filter(name__iexact='Number').first(),
             )
     for val,mean in [(1,'Male'),(2,'Female')]:
         codeVal = PermissibleValue(value=val,meaning=mean,valueDomain=vd,order=1)
@@ -1123,13 +1114,6 @@ def exampleData(): # pragma: no cover
         user.last_name=role
         ra.giveRoleToUser(role,user)
         user.save()
-    gi,c  = GlossaryItem.objects.get_or_create(name="Person",
-            workgroup=pw,description="A human being, whether man, woman or child.")
-    gad,c = GlossaryAdditionalDefinition.objects.get_or_create(
-        glossaryItem = gi,
-        registrationAuthority = ra,
-        description = "A person, who is probably not healthy"
-        )
 
     #Lets register a thing :/
     reg,c = Status.objects.get_or_create(

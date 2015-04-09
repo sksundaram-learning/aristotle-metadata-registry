@@ -28,16 +28,6 @@ class UserAwareModelForm(autocomplete_light.ModelForm):
         return media
     media = property(_media)
 
-"""
-Technically not a real form, but a massive convenience for the glossary item TinyMCE bit
-Never saves.
-"""
-class GlossarySearchForm(UserAwareForm):
-    items = forms.ModelChoiceField(
-                queryset=MDR.GlossaryItem.objects.all(),
-                label="Glossary Item",
-                widget=autocomplete_light.ChoiceWidget('AutocompleteGlossaryItem'))
-    link  = forms.CharField(required=False,label=_('Link text'))
 
 class ConceptForm(UserAwareModelForm):
     """
