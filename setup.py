@@ -61,7 +61,7 @@ setup(
         'django-bootstrap3-datetimepicker',
 
         'xhtml2pdf',
-        'django-tastypie'
+        #'django-tastypie'
     ],
 
 )
