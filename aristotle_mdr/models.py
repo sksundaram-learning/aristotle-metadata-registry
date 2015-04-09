@@ -934,6 +934,9 @@ def workgroup_item_new(recipient,obj):
 def concept_saved(sender, instance, created, **kwargs):
     if not issubclass(sender, _concept):
         return
+    if kwargs.get('raw'):
+        # Don't run during loaddata
+        return
     for p in instance.favourited_by.all():
         favourite_updated(recipient=p.user,obj=instance)
     try:
@@ -943,7 +946,7 @@ def concept_saved(sender, instance, created, **kwargs):
             else:
                 workgroup_item_updated(recipient=user,obj=instance)
     except Exception as e:
-        print("borked instance is: ",instance.id,instance.name)
+        print("borked instance is: ",type(instance),instance.id,instance.name)
         raise e
     try:
         # This will fail during first load, and if admins delete aristotle.
@@ -965,6 +968,9 @@ def concept_saved(sender, instance, created, **kwargs):
 def new_comment_created(sender, **kwargs):
     comment = kwargs['instance']
     post = comment.post
+    if kwargs.get('raw'):
+        # Don't run during loaddata
+        return
     if not kwargs['created']:
         return # We don't need to notify a topic poster of an edit.
     if comment.author == post.author:
@@ -975,6 +981,9 @@ def new_comment_created(sender, **kwargs):
 @receiver(post_save,sender=DiscussionPost)
 def new_post_created(sender, **kwargs):
     post = kwargs['instance']
+    if kwargs.get('raw'):
+        # Don't run during loaddata
+        return
     if not kwargs['created']:
         return # We don't need to notify a topic poster of an edit.
     for user in post.workgroup.viewers.all():
