@@ -6,3 +6,4 @@ from . import search
 from . import discussions
 from . import admin
 from . import bulk_actions
+from . import workgroups
