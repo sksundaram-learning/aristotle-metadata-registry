@@ -48,6 +48,12 @@ class conceptIndex(baseObjectIndex):
     is_public = indexes.BooleanField()
     version = indexes.CharField(model_attr="version")
 
+    def update_object(self, instance, using=None, **kwargs):
+        if kwargs.get('raw'):
+            return
+        return super(conceptIndex, self).update_object(
+            instance, using=using, **kwargs)
+
     def prepare_registrationAuthorities (self, obj):
         ras = [str(s.registrationAuthority.id) for s in obj.statuses.all()]
         if not ras and obj.readyToReview:
@@ -95,10 +101,6 @@ class conceptIndex(baseObjectIndex):
 class ObjectClassIndex(conceptIndex, indexes.Indexable):
     def get_model(self):
         return models.ObjectClass
-
-class GlossaryItemIndex(conceptIndex, indexes.Indexable):
-    def get_model(self):
-        return models.GlossaryItem
 
 class PropertyIndex(conceptIndex, indexes.Indexable):
     def get_model(self):

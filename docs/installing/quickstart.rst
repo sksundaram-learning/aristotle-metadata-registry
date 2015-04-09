@@ -1,6 +1,9 @@
 Quick start
 -----------
 
+The first step is `starting a project as described in the Django tutorial<https://docs.djangoproject.com/en/1.7/intro/tutorial01/>`.
+Once this is done, follow the steps below to setup Aristotle-MDR.
+
 1. Add "aristotle_mdr" to your INSTALLED_APPS setting like this::
 
     INSTALLED_APPS = (
@@ -21,14 +24,13 @@ Quick start
 
     INSTALLED_APPS = (
         ...
-        'comet',
         'aristotle_mdr',
         '...',
     )
 
 
 2. Include the Aristotle-MDR URLconf in your project urls.py. Because Aristotle will
-   form the majority of the interactions with the site, and the Aristotle includes a
+   form the majority of the interactions with the site, as well as including a
    number of URLconfs for supporting apps its recommended to included it at the
    server root, like this::
 

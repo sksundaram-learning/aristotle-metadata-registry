@@ -10,7 +10,7 @@ from aristotle_mdr.utils import url_slugify_concept
 from django.test.utils import setup_test_environment
 setup_test_environment()
 
-class CustomTinyMCEDialogTests(utils.LoggedInViewPages,TestCase):
+class CustomGlossaryDialogTests(utils.LoggedInViewPages,TestCase):
     """
     There isn't much we can do to test these yet, but we can verify they at least load.
     They are in the wizard section as they are used in the editing pages.

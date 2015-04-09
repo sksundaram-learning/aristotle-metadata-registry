@@ -68,12 +68,26 @@ For a complete example of how to successfully include Aristotle, see the `tests/
 **A live Aristotle-MDR instance is available for review on PythonAnywhere at:** ``http://aristotle.pythonanywhere.com/``.
 Be aware, this is an active development instance and may sporadically be unavailble.
 
+Screenshots for users
+---------------------
+
+`More screenshots available in the Aristotle-MDR Wiki <https://github.com/aristotle-mdr/aristotle-metadata-registry/wiki/Screenshots>`_.
+
+A newly created data element.
+|newitemsample|
+
+An item being without changing screens
+|itemeditsample|
+
 Information for developers
 --------------------------
 
 Aristotle-MDR is free open-source software, and contributions are welcome on front-end web development,
 back-end server development, translation and content creation (such as more documentation).
 Review the wiki, open issues and existing documentation to get started.
+
+**If you are looking to contribute**, `a good place to start is checking out the open issues labeled "help wanted" <https://github.com/aristotle-mdr/aristotle-metadata-registry/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22>`_
+or reviewing the `documentation <http://aristotle-metadata-registry.readthedocs.org/en/latest/>`_ and `wiki  <https://github.com/aristotle-mdr/aristotle-metadata-registry/wiki>`_ and identifying (and even adding) content that isn't there.
 
 About the badges (plus some extras):
 ++++++++++++++++++++++++++++++++++++
@@ -114,3 +128,11 @@ About the badges (plus some extras):
     :alt: visit the gitter chat room for this project
     :scale: 100%
     :target: https://gitter.im/LegoStormtroopr/aristotle-metadata-registry?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge
+
+.. |newitemsample| image:: http://i.imgur.com/8mtkFQv.png
+    :alt: The newly created Data Element
+    :scale: 100%
+
+.. |itemeditsample| image:: http://i.imgur.com/dAEboRg.png
+    :alt: Edit screen for a Data Element
+    :scale: 100%
