@@ -939,15 +939,11 @@ def concept_saved(sender, instance, created, **kwargs):
         return
     for p in instance.favourited_by.all():
         favourite_updated(recipient=p.user,obj=instance)
-    try:
-        for user in instance.workgroup.viewers.all():
-            if created:
-                workgroup_item_new(recipient=user,obj=instance)
-            else:
-                workgroup_item_updated(recipient=user,obj=instance)
-    except Exception as e:
-        print("borked instance is: ",type(instance),instance.id,instance.name)
-        raise e
+    for user in instance.workgroup.viewers.all():
+        if created:
+            workgroup_item_new(recipient=user,obj=instance)
+        else:
+            workgroup_item_updated(recipient=user,obj=instance)
     try:
         # This will fail during first load, and if admins delete aristotle.
         system = User.objects.get(username="aristotle")
