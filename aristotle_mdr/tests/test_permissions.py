@@ -90,12 +90,6 @@ class PackageVisibility(utils.ManagedObjectVisibility,TestCase):
         self.item = models.Package.objects.create(name="Test Package",
             workgroup=self.wg,
             )
-class GlossaryVisibility(utils.ManagedObjectVisibility,TestCase):
-    def setUp(self):
-        super(GlossaryVisibility, self).setUp()
-        self.item = models.GlossaryItem.objects.create(name="Test Glossary",
-            workgroup=self.wg,
-            )
 
 class WorkgroupPermissions(TestCase):
     def test_workgroup_add_members(self):

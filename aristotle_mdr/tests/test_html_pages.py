@@ -393,43 +393,6 @@ class DataElementDerivationViewPage(LoggedInViewConceptPages,TestCase):
         return {'derives':models.DataElement.objects.create(name='derivedDE',description="",workgroup=self.wg1)}
     itemType=models.DataElementDerivation
 
-class GlossaryViewPage(LoggedInViewConceptPages,TestCase):
-    url_name='glossary'
-    itemType=models.GlossaryItem
-
-    def test_view_glossary(self):
-        self.logout()
-        response = self.client.get(reverse('aristotle:glossary'))
-        self.assertTrue(response.status_code,200)
-
-    def test_glossary_ajax_list(self):
-        self.logout()
-        import json
-        gitem = models.GlossaryItem(name="Glossary item",workgroup=self.wg1)
-        response = self.client.get('/api/v1/glossarylist/?format=json&limit=0')
-        data = json.loads(str(response.content))['objects']
-        self.assertEqual(data,[])
-
-        gitem.readyToReview = True
-        gitem.save()
-
-        self.login_editor()
-
-        self.assertTrue(perms.user_can_change_status(self.registrar,gitem))
-
-        self.ra.register(gitem,models.STATES.standard,self.registrar)
-
-        self.assertTrue(gitem.is_public())
-
-        response = self.client.get('/api/v1/glossarylist/?format=json&limit=0')
-        data = json.loads(str(response.content))['objects']
-
-        self.assertEqual(len(data),models.GlossaryItem.objects.all().visible(self.editor).count())
-
-        for i in models.GlossaryItem.objects.filter(pk__in=[item['id'] for item in data]):
-            self.assertEqual(i.can_view(self.editor),1)
-
-
 class LoggedInViewUnmanagedPages(utils.LoggedInViewPages):
     defaults = {}
     def setUp(self):
