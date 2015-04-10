@@ -32,8 +32,6 @@ urlpatterns = patterns('aristotle_mdr.views',
     # Allowing for a blank ItemId (iid) allows aristotle to redirect to /about/itemtype instead of 404ing
     url(r'^valuedomain/(?P<iid>\d+)?/edit/values/(?P<value_type>permissible|supplementary)/?$', views.valuedomain_value_edit, name='valueDomain_edit_values'),
 
-    url(r'^glossary/?$', views.glossary, name='glossary'),
-
     url(r'^workgroup/(?P<iid>\d+)/?$', views.workgroups.workgroup, name='workgroup'),
     url(r'^workgroup/(?P<iid>\d+)/members/?$', views.workgroups.members, name='workgroupMembers'),
     url(r'^workgroup/(?P<iid>\d+)/items/?$', views.workgroups.items, name='workgroupItems'),
@@ -64,8 +62,6 @@ urlpatterns = patterns('aristotle_mdr.views',
     url(r'^create/(aristotle_mdr/)?dataelement$', views.wizards.DataElementWizard.as_view(), name='createDataElement'),
     url(r'^create/(?P<app_label>.+)/(?P<model_name>.+)/?$', views.wizards.create_item, name='createItem'),
     url(r'^create/(?P<model_name>.+)/?$', views.wizards.create_item, name='createItem'),
-
-    url(r'^dialog/glossary_search/?$',  views.wizards.glossary_search, name='glossary_search'),
 
     url(r'^download/(?P<downloadType>[a-zA-Z0-9\-\.]+)/(?P<iid>\d+)/?$', views.download, name='download'),
 
