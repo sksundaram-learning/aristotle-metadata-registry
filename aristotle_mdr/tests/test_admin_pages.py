@@ -289,10 +289,3 @@ class DataElementDerivationAdminPage(AdminPageForConcept,TestCase):
         self.form_defaults = {'derives':self.derived_de.id}
         self.create_items()
 
-class GlossaryItemAdminPage(AdminPageForConcept,TestCase):
-    itemType=models.GlossaryItem
-    form_defaults={
-        'alternate_definitions-TOTAL_FORMS':0,
-        'alternate_definitions-INITIAL_FORMS':0,
-        'alternate_definitions-MAX_NUM_FORMS':1,
-        }
