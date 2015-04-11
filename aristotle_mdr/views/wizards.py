@@ -19,7 +19,7 @@ from django import get_version as django_version
 if django_version() == '1.7':
     from django.contrib.formtools.wizard.views import SessionWizardView
 else:
-    from formtools.wizard.views import WizardView
+    from formtools.wizard.views import SessionWizardView
 
 
 def make_it_clean(string):
