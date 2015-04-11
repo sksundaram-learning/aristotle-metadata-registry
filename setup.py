@@ -60,6 +60,9 @@ setup(
         'django-bootstrap3',
         'django-bootstrap3-datetimepicker',
 
+        # This was migrated out of django1.7, needed for django1.8
+        'django-formtools',
+
         'xhtml2pdf',
         #'django-tastypie'
     ],
