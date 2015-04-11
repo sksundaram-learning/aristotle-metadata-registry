@@ -4,6 +4,7 @@
 #-e git://github.com/jedie/django-reversion-compare#egg=django_reversion_compare
 -e git://github.com/LegoStormtroopr/django-reversion-compare@django1\.8#egg=django_reversion_compare
 
+
 -e .
 
 #Some stuff fails on Django 1.7
