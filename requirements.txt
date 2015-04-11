@@ -2,7 +2,7 @@
 
 -e git://github.com/LegoStormtroopr/django-notifications#egg=notifications
 #-e git://github.com/jedie/django-reversion-compare#egg=django_reversion_compare
--e git://github.com/LegoStormtroopr/django-reversion-compare@django1.8#egg=django_reversion_compare
+-e git://github.com/LegoStormtroopr/django-reversion-compare@django1\.8#egg=django_reversion_compare
 
 -e .
 
