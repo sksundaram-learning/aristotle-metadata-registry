@@ -36,7 +36,7 @@
         <tr>
             <td>
                 <a href="{% url 'aristotle:workgroup' wg.id %}">{{ wg }}</a> -
-                <span>{{ wg.description|striptags }}</span>
+                <span>{{ wg.description|striptags|safe|truncatewords:15 }}</span>
             </td>
             <td>
                 {{ wg.members.count }}

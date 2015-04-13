@@ -17,13 +17,12 @@ $(document).ajaxComplete(function(event, request, settings) {
 });
 
 function itemFromId (msg,id) {
-    var item = {name:'id: '+id,description:"error"}
+    var item = null;
     $.each(msg,function(i,glossary_item) {
         if (glossary_item.id == id) {
             item = glossary_item
         }
-    })
-
+    });
     return item;
 }
 
@@ -33,30 +32,32 @@ $(document).ready(function () {
 
 function generateGlossaryPopovers() {
     var glossary_list = []
-    $('[data-aristotle_glossary_id]').each(function(i){
-        glossary_list.push($(this).data("aristotle_glossary_id"))
+    $('[data-aristotle-glossary-id]').each(function(i){
+        glossary_list.push($(this).data("aristotleGlossaryId"))
     })
 
     if (glossary_list != []) {
         suppressLoadingBlock = true;
         $.ajax({
           type: "GET",
-          url: "/api/v1/glossarylist/",
-          data: { id__in: glossary_list, },
+          url: "/glossary/jsonlist/",
+          data: { items: glossary_list, },
           traditional : true
         })
         .done(function( msg ) {
-            glossary_list = msg.objects
+            glossary_list = msg.items;
             suppressLoadingBlock = false;
 
-            $('[data-aristotle_glossary_id]').each(function(i){
-                item = itemFromId(glossary_list,$(this).data('aristotle_glossary_id'))
-                $(this).addClass("glossary_link")
-                    .attr('title',item.name)
-                    .data('toggle','popover')
-                    .data('trigger','hover')
-                    .data('content',item.description)
-                $(this).css("border-bottom","1px dashed #55f")
+            $('[data-aristotle-glossary-id]').each(function(i){
+                item = itemFromId(glossary_list,$(this).data('aristotleGlossaryId'))
+                if (item != null) {
+                    $(this).addClass("glossary_link")
+                        .attr('title',item.name)
+                        .data('toggle','popover')
+                        .data('trigger','hover')
+                        .data('content',item.description)
+                    $(this).css("border-bottom","1px dashed #55f")
+                }
           });
           $('[data-aristotle_glossary_id]').popover()
         })
