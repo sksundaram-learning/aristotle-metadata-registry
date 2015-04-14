@@ -1,0 +1,6 @@
+#Uncomment lines as required
+
+-e git+git://github.com/aristotle-mdr/aristotle-metadata-registry#egg=aristotle-mdr
+#-e git+git://github.com/aristotle-mdr/aristotle-dataset-extensions#egg=aristotle-dse
+#-e git+git://github.com/aristotle-mdr/aristotle-glossary#egg=aristotle_glossary
+#-e git+git://github.com/aristotle-mdr/aristotle-ddi-utils#egg=aristotle_ddi

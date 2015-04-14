@@ -1,44 +1,59 @@
-Quick start
------------
+Quick start documentation
+------------------------
 
-The first step is `starting a project as described in the Django tutorial<https://docs.djangoproject.com/en/1.7/intro/tutorial01/>`.
-Once this is done, follow the steps below to setup Aristotle-MDR.
+This is a quick and dirty guide to setting up a new metadata registry based on
+the Aristotle MetaData Registry framework.
 
-1. Add "aristotle_mdr" to your INSTALLED_APPS setting like this::
+Such a server should be considered for *demonstration* purposes, and deployment
+should be done in accordance with the best practices and specific requirements
+of the installing agency.
 
-    INSTALLED_APPS = (
-        ...
-        'haystack',
-        'aristotle_mdr',
-        'grappelli',
-        ...
-    )
+For more information on configuring a more complete installation review the help article
+:doc:`/installing/integrate_with_django_project`.
 
-   To ensure that search indexing works properly `haystack` **must** be installed before `aristotle_mdr`.
-   If you want to take advantage of Aristotle's access-key shortcut improvements for the admin interface,
-   make sure it is installed *before* `grappelli`.
+1. Make sure you have a server setup for hosting the project with an appropriate
+   WSGI web server configured. If the server is only used for development, the inbuilt
+   django server can be accessed by running the ``./manage.py runserver`` command.
 
-   Some Aristotle extensions (such as the Comet Indicator Registry Plug-ins) override aristotle templates
-   to add additional content to registry pages. For these overrides to be active extensions must be
-   installed before aristotle like this::
+   `PythonAnywhere also provides a free python server suitable for development and low
+   traffic sites<http://www.PythonAnywhere.com>`_.
 
-    INSTALLED_APPS = (
-        ...
-        'aristotle_mdr',
-        '...',
-    )
+2. (Optional but recommended) Configure a ``virtualenv`` for your server, so that the dependancies
+   for Aristotle-MDR do conflict any other software you may be running. If you are running
+   Aristotle on an isolated server with root privileges you may skip this step.
 
+   For PythonAnywhere, information is available on
+   `installing virtualenv<https://www.pythonanywhere.com/wiki/InstallingVirtualenvWrapper>`_
+   and `configuring a new virtualenv<https://www.pythonanywhere.com/wiki/VirtualEnvForNewerDjango>_`
 
-2. Include the Aristotle-MDR URLconf in your project urls.py. Because Aristotle will
-   form the majority of the interactions with the site, as well as including a
-   number of URLconfs for supporting apps its recommended to included it at the
-   server root, like this::
+3. Fetch the example metadata registry stored within the
+   `Aristotle-MDR GitHub repository<https://github.com/aristotle-mdr/aristotle-metadata-registry>`_.
 
-    url(r'^/', include('aristotle_mdr.urls')),
+   On a linux machine, this can be done with the command::
 
-3. Run `python manage.py migrate` to create the Aristotle Database.
+       svn export https://github.com/aristotle-mdr/aristotle-metadata-registry/trunk/example_mdr/
 
-4. Start the development server and visit http://127.0.0.1:8000/
-   to see the home page.
+4. Browse to the ``example_mdr/example_mdr`` directory, and edit the ``settings.py`` files to meet your requirements.
+   **It is strongly recommmended you generate a fresh ``SECRET_KEY``**, also consider which
+   database should be used and the customisation settings inthe ``ARISTOTLE_SETTINGS``
+   dictionary - details of which can be found under :doc:`/installing/settings`.
 
-For a complete example of how to successfully include Aristotle, see the `example_app` directory.
+   The example registry includes commented out lines for some useful Aristotle-MDR extensions.
+   If you wish to use these, removed the comments as directed by the documentation in ``settings.py``.
+
+5. Install the requirements for aristotle using the Python PIP package manager::
+
+    pip install -r requirements.txt
+
+6. Migrate and setup the database for your new registry. if you have ``DEBUG`` set to ``True``
+   this step will also create some example users and items::
+
+    ./manage.py migrate
+
+7. If you are using a WSGI server (such as PythonAnywhere) you'll need to either point your server to
+   the `example_mdr/example_mdr/wsgi.py`` file or updated your WSGI configuration.
+
+   For more information on `configuring the PythonAnywhere WSGI server review their documentation<https://www.pythonanywhere.com/wiki/DjangoTutorial>`_.
+
+8. Start (or restart your server) the development server and visit its address.
+
