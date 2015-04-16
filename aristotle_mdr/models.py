@@ -325,8 +325,9 @@ class Workgroup(registryGroup):
         self.managers.remove(user)
 
 @receiver(post_save,sender=Workgroup)
-def update_ownership(sender, instance, **kwargs):
-    if instance.tracker.has_changed('ownership'):
+def update_ownership(sender, instance, created, **kwargs):
+    # only log if its an edit, not a newly created workgroup
+    if not created and instance.tracker.has_changed('ownership'):
         message = ("Workgroup '{wg}' changed ownership, "
                     "cached public states for items in this workgroup are now "
                     "stale and need to be manually updated."
@@ -338,11 +339,14 @@ def update_registation_authorities(sender, instance, action, **kwargs):
     # this will be slow, but necessary... perhaps this will encourage people to not
     # change or add registration authorities to workgroups willy-nilly.
     if action in ['post_add','post_remove','post_clear']:
-        message = ("Workgroup '{wg}' has altered registration authorities, "
-                    "cached public states for items in this workgroup are now "
-                    "stale and need to be manually updated."
-                    ).format(wg = instance.name)
-        logger.critical(message)
+        created = instance.created >= timezone.now() - datetime.timedelta(seconds=VERY_RECENTLY_SECONDS)
+        # Dont fire this off if the object was created very recently within about the last 15 seconds.
+        if not created:
+            message = ("Workgroup '{wg}' has altered registration authorities, "
+                        "cached public states for items in this workgroup are now "
+                        "stale and need to be manually updated."
+                        ).format(wg = instance.name)
+            logger.critical(message)
     # In practice it seems the below is far too slow, so a better alternative is needed.
     #    for item in instance.items.all():
     #        item.recache_states()
