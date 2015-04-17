@@ -40,38 +40,6 @@
         <ul class="nav navbar-nav navbar-right">
         {% if user.is_active %}
             <li class="dropdown">
-                <a href="{% url 'aristotle:createList' %}" accesskey="o" class="dropdown-toggle" data-toggle="dropdown" title="Open create menu">
-                        <i class="fa fa-angle-down fa-lg"></i>
-                {% trans 'Create' %}
-                </a>
-                <ul class="dropdown-menu" role="menu" >
-                    <li><a href="{% url 'aristotle:createItem' 'aristotle_mdr' 'objectclass'%}">Object Class</a></li>
-                    <li><a href="{% url 'aristotle:createItem' 'aristotle_mdr' 'property'%}">Property</a></li>
-                    <li><a href="{% url 'aristotle:createItem' 'aristotle_mdr' 'valuedomain'%}">Value Domain</a></li>
-                    <li><a href="{% url 'aristotle:createItem' 'aristotle_mdr' 'dataelementconcept'%}">Data Element Concept</a></li>
-                    <li><a href="{% url 'aristotle:createItem' 'aristotle_mdr' 'dataelement'%}">Data Element</a></li>
-                    {# <li><a href="{% url 'aristotle:createDataElement'%}"></a></li> #}
-
-                    {% if request.user.is_superuser %}
-                        <li role="presentation" class="divider"></li>
-                        <li role="presentation" class="dropdown-header"><i class="fa fa-user-md fa-2x fa-fw"></i> Admin only</li>
-                        <li>
-                            <a href="{% url 'admin:aristotle_mdr_workgroup_add'%}">
-                                <i class="fa fa-users fa-fw"></i> {% trans 'Workgroup' %}</a>
-                        </li>
-                        <li>
-                            <a href="{% url 'admin:auth_user_add'%}">
-                                <i class="fa fa-user fa-fw"></i> {% trans 'User' %}
-                            </a>
-                        </li>
-                    {% endif %}
-                    <li role="presentation" class="divider"></li>
-                    <li>
-                        <a href="{% url 'aristotle:createList' %}">{% trans 'See all'%}...</a>
-                    </li>
-                </ul>
-            </li>
-            <li class="dropdown">
                 <a href="{% url 'aristotle:userHome' %}" accesskey="u" class="dropdown-toggle" role="menu" data-toggle="dropdown" title="{% trans 'Open user menu' %}">
                     {% if user.is_superuser %}
                         <i class="fa fa-user-md fa-lg"></i>
@@ -79,13 +47,6 @@
                         <i class="fa fa-user fa-lg"></i>
                     {% endif %}
                     {% firstof user.get_short_name user.get_username %}
-                    {% if user.is_active %}
-                        {% if user.notifications.unread %}
-                        <span class="notify" title="{% trans 'New notifications' %}"></span>
-                        {% else %}
-                        <span class="no-notify" title="{% trans 'No unread notifications' %}"></span>
-                        {% endif %}
-                    {% endif %}
                 </a>
                 <ul class="dropdown-menu" role="menu">
                     <li><a href="{% url 'aristotle:userHome' %}">
@@ -129,14 +90,61 @@
                         <i class="fa fa-user-md fa-fw"></i> {% trans 'Admin tools' %}
                         </a></li>
                     {% endif %}
-                    <li role="presentation" class="divider"></li>
-                    <li>
-                        <a href="{% url 'django.contrib.auth.views.logout' %}?next={{request.path}}">
-                            <i class="fa fa-sign-out fa-fw"></i> {% trans 'Log out'%}
-                        </a>
-                    </li>
                     <!-- li><a href="/item/"></a></li -->
                 </ul>
+            </li>
+            <li class="dropdown">
+                <a href="{% url 'aristotle:createList' %}"
+                    accesskey="o" class="dropdown-toggle" data-toggle="dropdown" title="{% trans 'Create new' %}...">
+                    <i class="fa fa-plus"></i>
+                    <span class="visible-xs-inline">{% trans 'Create new' %} ... </span>
+                    <i class="fa fa-caret-down"></i>
+                </a>
+                <ul class="dropdown-menu" role="menu" >
+                    <li><a href="{% url 'aristotle:createItem' 'aristotle_mdr' 'objectclass'%}">Object Class</a></li>
+                    <li><a href="{% url 'aristotle:createItem' 'aristotle_mdr' 'property'%}">Property</a></li>
+                    <li><a href="{% url 'aristotle:createItem' 'aristotle_mdr' 'valuedomain'%}">Value Domain</a></li>
+                    <li><a href="{% url 'aristotle:createItem' 'aristotle_mdr' 'dataelementconcept'%}">Data Element Concept</a></li>
+                    <li><a href="{% url 'aristotle:createItem' 'aristotle_mdr' 'dataelement'%}">Data Element</a></li>
+                    {# <li><a href="{% url 'aristotle:createDataElement'%}"></a></li> #}
+
+                    {% if request.user.is_superuser %}
+                        <li role="presentation" class="divider"></li>
+                        <li role="presentation" class="dropdown-header">
+                            <i class="fa fa-user-md fa-2x"></i> {% trans 'Admin only' %}
+                        </li>
+                        <li>
+                            <a href="{% url 'admin:aristotle_mdr_workgroup_add'%}">
+                                <i class="fa fa-users fa-fw"></i> {% trans 'Workgroup' %}</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'admin:auth_user_add'%}">
+                                <i class="fa fa-user-plus fa-fw"></i> {% trans 'User' %}
+                            </a>
+                        </li>
+                    {% endif %}
+                    <li role="presentation" class="divider"></li>
+                    <li>
+                        <a href="{% url 'aristotle:createList' %}">{% trans 'See all'%}...</a>
+                    </li>
+                </ul>
+            </li>
+            <li>
+                <a href="{% url 'notifications:all' %}">
+                    {% if user.notifications.unread %}
+                    <span class="notify" title="{% trans 'New notifications' %}"></span>
+                    <span class="visible-xs-inline">{% trans 'New notifications' %}</span>
+                    {% else %}
+                    <span class="no-notify" title="{% trans 'No unread notifications' %}"></span>
+                    <span class="visible-xs-inline">{% trans 'No unread notifications' %}</span>
+                    {% endif %}
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'django.contrib.auth.views.logout' %}?next={{request.path}}" title="{% trans 'Log out'%}">
+                    <i class="fa fa-sign-out fa-fw"></i>
+                    <span class="visible-xs-inline">{% trans 'Log out' %}</span>
+                </a>
             </li>
         {% else %}
             <li accesskey="l">

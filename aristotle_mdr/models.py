@@ -245,6 +245,17 @@ class RegistrationAuthority(registryGroup):
                 item.save()
         return obj
 
+
+@receiver(post_save,sender=RegistrationAuthority)
+def update_registration_authority_states(sender, instance, created, **kwargs):
+    if not created:
+        if instance.tracker.has_changed('public_state') or instance.tracker.has_changed('locked_state'):
+            message = ("Registration '{ra}' changed its public or locked status level, "
+                        "items registered by this authority may have stale visiblity states "
+                        "and need to be manually updated."
+                        ).format(ra = instance.name)
+            logger.critical(message)
+
 WORKGROUP_OWNERSHIP = Choices (
            (0,'registry',_('Registry')),
            (1,'authority',_('Registration Authorities')),

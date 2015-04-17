@@ -20,17 +20,6 @@
 {% block content %}
 <header class="row">
     <h1 id="objectTitle"  class="pull-left">
-        {% if user.is_authenticated %}
-        <a href="{% url 'aristotle:toggleFavourite' item.id %}"
-            title="{% ternary isFavourite 'Remove from my favourite items' 'Add to my favourite items' %}"
-            id="favourite">
-            {% if isFavourite %}
-                <i class="fa fa-bookmark "></i>
-            {% else %}
-                <i class="fa fa-bookmark-o "></i>
-            {% endif %}
-        </a>
-        {% endif %}
         <a href="#">{{ item.name }}</a>
         {% if item.version %}
         <em class="version" title="{% trans 'Version'%} {{ item.version }}">
@@ -47,6 +36,16 @@
         {% endif %}
     </h1>
     <div class="btn-group pull-right">
+        {% if user.is_authenticated %}
+        <a class="btn btn-default favourite" href="{% url 'aristotle:toggleFavourite' item.id %}"
+            title="{% ternary isFavourite 'Remove from my favourite items' 'Add to my favourite items' %}">
+            {% if isFavourite %}
+                <i class="fa fa-bookmark "></i>
+            {% else %}
+                <i class="fa fa-bookmark-o "></i>
+            {% endif %}
+        </a>
+        {% endif %}
         {% if item|can_edit:request.user %}
             {% if request.user.is_staff %}
                 <div class="btn-group">
