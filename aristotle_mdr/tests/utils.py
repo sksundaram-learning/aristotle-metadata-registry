@@ -90,7 +90,7 @@ class ManagedObjectVisibility(object):
                 concept=self.item,
                 registrationAuthority=self.ra,
                 registrationDate=timezone.now(),
-                state=models.STATES.candidate
+                state=models.STATES.incomplete
                 )
         self.assertEqual(self.item.is_locked(),False)
 
