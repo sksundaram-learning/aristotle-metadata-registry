@@ -10,7 +10,10 @@ from aristotle_mdr.utils import url_slugify_concept
 # This isn't an actual TestCase, we'll just pretend it is
 class ManagedObjectVisibility(object):
     def setUp(self):
-        self.ra = models.RegistrationAuthority.objects.create(name="Test RA",public_state=models.STATES.qualified,locked_state=models.STATES.candidate)
+        self.ra = models.RegistrationAuthority.objects.create(name="Test RA",
+                        public_state=models.STATES.qualified,
+                        locked_state=models.STATES.candidate)
+
         self.wg = models.Workgroup.objects.create(name="Test WG")
         self.wg.registrationAuthorities.add(self.ra)
 
@@ -90,7 +93,7 @@ class ManagedObjectVisibility(object):
                 concept=self.item,
                 registrationAuthority=self.ra,
                 registrationDate=timezone.now(),
-                state=models.STATES.incomplete
+                state=models.STATES.candidate
                 )
         self.assertEqual(self.item.is_locked(),False)
 
