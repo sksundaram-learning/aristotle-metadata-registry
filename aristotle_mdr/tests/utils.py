@@ -10,9 +10,9 @@ from aristotle_mdr.utils import url_slugify_concept
 # This isn't an actual TestCase, we'll just pretend it is
 class ManagedObjectVisibility(object):
     def setUp(self):
-        self.ra = models.RegistrationAuthority.objects.create(name="Test RA")
+        self.ra = models.RegistrationAuthority.objects.create(name="Test RA",public_state=models.STATES.qualified,locked_state=models.STATES.candidate)
         self.wg = models.Workgroup.objects.create(name="Test WG")
-        self.wg.registrationAuthorities.add(self.ra,public_state=models.STATES.qualified,locked_state=models.STATES.candidate)
+        self.wg.registrationAuthorities.add(self.ra)
 
     def test_object_is_public(self):
         self.assertEqual(self.item.is_public(),False)
