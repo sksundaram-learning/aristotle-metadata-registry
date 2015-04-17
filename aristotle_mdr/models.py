@@ -224,28 +224,6 @@ class RegistrationAuthority(registryGroup):
         if role == "manager":
             self.managers.remove(user)
 
-    def save(self, *args, **kwargs):
-        # save happens before the transaction ends, so regular calls via the concept.recache
-        # access the original registration authority information
-        # plus we need to know what changed, so we can't use a post_save signal
-        # Hence we need to do wierd stuff here
-        obj = super(RegistrationAuthority, self).save(*args, **kwargs)
-        if self.tracker.has_changed('public_state') or self.tracker.has_changed('locked_state'):
-            instance = self
-            for s in Status.objects.filter(registrationAuthority=instance):
-                item = _concept.objects.get(pk=s.concept.pk)
-                item._is_public = True in [ s.state >= s.registrationAuthority.public_state
-                                            for s in item.statuses.all()
-                                            if  s.registrationAuthority != instance
-                                          ] or  s.state >= instance.public_state
-                item._is_locked = True in [ s.state >= s.registrationAuthority.locked_state
-                                            for s in item.statuses.all()
-                                            if  s.registrationAuthority != instance
-                                          ] or  s.state >= instance.locked_state
-                item.save()
-        return obj
-
-
 @receiver(post_save,sender=RegistrationAuthority)
 def update_registration_authority_states(sender, instance, created, **kwargs):
     if not created:
