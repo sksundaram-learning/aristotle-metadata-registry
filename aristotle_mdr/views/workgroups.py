@@ -9,14 +9,13 @@ from django.template.defaultfilters import slugify
 from aristotle_mdr import models as MDR
 from aristotle_mdr import forms as MDRForms
 from aristotle_mdr.views.utils import paginated_list
-from aristotle_mdr.utils import url_slugify_workgroup
 from aristotle_mdr.perms import user_in_workgroup, user_is_workgroup_manager
 
 @login_required
 def workgroup(request, iid, name_slug):
     wg = get_object_or_404(MDR.Workgroup,pk=iid)
     if not slugify(wg.name).startswith(str(name_slug)):
-        return redirect(url_slugify_workgroup(wg))
+        return redirect(wg.get_absolute_url())
     if not user_in_workgroup(request.user,wg):
         raise PermissionDenied
     renderDict = {"item":wg,"workgroup":wg,"user_is_admin":user_is_workgroup_manager(request.user,wg)}
