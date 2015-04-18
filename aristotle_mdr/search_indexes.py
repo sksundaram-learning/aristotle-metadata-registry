@@ -12,7 +12,7 @@ class baseObjectIndex(indexes.SearchIndex):
     #access = indexes.MultiValueField()
 
     def get_model(self):
-        return models.baseAristotleObject
+        raise NotImplementedError #pragma: no cover -- This should always be overridden
 
     # From http://unfoldthat.com/2011/05/05/search-with-row-level-permissions.html
     def index_queryset(self, using=None):
@@ -47,12 +47,6 @@ class conceptIndex(baseObjectIndex):
     workgroup = indexes.IntegerField()
     is_public = indexes.BooleanField()
     version = indexes.CharField(model_attr="version")
-
-    def update_object(self, instance, using=None, **kwargs):
-        if kwargs.get('raw'):
-            return
-        return super(conceptIndex, self).update_object(
-            instance, using=using, **kwargs)
 
     def prepare_registrationAuthorities (self, obj):
         ras = [str(s.registrationAuthority.id) for s in obj.statuses.all()]

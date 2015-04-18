@@ -8,10 +8,13 @@ def loadDefaultData(**kwargs): # pragma: no cover
     aristotle_mdr.models.defaultData()
 
 def configureSystemUser(**kwargs):
-    # Make a system "user" this is used for when the syetms needs post messages
-    system = User.objects.create_user("aristotle")
-    system.is_staff = False
-    system.save()
+    # Make a system "user" this is used for when the systems need to post messages
+    try:
+        user = User.objects.get(username='aristotle')
+    except User.DoesNotExist:
+        system = User.objects.create_user("aristotle")
+        system.is_staff = False
+        system.save()
 
 signals.post_syncdb.connect(configureSystemUser, sender=aristotle_mdr.models)
 signals.post_syncdb.connect(loadDefaultData, sender=aristotle_mdr.models)

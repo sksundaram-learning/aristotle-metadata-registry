@@ -22,6 +22,31 @@
 <div class="row">
 
 <aside id="infoBox" class="col-xs-12 col-sm-4 pull-right">
+{% if workgroup.archived %}
+    <div class="alert alert-warning">
+        This workgroup is archived.
+        {% if request.user in workgroup.managers or request.user.is_superuser %}
+        <a data-toggle="modal" data-target="#archive_modal" class="btn btn-sm btn-default" href="{% url 'aristotle:archive_workgroup' workgroup.id %}">
+            <i class="fa fa-folder-open"></i> Reactivate this workgroup</a>
+        {% endif %}
+    </div>
+    {% else %}
+    <div class="alert alert-success">
+        This workgroup is active.
+        {% if request.user in workgroup.managers or request.user.is_superuser %}
+        <a data-toggle="modal" data-target="#archive_modal" class="btn btn-sm btn-default" href="{% url 'aristotle:archive_workgroup' workgroup.id %}">
+            <i class="fa fa-archive"></i> Archive this workgroup</a>
+        {% endif %}
+    </div>
+    {% endif %}
+    {% if request.user in workgroup.managers or request.user.is_superuser %}
+    <div id="archive_modal" class="modal fade">
+      <div class="modal-dialog">
+          <div class="modal-content">
+          </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+    {% endif %}
 <section id="items">
 <header>Recently changed items</header>
     <ul>
@@ -35,6 +60,9 @@
 </aside>
 
 <div class="col-sm-8">
+    <div>
+        {{ item.description | safe }}
+    </div>
     <h2>Details</h2>
     <dl>
         <dt>Responsible Registration Authorities</dt>

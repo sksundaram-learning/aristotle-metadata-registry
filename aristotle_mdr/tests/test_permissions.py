@@ -208,16 +208,15 @@ class CustomConceptQuerySetTest(TestCase):
         self.assertEqual(len(models.ValueDomain.objects.all().public()),0)
 
 
-class CustomConceptQuerySetTest_Slow(TestCase):
-
+class CustomConceptQuerySetTest_Slow(object):
     @classmethod
     def setUpClass(cls):
         super(CustomConceptQuerySetTest_Slow, cls).setUpClass()
-        cls.super_user = User.objects.create_superuser('permission_check_super','','user')
+        cls.super_user = User.objects.create_superuser('permission_check_super '+str(cls.workgroup_owner_type),'','user')
         cls.wg_users = []
         cls.ra_users = []
         cls.ras = {}
-        p = "permission_check "
+        p = "permission_check %s "%str(cls.workgroup_owner_type)
         # Default settings for locked/public
         cls.ras['default'] = models.RegistrationAuthority.objects.create(name=p+"Default RA")
 
@@ -260,8 +259,8 @@ class CustomConceptQuerySetTest_Slow(TestCase):
             #  a "non-member" workgroup that we also register the item in to confirm
             #  that "non-members" don't alter the visibility.
             for keys in itertools.combinations(cls.ras.keys(), i):
-                prefix = "%d %s"%(len(keys),"-".join(keys))
-                wg = models.Workgroup.objects.create(name="WG "+prefix)
+                prefix = "%d %s %s"%(len(keys),"-".join(keys),str(cls.workgroup_owner_type))
+                wg = models.Workgroup.objects.create(name="WG "+prefix,ownership=cls.workgroup_owner_type)
 
                 for role in ['viewer','submitter','steward']:
                     u = User.objects.create_user(role+prefix,'','user')
@@ -341,6 +340,10 @@ class CustomConceptQuerySetTest_Slow(TestCase):
         self.assertTrue(models.ObjectClass.objects.visible(user).count() == models.ObjectClass.objects.all().count())
         self.assertTrue(models.ObjectClass.objects.editable(user).count() == models.ObjectClass.objects.all().count())
 
+class CustomConceptQuerySetTest_RegistrationOwned_Slow(CustomConceptQuerySetTest_Slow,TestCase):
+    workgroup_owner_type = models.WORKGROUP_OWNERSHIP.registry
+class CustomConceptQuerySetTest_RegistryOwned_Slow(CustomConceptQuerySetTest_Slow,TestCase):
+    workgroup_owner_type = models.WORKGROUP_OWNERSHIP.authority
 
 class RegistryCascadeTest(TestCase):
     def test_superuser_DataElementConceptCascade(self):

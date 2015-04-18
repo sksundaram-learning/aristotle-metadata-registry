@@ -1,0 +1,64 @@
+{% extends "aristotle_mdr/user/userHome.html" %}
+{% load i18n %}
+
+{% block collapse-link %}
+    <i class="fa fa-users fa-fw"></i> My Workgroups </a>
+{% endblock %}
+
+{% block sidebar %}
+    {% include "aristotle_mdr/user/userSideBar.html" with activeTab='workgroupArchives' %}
+{% endblock %}
+
+{% block page %}
+<h1>{% block title %}My Workgroup Archives{% endblock %}</h1>
+<section id="workgroups">
+    <p>Below is a list of archived workgroups of which you are a member.
+    New items (such as Object Classes or Data Elements) cannot be created in these workgroups,
+    and new posts or comments can be created within the discussion area for workgroup.
+    </p>
+    <p>To see a list of only active workgroups,
+    go to <a href="{% url 'aristotle:userWorkgroups'%}">My Workgroups.</a></p>
+
+<table class='table'>
+    <thead>
+        <tr>
+            <th>Workgroup</th>
+            <th>
+                <i class="fa fa-users" title="Number of members"></i>
+            </th>
+            <th>
+                <i class="fa fa-file" title="Number of items"></i>
+            </th>
+            <th>
+                <i class="fa fa-archive" title="Archive status"></i>
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for wg in user.profile.workgroups.all %}
+        {% if wg.archived %}
+        <tr>
+            <td>
+                <a href="{% url 'aristotle:workgroup' wg.id %}">{{ wg }}</a> -
+                <span>{{ wg.description|striptags }}</span>
+            </td>
+            <td>
+                {{ wg.members.count }}
+            </td>
+            <td>
+                {{ wg.items.count }}
+            </td>
+            <td>
+                {% if wg.archived %}
+                    {% trans "Archived" %}
+                {% else %}
+                    {% trans "Active" %}
+                {% endif %}
+            </td>
+        </tr>
+        {% endif %}
+        {% endfor %}
+    </tbody>
+</table>
+</section>
+{% endblock %}

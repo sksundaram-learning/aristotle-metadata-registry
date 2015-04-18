@@ -4,8 +4,6 @@ import autocomplete_light
 autocomplete_light.autodiscover()
 
 from django import forms
-#from tinymce.widgets import TinyMCE
-from django.contrib.auth.models import User
 from django.utils.translation import ugettext_lazy as _
 from django.utils import timezone
 
@@ -138,26 +136,6 @@ class ChangeStatusForm(forms.Form):
             # Any other errors will be thrown accordingly
             raise forms.ValidationError("Please select a valid status.")
         return state
-
-
-class AddWorkgroupMembers(forms.Form):
-    roles = forms.MultipleChoiceField(
-            label="Workgroup roles",
-            choices=sorted(MDR.Workgroup.roles.items()),
-            widget=forms.CheckboxSelectMultiple
-            )
-    users = forms.ModelMultipleChoiceField(
-            label="Select users",
-            queryset=User.objects.all(),
-            widget=autocomplete_light.MultipleChoiceWidget('Autocomplete_AristotleUser')
-            )
-
-
-    def clean_roles(self):
-        roles = self.cleaned_data['roles']
-        roles = [role for role in roles if role in MDR.Workgroup.roles.keys()]
-        return roles
-
 
 # Thanks http://stackoverflow.com/questions/6958708/grappelli-to-hide-sortable-field-in-inline-sortable-django-admin
 class PermissibleValueForm(forms.ModelForm):

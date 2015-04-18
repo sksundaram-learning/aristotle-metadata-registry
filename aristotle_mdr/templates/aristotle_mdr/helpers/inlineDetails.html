@@ -10,6 +10,6 @@
     {% endfor %}</small></div>
 
     <div class="description">
-        {{ item.description | striptags }}
+        {{ item.description|striptags|safe|truncatewords:20 }}
     </div>
 {% endif %}

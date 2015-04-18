@@ -52,12 +52,12 @@ class WorkgroupFilter(RelatedFieldListFilter):
 
 class WorkgroupAdmin(CompareVersionAdmin):
     fieldsets = [
-        (None,              {'fields': ['name','description','registrationAuthorities']}),
+        (None,              {'fields': ['name','description','ownership','registrationAuthorities']}),
         ('Members',         {'fields': ['managers','stewards','submitters','viewers',]}),
     ]
     filter_horizontal = ['managers','stewards','submitters','viewers','registrationAuthorities']
     def get_queryset(self, request):
-        qs = super(WorkgroupAdmin, self).queryset(request)
+        qs = super(WorkgroupAdmin, self).get_queryset(request)
         if request.user.is_superuser:
             return qs
         else:

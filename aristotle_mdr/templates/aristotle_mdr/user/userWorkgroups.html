@@ -12,6 +12,8 @@
 {% block page %}
 <h1>{% block title %}My Workgroups{% endblock %}</h1>
     <section id="workgroups">
+        <p>This is a list of active workgroups of which you are a member. To see a list of inactive workgroups,
+        go to <a href="{% url 'aristotle:user_workgroups_archives'%}">Archived Workgroups.</a></p>
         <header>Recent Workgroups</header>
 
 <table class='table'>
@@ -24,11 +26,6 @@
             <th>
                 <i class="fa fa-file" title="Number of items"></i>
             </th>
-            {% if archived %}
-            <th>
-                <i class="fa fa-file" title="Number of items"></i>
-            </th>
-            {% endif %}
         </tr>
     </thead>
     <tbody>
@@ -36,7 +33,7 @@
         <tr>
             <td>
                 <a href="{% url 'aristotle:workgroup' wg.id %}">{{ wg }}</a> -
-                <span>{{ wg.description|striptags }}</span>
+                <span>{{ wg.description|striptags|safe|truncatewords:15 }}</span>
             </td>
             <td>
                 {{ wg.members.count }}
@@ -44,15 +41,6 @@
             <td>
                 {{ wg.items.count }}
             </td>
-            {% if archived %}
-            <td>
-                {% if wg.archived %}
-                    {% trans "Archived" %}
-                {% else %}
-                    {% trans "Active" %}
-                {% endif %}
-            </td>
-            {% endif %}
         </tr>
         {% endfor %}
     </tbody>

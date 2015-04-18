@@ -29,29 +29,40 @@
     </li>
     <li {% ifequal activeTab "workgroups" %}class="active"{% endifequal %}>
         <a href="{% url 'aristotle:userWorkgroups' %}">
-        <i class="fa fa-users fa-fw"></i> Workgroups
+        <i class="fa fa-users fa-fw"></i> {% trans "Workgroups" %}
         <span class="badge pull-right">{{ user.profile.myWorkgroups.count }}</span></a>
         {% if subWorkgroups %}
         <ul class="nav nav-pills nav-stacked nav-collapse dashSubMenu">
+            <li><a href="{% url 'aristotle:user_workgroups_archives' %}">{% trans "Archived Workgroups" %}</a></li>
             {% for item in subWorkgroups %}
             <li>
                 <a href="{% url 'aristotle:workgroup' item.id %}">{{ item }}</a>
             </li>
             {% endfor %}
         </ul>
-        {% endif %}
-        {% if subWorkgroup %}
+        {% elif subWorkgroup %}
         <ul class="nav nav-pills nav-stacked nav-collapse dashSubMenu">
             <li class="active">
                 <a href="{% url 'aristotle:workgroup' item.id %}">{{ item }}</a>
             </li>
         </ul>
         {% endif %}
+        {% ifequal activeTab "workgroupArchives" %}
+        <ul class="nav nav-pills nav-stacked nav-collapse dashSubMenu">
+            <li class="active">
+                <a href="{% url 'aristotle:user_workgroups_archives' %}">{% trans "Archived Workgroups" %}</a>
+            </li>
+        </ul>
+        {% endifequal %}
     </li>
     <li {% ifequal activeTab "discussions" %}class="active"{% endifequal %}>
         <a href="{% url 'aristotle:discussions' %}">
         <i class="fa fa-comments fa-fw"></i> {% trans 'Discussions'%}
     </a></li>
+    <li {% ifequal activeTab "recent" %}class="active"{% endifequal %}>
+        <a href="{% url 'aristotle:userRecentItems' %}">
+        <i class="fa fa-history fa-fw"></i> {% trans "Recent Actions" %}</a>
+    </li>
     <li {% ifequal activeTab "edit" %}class="active"{% endifequal %}>
         <a href="{% url 'aristotle:userEdit' %}">
         <i class="fa fa-user fa-fw"></i> Edit details</a>
@@ -67,7 +78,7 @@
     {% if request.user.profile.is_registrar %}
     <li {% ifequal activeTab "registrarTools" %}class="active"{% endifequal %}>
         <a href="{% url 'aristotle:userRegistrarTools' %}">
-        <i class="fa fa-institution fa-fw"></i> Registrar tools
+        <i class="fa fa-institution fa-fw"></i> {% trans "Registrar tools" %}
         </a>
         {% ifequal activeTab "registrarTools" %}
         <ul class="nav nav-pills nav-stacked nav-collapse dashSubMenu">
@@ -81,7 +92,7 @@
     {% if request.user.is_superuser %}
     <li {% ifequal activeTab "adminTools" %}class="active"{% endifequal %}>
         <a href="{% url 'aristotle:userAdminTools' %}">
-        <i class="fa fa-user-md fa-fw"></i> Super user tools
+        <i class="fa fa-user-md fa-fw"></i> {% trans "Administrator tools" %}
         </a>
         {% if activeTab == 'adminTools' %}
         <ul class="nav nav-pills nav-stacked nav-collapse dashSubMenu">

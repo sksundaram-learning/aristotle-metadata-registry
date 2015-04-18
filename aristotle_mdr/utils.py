@@ -41,6 +41,11 @@ def url_slugify_concept(item):
         kwargs={'iid':item.pk,'model_slug':item._meta.model_name,'name_slug':slugify(item.name)[:50]}
         )
 
+def url_slugify_workgroup(workgroup):
+    item = workgroup
+    return reverse("aristotle:workgroup",
+        kwargs={'iid':item.pk,'name_slug':slugify(item.name)[:50]}
+        )
 
 def construct_change_message(request, form, formsets):
     """

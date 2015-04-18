@@ -35,3 +35,26 @@ def paginated_list(request,items,template,extra_context={}):
         }
     context.update(extra_context)
     return render(request,template,context)
+
+@login_required
+def paginated_reversion_list(request,items,template,extra_context={}):
+
+    paginator = Paginator(
+        items,
+        request.GET.get('pp',20) # per page
+        )
+
+    page = request.GET.get('page')
+    try:
+        items = paginator.page(page)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page.
+        items = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range (e.g. 9999), deliver last page of results.
+        items = paginator.page(paginator.num_pages)
+    context = {
+        'page':items,
+        }
+    context.update(extra_context)
+    return render(request,template,context)

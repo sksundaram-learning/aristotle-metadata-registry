@@ -25,16 +25,8 @@ else:
 def make_it_clean(string):
     return str(strip_tags(string)).replace("&nbsp;"," ").strip() # Clean it up
 
-@permission_required('aristotle_mdr.user_is_editor')
-def glossary_search(request):
-    """This is a custom dialog for TinyMCE
-    Use a view to make generating the form portions needed easier.
-    """
-    form = MDRForms.wizards.GlossarySearchForm(user=request.user) # A form bound to the POST data
-    return render(request,"aristotle_mdr/create/glossary_dialog.html",{'form':form})
-
 """
-THis allows use to perform an inspection of the registered items
+This allows use to perform an inspection of the registered items
 so extensions don't need to register to get fancy creation wizards,
 they are available based on either the model name, or if that is
 ambiguous, present an option to make the right item.
