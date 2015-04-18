@@ -135,7 +135,7 @@ class TestSearch(utils.LoggedInViewPages,TestCase):
         self.assertEqual(len(response.context['page'].object_list),0) # indexes are stale, so no results
 
         from django.core import management # Lets recache this workgroup
-        management.call_command('recache_workgroup_item_visibility', self.avengers_wg.pk, verbosity=0)
+        management.call_command('recache_workgroup_item_visibility', wg=[self.avengers_wg.pk], verbosity=0)
 
         response = self.client.get(reverse('aristotle:search')+"?q=captainAmerica")
         self.assertEqual(len(response.context['page'].object_list),1)

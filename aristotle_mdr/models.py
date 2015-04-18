@@ -351,7 +351,7 @@ class discussionAbstract(TimeStampedModel):
         abstract = True
     @property
     def edited(self):
-        return self.created != self.modifed
+        return self.created != self.modified
 
 class DiscussionPost(discussionAbstract):
     workgroup = models.ForeignKey(Workgroup,related_name='discussions')

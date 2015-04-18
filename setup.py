@@ -34,7 +34,7 @@ setup(
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
     ],
     install_requires = [
-        "Django>=1.7,<1.8",
+        "Django>=1.7",
         'pytz',
 
         'django-model-utils',
@@ -51,7 +51,7 @@ setup(
 
         # Revision control
         "django-reversion>=1.8",
-        'django-reversion-compare',
+        'django-reversion-compare>=0.5.2',
         'diff-match-patch',
 
         # Fancy UI stuff
@@ -59,6 +59,9 @@ setup(
         'django-autocomplete-light',
         'django-bootstrap3',
         'django-bootstrap3-datetimepicker',
+
+        # This was migrated out of django1.7, needed for django1.8
+        'django-formtools',
 
         'xhtml2pdf',
         #'django-tastypie'

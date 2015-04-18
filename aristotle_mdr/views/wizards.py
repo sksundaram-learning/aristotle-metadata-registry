@@ -8,13 +8,19 @@ from django.core.urlresolvers import reverse
 from django.contrib import messages
 from django.contrib.auth.decorators import permission_required
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.formtools.wizard.views import SessionWizardView
 from django.http import HttpResponseRedirect, Http404
 from django.shortcuts import render
 from django.utils.decorators import method_decorator
 from django.utils.html import strip_tags
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
+
+from django import get_version as django_version
+if django_version() == '1.7':
+    from django.contrib.formtools.wizard.views import SessionWizardView
+else:
+    from formtools.wizard.views import SessionWizardView
+
 
 def make_it_clean(string):
     return str(strip_tags(string)).replace("&nbsp;"," ").strip() # Clean it up

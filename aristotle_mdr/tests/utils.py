@@ -54,7 +54,7 @@ class ManagedObjectVisibility(object):
         self.ra.save()
 
         from django.core import management # Lets recache this workgroup
-        management.call_command('recache_registration_authority_item_visibility', self.ra.pk, verbosity=0)
+        management.call_command('recache_registration_authority_item_visibility', ra=[self.ra.pk], verbosity=0)
 
         self.item = models._concept.objects.get(id=self.item.id) # Stupid cache
         self.assertEqual(self.item.is_public(),True)
@@ -63,7 +63,7 @@ class ManagedObjectVisibility(object):
         self.ra.save()
 
         from django.core import management # Lets recache this workgroup
-        management.call_command('recache_registration_authority_item_visibility', self.ra.pk, verbosity=0)
+        management.call_command('recache_registration_authority_item_visibility', ra=[self.ra.pk], verbosity=0)
 
         self.item = models._concept.objects.get(id=self.item.id) # Stupid cache
         self.assertEqual(self.item.is_public(),False)
@@ -105,7 +105,7 @@ class ManagedObjectVisibility(object):
         self.ra.save()
 
         from django.core import management # Lets recache this RA
-        management.call_command('recache_registration_authority_item_visibility', self.ra.pk, verbosity=0)
+        management.call_command('recache_registration_authority_item_visibility', ra=[self.ra.pk], verbosity=0)
 
         self.item = models._concept.objects.get(id=self.item.id) # Stupid cache
         self.assertEqual(self.item.is_locked(),False)
@@ -114,7 +114,7 @@ class ManagedObjectVisibility(object):
         self.ra.save()
 
         from django.core import management # Lets recache this RA
-        management.call_command('recache_registration_authority_item_visibility', self.ra.pk, verbosity=0)
+        management.call_command('recache_registration_authority_item_visibility', ra=[self.ra.pk], verbosity=0)
 
         self.item = models._concept.objects.get(id=self.item.id) # Stupid cache
         self.assertEqual(self.item.is_locked(),True)
