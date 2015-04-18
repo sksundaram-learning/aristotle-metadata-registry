@@ -846,10 +846,7 @@ class PossumProfile(models.Model):
 
     @property
     def myWorkgroups(self):
-        if self.user.is_superuser:
-            return Workgroup.objects.all()
-        else:
-            return self.workgroups.filter(archived=False)
+        return self.workgroups.filter(archived=False)
 
     @property
     def is_registrar(self):

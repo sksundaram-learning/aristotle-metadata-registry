@@ -200,3 +200,8 @@ def review_list(request):
 def workgroups(request):
     page = render(request,"aristotle_mdr/user/userWorkgroups.html")
     return page
+
+@login_required
+def workgroup_archives(request):
+    page = render(request,"aristotle_mdr/user/userWorkgroupArchives.html")
+    return page
