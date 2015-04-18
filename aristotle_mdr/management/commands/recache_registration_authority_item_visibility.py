@@ -6,7 +6,7 @@ class Command(BaseCommand):
     help = 'Recomputes and caches the public andlocked statuses for the given workgroup(s). This is useful if the registration authorities associated with a workgroup change.'
 
     def handle(self, *args, **options):
-        for ra_id in args:
+        for ra_id in options['ra']:
             try:
                 ra = RegistrationAuthority.objects.get(pk=int(ra_id))
             except RegistrationAuthority.DoesNotExist: #pragma: no cover
