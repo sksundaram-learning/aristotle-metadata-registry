@@ -38,12 +38,9 @@ def paginated_list(request,items,template,extra_context={}):
 
 @login_required
 def paginated_reversion_list(request,items,template,extra_context={}):
-    sort_by=request.GET.get('sort',"mod_desc")
-    if sort_by not in paginate_sort_opts.keys():
-        sort_by="mod_desc"
 
     paginator = Paginator(
-        items, #.order_by(paginate_sort_opts.get(sort_by)),
+        items,
         request.GET.get('pp',20) # per page
         )
 
@@ -57,7 +54,6 @@ def paginated_reversion_list(request,items,template,extra_context={}):
         # If page is out of range (e.g. 9999), deliver last page of results.
         items = paginator.page(paginator.num_pages)
     context = {
-        'sort':sort_by,
         'page':items,
         }
     context.update(extra_context)
