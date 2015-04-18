@@ -1,26 +1,32 @@
-Aristotle Settings required in Django-settings
-==============================================
+Configuring the behavior of Aristotle-MDR
+=========================================
 
 ``ARISTOTLE_SETTINGS``
 ----------------------
 
 The following are required within a dictionary in the settings for the configured Django project.
 
-* ``CONTENT_EXTENSIONS`` - A list of the *namespaces* used to add additional content types,
-                            these are used when discovering the available extensions for about pages -
-                            required format a ``list`` of ``strings``.
-* ``PDF_PAGE_SIZE`` - The default page size to deliver PDF downloads if a page size is not specified in the URL
-* ``SEPARATORS`` - A key:value set that describes the separators to be used for name suggestions in the
-                    admin interface. These are set by specifying the key as the django model name for
-                    a given model, and the value as the separator.
-                    When a value for a model isn't stated in this field it defaults to a hyphen ``-``.
-                    The default settings in ``required_settings.py`` set additional defaults and
-                    specify the separator for "DataElements" as a comma with a single space ``, ``
-                    and the separator for "DataElementConcepts" as an em-dash ``–``.
-* ``SITE_NAME`` - The main title for the site - required format ``string`` or ``unicode``.
-* ``SITE_BRAND`` - A URL to the logo to use for the site, this can be relative or absolute.
-* ``SITE_INTRO`` - The introductory text use on the home page as a prompt for users -
-                    required format ``string`` or ``unicode``.
+``CONTENT_EXTENSIONS``
+    A list of the *namespaces* used to add additional content types,
+    these are used when discovering the available extensions for about pages -
+    required format a ``list`` of ``strings``.
+``PDF_PAGE_SIZE``
+    The default page size to deliver PDF downloads if a page size is not specified in the URL
+``SEPARATORS``
+    A key:value set that describes the separators to be used for name suggestions in the
+    admin interface. These are set by specifying the key as the django model name for
+    a given model, and the value as the separator.
+    When a value for a model isn't stated in this field it defaults to a hyphen ``-``.
+    The default settings in ``required_settings.py`` set additional defaults and
+    specify the separator for "DataElements" as a comma with a single space ``, ``
+    and the separator for "DataElementConcepts" as an em-dash ``–``.
+``SITE_NAME``
+    The main title for the site - required format ``string`` or ``unicode``.
+``SITE_BRAND``
+    A URL to the logo to use for the site, this can be relative or absolute.
+``SITE_INTRO``
+    The introductory text use on the home page as a prompt for users -
+    required format ``string`` or ``unicode``.
 
 ``ARISTOTLE_DOWNLOADS``
 -----------------------

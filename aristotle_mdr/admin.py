@@ -52,12 +52,12 @@ class WorkgroupFilter(RelatedFieldListFilter):
 
 class WorkgroupAdmin(CompareVersionAdmin):
     fieldsets = [
-        (None,              {'fields': ['name','description','registrationAuthorities']}),
+        (None,              {'fields': ['name','description','ownership','registrationAuthorities']}),
         ('Members',         {'fields': ['managers','stewards','submitters','viewers',]}),
     ]
     filter_horizontal = ['managers','stewards','submitters','viewers','registrationAuthorities']
     def get_queryset(self, request):
-        qs = super(WorkgroupAdmin, self).queryset(request)
+        qs = super(WorkgroupAdmin, self).get_queryset(request)
         if request.user.is_superuser:
             return qs
         else:
@@ -213,15 +213,6 @@ class ValueDomainAdmin(ConceptAdmin):
     ]
     inlines = ConceptAdmin.inlines + [PermissibleValueInline,SupplementaryValueInline]
 
-class GlossaryAlternateDefinitionInline(admin.TabularInline):
-    model = MDR.GlossaryAdditionalDefinition
-    extra=0
-
-class GlossaryItemAdmin(ConceptAdmin):
-    model = MDR.GlossaryItem
-    fieldsets = ConceptAdmin.fieldsets
-    inlines = ConceptAdmin.inlines + [GlossaryAlternateDefinitionInline]
-
 class RegistrationAuthorityAdmin(admin.ModelAdmin):
     list_display = ['name', 'description','created','modified']
     list_filter = ['created','modified',]
@@ -242,7 +233,6 @@ admin.site.register(MDR.DataElement,DataElementAdmin)
 admin.site.register(MDR.DataType,DataTypeAdmin)
 admin.site.register(MDR.DataElementDerivation,DataElementDerivationAdmin)
 admin.site.register(MDR.DataElementConcept,DataElementConceptAdmin)
-admin.site.register(MDR.GlossaryItem,GlossaryItemAdmin)
 admin.site.register(MDR.Package,PackageAdmin)
 admin.site.register(MDR.Property,PropertyAdmin)
 admin.site.register(MDR.ObjectClass,ObjectClassAdmin)

@@ -9,6 +9,7 @@ from aristotle_mdr.utils import url_slugify_concept
 from django.test.utils import setup_test_environment
 setup_test_environment()
 from aristotle_mdr.tests import utils
+import datetime
 
 class AnonymousUserViewingThePages(TestCase):
     def setUp(self):
@@ -211,6 +212,42 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         response = self.client.get(reverse('aristotle:registrationHistory',args=[self.item2.id]))
         self.assertEqual(response.status_code,302)
 
+    def test_viewer_can_view_item_history(self):
+        # Workgroup members can see the edit history of items
+        self.login_viewer()
+        response = self.client.get(reverse('aristotle:item_history',args=[self.item1.id]))
+        self.assertEqual(response.status_code,200)
+        response = self.client.get(reverse('aristotle:item_history',args=[self.item2.id]))
+        self.assertEqual(response.status_code,403)
+
+        # Viewers shouldn't even have the link to history on items they arent in the workgroup for
+        response = self.client.get(self.item2.get_absolute_url())
+        self.assertFalse(reverse('aristotle:item_history',args=[self.item2.id]) in response.content)
+
+        # Viewers will even have the link to history on items they are in the workgroup for
+        response = self.client.get(self.item1.get_absolute_url())
+        self.assertTrue(reverse('aristotle:item_history',args=[self.item1.id]) in response.content)
+
+    def test_anon_cannot_view_item_history(self):
+        self.logout()
+        response = self.client.get(reverse('aristotle:item_history',args=[self.item1.id]))
+        self.assertEqual(response.status_code,302)
+        response = self.client.get(reverse('aristotle:item_history',args=[self.item2.id]))
+        self.assertEqual(response.status_code,302)
+
+
+        #Register to check if link is on page... it shouldn't be
+        models.Status.objects.create(
+            concept=self.item1,
+            registrationAuthority=self.ra,
+            registrationDate = datetime.date(2009,4,28),
+            state =  models.STATES.standard
+            )
+        # Anon users shouldn't even have the link to history *any* items
+        response = self.client.get(self.item1.get_absolute_url())
+        self.assertEqual(response.status_code,200)
+        self.assertFalse(reverse('aristotle:item_history',args=[self.item1.id]) in response.content)
+
     def test_viewer_can_favourite(self):
         self.login_viewer()
         self.assertTrue(perms.user_can_view(self.viewer,self.item1))
@@ -392,43 +429,6 @@ class DataElementDerivationViewPage(LoggedInViewConceptPages,TestCase):
     def defaults(self):
         return {'derives':models.DataElement.objects.create(name='derivedDE',description="",workgroup=self.wg1)}
     itemType=models.DataElementDerivation
-
-class GlossaryViewPage(LoggedInViewConceptPages,TestCase):
-    url_name='glossary'
-    itemType=models.GlossaryItem
-
-    def test_view_glossary(self):
-        self.logout()
-        response = self.client.get(reverse('aristotle:glossary'))
-        self.assertTrue(response.status_code,200)
-
-    def test_glossary_ajax_list(self):
-        self.logout()
-        import json
-        gitem = models.GlossaryItem(name="Glossary item",workgroup=self.wg1)
-        response = self.client.get('/api/v1/glossarylist/?format=json&limit=0')
-        data = json.loads(str(response.content))['objects']
-        self.assertEqual(data,[])
-
-        gitem.readyToReview = True
-        gitem.save()
-
-        self.login_editor()
-
-        self.assertTrue(perms.user_can_change_status(self.registrar,gitem))
-
-        self.ra.register(gitem,models.STATES.standard,self.registrar)
-
-        self.assertTrue(gitem.is_public())
-
-        response = self.client.get('/api/v1/glossarylist/?format=json&limit=0')
-        data = json.loads(str(response.content))['objects']
-
-        self.assertEqual(len(data),models.GlossaryItem.objects.all().visible(self.editor).count())
-
-        for i in models.GlossaryItem.objects.filter(pk__in=[item['id'] for item in data]):
-            self.assertEqual(i.can_view(self.editor),1)
-
 
 class LoggedInViewUnmanagedPages(utils.LoggedInViewPages):
     defaults = {}

@@ -1,7 +1,5 @@
 {% extends "aristotle_mdr/base.html" %}
-{% load aristotle_tags %}
-{% load staticfiles %}
-{% load compile_static %}
+{% load aristotle_tags staticfiles compile_static %}
 
 {% block title %}My Dashboard{% endblock %}
 {% block extra_head_scripts %}
@@ -120,7 +118,7 @@
                 <li class="list-group-item"> No recent items </li>
             {% endfor %}
             </ul>
-            <div class="panel-footer"><a href="{% url 'aristotle:userWorkgroups' %}">See all workgroups...</a></div>
+            <div class="panel-footer"><a href="{% url 'aristotle:userRecentItems' %}">See all recent items...</a></div>
         </div>
     </section>
     </div>

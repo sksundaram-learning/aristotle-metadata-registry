@@ -9,7 +9,7 @@ from django.shortcuts import render, redirect
 
 from aristotle_mdr import forms as MDRForms
 from aristotle_mdr import models as MDR
-from aristotle_mdr.views.utils import paginated_list
+from aristotle_mdr.views.utils import paginated_list, paginated_reversion_list
 
 from reversion.models import Revision, Version
 
@@ -21,6 +21,12 @@ def home(request):
     recent = Revision.objects.filter(user=request.user).order_by('-date_created')[0:10]
     page = render(request,"aristotle_mdr/user/userHome.html",{"item":request.user,'recent':recent})
     return page
+
+@login_required
+def recent(request):
+    items = Revision.objects.filter(user=request.user).order_by('-date_created')
+    context = { }
+    return paginated_reversion_list(request,items,"aristotle_mdr/user/recent.html",context)
 
 @login_required
 def inbox(request,folder=None):

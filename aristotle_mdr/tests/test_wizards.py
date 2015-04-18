@@ -10,24 +10,6 @@ from aristotle_mdr.utils import url_slugify_concept
 from django.test.utils import setup_test_environment
 setup_test_environment()
 
-class CustomGlossaryDialogTests(utils.LoggedInViewPages,TestCase):
-    """
-    There isn't much we can do to test these yet, but we can verify they at least load.
-    They are in the wizard section as they are used in the editing pages.
-    """
-    def test_glossary_search_dialog(self):
-        self.logout()
-        response = self.client.get(reverse('aristotle:glossary_search'))
-        self.assertEqual(response.status_code,302) # redirect to login
-
-        self.login_editor()
-        response = self.client.get(reverse('aristotle:glossary_search'))
-        self.assertEqual(response.status_code,200)
-
-        response = self.client.post(reverse('aristotle:glossary_search'),{})
-        self.assertEqual(response.status_code,200)
-
-
 class CreateListPageTests(utils.LoggedInViewPages,TestCase):
     def test_create_list_active(self):
         self.logout()

@@ -139,10 +139,8 @@ CKEDITOR_CONFIGS = {
             { 'name': 'links', 'items' : [ 'Link','Unlink' ] },
 	        { 'name': 'paragraph', 'items' : [ 'NumberedList','BulletedList','-','Blockquote' ] },
     	    { 'name': 'insert', 'items' : [ 'Image','Table','HorizontalRule','SpecialChar'] },
-            { 'name': 'aristotletoolbar', 'items': [ 'Glossary' ] },
             { 'name': 'document', 'items': [ 'Maximize','Source' ] },
         ],
-        'extraPlugins' : 'aristotle_glossary',
     },
 }
 

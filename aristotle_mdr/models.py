@@ -21,8 +21,11 @@ from django.dispatch import receiver
 import datetime
 from ckeditor.fields import RichTextField
 from aristotle_mdr import perms
-from aristotle_mdr.utils import url_slugify_concept
+from aristotle_mdr.utils import url_slugify_concept, url_slugify_workgroup
 
+import logging
+logger = logging.getLogger(__name__)
+logger.debug("Logging started for " + __name__)
 # 11179 States
 # When used these MUST be used as IntegerFields to allow status comparison
 STATES = Choices (
@@ -89,9 +92,9 @@ class baseAristotleObject(TimeStampedModel):
         return self._meta.model_name
 
     def can_edit(self,user):
-        raise NotImplementedError
+        raise NotImplementedError #pragma: no cover -- This should always be overridden
     def can_view(self,user):
-        raise NotImplementedError
+        raise NotImplementedError #pragma: no cover -- This should always be overridden
 
 class unmanagedObject(baseAristotleObject):
     class Meta:
@@ -116,7 +119,7 @@ class aristotleComponent(models.Model):
 
 
 class registryGroup(unmanagedObject):
-    managers   = models.ManyToManyField(User,blank=True,related_name="%(class)s_manager_in")
+    managers   = models.ManyToManyField(User,blank=True,related_name="%(class)s_manager_in",verbose_name=_('Managers'))
     class Meta:
         abstract = True
     def can_edit(self,user):
@@ -130,7 +133,7 @@ class RegistrationAuthority(registryGroup):
     locked_state = models.IntegerField(choices=STATES, default=STATES.candidate)
     public_state = models.IntegerField(choices=STATES, default=STATES.recorded)
 
-    registrars = models.ManyToManyField(User,blank=True,related_name='registrar_in',)
+    registrars = models.ManyToManyField(User,blank=True,related_name='registrar_in',verbose_name=_('Registrars'))
 
     # The below text fields allow for brief descriptions of the context of each
     # state for a particular Registration Authority
@@ -221,43 +224,47 @@ class RegistrationAuthority(registryGroup):
         if role == "manager":
             self.managers.remove(user)
 
-    def save(self, *args, **kwargs):
-        # save happens before the transaction ends, so regular calls via the concept.recache
-        # access the original registration authority information
-        # plus we need to know what changed, so we can't use a post_save signal
-        # Hence we need to do wierd stuff here
-        obj = super(RegistrationAuthority, self).save(*args, **kwargs)
-        if self.tracker.has_changed('public_state') or self.tracker.has_changed('locked_state'):
-            instance = self
-            for s in Status.objects.filter(registrationAuthority=instance):
-                item = _concept.objects.get(pk=s.concept.pk)
-                item._is_public = True in [ s.state >= s.registrationAuthority.public_state
-                                            for s in item.statuses.all()
-                                            if  s.registrationAuthority != instance
-                                          ] or  s.state >= instance.public_state
-                item._is_locked = True in [ s.state >= s.registrationAuthority.locked_state
-                                            for s in item.statuses.all()
-                                            if  s.registrationAuthority != instance
-                                          ] or  s.state >= instance.locked_state
-                item.save()
-        return obj
+@receiver(post_save,sender=RegistrationAuthority)
+def update_registration_authority_states(sender, instance, created, **kwargs):
+    if not created:
+        if instance.tracker.has_changed('public_state') or instance.tracker.has_changed('locked_state'):
+            message = ("Registration '{ra}' changed its public or locked status level, "
+                        "items registered by this authority may have stale visiblity states "
+                        "and need to be manually updated."
+                        ).format(ra = instance.name)
+            logger.critical(message)
+
+WORKGROUP_OWNERSHIP = Choices (
+           (0,'registry',_('Registry')),
+           (1,'authority',_('Registration Authorities')),
+         )
+
 class Workgroup(registryGroup):
     """
-    A workgroup is a collection of associated users given control to work on a specific piece of work. usually this work will be a specific collection or subset of objects, such as data elements or indicators, for a specific topic.
+    A workgroup is a collection of associated users given control to work on a specific piece of work.
+    Usually this work will be a specific collection or subset of objects, such as data elements or indicators, for a specific topic.
 
     Workgroup owners may choose to 'archive' a workgroup. All content remains visible,
     but the workgroup is hidden in lists.
     """
     template = "aristotle_mdr/workgroup.html"
-    archived = models.BooleanField(default=False)
+    ownership = models.IntegerField(
+        choices=WORKGROUP_OWNERSHIP, default=WORKGROUP_OWNERSHIP.authority,
+        help_text=_("Specifies the 'owner' of the content of the workgroup. Selecting 'registry' allows any registration authority to progress and make items public, 'Registration authorities' specifies that only registration authorities associated with this workgroup may control their visibility.")
+        )
+    archived = models.BooleanField(default=False,
+            help_text=_("Archived workgroups can no longer have new items or discussions created within them."),
+            verbose_name=_('Archived'),
+        )
     registrationAuthorities = models.ManyToManyField(
             RegistrationAuthority, blank=True, null=True,
             related_name="workgroups",
+            verbose_name=_('Registration Authorities'),
             )
 
-    viewers    = models.ManyToManyField(User,blank=True,related_name='viewer_in',)
-    submitters = models.ManyToManyField(User,blank=True,related_name='submitter_in',)
-    stewards   = models.ManyToManyField(User,blank=True,related_name='steward_in',)
+    viewers    = models.ManyToManyField(User,blank=True,related_name='viewer_in',verbose_name=_('Viewers'))
+    submitters = models.ManyToManyField(User,blank=True,related_name='submitter_in',verbose_name=_('Submitters'))
+    stewards   = models.ManyToManyField(User,blank=True,related_name='steward_in',verbose_name=_('Stewards'))
 
     roles = {'submitter':_("Submitter"),
             'viewer'    :_("Viewer"),
@@ -265,6 +272,9 @@ class Workgroup(registryGroup):
             'manager'   :_("Manager")}
 
     tracker=FieldTracker()
+
+    def get_absolute_url(self):
+        return url_slugify_workgroup(self)
 
     @property
     def members(self):
@@ -306,14 +316,32 @@ class Workgroup(registryGroup):
         self.stewards.remove(user)
         self.managers.remove(user)
 
+@receiver(post_save,sender=Workgroup)
+def update_ownership(sender, instance, created, **kwargs):
+    # only log if its an edit, not a newly created workgroup
+    if not created and instance.tracker.has_changed('ownership'):
+        message = ("Workgroup '{wg}' changed ownership, "
+                    "cached public states for items in this workgroup are now "
+                    "stale and need to be manually updated."
+                    ).format(wg = instance.name)
+        logger.critical(message)
+# This would be like the below, but again, a better solution is needed.
 
 def update_registation_authorities(sender, instance, action, **kwargs):
     # this will be slow, but necessary... perhaps this will encourage people to not
     # change or add registration authorities to workgroups willy-nilly.
     if action in ['post_add','post_remove','post_clear']:
-        for item in instance.items.all():
-            item.recache_states()
-            item.save()
+        created = instance.created >= timezone.now() - datetime.timedelta(seconds=VERY_RECENTLY_SECONDS)
+        # Dont fire this off if the object was created very recently within about the last 15 seconds.
+        if not created:
+            message = ("Workgroup '{wg}' has altered registration authorities, "
+                        "cached public states for items in this workgroup are now "
+                        "stale and need to be manually updated."
+                        ).format(wg = instance.name)
+            logger.critical(message)
+    # In practice it seems the below is far too slow, so a better alternative is needed.
+    #    for item in instance.items.all():
+    #        item.recache_states()
 m2m_changed.connect(update_registation_authorities, sender=Workgroup.registrationAuthorities.through)
 
 class discussionAbstract(TimeStampedModel):
@@ -532,8 +560,12 @@ class _concept(baseAristotleObject):
             A concept is public if any registration authority that a Registration Authority of the workgroup
             has advanced it to a public state in that RA.
         """
-        return True in [s.state >= s.registrationAuthority.public_state
-                            for s in self.statuses.filter(registrationAuthority__in=self.workgroup.registrationAuthorities.all())]
+        if self.workgroup.ownership == WORKGROUP_OWNERSHIP.authority:
+            statuses = self.statuses.filter(registrationAuthority__in=self.workgroup.registrationAuthorities.all())
+        elif  self.workgroup.ownership == WORKGROUP_OWNERSHIP.registry:
+            statuses = self.statuses.all()
+        return True in [s.state >= s.registrationAuthority.public_state for s in statuses]
+
     def is_public(self):
         return self._is_public
     is_public.boolean = True
@@ -544,8 +576,12 @@ class _concept(baseAristotleObject):
             A concept is locked if any registration authority that a Registration Authority of the workgroup
             has advanced it to a locked state in that RA.
         """
-        return True in [s.state >= s.registrationAuthority.locked_state
-                            for s in self.statuses.filter(registrationAuthority__in=self.workgroup.registrationAuthorities.all())]
+        if self.workgroup.ownership == WORKGROUP_OWNERSHIP.authority:
+            statuses = self.statuses.filter(registrationAuthority__in=self.workgroup.registrationAuthorities.all())
+        elif  self.workgroup.ownership == WORKGROUP_OWNERSHIP.registry:
+            statuses = self.statuses.all()
+        return True in [s.state >= s.registrationAuthority.locked_state for s in statuses]
+
     def is_locked(self):
         return self._is_locked
 
@@ -777,19 +813,6 @@ class Package(concept):
     def classedItems(self):
         return self.items.select_subclasses()
 
-class GlossaryItem(concept):
-    template = "aristotle_mdr/concepts/glossaryItem.html"
-
-class GlossaryAdditionalDefinition(aristotleComponent):
-    glossaryItem = models.ForeignKey(GlossaryItem,related_name="alternate_definitions")
-    registrationAuthority = models.ForeignKey(RegistrationAuthority)
-    description = models.TextField()
-    @property
-    def parentItem(self):
-        return self.glossaryItem
-    class Meta:
-        unique_together = ('glossaryItem', 'registrationAuthority',)
-
 # Create a 1-1 user profile so we don't need to extend user
 # Thanks to http://stackoverflow.com/a/965883/764357
 class PossumProfile(models.Model):
@@ -803,7 +826,7 @@ class PossumProfile(models.Model):
         try:
             existing = PossumProfile.objects.get(user=self.user)
             self.id = existing.id #force update instead of insert
-        except PossumProfile.DoesNotExist:
+        except PossumProfile.DoesNotExist: #pragma: no cover
             pass
         models.Model.save(self, *args, **kwargs)
 
@@ -944,6 +967,9 @@ def workgroup_item_new(recipient,obj):
 def concept_saved(sender, instance, created, **kwargs):
     if not issubclass(sender, _concept):
         return
+    if kwargs.get('raw'):
+        # Don't run during loaddata
+        return
     for p in instance.favourited_by.all():
         favourite_updated(recipient=p.user,obj=instance)
     for user in instance.workgroup.viewers.all():
@@ -971,6 +997,9 @@ def concept_saved(sender, instance, created, **kwargs):
 def new_comment_created(sender, **kwargs):
     comment = kwargs['instance']
     post = comment.post
+    if kwargs.get('raw'):
+        # Don't run during loaddata
+        return
     if not kwargs['created']:
         return # We don't need to notify a topic poster of an edit.
     if comment.author == post.author:
@@ -981,6 +1010,9 @@ def new_comment_created(sender, **kwargs):
 @receiver(post_save,sender=DiscussionPost)
 def new_post_created(sender, **kwargs):
     post = kwargs['instance']
+    if kwargs.get('raw'):
+        # Don't run during loaddata
+        return
     if not kwargs['created']:
         return # We don't need to notify a topic poster of an edit.
     for user in post.workgroup.viewers.all():
@@ -1071,9 +1103,9 @@ def exampleData(): # pragma: no cover
     vd,c   = ValueDomain.objects.get_or_create(name="Total years N[NN]",
             workgroup=pw,description="Total number of completed years.",
             format = "X[XX]" ,
-            maximumLength = 3,
-            unitOfMeasure = UnitOfMeasure.objects.filter(name__iexact='Week').first(),
-            dataType = DataType.objects.filter(name__iexact='Number').first(),
+            maximum_length = 3,
+            unit_of_measure = UnitOfMeasure.objects.filter(name__iexact='Week').first(),
+            data_type = DataType.objects.filter(name__iexact='Number').first(),
             )
     de,c = DataElement.objects.get_or_create(name="Person-age, total years N[NN]",
             workgroup=pw,description="The age of the person in (completed) years at a specific point in time.",
@@ -1088,9 +1120,9 @@ def exampleData(): # pragma: no cover
     vd,c   = ValueDomain.objects.get_or_create(name="Sex Code",
             workgroup=pw,description="A code for sex.",
             format = "X" ,
-            maximumLength = 3,
-            unitOfMeasure = UnitOfMeasure.objects.filter(name__iexact='Week').first(),
-            dataType = DataType.objects.filter(name__iexact='Number').first(),
+            maximum_length = 3,
+            unit_of_measure = UnitOfMeasure.objects.filter(name__iexact='Week').first(),
+            data_type = DataType.objects.filter(name__iexact='Number').first(),
             )
     for val,mean in [(1,'Male'),(2,'Female')]:
         codeVal = PermissibleValue(value=val,meaning=mean,valueDomain=vd,order=1)
@@ -1104,9 +1136,9 @@ def exampleData(): # pragma: no cover
 
     print("Configuring registration authority")
     ra,c = RegistrationAuthority.objects.get_or_create(
-                name="Welfare",description="Welfare Authority")#,workflow=wf)
+                name="Welfare",description="Welfare Authority")
     ra,c = RegistrationAuthority.objects.get_or_create(
-                name="Health",description="Health Authority")#,workflow=wf)
+                name="Health",description="Health Authority")
     users = [('reggie','Registrar'),
             ]
     pw.registrationAuthorities.add(ra)
@@ -1120,13 +1152,6 @@ def exampleData(): # pragma: no cover
         user.last_name=role
         ra.giveRoleToUser(role,user)
         user.save()
-    gi,c  = GlossaryItem.objects.get_or_create(name="Person",
-            workgroup=pw,description="A human being, whether man, woman or child.")
-    gad,c = GlossaryAdditionalDefinition.objects.get_or_create(
-        glossaryItem = gi,
-        registrationAuthority = ra,
-        description = "A person, who is probably not healthy"
-        )
 
     #Lets register a thing :/
     reg,c = Status.objects.get_or_create(

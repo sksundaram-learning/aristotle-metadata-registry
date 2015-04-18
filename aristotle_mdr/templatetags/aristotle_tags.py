@@ -99,7 +99,7 @@ def can_view_iter(qs,user):
         return []
 
 @register.filter
-def public_standards(regAuth,itemType="aristotle._concept"):
+def public_standards(regAuth,itemType="aristotle_mdr._concept"):
     """
     This is a filter that accepts a registration Authority and an item type and returns
     a list of tuples that contain all *public* items with a status of "Standard" or
@@ -130,26 +130,6 @@ def public_standards(regAuth,itemType="aristotle._concept"):
         ]
     except:
         return []
-
-
-@register.filter
-def islice(itera,slice):
-    """
-    A duplicate of the django `slice filter`_ that works on iterables as well as lists.
-
-    .. _slice filter: https://docs.djangoproject.com/en/dev/ref/templates/builtins/#slice
-
-    For example, below returns the first 5 items from an iterable::
-
-        {% for item in myItems|slice:":5" %}
-          {{ item }}
-        {% endfor %}
-
-    """
-    try:
-        return eval("itera[%s]"%slice)
-    except:
-        return itera
 
 #http://stackoverflow.com/questions/2047622/how-to-paginate-django-with-other-get-variables
 @register.simple_tag

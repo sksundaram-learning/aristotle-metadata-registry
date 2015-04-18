@@ -16,6 +16,7 @@ from django.views.generic import TemplateView
 from django.utils import timezone
 import datetime
 import reversion
+from reversion.revisions import default_revision_manager
 
 from aristotle_mdr.perms import user_can_view, user_can_edit, user_can_change_status
 from aristotle_mdr import perms
@@ -141,7 +142,6 @@ def render_if_condition_met(request,condition,objtype,iid,model_slug=None,name_s
     # We add a user_can_edit flag in addition to others as we have odd rules around who can edit objects.
     isFavourite = request.user.is_authenticated () and request.user.profile.is_favourite(item)
 
-    from reversion.revisions import default_revision_manager
     last_edit = default_revision_manager.get_for_object_reference(
             item.__class__,
             item.pk,
@@ -182,6 +182,23 @@ def itemPackages(request, iid):
          'packages':packages,}
         )
 
+def item_history(request,iid):
+    item = get_if_user_can_view(MDR._concept,request.user,iid)
+    if not item:
+        if request.user.is_anonymous():
+            return redirect(reverse('django.contrib.auth.views.login')+'?next=%s' % request.path)
+        else:
+            raise PermissionDenied
+    item = item.item
+    versions = default_revision_manager.get_for_object(item)
+    from django.contrib.contenttypes.models import ContentType
+    ct = ContentType.objects.get_for_model(item)
+    versions = reversion.models.Version.objects.filter(content_type=ct,object_id=item.pk).order_by('-revision__date_created')
+
+    page = render(request,"aristotle_mdr/actions/concept_history.html",{"item":item,'versions':versions})
+    return page
+
+
 def registrationHistory(request, iid):
     item = get_if_user_can_view(MDR._concept,request.user,iid)
     if not item:
@@ -189,7 +206,7 @@ def registrationHistory(request, iid):
             return redirect(reverse('django.contrib.auth.views.login')+'?next=%s' % request.path)
         else:
             raise PermissionDenied
-    from reversion.revisions import default_revision_manager
+
     history = []
     for s in item.statuses.all():
         past = default_revision_manager.get_for_object(s)
@@ -292,15 +309,6 @@ def allRegistrationAuthorities(request):
     return render(request,"aristotle_mdr/allRegistrationAuthorities.html",
         {'registrationAuthorities':ras}
         )
-
-def glossary(request):
-    return render(request,"aristotle_mdr/glossary.html",
-        {'terms':MDR.GlossaryItem.objects.all().order_by('name').visible(request.user)
-        })
-
-#def glossaryBySlug(request,slug):
-#    term = get_object_or_404(MDR.GlossaryItem,id=iid)
-#    return render(request,"aristotle_mdr/glossaryItem.html",{'item':term})
 
 def about_all_items(request):
 

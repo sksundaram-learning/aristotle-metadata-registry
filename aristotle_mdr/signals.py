@@ -3,6 +3,10 @@ import haystack.signals as signals #.RealtimeSignalProcessor as RealtimeSignalPr
 # Don't import aristotle_mdr.models directly, only pull in whats required,
 #  otherwise Haystack gets into a circular dependancy.
 
+#class AristotleSignalProcessor(signals.BaseSignalProcessor):
+# Replace below with this when doing a dataload (shuts off Haystack)
+#    pass
+
 class AristotleSignalProcessor(signals.RealtimeSignalProcessor):
     def setup(self):
         from aristotle_mdr.models import Status, _concept

@@ -6,7 +6,7 @@ Installing Aristotle MetaData Registry
    :maxdepth: 2
 
    quickstart.rst
-   required_libraries.rst
+   integrate_with_django_project.rst
    settings.rst
    adding_pages.rst
    changing_styles.rst

@@ -10,7 +10,10 @@ from aristotle_mdr.utils import url_slugify_concept
 # This isn't an actual TestCase, we'll just pretend it is
 class ManagedObjectVisibility(object):
     def setUp(self):
-        self.ra = models.RegistrationAuthority.objects.create(name="Test RA")
+        self.ra = models.RegistrationAuthority.objects.create(name="Test RA",
+                        public_state=models.STATES.qualified,
+                        locked_state=models.STATES.candidate)
+
         self.wg = models.Workgroup.objects.create(name="Test WG")
         self.wg.registrationAuthorities.add(self.ra)
 
@@ -20,18 +23,101 @@ class ManagedObjectVisibility(object):
                 concept=self.item,
                 registrationAuthority=self.ra,
                 registrationDate=timezone.now(),
-                state=self.ra.public_state
+                state=models.STATES.notprogressed
                 )
-        self.assertEqual(s.registrationAuthority,self.ra)
+        self.assertEqual(self.item.is_public(),False)
+
+        s.state = self.ra.public_state
+        s.save()
+
+        self.item = models._concept.objects.get(id=self.item.id) # Stupid cache
         self.assertEqual(self.item.is_public(),True)
-        self.ra.public_state = models.STATES.standard
-        self.ra.save()
+
+        s.state = self.ra.locked_state
+        s.save()
 
         self.item = models._concept.objects.get(id=self.item.id) # Stupid cache
         self.assertEqual(self.item.is_public(),False)
-        self.item.statuses.first().state = models.STATES.standard
-        self.item.save()
+
+    def test_object_is_public_after_ra_state_changes(self):
         self.assertEqual(self.item.is_public(),False)
+        s = models.Status.objects.create(
+                concept=self.item,
+                registrationAuthority=self.ra,
+                registrationDate=timezone.now(),
+                state=models.STATES.candidate
+                )
+        self.item = models._concept.objects.get(id=self.item.id) # Stupid cache
+        self.assertEqual(self.item.is_public(),False)
+
+        self.ra.public_state = models.STATES.candidate
+        self.ra.save()
+
+        from django.core import management # Lets recache this workgroup
+        management.call_command('recache_registration_authority_item_visibility', self.ra.pk, verbosity=0)
+
+        self.item = models._concept.objects.get(id=self.item.id) # Stupid cache
+        self.assertEqual(self.item.is_public(),True)
+
+        self.ra.public_state = models.STATES.qualified
+        self.ra.save()
+
+        from django.core import management # Lets recache this workgroup
+        management.call_command('recache_registration_authority_item_visibility', self.ra.pk, verbosity=0)
+
+        self.item = models._concept.objects.get(id=self.item.id) # Stupid cache
+        self.assertEqual(self.item.is_public(),False)
+
+    def test_object_is_locked(self):
+        self.assertEqual(self.item.is_locked(),False)
+        s = models.Status.objects.create(
+                concept=self.item,
+                registrationAuthority=self.ra,
+                registrationDate=timezone.now(),
+                state=models.STATES.notprogressed
+                )
+        self.assertEqual(self.item.is_locked(),False)
+
+        s.state = self.ra.public_state
+        s.save()
+
+        self.item = models._concept.objects.get(id=self.item.id) # Stupid cache
+        self.assertEqual(self.item.is_public(),True)
+
+        s.state = self.ra.locked_state
+        s.save()
+
+        self.item = models._concept.objects.get(id=self.item.id) # Stupid cache
+        self.assertEqual(self.item.is_locked(),True)
+
+    def test_object_is_locked_after_ra_state_changes(self):
+        self.assertEqual(self.item.is_locked(),False)
+        s = models.Status.objects.create(
+                concept=self.item,
+                registrationAuthority=self.ra,
+                registrationDate=timezone.now(),
+                state=models.STATES.candidate
+                )
+        self.item = models._concept.objects.get(id=self.item.id) # Stupid cache
+        self.assertEqual(self.item.is_locked(),True)
+
+        self.ra.locked_state = models.STATES.standard
+        self.ra.save()
+
+        from django.core import management # Lets recache this RA
+        management.call_command('recache_registration_authority_item_visibility', self.ra.pk, verbosity=0)
+
+        self.item = models._concept.objects.get(id=self.item.id) # Stupid cache
+        self.assertEqual(self.item.is_locked(),False)
+
+        self.ra.locked_state = models.STATES.candidate
+        self.ra.save()
+
+        from django.core import management # Lets recache this RA
+        management.call_command('recache_registration_authority_item_visibility', self.ra.pk, verbosity=0)
+
+        self.item = models._concept.objects.get(id=self.item.id) # Stupid cache
+        self.assertEqual(self.item.is_locked(),True)
 
     def test_registrar_can_view(self):
         # make editor for wg1
