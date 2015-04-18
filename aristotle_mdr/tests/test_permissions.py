@@ -212,7 +212,7 @@ class CustomConceptQuerySetTest_Slow(object):
     @classmethod
     def setUpClass(cls):
         super(CustomConceptQuerySetTest_Slow, cls).setUpClass()
-        cls.super_user = User.objects.create_superuser('permission_check_super','','user')
+        cls.super_user = User.objects.create_superuser('permission_check_super '+str(cls.workgroup_owner_type),'','user')
         cls.wg_users = []
         cls.ra_users = []
         cls.ras = {}
