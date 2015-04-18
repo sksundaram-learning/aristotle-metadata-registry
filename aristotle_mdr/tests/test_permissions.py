@@ -216,7 +216,7 @@ class CustomConceptQuerySetTest_Slow(object):
         cls.wg_users = []
         cls.ra_users = []
         cls.ras = {}
-        p = "permission_check "
+        p = "permission_check %s "%str(cls.workgroup_owner_type)
         # Default settings for locked/public
         cls.ras['default'] = models.RegistrationAuthority.objects.create(name=p+"Default RA")
 
@@ -259,7 +259,7 @@ class CustomConceptQuerySetTest_Slow(object):
             #  a "non-member" workgroup that we also register the item in to confirm
             #  that "non-members" don't alter the visibility.
             for keys in itertools.combinations(cls.ras.keys(), i):
-                prefix = "%d %s"%(len(keys),"-".join(keys))
+                prefix = "%d %s %s"%(len(keys),"-".join(keys),str(cls.workgroup_owner_type))
                 wg = models.Workgroup.objects.create(name="WG "+prefix,ownership=cls.workgroup_owner_type)
 
                 for role in ['viewer','submitter','steward']:
