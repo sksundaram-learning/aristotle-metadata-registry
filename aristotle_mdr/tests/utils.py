@@ -47,6 +47,7 @@ class ManagedObjectVisibility(object):
                 registrationDate=timezone.now(),
                 state=models.STATES.candidate
                 )
+        self.item = models._concept.objects.get(id=self.item.id) # Stupid cache
         self.assertEqual(self.item.is_public(),False)
 
         self.ra.public_state = models.STATES.candidate
@@ -55,6 +56,7 @@ class ManagedObjectVisibility(object):
         from django.core import management # Lets recache this workgroup
         management.call_command('recache_registration_authority_item_visibility', self.ra.pk, verbosity=0)
 
+        self.item = models._concept.objects.get(id=self.item.id) # Stupid cache
         self.assertEqual(self.item.is_public(),True)
 
         self.ra.public_state = models.STATES.qualified
@@ -63,6 +65,7 @@ class ManagedObjectVisibility(object):
         from django.core import management # Lets recache this workgroup
         management.call_command('recache_registration_authority_item_visibility', self.ra.pk, verbosity=0)
 
+        self.item = models._concept.objects.get(id=self.item.id) # Stupid cache
         self.assertEqual(self.item.is_public(),False)
 
     def test_object_is_locked(self):
