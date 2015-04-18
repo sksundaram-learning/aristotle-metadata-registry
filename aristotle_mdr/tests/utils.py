@@ -95,23 +95,26 @@ class ManagedObjectVisibility(object):
                 registrationDate=timezone.now(),
                 state=models.STATES.candidate
                 )
+        self.item = models._concept.objects.get(id=self.item.id) # Stupid cache
+        self.assertEqual(self.item.is_locked(),True)
+
+        self.ra.locked_state = models.STATES.standard
+        self.ra.save()
+
+        from django.core import management # Lets recache this RA
+        management.call_command('recache_registration_authority_item_visibility', self.ra.pk, verbosity=0)
+
+        self.item = models._concept.objects.get(id=self.item.id) # Stupid cache
         self.assertEqual(self.item.is_locked(),False)
 
         self.ra.locked_state = models.STATES.candidate
         self.ra.save()
 
-        from django.core import management # Lets recache this workgroup
+        from django.core import management # Lets recache this RA
         management.call_command('recache_registration_authority_item_visibility', self.ra.pk, verbosity=0)
 
+        self.item = models._concept.objects.get(id=self.item.id) # Stupid cache
         self.assertEqual(self.item.is_locked(),True)
-
-        self.ra.public_state = models.STATES.qualified
-        self.ra.save()
-
-        from django.core import management # Lets recache this workgroup
-        management.call_command('recache_registration_authority_item_visibility', self.ra.pk, verbosity=0)
-
-        self.assertEqual(self.item.is_locked(),False)
 
     def test_registrar_can_view(self):
         # make editor for wg1

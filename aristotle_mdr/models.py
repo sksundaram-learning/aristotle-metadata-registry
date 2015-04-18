@@ -21,7 +21,7 @@ from django.dispatch import receiver
 import datetime
 from ckeditor.fields import RichTextField
 from aristotle_mdr import perms
-from aristotle_mdr.utils import url_slugify_concept
+from aristotle_mdr.utils import url_slugify_concept, url_slugify_workgroup
 
 import logging
 logger = logging.getLogger(__name__)
@@ -272,6 +272,9 @@ class Workgroup(registryGroup):
             'manager'   :_("Manager")}
 
     tracker=FieldTracker()
+
+    def get_absolute_url(self):
+        return url_slugify_workgroup(self)
 
     @property
     def members(self):

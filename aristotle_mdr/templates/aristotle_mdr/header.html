@@ -68,6 +68,9 @@
                     <li><a href="{% url 'aristotle:userWorkgroups' %}">
                         <i class="fa fa-users fa-fw"></i> {% trans 'Workgroups'%}
                     </a></li>
+                    <li><a href="{% url 'aristotle:userRecentItems' %}">
+                        <i class="fa fa-history fa-fw"></i> {% trans 'Recent actions'%}
+                    </a></li>
                     {% if user.has_usable_password %}
                         <li><a href="{% url 'admin:password_change' %}">
                         <i class="fa fa-cog fa-fw"></i> {% trans 'Change password' %}
@@ -90,7 +93,6 @@
                         <i class="fa fa-user-md fa-fw"></i> {% trans 'Admin tools' %}
                         </a></li>
                     {% endif %}
-                    <!-- li><a href="/item/"></a></li -->
                 </ul>
             </li>
             <li class="dropdown">
