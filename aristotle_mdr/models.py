@@ -1136,9 +1136,9 @@ def exampleData(): # pragma: no cover
 
     print("Configuring registration authority")
     ra,c = RegistrationAuthority.objects.get_or_create(
-                name="Welfare",description="Welfare Authority")#,workflow=wf)
+                name="Welfare",description="Welfare Authority")
     ra,c = RegistrationAuthority.objects.get_or_create(
-                name="Health",description="Health Authority")#,workflow=wf)
+                name="Health",description="Health Authority")
     users = [('reggie','Registrar'),
             ]
     pw.registrationAuthorities.add(ra)

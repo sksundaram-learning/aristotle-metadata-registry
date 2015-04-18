@@ -39,12 +39,14 @@
         {% endif %}
     </div>
     {% endif %}
+    {% if request.user in workgroup.managers or request.user.is_superuser %}
     <div id="archive_modal" class="modal fade">
       <div class="modal-dialog">
           <div class="modal-content">
           </div><!-- /.modal-content -->
         </div><!-- /.modal-dialog -->
     </div><!-- /.modal -->
+    {% endif %}
 <section id="items">
 <header>Recently changed items</header>
     <ul>

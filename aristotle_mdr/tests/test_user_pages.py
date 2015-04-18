@@ -23,6 +23,10 @@ class UserHomePages(utils.LoggedInViewPages,TestCase):
         self.assertEqual(response.status_code,200)
         response = self.client.get(reverse('aristotle:userWorkgroups',))
         self.assertEqual(response.status_code,200)
+        response = self.client.get(reverse('aristotle:user_workgroups_archives',))
+        self.assertEqual(response.status_code,200)
+        response = self.client.get(reverse('aristotle:userRecentItems',))
+        self.assertEqual(response.status_code,200)
 
     def test_user_can_edit_own_details(self):
         self.login_viewer()

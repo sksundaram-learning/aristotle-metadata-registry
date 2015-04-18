@@ -180,7 +180,23 @@ class WorkgroupMemberTests(utils.LoggedInViewPages,TestCase):
         response = self.client.get(reverse('aristotle:workgroupItems',args=[self.wg1.id]))
 
     def test_manager_can_archive(self):
+        self.login_viewer()
+        # Viewers cannot archive
+        response = self.client.get(reverse('aristotle:archive_workgroup',args=[self.wg1.id]))
+        self.assertEqual(response.status_code,403)
+        response = self.client.get(reverse('aristotle:archive_workgroup',args=[self.wg2.id]))
+        self.assertEqual(response.status_code,403)
+
+        # Viewers shouldn't even have the button on the workgroup page
+        response = self.client.get(self.wg1.get_absolute_url())
+        self.assertFalse("archive_modal" in response.content)
+
         self.login_manager()
+
+        # Managers must even have the archive button on the workgroup page
+        response = self.client.get(self.wg1.get_absolute_url())
+        self.assertFalse("archive_modal" in response.content)
+
         response = self.client.get(reverse('aristotle:archive_workgroup',args=[self.wg2.id]))
         self.assertEqual(response.status_code,403)
         response = self.client.get(reverse('aristotle:archive_workgroup',args=[self.wg1.id]))
