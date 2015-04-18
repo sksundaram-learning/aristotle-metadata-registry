@@ -208,10 +208,10 @@ class CustomConceptQuerySetTest(TestCase):
         self.assertEqual(len(models.ValueDomain.objects.all().public()),0)
 
 
-class CustomConceptQuerySetTest_Slow(TestCase):
-
+class CustomConceptQuerySetTest_Slow(object):
     @classmethod
     def setUpClass(cls):
+        super(CustomConceptQuerySetTest_Slow, cls).setUpClass()
         cls.super_user = User.objects.create_superuser('permission_check_super','','user')
         cls.wg_users = []
         cls.ra_users = []
@@ -260,7 +260,7 @@ class CustomConceptQuerySetTest_Slow(TestCase):
             #  that "non-members" don't alter the visibility.
             for keys in itertools.combinations(cls.ras.keys(), i):
                 prefix = "%d %s"%(len(keys),"-".join(keys))
-                wg = models.Workgroup.objects.create(name="WG "+prefix)
+                wg = models.Workgroup.objects.create(name="WG "+prefix,ownership=cls.workgroup_owner_type)
 
                 for role in ['viewer','submitter','steward']:
                     u = User.objects.create_user(role+prefix,'','user')
@@ -340,6 +340,10 @@ class CustomConceptQuerySetTest_Slow(TestCase):
         self.assertTrue(models.ObjectClass.objects.visible(user).count() == models.ObjectClass.objects.all().count())
         self.assertTrue(models.ObjectClass.objects.editable(user).count() == models.ObjectClass.objects.all().count())
 
+class CustomConceptQuerySetTest_RegistrationOwned_Slow(CustomConceptQuerySetTest_Slow):
+    workgroup_owner_type = models.WORKGROUP_OWNERSHIP.registry
+class CustomConceptQuerySetTest_RegistryOwned_Slow(CustomConceptQuerySetTest_Slow):
+    workgroup_owner_type = models.WORKGROUP_OWNERSHIP.authority
 
 class RegistryCascadeTest(TestCase):
     def test_superuser_DataElementConceptCascade(self):
