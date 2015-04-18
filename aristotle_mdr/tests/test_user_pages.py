@@ -1,7 +1,10 @@
 from django.test import TestCase
 from django.contrib.auth.models import User
+from django.core.management import call_command
 from django.core.urlresolvers import reverse
+
 import aristotle_mdr.tests.utils as utils
+from aristotle_mdr import models
 
 from django.test.utils import setup_test_environment
 setup_test_environment()
@@ -84,3 +87,58 @@ class UserHomePages(utils.LoggedInViewPages,TestCase):
         response = self.client.get(reverse('aristotle:userAdminStats',))
         self.assertEqual(response.status_code,200)
         self.logout()
+
+class UserDashRecentItems(utils.LoggedInViewPages,TestCase):
+    def setUp(self):
+        super(UserDashRecentItems, self).setUp()
+        import haystack
+        haystack.connections.reload('default')
+
+    def tearDown(self):
+        call_command('clear_index', interactive=False, verbosity=0)
+
+    def test_user_recent_dashboard_panel(self):
+
+        self.login_editor()
+
+        response = self.client.get(reverse('aristotle:userHome',))
+        self.assertEqual(response.status_code,200)
+        self.assertEqual(len(response.context['recent']),0)
+
+        wizard_url = reverse('aristotle:createItem',args=['aristotle_mdr','objectclass'])
+        wizard_form_name="dynamic_aristotle_wizard"
+
+        step_1_data = {
+            wizard_form_name+'-current_step': 'initial',
+            'initial-name':"Test Item"
+        }
+
+        response = self.client.post(wizard_url, step_1_data)
+
+        step_2_data = {
+            wizard_form_name+'-current_step': 'results',
+            'results-name':"Test Item",
+            'results-description':"Test Description",
+            'results-workgroup':self.wg1.pk
+            }
+        response = self.client.post(wizard_url, step_2_data)
+        self.assertTrue(models._concept.objects.filter(name="Test Item").exists())
+        self.assertEqual(models._concept.objects.filter(name="Test Item").count(),1)
+        item = models._concept.objects.filter(name="Test Item").first()
+
+        response = self.client.get(reverse('aristotle:userHome',))
+        self.assertEqual(response.status_code,200)
+        self.assertEqual(len(response.context['recent']),1)
+
+        # Lets update an item so there is some recent history
+        from django.forms import model_to_dict
+        updated_item = dict((k,v) for (k,v) in model_to_dict(item).items() if v is not None)
+        updated_name = updated_item['name'] + " updated!"
+        updated_item['name'] = updated_name
+        response = self.client.post(reverse('aristotle:edit_item',args=[item.id]), updated_item)
+
+        response = self.client.get(reverse('aristotle:userHome',))
+        self.assertEqual(response.status_code,200)
+        self.assertEqual(len(response.context['recent']),2)
+
+        self.assertContains(response,"Changed name")

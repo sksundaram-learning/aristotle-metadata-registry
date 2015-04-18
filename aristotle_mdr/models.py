@@ -92,9 +92,9 @@ class baseAristotleObject(TimeStampedModel):
         return self._meta.model_name
 
     def can_edit(self,user):
-        raise NotImplementedError
+        raise NotImplementedError #pragma: no cover -- This should always be overridden
     def can_view(self,user):
-        raise NotImplementedError
+        raise NotImplementedError #pragma: no cover -- This should always be overridden
 
 class unmanagedObject(baseAristotleObject):
     class Meta:
@@ -826,7 +826,7 @@ class PossumProfile(models.Model):
         try:
             existing = PossumProfile.objects.get(user=self.user)
             self.id = existing.id #force update instead of insert
-        except PossumProfile.DoesNotExist:
+        except PossumProfile.DoesNotExist: #pragma: no cover
             pass
         models.Model.save(self, *args, **kwargs)
 

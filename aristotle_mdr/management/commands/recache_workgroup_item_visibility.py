@@ -9,7 +9,7 @@ class Command(BaseCommand):
         for wg_id in args:
             try:
                 wg = Workgroup.objects.get(pk=int(wg_id))
-            except Workgroup.DoesNotExist:
+            except Workgroup.DoesNotExist: #pragma: no cover
                 raise CommandError('Workgroup "%s" does not exist' % wg_id)
             self.stdout.write('Beginning update for items in Workgroup "%s" (id:%s)' % (wg.name,wg_id,))
 
