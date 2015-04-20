@@ -15,11 +15,11 @@ from django.utils.html import strip_tags
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
-from django import get_version as django_version
-if django_version() == '1.7':
-    from django.contrib.formtools.wizard.views import SessionWizardView
-else:
+from django import VERSION as DJANGO_VERSION
+if DJANGO_VERSION >= (1, 8):
     from formtools.wizard.views import SessionWizardView
+else:
+    from django.contrib.formtools.wizard.views import SessionWizardView
 
 
 def make_it_clean(string):

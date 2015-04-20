@@ -32,7 +32,6 @@ MIGRATION_MODULES = DisableMigrations()
 
 INSTALLED_APPS = (
     #The good stuff
-    'haystack',
     'extension_test',
     'aristotle_mdr',
     'text_download_test',

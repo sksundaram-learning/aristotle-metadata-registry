@@ -44,6 +44,7 @@ SOUTH_TESTS_MIGRATE = False
 
 INSTALLED_APPS = (
     'grappelli',
+    'haystack',
     'django.contrib.admin',
     'django.contrib.admindocs',
     'django.contrib.auth',
