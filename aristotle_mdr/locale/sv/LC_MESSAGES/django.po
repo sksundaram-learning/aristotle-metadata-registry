@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.0.1a\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-11-22 00:40+0000\n"
+"POT-Creation-Date: 2015-04-21 00:02+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,86 +18,6 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: fields.py:41 fields.py:49
-msgid "Yes"
-msgstr "Ja"
-
-#: fields.py:41 fields.py:51
-msgid "No"
-msgstr "Nej"
-
-#: models.py:26
-msgid "Not Progressed"
-msgstr ""
-
-#: models.py:27
-msgid "Incomplete"
-msgstr "Inkomplett"
-
-#: models.py:28
-msgid "Candidate"
-msgstr "Kandidat"
-
-#: models.py:29
-msgid "Recorded"
-msgstr "Noterad"
-
-#: models.py:30
-msgid "Qualified"
-msgstr "Kvalificerad"
-
-#: models.py:31
-msgid "Standard"
-msgstr "Standard"
-
-#: models.py:32
-msgid "Preferred Standard"
-msgstr "Önskad standard"
-
-#: models.py:33
-msgid "Superseded"
-msgstr "Ersatt"
-
-#: models.py:34
-msgid "Retired"
-msgstr "Pensionerad"
-
-#: models.py:146
-msgid "Registration Authorities"
-msgstr ""
-
-#: models.py:252
-msgid "Submitter"
-msgstr "Inlämnare"
-
-#: models.py:253
-msgid "Viewer"
-msgstr "Granskare"
-
-#: models.py:254
-msgid "Steward"
-msgstr "Förvaltare"
-
-#: models.py:255
-msgid "Manager"
-msgstr "Manager"
-
-#: models.py:583
-#, python-format
-msgid ""
-"This Object %(obj)s already has a status in Registration Authority \"%(ra)s"
-"\". Please update the exisiting status field instead of creating a new one."
-msgstr ""
-
-#: utils.py:24
-msgid " (clone)"
-msgstr " (kopia)"
-
-#: views.py:619
-#, python-format
-msgid "New %(name)s Saved"
-msgstr "Ny %(name) sparad"
-
 #: forms/admin.py:21 forms/admin.py:22 forms/admin.py:23 forms/admin.py:24
 msgid "workgroups"
 msgstr "arbetsgrupper"
@@ -106,36 +26,45 @@ msgstr "arbetsgrupper"
 msgid "registration authorities"
 msgstr ""
 
-#: forms/forms.py:19
+#: forms/creation_wizards.py:88 forms/creation_wizards.py:218
+msgid ""
+"I've reviewed these items, and none of them meet my needs. Make me a new one."
+msgstr ""
+
+#: forms/creation_wizards.py:153 forms/creation_wizards.py:230
+msgid "I've reviewed these items, and wish to create them."
+msgstr ""
+
+#: forms/forms.py:17
 msgid "First Name"
 msgstr "Förnamn"
 
-#: forms/forms.py:20
+#: forms/forms.py:18
 msgid "Last Name"
 msgstr "Efternamn"
 
-#: forms/forms.py:21
+#: forms/forms.py:19
 msgid "Email Address"
 msgstr "E-post adress"
 
-#: forms/forms.py:40
+#: forms/forms.py:43
 msgid "Supersede older items"
 msgstr "Ersätt äldre objekt"
 
-#: forms/forms.py:59 forms/forms.py:70
-#: templates/aristotle_mdr/concepts/infobox.html:90
+#: forms/forms.py:62 forms/forms.py:79
+#: templates/aristotle_mdr/concepts/infobox.html:92
 msgid "Superseded by"
 msgstr "Ersatt av"
 
-#: forms/forms.py:86
+#: forms/forms.py:95
 msgid "Registration date"
 msgstr "Registrationsdatum"
 
-#: forms/forms.py:92
+#: forms/forms.py:101
 msgid "Do you want to update the registration of associated items?"
 msgstr "Vill du uppdatera registreringen av tillhörande objekt?"
 
-#: forms/forms.py:96
+#: forms/forms.py:105
 msgid "Why is the status being changed for these items?"
 msgstr "Varför ändras statusen för dessa objekt?"
 
@@ -195,9 +124,191 @@ msgstr "Alfabetisk"
 msgid "Registration state"
 msgstr "Registeringsstatus"
 
-#: forms/search.py:212
+#: forms/search.py:227
+#, fuzzy
+#| msgid "Registration date"
+msgid "Registration authority"
+msgstr "Registrationsdatum"
+
+#: forms/search.py:233 templates/aristotle_mdr/statuses.html:3
+msgid "Registration status"
+msgstr "Registeringsstatus"
+
+#: forms/search.py:242
 msgid "Item type"
 msgstr "Typ av objekt"
+
+#: forms/workgroups.py:12
+#, fuzzy
+#| msgid "Workgroups"
+msgid "Workgroup roles"
+msgstr "arbetsgrupper"
+
+#: forms/workgroups.py:17
+msgid "Select users"
+msgstr ""
+
+#: models.py:32
+msgid "Not Progressed"
+msgstr ""
+
+#: models.py:33
+msgid "Incomplete"
+msgstr "Inkomplett"
+
+#: models.py:34 tests/test_permissions.py:244
+msgid "Candidate"
+msgstr "Kandidat"
+
+#: models.py:35 tests/test_permissions.py:245
+msgid "Recorded"
+msgstr "Noterad"
+
+#: models.py:36
+msgid "Qualified"
+msgstr "Kvalificerad"
+
+#: models.py:37 tests/test_permissions.py:247
+msgid "Standard"
+msgstr "Standard"
+
+#: models.py:38
+msgid "Preferred Standard"
+msgstr "Önskad standard"
+
+#: models.py:39
+msgid "Superseded"
+msgstr "Ersatt"
+
+#: models.py:40 tests/test_permissions.py:250
+msgid "Retired"
+msgstr "Pensionerad"
+
+#: models.py:45
+msgid "The primary name used for human identification purposes."
+msgstr ""
+
+#: models.py:48
+#, fuzzy
+#| msgid "Definition"
+msgid "definition"
+msgstr "Definiering"
+
+#: models.py:48
+msgid ""
+"Representation of a concept by a descriptive statement which serves to "
+"differentiate it from related concepts"
+msgstr ""
+
+#: models.py:122
+#, fuzzy
+#| msgid "Manager"
+msgid "Managers"
+msgstr "Manager"
+
+#: models.py:136
+#, fuzzy
+#| msgid "Registrar tools"
+msgid "Registrars"
+msgstr "Registrera verktyg"
+
+#: models.py:159 models.py:239 models.py:262
+msgid "Registration Authorities"
+msgstr ""
+
+#: models.py:238
+#, fuzzy
+#| msgid "Registrar tools"
+msgid "Registry"
+msgstr "Registrera verktyg"
+
+#: models.py:253
+msgid ""
+"Specifies the 'owner' of the content of the workgroup. Selecting 'registry' "
+"allows any registration authority to progress and make items public, "
+"'Registration authorities' specifies that only registration authorities "
+"associated with this workgroup may control their visibility."
+msgstr ""
+
+#: models.py:256
+msgid ""
+"Archived workgroups can no longer have new items or discussions created "
+"within them."
+msgstr ""
+
+#: models.py:257 templates/aristotle_mdr/user/userWorkgroupArchives.html:53
+msgid "Archived"
+msgstr ""
+
+#: models.py:265
+#, fuzzy
+#| msgid "Viewer"
+msgid "Viewers"
+msgstr "Granskare"
+
+#: models.py:266
+#, fuzzy
+#| msgid "Submitter"
+msgid "Submitters"
+msgstr "Inlämnare"
+
+#: models.py:267
+#, fuzzy
+#| msgid "Steward"
+msgid "Stewards"
+msgstr "Förvaltare"
+
+#: models.py:269
+msgid "Submitter"
+msgstr "Inlämnare"
+
+#: models.py:270
+msgid "Viewer"
+msgstr "Granskare"
+
+#: models.py:271
+msgid "Steward"
+msgstr "Förvaltare"
+
+#: models.py:272
+msgid "Manager"
+msgstr "Manager"
+
+#: models.py:646
+#, python-format
+msgid ""
+"This Object %(obj)s already has a status in Registration Authority \"%(ra)s"
+"\". Please update the exisiting status field instead of creating a new one."
+msgstr ""
+
+#: models.py:697 models.py:734
+msgid "description"
+msgstr ""
+
+#: models.py:958
+#, python-format
+msgid "A favourite item (%(item)s) has been changed."
+msgstr ""
+
+#: models.py:961
+#, python-format
+msgid "An item (%(item)s) has been updated in the workgroup \"%(workgroup)s\""
+msgstr ""
+
+#: models.py:964
+#, python-format
+msgid "An new item (%(item)s) is in the workgroup \"%(workgroup)s\""
+msgstr ""
+
+#: models.py:1008
+#, python-format
+msgid "%(commenter)s) commented on the post \"%(post)s\""
+msgstr ""
+
+#: models.py:1022
+#, python-format
+msgid "%(op)s made a new post \"%(post)s\" in the workgroup \"%(workgroup)s\" "
+msgstr ""
 
 #: templates/admin/submit_line.html:6
 msgid "Delete"
@@ -227,93 +338,91 @@ msgstr "Spara och lägg till en till"
 msgid "Save and continue editing"
 msgstr "Spara och fortsätt editera"
 
-#: templates/aristotle_mdr/header.html:34
-#: templates/aristotle_mdr/static/home.html:14 templates/search/search.html:19
-#: templates/search/search.html.py:28
-msgid "Search"
-msgstr "Sök"
+#: templates/aristotle_mdr/actions/advanced_editor.html:24
+#: templates/aristotle_mdr/concepts/managedContent.html:106
+msgid "This item has been superseded by the newer version,"
+msgstr "Det här objektet av bilvit ersatt av en nyare version,"
 
-#: templates/aristotle_mdr/header.html:46
-msgid "Create"
-msgstr "Skapa"
+#: templates/aristotle_mdr/actions/advanced_editor.html:29
+#: templates/aristotle_mdr/concepts/managedContent.html:111
+msgid ""
+"This item has been retired and is not recommended for use by any "
+"registration authority."
+msgstr ""
 
-#: templates/aristotle_mdr/header.html:78
-msgid "See all"
-msgstr "Se alla"
+#: templates/aristotle_mdr/actions/advanced_editor.html:35
+#: templates/aristotle_mdr/concepts/managedContent.html:116
+msgid "This item is currently public."
+msgstr "Det här objektet är just nu publikt"
 
-#: templates/aristotle_mdr/header.html:83
-msgid "Open user menu"
-msgstr "Öppna användarmenyn"
+#: templates/aristotle_mdr/actions/advanced_editor.html:39
+#: templates/aristotle_mdr/concepts/managedContent.html:120
+msgid "This item is currently under development."
+msgstr ""
 
-#: templates/aristotle_mdr/header.html:92
-msgid "New notifications"
-msgstr "Nya notifikationer"
+#: templates/aristotle_mdr/actions/advanced_editor.html:43
+#: templates/aristotle_mdr/concepts/managedContent.html:124
+msgid "This item is under active development. Content may change frequently."
+msgstr ""
 
-#: templates/aristotle_mdr/header.html:94
-msgid "No unread notifications"
-msgstr "Inga olästa notifikationer"
+#: templates/aristotle_mdr/actions/archive_workgroup.html:42
+#: templates/aristotle_mdr/actions/archive_workgroup.html:44
+#: templates/aristotle_mdr/actions/mark_ready_to_review.html:35
+#: templates/aristotle_mdr/actions/mark_ready_to_review.html:37
+#: templates/aristotle_mdr/create/de_template_wrapper.html:49
+#: templates/aristotle_mdr/create/dec_template_wrapper.html:37
+#: templates/inplaceeditform/render_field.html:17
+msgid "Cancel"
+msgstr "Avbryt"
 
-#: templates/aristotle_mdr/header.html:100
-msgid "My Dashboard"
-msgstr "Min kontrollpanel"
+#: templates/aristotle_mdr/actions/archive_workgroup.html:48
+msgid "Reactivate"
+msgstr ""
 
-#: templates/aristotle_mdr/header.html:103
-msgid "My Favourites"
-msgstr "Mina favoriter"
-
-#: templates/aristotle_mdr/header.html:107
-msgid "Notifications"
-msgstr "Notifikationer"
-
-#: templates/aristotle_mdr/header.html:113
-#: templates/aristotle_mdr/user/userSideBar.html:53
-msgid "Discussions"
-msgstr "Diskussioner"
-
-#: templates/aristotle_mdr/header.html:116
-msgid "Workgroups"
-msgstr "arbetsgrupper"
-
-#: templates/aristotle_mdr/header.html:120
-#: templates/aristotle_mdr/user/userSideBar.html:61
-msgid "Change password"
-msgstr "Byt lösenord"
-
-#: templates/aristotle_mdr/header.html:126
-msgid "Registrar tools"
-msgstr "Registrera verktyg"
-
-#: templates/aristotle_mdr/header.html:132
-msgid "Management interface"
-msgstr "Administrationsgränssnitt"
-
-#: templates/aristotle_mdr/header.html:137
-msgid "Admin tools"
-msgstr "Administera verktyg"
-
-#: templates/aristotle_mdr/header.html:143
-msgid "Log out"
-msgstr "Logga ut"
-
-#: templates/aristotle_mdr/header.html:152
-msgid "Log in"
-msgstr "Logga in"
-
-#: templates/aristotle_mdr/statuses.html:2
-msgid "Registration status"
-msgstr "Registeringsstatus"
-
-#: templates/aristotle_mdr/statuses.html:16
-msgid "View registration history"
-msgstr "Visa registeringshistoria"
-
-#: templates/aristotle_mdr/statuses.html:24
-msgid "Not registered"
-msgstr "Ej registerad"
+#: templates/aristotle_mdr/actions/archive_workgroup.html:50
+msgid "Archive"
+msgstr ""
 
 #: templates/aristotle_mdr/actions/autocompleteItem.html:10
 msgid "Open in a new window"
 msgstr "Öppna i nytt fönster"
+
+#: templates/aristotle_mdr/actions/concept_history.html:14
+#, fuzzy
+#| msgid "View registration history"
+msgid "Version history"
+msgstr "Visa registeringshistoria"
+
+#: templates/aristotle_mdr/actions/concept_history.html:20
+msgid "Date"
+msgstr ""
+
+#: templates/aristotle_mdr/actions/concept_history.html:21
+#: templates/aristotle_mdr/helpers/paginated_reversion_list.html:14
+msgid "Comment"
+msgstr ""
+
+#: templates/aristotle_mdr/actions/concept_history.html:22
+#: templates/aristotle_mdr/header.html:126
+msgid "User"
+msgstr ""
+
+#: templates/aristotle_mdr/actions/concept_history.html:41
+#: templates/aristotle_mdr/helpers/paginated_reversion_list.html:34
+msgid "No version comment made"
+msgstr ""
+
+#: templates/aristotle_mdr/actions/mark_ready_to_review.html:41
+msgid "Remove ready to review flag"
+msgstr ""
+
+#: templates/aristotle_mdr/actions/mark_ready_to_review.html:43
+msgid "Ready to review"
+msgstr ""
+
+#: templates/aristotle_mdr/base.html:58
+msgid "Loading"
+msgstr ""
 
 #: templates/aristotle_mdr/concepts/infobox.html:21
 msgctxt "Object Type"
@@ -321,18 +430,18 @@ msgid "Type"
 msgstr "Typ"
 
 #: templates/aristotle_mdr/concepts/infobox.html:29
-#: templates/aristotle_mdr/concepts/managedContent.html:118
+#: templates/aristotle_mdr/concepts/managedContent.html:163
 msgid "Short name"
 msgstr "Kortnamn"
 
 #: templates/aristotle_mdr/concepts/infobox.html:32
-#: templates/aristotle_mdr/concepts/managedContent.html:33
-#: templates/aristotle_mdr/concepts/managedContent.html:121
+#: templates/aristotle_mdr/concepts/managedContent.html:25
+#: templates/aristotle_mdr/concepts/managedContent.html:166
 msgid "Version"
 msgstr "Version"
 
 #: templates/aristotle_mdr/concepts/infobox.html:35
-#: templates/aristotle_mdr/concepts/managedContent.html:124
+#: templates/aristotle_mdr/concepts/managedContent.html:169
 msgid "Synonyms"
 msgstr "Synonymer"
 
@@ -349,140 +458,313 @@ msgstr "Paket"
 msgid "Last updated"
 msgstr "Uppdaterad senast"
 
-#: templates/aristotle_mdr/concepts/infobox.html:61
+#: templates/aristotle_mdr/concepts/infobox.html:63
 msgid "This may have been added during an import."
 msgstr ""
 
-#: templates/aristotle_mdr/concepts/infobox.html:61
+#: templates/aristotle_mdr/concepts/infobox.html:63
 msgctxt "Unknown import user"
 msgid "Unknown"
 msgstr "Okänd"
 
-#: templates/aristotle_mdr/concepts/infobox.html:66
+#: templates/aristotle_mdr/concepts/infobox.html:68
 msgid "Created"
 msgstr "Skapad"
 
-#: templates/aristotle_mdr/concepts/infobox.html:71
+#: templates/aristotle_mdr/concepts/infobox.html:73
 msgid "Supersedes"
 msgstr "Ersätter"
 
-#: templates/aristotle_mdr/concepts/infobox.html:85
+#: templates/aristotle_mdr/concepts/infobox.html:87
 #, fuzzy
 msgctxt "No older objects"
 msgid "None"
 msgstr "Inget"
 
-#: templates/aristotle_mdr/concepts/infobox.html:100
+#: templates/aristotle_mdr/concepts/infobox.html:102
 #, fuzzy
 msgctxt "No newer objects"
 msgid "None"
 msgstr "Inget"
 
-#: templates/aristotle_mdr/concepts/infobox.html:105
+#: templates/aristotle_mdr/concepts/infobox.html:107
+#: templates/aristotle_mdr/header.html:122
 msgid "Workgroup"
 msgstr "Arbetsgrupp"
 
-#: templates/aristotle_mdr/concepts/managedContent.html:40
+#: templates/aristotle_mdr/concepts/infobox.html:109
+msgid "History"
+msgstr ""
+
+#: templates/aristotle_mdr/concepts/infobox.html:110
+#, fuzzy
+#| msgid "View registration history"
+msgid "View history"
+msgstr "Visa registeringshistoria"
+
+#: templates/aristotle_mdr/concepts/managedContent.html:33
 msgid "Admin editor"
 msgstr "Adimistratörs editor"
 
-#: templates/aristotle_mdr/concepts/managedContent.html:48
-msgid "Edit menu"
-msgstr "Editera menyn"
-
-#: templates/aristotle_mdr/concepts/managedContent.html:53
+#: templates/aristotle_mdr/concepts/managedContent.html:35
+#: templates/aristotle_mdr/concepts/managedContent.html:59
 msgid "Advanced editor"
 msgstr "Avancerad editor"
 
-#: templates/aristotle_mdr/concepts/managedContent.html:58
+#: templates/aristotle_mdr/concepts/managedContent.html:53
+#: templates/aristotle_mdr/concepts/managedContent.html:75
+#, fuzzy
+#| msgid "Edit menu"
+msgid "Edit"
+msgstr "Editera menyn"
+
+#: templates/aristotle_mdr/concepts/managedContent.html:62
+#, fuzzy
+#| msgid "Edit menu"
+msgid "Edit in admin"
+msgstr "Editera menyn"
+
+#: templates/aristotle_mdr/concepts/managedContent.html:67
 msgid "Clone this item"
 msgstr "Kopiera objekt"
 
-#: templates/aristotle_mdr/concepts/managedContent.html:64
-msgid "Simple View"
-msgstr "Enkel vy"
-
-#: templates/aristotle_mdr/concepts/managedContent.html:66
-msgid "Technical View"
-msgstr "Teknisk vy"
-
-#: templates/aristotle_mdr/concepts/managedContent.html:70
+#: templates/aristotle_mdr/concepts/managedContent.html:96
 msgid "Download"
 msgstr "Hämta"
 
-#: templates/aristotle_mdr/concepts/managedContent.html:80
-msgid "This item has been superseded by the newer version,"
-msgstr "Det här objektet av bilvit ersatt av en nyare version,"
-
-#: templates/aristotle_mdr/concepts/managedContent.html:85
-msgid ""
-"This item has been retired and is not recommended for use by any "
-"registration authority."
-msgstr ""
-
-#: templates/aristotle_mdr/concepts/managedContent.html:90
-msgid "This item is currently public."
-msgstr "Det här objektet är just nu publikt"
-
-#: templates/aristotle_mdr/concepts/managedContent.html:94
-msgid "This item is currently under development."
-msgstr ""
-
-#: templates/aristotle_mdr/concepts/managedContent.html:98
-msgid ""
-"This item is under review and active development. Content may change "
-"frequently."
-msgstr ""
-
-#: templates/aristotle_mdr/concepts/managedContent.html:104
+#: templates/aristotle_mdr/concepts/managedContent.html:131
 msgid ""
 "This item has been marked as ready to review, but has not yet been "
 "registered in an authority."
 msgstr ""
 
-#: templates/aristotle_mdr/concepts/managedContent.html:106
+#: templates/aristotle_mdr/concepts/managedContent.html:133
 msgid ""
 "The visibility of this item is still restricted to your current workgroup."
 msgstr ""
 
-#: templates/aristotle_mdr/concepts/managedContent.html:110
+#: templates/aristotle_mdr/concepts/managedContent.html:138
 msgid ""
-"If an item is marked \"ready for review\", registrars will be able to see "
-"this item and begin the standardisation process according to their "
-"registration authority."
+"\n"
+"        <p>You can control the visibility of this item by indicating its "
+"review status.\n"
+"        If an item is marked \"ready for review\", registrars will be able "
+"to see this item and\n"
+"        begin the standardisation process according to their registration "
+"authority.\n"
+"        </p>\n"
+"        "
 msgstr ""
 
-#: templates/aristotle_mdr/concepts/managedContent.html:127
+#: templates/aristotle_mdr/concepts/managedContent.html:147
+msgid "Remove ready for review flag"
+msgstr ""
+
+#: templates/aristotle_mdr/concepts/managedContent.html:149
+msgid "Flag as ready for review"
+msgstr ""
+
+#: templates/aristotle_mdr/concepts/managedContent.html:172
 msgid "Definition"
 msgstr "Definiering"
 
-#: templates/aristotle_mdr/create/dec_template_wrapper.html:23
+#: templates/aristotle_mdr/create/concept_editor.html:8
+#, fuzzy
+#| msgid "Definition"
+msgctxt "creating items"
+msgid "Definition"
+msgstr "Definiering"
+
+#: templates/aristotle_mdr/create/concept_editor.html:14
+msgctxt "For making an item"
+msgid "Components"
+msgstr ""
+
+#: templates/aristotle_mdr/create/concept_editor.html:18
+msgctxt "creating items"
+msgid "Tips"
+msgstr ""
+
+#: templates/aristotle_mdr/create/concept_wizard_wrapper.html:24
+#: templates/aristotle_mdr/create/de_template_wrapper.html:46
+#: templates/aristotle_mdr/create/dec_template_wrapper.html:39
 msgid "First step"
 msgstr ""
 
-#: templates/aristotle_mdr/create/dec_template_wrapper.html:24
+#: templates/aristotle_mdr/create/concept_wizard_wrapper.html:27
+#: templates/aristotle_mdr/create/de_template_wrapper.html:47
+#: templates/aristotle_mdr/create/dec_template_wrapper.html:40
 msgid "Back"
 msgstr ""
 
-#: templates/aristotle_mdr/create/dec_template_wrapper.html:26
+#: templates/aristotle_mdr/create/concept_wizard_wrapper.html:30
 msgid "submit"
 msgstr ""
 
-#: templates/aristotle_mdr/static/home.html:3
+#: templates/aristotle_mdr/create/concept_wizard_wrapper.html:31
+#: templates/aristotle_mdr/create/dec_template_wrapper.html:36
+#: views/wizards.py:588
+msgid "Next"
+msgstr ""
+
+#: templates/aristotle_mdr/create/create_list.html:13
+#: templates/aristotle_mdr/header.html:90
+msgid "Management interface"
+msgstr "Administrationsgränssnitt"
+
+#: templates/aristotle_mdr/header.html:35
+#: templates/aristotle_mdr/static/home.html:17 templates/search/search.html:21
+#: templates/search/search.html.py:30 views/wizards.py:595
+msgid "Search"
+msgstr "Sök"
+
+#: templates/aristotle_mdr/header.html:45
+msgid "Open user menu"
+msgstr "Öppna användarmenyn"
+
+#: templates/aristotle_mdr/header.html:55
+msgid "My Dashboard"
+msgstr "Min kontrollpanel"
+
+#: templates/aristotle_mdr/header.html:58
+msgid "My Favourites"
+msgstr "Mina favoriter"
+
+#: templates/aristotle_mdr/header.html:62
+msgid "Notifications"
+msgstr "Notifikationer"
+
+#: templates/aristotle_mdr/header.html:68
+#: templates/aristotle_mdr/user/userSideBar.html:60
+msgid "Discussions"
+msgstr "Diskussioner"
+
+#: templates/aristotle_mdr/header.html:71
+#: templates/aristotle_mdr/user/userSideBar.html:32
+msgid "Workgroups"
+msgstr "arbetsgrupper"
+
+#: templates/aristotle_mdr/header.html:74
+msgid "Recent actions"
+msgstr ""
+
+#: templates/aristotle_mdr/header.html:78
+#: templates/aristotle_mdr/user/userSideBar.html:72
+msgid "Change password"
+msgstr "Byt lösenord"
+
+#: templates/aristotle_mdr/header.html:84
+#: templates/aristotle_mdr/user/userSideBar.html:81
+msgid "Registrar tools"
+msgstr "Registrera verktyg"
+
+#: templates/aristotle_mdr/header.html:95
+msgid "Admin tools"
+msgstr "Administera verktyg"
+
+#: templates/aristotle_mdr/header.html:102
+#: templates/aristotle_mdr/header.html:104
+#, fuzzy
+#| msgid "Create"
+msgid "Create new"
+msgstr "Skapa"
+
+#: templates/aristotle_mdr/header.html:118
+#, fuzzy
+#| msgid "Admin tools"
+msgid "Admin only"
+msgstr "Administera verktyg"
+
+#: templates/aristotle_mdr/header.html:132
+msgid "See all"
+msgstr "Se alla"
+
+#: templates/aristotle_mdr/header.html:139
+#: templates/aristotle_mdr/header.html:140
+msgid "New notifications"
+msgstr "Nya notifikationer"
+
+#: templates/aristotle_mdr/header.html:142
+#: templates/aristotle_mdr/header.html:143
+msgid "No unread notifications"
+msgstr "Inga olästa notifikationer"
+
+#: templates/aristotle_mdr/header.html:148
+#: templates/aristotle_mdr/header.html:150
+msgid "Log out"
+msgstr "Logga ut"
+
+#: templates/aristotle_mdr/header.html:156
+#: templates/registration/password_reset_complete.html:10
+msgid "Log in"
+msgstr "Logga in"
+
+#: templates/aristotle_mdr/helpers/paginated_reversion_list.html:15
+#, fuzzy
+#| msgid "Last updated"
+msgid "Updated"
+msgstr "Uppdaterad senast"
+
+#: templates/aristotle_mdr/helpers/paginated_reversion_list.html:16
+msgid "Items"
+msgstr ""
+
+#: templates/aristotle_mdr/static/home.html:4
 msgid "Home"
 msgstr "Hem"
 
-#: templates/aristotle_mdr/static/home.html:12
+#: templates/aristotle_mdr/static/home.html:15
 msgctxt "Front page search options"
 msgid "More options"
 msgstr "Fler alternativ"
+
+#: templates/aristotle_mdr/statuses.html:17
+msgid "View registration history"
+msgstr "Visa registeringshistoria"
+
+#: templates/aristotle_mdr/statuses.html:25
+msgid "Not registered"
+msgstr "Ej registerad"
+
+#: templates/aristotle_mdr/user/recent.html:4
+#: templates/aristotle_mdr/user/recent.html:5
+#: templates/aristotle_mdr/user/recent.html:11
+msgid "My Recent Actions"
+msgstr ""
 
 #: templates/aristotle_mdr/user/userSideBar.html:24
 msgid "All messages"
 msgstr ""
 
-#: templates/aristotle_mdr/user/userSideBar.html:75
+#: templates/aristotle_mdr/user/userSideBar.html:36
+#: templates/aristotle_mdr/user/userSideBar.html:53
+#, fuzzy
+#| msgid "Workgroups"
+msgid "Archived Workgroups"
+msgstr "arbetsgrupper"
+
+#: templates/aristotle_mdr/user/userSideBar.html:64
+msgid "Recent Actions"
+msgstr ""
+
+#: templates/aristotle_mdr/user/userSideBar.html:86
 msgid "Review list"
+msgstr ""
+
+#: templates/aristotle_mdr/user/userSideBar.html:95
+#, fuzzy
+#| msgid "Admin tools"
+msgid "Administrator tools"
+msgstr "Administera verktyg"
+
+#: templates/aristotle_mdr/user/userSideBar.html:101
+#, fuzzy
+#| msgid "Registration status"
+msgid "Registry Statistics"
+msgstr "Registeringsstatus"
+
+#: templates/aristotle_mdr/user/userWorkgroupArchives.html:55
+msgid "Active"
 msgstr ""
 
 #: templates/inplaceeditform/render_field.html:9
@@ -497,51 +779,220 @@ msgstr "Spara"
 msgid "Cancel change"
 msgstr ""
 
-#: templates/inplaceeditform/render_field.html:17
-msgid "Cancel"
-msgstr "Avbryt"
+#: templates/registration/password_reset_complete.html:9
+msgid "Your password has been set.  You may go ahead and log in now."
+msgstr ""
 
-#: templates/search/search.html:19
+#: templates/search/search.html:21
 msgctxt "Search results"
 msgid "results"
 msgstr "resultat"
 
-#: templates/search/search.html:58
+#: templates/search/search.html:61
 msgid "Toggle navigation"
 msgstr ""
 
-#: templates/search/search.html:63
+#: templates/search/search.html:66
 msgctxt "Advanced search"
 msgid "Advanced"
 msgstr ""
 
-#: templates/search/search.html:63
+#: templates/search/search.html:66
 msgctxt "Clear search filters"
 msgid "Clear filters"
 msgstr ""
 
-#: templates/search/search.html:72
+#: templates/search/search.html:75
 msgctxt "Metadata item type"
 msgid "Item type"
 msgstr ""
 
-#: templates/search/search.html:80
+#: templates/search/search.html:83
 msgctxt "Registration Status"
 msgid "Status"
 msgstr "Status"
 
-#: templates/search/search.html:88
+#: templates/search/search.html:91
 msgctxt "Registration Authority"
 msgid "Authority"
 msgstr ""
 
-#: templates/search/search.html:96
+#: templates/search/search.html:99
 msgctxt "Modified date"
 msgid "Modified"
 msgstr "Ändrad"
 
-#: templates/search/search.html:116
+#: templates/search/search.html:119
 #, fuzzy
 msgctxt "Created date"
 msgid "Created"
 msgstr "Skapad"
+
+#: utils.py:29
+msgid " (clone)"
+msgstr " (kopia)"
+
+#: utils.py:56
+#, fuzzy, python-format
+#| msgid "Change password"
+msgid "Changed %s."
+msgstr "Byt lösenord"
+
+#: utils.py:56 utils.py:66
+msgid "and"
+msgstr ""
+
+#: utils.py:61
+#, python-format
+msgid "Added %(name)s \"%(object)s\"."
+msgstr ""
+
+#: utils.py:65
+#, python-format
+msgid "Changed %(list)s for %(name)s \"%(object)s\"."
+msgstr ""
+
+#: utils.py:70
+#, python-format
+msgid "Deleted %(name)s \"%(object)s\"."
+msgstr ""
+
+#: utils.py:74
+msgid "No fields changed."
+msgstr ""
+
+#: views/wizards.py:258 views/wizards.py:261
+msgid "No object class name found"
+msgstr ""
+
+#: views/wizards.py:259 views/wizards.py:262
+msgid "No object class description found"
+msgstr ""
+
+#: views/wizards.py:273 views/wizards.py:276 views/wizards.py:693
+#: views/wizards.py:696
+msgid "No property name found"
+msgstr ""
+
+#: views/wizards.py:274 views/wizards.py:277 views/wizards.py:694
+#: views/wizards.py:697
+msgid "No property description found"
+msgstr ""
+
+#: views/wizards.py:290
+#, python-brace-format
+msgid "<p>{pr} of {oc}</p> - This was an autogenerated definition."
+msgstr ""
+
+#: views/wizards.py:364 views/wizards.py:594
+msgid "Search for components"
+msgstr ""
+
+#: views/wizards.py:365 views/wizards.py:597
+msgid "Refine components"
+msgstr ""
+
+#: views/wizards.py:366 views/wizards.py:601
+msgid "Create Object Class"
+msgstr ""
+
+#: views/wizards.py:367 views/wizards.py:606
+msgid "Create Property"
+msgstr ""
+
+#: views/wizards.py:368
+msgid "Review Data Element Concept"
+msgstr ""
+
+#: views/wizards.py:369 views/wizards.py:622
+msgid "Complete and Save"
+msgstr ""
+
+#: views/wizards.py:411 views/wizards.py:725
+#, python-brace-format
+msgid "New Property '{name}' Saved - <a href='{url}'>id:{id}</a>"
+msgstr ""
+
+#: views/wizards.py:419 views/wizards.py:733
+#, python-brace-format
+msgid "New Object Class '{name}' Saved - <a href='{url}'>id:{id}</a>"
+msgstr ""
+
+#: views/wizards.py:427 views/wizards.py:741
+#, python-brace-format
+msgid "New Data Element Concept '{name}' Saved - <a href='{url}'>id:{id}</a>"
+msgstr ""
+
+#: views/wizards.py:598 views/wizards.py:619
+msgid "Review Data Element"
+msgstr ""
+
+#: views/wizards.py:602
+msgid "Save Object Class"
+msgstr ""
+
+#: views/wizards.py:607
+msgid "Save Property"
+msgstr ""
+
+#: views/wizards.py:609
+msgid "Select Data Element Concept"
+msgstr ""
+
+#: views/wizards.py:612
+msgid "Create Data Element Concept"
+msgstr ""
+
+#: views/wizards.py:613
+msgid "Save Data Element Concept"
+msgstr ""
+
+#: views/wizards.py:617
+#, fuzzy
+#| msgid "Created ascending"
+msgid "Create Value Domain"
+msgstr "Skapad stigande"
+
+#: views/wizards.py:623
+#, fuzzy
+#| msgid "Save and add another"
+msgid "Save and Finish"
+msgstr "Spara och lägg till en till"
+
+#: views/wizards.py:678 views/wizards.py:681
+msgid "No value domain name found"
+msgstr ""
+
+#: views/wizards.py:679 views/wizards.py:682
+msgid "No value domain description found"
+msgstr ""
+
+#: views/wizards.py:708
+#, python-brace-format
+msgid "<p>{dec}, recorded as {vd}</p> - This was an autogenerated definition."
+msgstr ""
+
+#: views/wizards.py:749
+#, python-brace-format
+msgid "New ValueDomain '{name}' Saved - <a href='{url}'>id:{id}</a>"
+msgstr ""
+
+#: views/wizards.py:757
+#, python-brace-format
+msgid "New Data Element '{name}' Saved - <a href='{url}'>id:{id}</a>"
+msgstr ""
+
+#~ msgid "Yes"
+#~ msgstr "Ja"
+
+#~ msgid "No"
+#~ msgstr "Nej"
+
+#~ msgid "New %(name)s Saved"
+#~ msgstr "Ny %(name) sparad"
+
+#~ msgid "Simple View"
+#~ msgstr "Enkel vy"
+
+#~ msgid "Technical View"
+#~ msgstr "Teknisk vy"
