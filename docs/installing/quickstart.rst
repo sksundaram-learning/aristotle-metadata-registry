@@ -24,7 +24,7 @@ For more information on configuring a more complete installation review the help
 
    For PythonAnywhere, information is available on
    `installing virtualenv <https://www.pythonanywhere.com/wiki/InstallingVirtualenvWrapper>`_
-   and `configuring a new virtualenv <https://www.pythonanywhere.com/wiki/VirtualEnvForNewerDjango>_`
+   and `configuring a new virtualenv <https://www.pythonanywhere.com/wiki/VirtualEnvForNewerDjango>`_.
 
 3. Fetch the example metadata registry stored within the
    `Aristotle-MDR GitHub repository <https://github.com/aristotle-mdr/aristotle-metadata-registry>`_.
@@ -34,8 +34,8 @@ For more information on configuring a more complete installation review the help
        svn export https://github.com/aristotle-mdr/aristotle-metadata-registry/trunk/example_mdr/
 
 4. Browse to the ``example_mdr/example_mdr`` directory, and edit the ``settings.py`` files to meet your requirements.
-   **It is strongly recommmended you generate a fresh ``SECRET_KEY``**, also consider which
-   database should be used and the customisation settings inthe ``ARISTOTLE_SETTINGS``
+   **It is strongly recommmended you generate a fresh **``SECRET_KEY``, also consider which
+   database should be used and the customisation settings in the ``ARISTOTLE_SETTINGS``
    dictionary - details of which can be found under :doc:`/installing/settings`.
 
    The example registry includes commented out lines for some useful Aristotle-MDR extensions.
