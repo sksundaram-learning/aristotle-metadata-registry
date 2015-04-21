@@ -16,18 +16,18 @@ For more information on configuring a more complete installation review the help
    django server can be accessed by running the ``./manage.py runserver`` command.
 
    `PythonAnywhere also provides a free python server suitable for development and low
-   traffic sites<http://www.PythonAnywhere.com>`_.
+   traffic sites <http://www.PythonAnywhere.com>`_.
 
 2. (Optional but recommended) Configure a ``virtualenv`` for your server, so that the dependancies
    for Aristotle-MDR do conflict any other software you may be running. If you are running
    Aristotle on an isolated server with root privileges you may skip this step.
 
    For PythonAnywhere, information is available on
-   `installing virtualenv<https://www.pythonanywhere.com/wiki/InstallingVirtualenvWrapper>`_
-   and `configuring a new virtualenv<https://www.pythonanywhere.com/wiki/VirtualEnvForNewerDjango>_`
+   `installing virtualenv <https://www.pythonanywhere.com/wiki/InstallingVirtualenvWrapper>`_
+   and `configuring a new virtualenv <https://www.pythonanywhere.com/wiki/VirtualEnvForNewerDjango>_`
 
 3. Fetch the example metadata registry stored within the
-   `Aristotle-MDR GitHub repository<https://github.com/aristotle-mdr/aristotle-metadata-registry>`_.
+   `Aristotle-MDR GitHub repository <https://github.com/aristotle-mdr/aristotle-metadata-registry>`_.
 
    On a linux machine, this can be done with the command::
 
@@ -53,7 +53,7 @@ For more information on configuring a more complete installation review the help
 7. If you are using a WSGI server (such as PythonAnywhere) you'll need to either point your server to
    the `example_mdr/example_mdr/wsgi.py`` file or updated your WSGI configuration.
 
-   For more information on `configuring the PythonAnywhere WSGI server review their documentation<https://www.pythonanywhere.com/wiki/DjangoTutorial>`_.
+   For more information on `configuring the PythonAnywhere WSGI server review their documentation <https://www.pythonanywhere.com/wiki/DjangoTutorial>`_.
 
 8. Start (or restart your server) the development server and visit its address.
 
