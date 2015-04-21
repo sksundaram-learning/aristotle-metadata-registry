@@ -12,18 +12,49 @@ from haystack import connections
 from haystack.constants import DEFAULT_ALIAS
 from haystack import indexes
 
-def register_concept(concept_class, *args, **kwargs):
-    _register_concept_autocomplete(concept_class, *args, **kwargs)
-    _register_concept_admin(concept_class, *args, **kwargs)
-    _register_concept_search_index(concept_class, *args, **kwargs)
-    #return si
 
-def _register_concept_autocomplete(concept_class, *args, **kwargs):
+def register_concept(concept_class, *args, **kwargs):
+    """ .. py:function:: register_concept(concept_class, *args, **kwargs)
+
+    A handler for third-party apps to make registering
+    extension models based on ``aristotle_mdr.models.concept`` easier.
+
+    Sets up the search index, django administrator page and autocomplete handlers.
+    All ``args`` and ``kwargs`` are passed to the called methods.
+
+    Example usage (based on the models in the extensions test suite):
+
+        register_concept(Question, extra_fieldsets=[('Question','question_text'),]
+
+    :param concept concept_class: The model that is to be registered
+    :param list extra_fieldsets: A list of additional fieldsets to be displayed
+    :param list extra_inlines: A list of additional fieldsets to be displayed
+    """
+    register_concept_autocomplete(concept_class, *args, **kwargs)
+    register_concept_admin(concept_class, *args, **kwargs)
+    register_concept_search_index(concept_class, *args, **kwargs)
+
+def register_concept_autocomplete(concept_class, *args, **kwargs):
+    """ .. py:function:: register_concept_autocomplete(concept_class, *args, **kwargs)
+
+    Registers the given ``concept`` with ``autocomplete_light`` based on the
+    in-built ``aristotle_mdr.autocomplete_light_registry.PermissionsAutocomplete``.
+    This ensures the autocomplete for the registered conforms to Aristotle permissions.
+
+    :param concept concept_class: The model that is to be registered
+    """
     x = reg.autocompleteTemplate.copy()
     x['name']='Autocomplete'+concept_class.__name__
     autocomplete_light.register(concept_class,reg.PermissionsAutocomplete,**x)
 
-def _register_concept_search_index(concept_class, *args, **kwargs):
+def register_concept_search_index(concept_class, *args, **kwargs):
+    """ .. py:function:: register_concept_search_index(concept_class, *args, **kwargs)
+
+    Registers the given ``concept`` with a Haystack search index that
+    registered conforms to Aristotle permissions.
+
+    :param concept concept_class: The model that is to be registered for searching.
+    """
     class_name = "%s_%sSearchIndex"%(concept_class._meta.app_label,concept_class.__name__)
     setattr(search_index, class_name, create(concept_class))
 
@@ -37,8 +68,18 @@ def create(cls):
     return SubclassedConceptIndex
 
 
-def _register_concept_admin(concept_class, *args, **kwargs):
-    """
+def register_concept_admin(concept_class, *args, **kwargs):
+    """ .. py:function:: register_concept_admin(concept_class, *args, **kwargs)
+
+    Registers the given ``concept`` with the Django admin backend based on the default
+    ``aristotle_mdr.admin.ConceptAdmin``.
+
+    Additional parameters are only required if a model has additional fields or
+    references to other models.
+
+    :param concept concept_class: The model that is to be registered
+    :param list extra_fieldsets: Model-specific `fieldsets <https://docs.djangoproject.com/en/1.8/ref/contrib/admin/#django.contrib.admin.ModelAdmin.fieldsets>`_ to be displayed. Fields in the tuples given should be those *not* defined by the base ``aristotle_mdr.models._concept``class.
+    :param list extra_inlines: Model-specific `inline <https://docs.djangoproject.com/en/1.8/ref/contrib/admin/#django.contrib.admin.ModelAdmin.inlines>`_ admin forms to be displayed.
     """
     extra_fieldsets = kwargs.get('extra_fieldsets',[])
     auto_fieldsets = kwargs.get('auto_fieldsets',False)
