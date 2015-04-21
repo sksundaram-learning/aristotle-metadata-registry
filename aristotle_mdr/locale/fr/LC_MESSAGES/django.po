@@ -33,7 +33,7 @@ msgstr "J'ai revu ces items, et aucun ne correspond à mes besoins. En créer un
 
 #: forms/creation_wizards.py:153 forms/creation_wizards.py:230
 msgid "I've reviewed these items, and wish to create them."
-msgstr "J'ai revu ces items, et je souhaites les créer."
+msgstr "J'ai revu ces items, et je souhaite les créer."
 
 #: forms/forms.py:17
 msgid "First Name"
@@ -368,7 +368,7 @@ msgstr "Abandonner"
 
 #: templates/aristotle_mdr/actions/archive_workgroup.html:48
 msgid "Reactivate"
-msgstr "réactiver"
+msgstr "Réactiver"
 
 #: templates/aristotle_mdr/actions/archive_workgroup.html:50
 msgid "Archive"
@@ -454,7 +454,7 @@ msgstr "Ceci peut avoir été ajouté lors de l'import"
 #: templates/aristotle_mdr/concepts/infobox.html:63
 msgctxt "Unknown import user"
 msgid "Unknown"
-msgstr "Incnnu"
+msgstr "Inconnu"
 
 #: templates/aristotle_mdr/concepts/infobox.html:68
 msgid "Created"
@@ -727,7 +727,7 @@ msgstr "Groupes de travail archivés"
 
 #: templates/aristotle_mdr/user/userSideBar.html:64
 msgid "Recent Actions"
-msgstr "Actions récente"
+msgstr "Actions récentes"
 
 #: templates/aristotle_mdr/user/userSideBar.html:86
 msgid "Review list"
