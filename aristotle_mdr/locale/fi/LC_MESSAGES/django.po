@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-04-21 12:56+0000\n"
+"POT-Creation-Date: 2015-04-21 22:03+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -479,7 +479,8 @@ msgid "View history"
 msgstr ""
 
 #: templates/aristotle_mdr/concepts/managedContent.html:33
-msgid "Admin editor"
+#: templates/aristotle_mdr/concepts/managedContent.html:62
+msgid "Edit in admin"
 msgstr ""
 
 #: templates/aristotle_mdr/concepts/managedContent.html:35
@@ -490,10 +491,6 @@ msgstr ""
 #: templates/aristotle_mdr/concepts/managedContent.html:53
 #: templates/aristotle_mdr/concepts/managedContent.html:75
 msgid "Edit"
-msgstr ""
-
-#: templates/aristotle_mdr/concepts/managedContent.html:62
-msgid "Edit in admin"
 msgstr ""
 
 #: templates/aristotle_mdr/concepts/managedContent.html:67
@@ -709,15 +706,16 @@ msgstr ""
 msgid "Recent Actions"
 msgstr ""
 
-#: templates/aristotle_mdr/user/userSideBar.html:86
+#. Translators: A link to the list of things to be reviewed.
+#: templates/aristotle_mdr/user/userSideBar.html:87
 msgid "Review list"
 msgstr ""
 
-#: templates/aristotle_mdr/user/userSideBar.html:95
+#: templates/aristotle_mdr/user/userSideBar.html:96
 msgid "Administrator tools"
 msgstr ""
 
-#: templates/aristotle_mdr/user/userSideBar.html:101
+#: templates/aristotle_mdr/user/userSideBar.html:102
 msgid "Registry Statistics"
 msgstr ""
 
@@ -785,35 +783,39 @@ msgctxt "Created date"
 msgid "Created"
 msgstr ""
 
-#: utils.py:29
+#. Translators: The '(clone)' prefix is a noun, indicating an object is a clone of another - for example "Person-Sex" compared to "Person-Sex (clone)"
+#: utils.py:30
 msgid " (clone)"
 msgstr ""
 
-#: utils.py:56
+#: utils.py:57
 #, python-format
 msgid "Changed %s."
 msgstr ""
 
-#: utils.py:56 utils.py:66
+#: utils.py:57 utils.py:69
 msgid "and"
 msgstr ""
 
-#: utils.py:61
+#. Translators: A message in the version history of an item saying that an object with the name (name) of the type (object) has been created in the registry.
+#: utils.py:63
 #, python-format
 msgid "Added %(name)s \"%(object)s\"."
 msgstr ""
 
-#: utils.py:65
+#. Translators: A message in the version history of an item saying that an object with the name (name) of the type (object) has been changed in the registry.
+#: utils.py:68
 #, python-format
 msgid "Changed %(list)s for %(name)s \"%(object)s\"."
 msgstr ""
 
-#: utils.py:70
+#. Translators: A message in the version history of an item saying that an object with the name (name) of the type (object) has been deleted from the registry.
+#: utils.py:74
 #, python-format
 msgid "Deleted %(name)s \"%(object)s\"."
 msgstr ""
 
-#: utils.py:74
+#: utils.py:78
 msgid "No fields changed."
 msgstr ""
 

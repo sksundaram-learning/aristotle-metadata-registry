@@ -30,7 +30,7 @@
 
         {# Screen reader quick links #}
         {% if item|can_edit:request.user and request.user.is_staff %}
-            <a class="sr-only" accesskey="p" href="{% adminEdit item %}">{% trans 'Admin editor'%}</a>
+            <a class="sr-only" accesskey="p" href="{% adminEdit item %}">{% trans 'Edit in admin'%}</a>
         {% elif item|can_edit:request.user %}
             <a class="sr-only" accesskey="p" href="{% url 'aristotle:edit_item' item.id %}">{% trans 'Advanced editor'%}</a>
         {% endif %}
