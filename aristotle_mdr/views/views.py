@@ -226,15 +226,18 @@ def edit_item(request,iid,*args,**kwargs):
         else:
             raise PermissionDenied
 
-    base_form = MDRForms.wizards.subclassed_modelform(item.__class__)
+    base_form = MDRForms.wizards.subclassed_edit_modelform(item.__class__)
     if request.method == 'POST': # If the form has been submitted...
         form = base_form(request.POST,instance=item,user=request.user)
 
         if form.is_valid():
             with transaction.atomic(), reversion.create_revision():
+                change_comments = form.data['change_comments']
                 item = form.save()
                 reversion.set_user(request.user)
-                reversion.set_comment(construct_change_message(request,form,None))
+                if not change_comments:
+                    change_comments = construct_change_message(request,form,None)
+                reversion.set_comment(change_comments)
                 return HttpResponseRedirect(url_slugify_concept(item))
     else:
         form = base_form(instance=item,user=request.user)

@@ -16,7 +16,7 @@
         </li>
         {% if form.change_comments %}
         <li role="presentation">
-            <a href="#changeComments" aria-controls="messages" role="tab" data-toggle="tab">{{ model_name|title }} {% trans 'Change message' context 'When saving changes to an item' %}</a>
+            <a href="#changeComments" aria-controls="messages" role="tab" data-toggle="tab"><strong>{% trans 'Change message' context 'When saving changes to an item' %}</strong></a>
         </li>
         {% endif %}
         {% if help_guide %}
@@ -141,17 +141,15 @@
         {% endif %}
         {% if form.change_comments %}
         <div role="tabpanel" class="tab-pane" id="changeComments">
-        {% for field in form.object_specific_fields %}
-            {% if forloop.first %}
             <div class="alert alert-info">
-                <p><strong>These fields are optional</strong>
-                but give extra context to this item, so add where appropriate.
+                <p><strong>Leaving a change message is optional.</strong>
+                If it is left an automatic messages stating which fields
+                have been changed will be generated on your behalf.
                 </p>
-                <p>Don't worry if you don't fill these out now, these can
-                    be filled in at a later stage.
+                <p>However, stating <em>why</em> values in fields have changed
+                can be much more useful than knowing that a field has changed.
                 </p>
             </div>
-            {% endif %}
             <div class="wizard_field">
             {% with field=form.change_comments %}
                 <span>{{ field.label_tag }} {{ field.help_text }}</span>
@@ -165,12 +163,6 @@
                 {% endif %}
             {% endwith %}
             </div>
-        {% empty %}
-            <div class="alert alert-success">
-                <strong>There are no additional fields required to make this {{ model_name }}.</strong>
-                You are ready to submit.
-            </div>
-        {% endfor %}
         </div>
         {% endif %}
         {% if help_guide %}
