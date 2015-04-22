@@ -358,14 +358,14 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.login_viewer()
 
         response = self.client.get(reverse('aristotle:changeStatus',args=[self.item1.id]))
-        self.assertRedirects(response,reverse('django.contrib.auth.views.login')+"?next="+reverse('aristotle:changeStatus', args=[self.item1.id]))
+        self.assertEqual(response.status_code,403)
 
 
     def test_anon_cannot_change_status(self):
-        self.login_registrar()
+        self.logout()
 
         response = self.client.get(reverse('aristotle:changeStatus',args=[self.item1.id]))
-        self.assertEqual(response.status_code,403)
+        self.assertRedirects(response,reverse('django.contrib.auth.views.login')+"?next="+reverse('aristotle:changeStatus', args=[self.item1.id]))
 
 class ObjectClassViewPage(LoggedInViewConceptPages,TestCase):
     url_name='objectClass'
