@@ -1018,7 +1018,7 @@ def new_post_created(sender, **kwargs):
     for user in post.workgroup.viewers.all():
         if user == post.author:
             return # We don't need to tell someone they made a post
-        notify.send(post.author, recipient=post.author, verb="comment on post", target=post.workgroup,
+        notify.send(post.author, recipient=post.author, verb="made a post", target=post.workgroup,
                     comment=_('%(op)s made a new post "%(post)s" in the workgroup "%(workgroup)s" ')
                     % {'op':post.author, 'post':post.title, 'workgroup':post.workgroup})
 

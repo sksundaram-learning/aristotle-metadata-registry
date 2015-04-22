@@ -6,6 +6,7 @@ from django.core.exceptions import PermissionDenied, ImproperlyConfigured
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.urlresolvers import reverse
 from django.db import transaction
+from django.forms.models import modelformset_factory
 from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.shortcuts import render, redirect, get_object_or_404
 from django.template import RequestContext, TemplateDoesNotExist
@@ -23,6 +24,7 @@ from aristotle_mdr import perms
 from aristotle_mdr.utils import cache_per_item_user, concept_to_dict, construct_change_message, url_slugify_concept
 from aristotle_mdr import forms as MDRForms
 from aristotle_mdr import models as MDR
+from aristotle_mdr.utils import concept_to_clone_dict
 
 from haystack.views import SearchView
 
@@ -225,19 +227,48 @@ def edit_item(request,iid,*args,**kwargs):
         else:
             raise PermissionDenied
 
+    base_form = MDRForms.wizards.subclassed_edit_modelform(item.__class__)
     if request.method == 'POST': # If the form has been submitted...
-        form = MDRForms.wizards.subclassed_modelform(item.__class__)(request.POST,instance=item,user=request.user)
+        form = base_form(request.POST,instance=item,user=request.user)
 
         if form.is_valid():
             with transaction.atomic(), reversion.create_revision():
+                change_comments = form.data.get('change_comments',None)
                 item = form.save()
                 reversion.set_user(request.user)
-                reversion.set_comment(construct_change_message(request,form,None))
+                if not change_comments:
+                    change_comments = construct_change_message(request,form,None)
+                reversion.set_comment(change_comments)
                 return HttpResponseRedirect(url_slugify_concept(item))
     else:
-        form = MDRForms.wizards.subclassed_modelform(item.__class__)(instance=item,user=request.user)
+        form = base_form(instance=item,user=request.user)
     return render(request,"aristotle_mdr/actions/advanced_editor.html",
             {"item":item,
+             "form":form,
+                }
+            )
+
+def clone_item(request,iid,*args,**kwargs):
+    item_to_clone = get_object_or_404(MDR._concept,pk=iid).item
+    if not user_can_edit(request.user, item_to_clone):
+        if request.user.is_anonymous():
+            return redirect(reverse('django.contrib.auth.views.login')+'?next=%s' % request.path)
+        else:
+            raise PermissionDenied
+    base_form = MDRForms.wizards.subclassed_modelform(item_to_clone.__class__)
+    if request.method == 'POST': # If the form has been submitted...
+        form = base_form(request.POST,user=request.user)
+
+        if form.is_valid():
+            with transaction.atomic(), reversion.create_revision():
+                new_clone = form.save()
+                reversion.set_user(request.user)
+                reversion.set_comment(_("Cloned from %s (id: %s)")%(item_to_clone.name,str(item_to_clone.pk)))
+                return HttpResponseRedirect(url_slugify_concept(new_clone))
+    else:
+        form = base_form(initial=concept_to_clone_dict(item_to_clone),user=request.user)
+    return render(request,"aristotle_mdr/create/clone_item.html",
+            {"item":item_to_clone,
              "form":form,
                 }
             )
@@ -431,9 +462,6 @@ def deprecate(request, iid):
              "form":form,
                 }
             )
-
-from django.forms.formsets import formset_factory
-from django.forms.models import modelformset_factory
 
 def valuedomain_value_edit(request,iid,value_type):
     item = get_object_or_404(MDR._concept,pk=iid).item
