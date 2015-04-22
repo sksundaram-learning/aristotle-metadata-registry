@@ -171,9 +171,9 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         updated_name = updated_item['name'] + " cloned!"
         updated_item['name'] = updated_name
         response = self.client.post(reverse('aristotle:clone_item',args=[self.item1.id]), updated_item)
-        self.item1 = self.itemType.objects.get(pk=self.item1.pk)
-        self.assertRedirects(response,url_slugify_concept(self.item1))
-        self.assertEqual(self.item1.name,updated_name)
+        most_recent = self.itemType.objects.order_by('-created').first()
+        self.assertRedirects(response,url_slugify_concept(most_recent))
+        self.assertEqual(most_recent.name,updated_name)
 
     def test_su_can_download_pdf(self):
         self.login_superuser()
