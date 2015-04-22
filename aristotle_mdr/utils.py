@@ -11,7 +11,7 @@ def concept_to_dict(obj):
     ``ManyToManyFields``, but removes certain concept fields.
     """
 
-    excluded_fields='readyToReview version workgroup pk id supersedes superseded_by'.split()
+    excluded_fields='_concept_ptr readyToReview version workgroup pk id supersedes superseded_by'.split()
     concept_dict = model_to_dict(obj,
         fields=[field.name for field in obj._meta.fields if field.name not in excluded_fields],
         exclude=excluded_fields
@@ -26,6 +26,7 @@ def concept_to_clone_dict(obj):
 
     from django.utils.translation import ugettext # Do at run time because reasons
     clone_dict = concept_to_dict(obj)
+    print(clone_dict)
     # Translators: The '(clone)' prefix is a noun, indicating an object is a clone of another - for example "Person-Sex" compared to "Person-Sex (clone)"
     clone_dict['name'] = clone_dict['name'] + ugettext(u" (clone)")
     return clone_dict

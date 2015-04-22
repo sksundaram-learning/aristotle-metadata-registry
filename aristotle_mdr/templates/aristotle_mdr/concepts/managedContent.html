@@ -63,9 +63,14 @@
                     </a></li>
                     {# % endif % #}
                     <li class="divider"></li>
-                    <li><a class="" href="{% clone item %}">
+                    <li><a class="" href="{% url 'aristotle:clone_item' item.id %}">
                         <i class="fa fa-code-fork"></i> {% trans 'Clone this item'%}
                     </a></li>
+                    {% if request.user.is_staff %}
+                    <li><a class="" href="{% clone item %}">
+                        <i class="fa fa-code-fork"></i> {% trans 'Clone this item via admin'%}
+                    </a></li>
+                    {% endif %}
                   </ul>
                 </div>
             {% else %}
