@@ -26,7 +26,6 @@ def concept_to_clone_dict(obj):
 
     from django.utils.translation import ugettext # Do at run time because reasons
     clone_dict = concept_to_dict(obj)
-    print(clone_dict)
     # Translators: The '(clone)' prefix is a noun, indicating an object is a clone of another - for example "Person-Sex" compared to "Person-Sex (clone)"
     clone_dict['name'] = clone_dict['name'] + ugettext(u" (clone)")
     return clone_dict

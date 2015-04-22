@@ -232,7 +232,7 @@ def edit_item(request,iid,*args,**kwargs):
 
         if form.is_valid():
             with transaction.atomic(), reversion.create_revision():
-                change_comments = form.data['change_comments']
+                change_comments = form.data.get('change_comments',None)
                 item = form.save()
                 reversion.set_user(request.user)
                 if not change_comments:
