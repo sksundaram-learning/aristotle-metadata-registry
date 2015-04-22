@@ -26,6 +26,7 @@ def concept_to_clone_dict(obj):
 
     from django.utils.translation import ugettext # Do at run time because reasons
     clone_dict = concept_to_dict(obj)
+    # Translators: The '(clone)' prefix is a noun, indicating an object is a clone of another - for example "Person-Sex" compared to "Person-Sex (clone)"
     clone_dict['name'] = clone_dict['name'] + ugettext(u" (clone)")
     return clone_dict
 
@@ -58,15 +59,18 @@ def construct_change_message(request, form, formsets):
     if formsets:
         for formset in formsets:
             for added_object in formset.new_objects:
+                # Translators: A message in the version history of an item saying that an object with the name (name) of the type (object) has been created in the registry.
                 change_message.append(_('Added %(name)s "%(object)s".')
                                       % {'name': force_text(added_object._meta.verbose_name),
                                          'object': force_text(added_object)})
             for changed_object, changed_fields in formset.changed_objects:
+                # Translators: A message in the version history of an item saying that an object with the name (name) of the type (object) has been changed in the registry.
                 change_message.append(_('Changed %(list)s for %(name)s "%(object)s".')
                                       % {'list': get_text_list(changed_fields, _('and')),
                                          'name': force_text(changed_object._meta.verbose_name),
                                          'object': force_text(changed_object)})
             for deleted_object in formset.deleted_objects:
+                # Translators: A message in the version history of an item saying that an object with the name (name) of the type (object) has been deleted from the registry.
                 change_message.append(_('Deleted %(name)s "%(object)s".')
                                       % {'name': force_text(deleted_object._meta.verbose_name),
                                          'object': force_text(deleted_object)})
