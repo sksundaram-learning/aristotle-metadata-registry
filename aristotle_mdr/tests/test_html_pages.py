@@ -315,6 +315,16 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.assertRedirects(response,url_slugify_concept(self.item1))
         self.assertEqual(self.viewer.profile.favourites.count(),0)
 
+        response = self.client.get(reverse('aristotle:toggleFavourite', args=[self.item2.id]))
+        self.assertEqual(response.status_code,403)
+        self.assertEqual(self.viewer.profile.favourites.count(),0)
+
+    def test_anon_cannot_favourite(self):
+        self.logout()
+
+        response = self.client.get(reverse('aristotle:toggleFavourite', args=[self.item1.id]))
+        self.assertRedirects(response,reverse('django.contrib.auth.views.login')+"?next="+reverse('aristotle:toggleFavourite', args=[self.item1.id]))
+
     def test_registrar_can_change_status(self):
         self.logout()
         self.login_registrar()
@@ -343,6 +353,19 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.assertEqual(self.item1.statuses.count(),1)
         self.item1 = self.itemType.objects.get(pk=self.item1.pk)
         self.assertTrue(self.item1.is_public())
+
+    def test_viewer_cannot_change_status(self):
+        self.login_viewer()
+
+        response = self.client.get(reverse('aristotle:changeStatus',args=[self.item1.id]))
+        self.assertRedirects(response,reverse('django.contrib.auth.views.login')+"?next="+reverse('aristotle:changeStatus', args=[self.item1.id]))
+
+
+    def test_anon_cannot_change_status(self):
+        self.login_registrar()
+
+        response = self.client.get(reverse('aristotle:changeStatus',args=[self.item1.id]))
+        self.assertEqual(response.status_code,403)
 
 class ObjectClassViewPage(LoggedInViewConceptPages,TestCase):
     url_name='objectClass'
@@ -376,6 +399,13 @@ class ValueDomainViewPage(LoggedInViewConceptPages,TestCase):
                 value=i,meaning="test supplementary meaning %d"%i,order=i,valueDomain=self.item1
                 )
 
+    def test_anon_cannot_use_value_page(self):
+        self.logout()
+        response = self.client.get(reverse('aristotle:valueDomain_edit_values',args=[self.item1.id,'permissible']))
+        self.assertRedirects(response,reverse('django.contrib.auth.views.login')+"?next="+reverse('aristotle:valueDomain_edit_values',args=[self.item1.id,'permissible']))
+        response = self.client.get(reverse('aristotle:valueDomain_edit_values',args=[self.item1.id,'supplementary']))
+        self.assertRedirects(response,reverse('django.contrib.auth.views.login')+"?next="+reverse('aristotle:valueDomain_edit_values',args=[self.item1.id,'supplementary']))
+
     def loggedin_user_can_use_value_page(self,value_type,current_item,http_code):
         response = self.client.get(reverse('aristotle:valueDomain_edit_values',args=[current_item.id,value_type]))
         self.assertEqual(response.status_code,http_code)
@@ -385,6 +415,10 @@ class ValueDomainViewPage(LoggedInViewConceptPages,TestCase):
         self.loggedin_user_can_use_value_page(value_type,self.item1,200)
         self.loggedin_user_can_use_value_page(value_type,self.item2,403)
         self.loggedin_user_can_use_value_page(value_type,self.item3,200)
+
+        # Invalid value domain types are caught in the URL runner. This test isn't required yet.
+        #response = self.client.get(reverse('aristotle:valueDomain_edit_values',args=[self.item1.id,'accidentally'])) # a fake value domain type
+        #self.assertTrue(response.status_code,404)
 
         data = {}
         num_vals = getattr(self.item1,value_type+"Values").count()

@@ -6,6 +6,7 @@ from django.core.exceptions import PermissionDenied, ImproperlyConfigured
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.urlresolvers import reverse
 from django.db import transaction
+from django.forms.models import modelformset_factory
 from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.shortcuts import render, redirect, get_object_or_404
 from django.template import RequestContext, TemplateDoesNotExist
@@ -461,9 +462,6 @@ def deprecate(request, iid):
              "form":form,
                 }
             )
-
-from django.forms.formsets import formset_factory
-from django.forms.models import modelformset_factory
 
 def valuedomain_value_edit(request,iid,value_type):
     item = get_object_or_404(MDR._concept,pk=iid).item
