@@ -124,6 +124,56 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.item1 = self.itemType.objects.get(pk=self.item1.pk)
         self.assertRedirects(response,url_slugify_concept(self.item1))
         self.assertEqual(self.item1.name,updated_name)
+    def test_submitter_can_save_via_edit_page_with_change_comment(self):
+        from django.forms import model_to_dict
+        self.login_editor()
+        response = self.client.get(reverse('aristotle:edit_item',args=[self.item1.id]))
+        self.assertEqual(response.status_code,200)
+        updated_item = dict((k,v) for (k,v) in model_to_dict(response.context['item']).items() if v is not None)
+        updated_name = updated_item['name'] + " updated!"
+        updated_item['name'] = updated_name
+        change_comment = "I changed this because I can"
+        updated_item['change_comments'] = change_comment
+        response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
+        self.item1 = self.itemType.objects.get(pk=self.item1.pk)
+        self.assertRedirects(response,url_slugify_concept(self.item1))
+        self.assertEqual(self.item1.name,updated_name)
+
+        response = self.client.get(reverse('aristotle:item_history',args=[self.item1.id]))
+        self.assertEqual(response.status_code,200)
+        self.assertTrue(change_comment in response.content)
+
+
+    def test_anon_cannot_view_clone_page(self):
+        self.logout()
+        response = self.client.get(reverse('aristotle:clone_item',args=[self.item1.id]))
+        self.assertEqual(response.status_code,302)
+        response = self.client.get(reverse('aristotle:clone_item',args=[self.item2.id]))
+        self.assertEqual(response.status_code,302)
+    def test_viewer_cannot_view_clone_page(self):
+        self.login_viewer()
+        response = self.client.get(reverse('aristotle:clone_item',args=[self.item1.id]))
+        self.assertEqual(response.status_code,403)
+        response = self.client.get(reverse('aristotle:clone_item',args=[self.item2.id]))
+        self.assertEqual(response.status_code,403)
+    def test_submitter_can_view_clone_page(self):
+        self.login_editor()
+        response = self.client.get(reverse('aristotle:clone_item',args=[self.item1.id]))
+        self.assertEqual(response.status_code,200)
+        response = self.client.get(reverse('aristotle:clone_item',args=[self.item2.id]))
+        self.assertEqual(response.status_code,403)
+    def test_submitter_can_save_via_clone_page(self):
+        from django.forms import model_to_dict
+        self.login_editor()
+        response = self.client.get(reverse('aristotle:clone_item',args=[self.item1.id]))
+        self.assertEqual(response.status_code,200)
+        updated_item = dict((k,v) for (k,v) in model_to_dict(response.context['item']).items() if v is not None)
+        updated_name = updated_item['name'] + " cloned!"
+        updated_item['name'] = updated_name
+        response = self.client.post(reverse('aristotle:clone_item',args=[self.item1.id]), updated_item)
+        self.item1 = self.itemType.objects.get(pk=self.item1.pk)
+        self.assertRedirects(response,url_slugify_concept(self.item1))
+        self.assertEqual(self.item1.name,updated_name)
 
     def test_su_can_download_pdf(self):
         self.login_superuser()
