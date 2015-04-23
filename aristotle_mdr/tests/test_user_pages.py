@@ -83,8 +83,6 @@ class UserHomePages(utils.LoggedInViewPages,TestCase):
         response = self.client.get(reverse('aristotle:userReadyForReview',))
         self.assertEqual(response.status_code,200)
 
-        print response.context['items']
-
         self.assertTrue(len(response.context['items']),1)
         self.assertTrue(item3 in response.context['items'])
         self.assertTrue(item1 not in response.context['items'])
