@@ -186,15 +186,8 @@ def registrar_tools(request):
 def review_list(request):
     if not request.user.profile.is_registrar:
         raise PermissionDenied
-    if not request.user.is_superuser:
-        ras = request.user.profile.registrarAuthorities
-        wgs = MDR.Workgroup.objects.filter(registrationAuthorities__in=ras)
-        items = MDR._concept.objects.filter(workgroup__in=wgs)
-    else:
-        items = MDR._concept.objects.all()
-    items = items.filter(readyToReview=True,statuses=None)
-    context={}
-    return paginated_list(request,items,"aristotle_mdr/user/userReadyForReview.html",context)
+    items = MDR._concept.objects.visible(request.user).filter(readyToReview=True,statuses=None).select_subclasses()
+    return paginated_list(request,items,"aristotle_mdr/user/userReadyForReview.html",{'items':items})
 
 @login_required
 def workgroups(request):
