@@ -103,47 +103,47 @@ class ManagedObjectVisibility(object):
             state=self.ra.locked_state
             )
 
-        d = date(1999,01,01)
+        d = date(1999,1,1)
         self.assertEqual(self.item.check_is_public(when=d),False)
         self.assertEqual(self.item.check_is_locked(when=d),False)
         self.assertEqual(self.item.current_statuses(when=d),[])
 
-        d = date(2000,01,01)
+        d = date(2000,1,1)
         self.assertEqual(self.item.check_is_public(when=d),False)
         self.assertEqual(self.item.check_is_locked(when=d),False)
         self.assertEqual(self.item.current_statuses(when=d),[s1])
 
-        d = date(2005,01,01)
+        d = date(2005,1,1)
         self.assertEqual(self.item.check_is_public(when=d),True)
         self.assertEqual(self.item.check_is_locked(when=d),True)
         self.assertEqual(self.item.current_statuses(when=d),[s2])
 
-        d = date(2005,06,29)
+        d = date(2005,6,29)
         self.assertEqual(self.item.check_is_public(when=d),True)
         self.assertEqual(self.item.check_is_locked(when=d),True)
         self.assertEqual(self.item.current_statuses(when=d),[s2])
 
-        d = date(2005,06,30)
+        d = date(2005,6,30)
         self.assertEqual(self.item.check_is_public(when=d),False)
         self.assertEqual(self.item.check_is_locked(when=d),True)
         self.assertEqual(self.item.current_statuses(when=d),[s1])
 
-        d = date(2005,07,01)
+        d = date(2005,7,1)
         self.assertEqual(self.item.check_is_public(when=d),True)
         self.assertEqual(self.item.check_is_locked(when=d),True)
         self.assertEqual(self.item.current_statuses(when=d),[s3])
 
-        d = date(2006,02,01)
+        d = date(2006,2,1)
         self.assertEqual(self.item.check_is_public(when=d),False)
         self.assertEqual(self.item.check_is_locked(when=d),True)
         self.assertEqual(self.item.current_statuses(when=d),[s4])
 
-        d = date(2006,03,01)
+        d = date(2006,3,1)
         self.assertEqual(self.item.check_is_public(when=d),True)
         self.assertEqual(self.item.check_is_locked(when=d),True)
         self.assertEqual(self.item.current_statuses(when=d),[s5])
 
-        d = date(2006,08,01)
+        d = date(2006,8,1)
         self.assertEqual(self.item.check_is_public(when=d),False)
         self.assertEqual(self.item.check_is_locked(when=d),True)
         self.assertEqual(self.item.current_statuses(when=d),[s4])
@@ -153,7 +153,7 @@ class ManagedObjectVisibility(object):
         self.assertEqual(self.item.check_is_locked(when=d),True)
         self.assertEqual(self.item.current_statuses(when=d),[s4])
 
-        d = date(2006,11,01)
+        d = date(2006,11,1)
         self.assertEqual(self.item.check_is_public(when=d),True)
         self.assertEqual(self.item.check_is_locked(when=d),True)
         self.assertEqual(self.item.current_statuses(when=d),[s6])
@@ -163,7 +163,7 @@ class ManagedObjectVisibility(object):
         self.assertEqual(self.item.check_is_locked(when=d),True)
         self.assertEqual(self.item.current_statuses(when=d),[s6])
 
-        d = date(2008,08,01)
+        d = date(2008,8,1)
         self.assertEqual(self.item.check_is_public(when=d),True)
         self.assertEqual(self.item.check_is_locked(when=d),True)
         self.assertEqual(self.item.current_statuses(when=d),[s3])
