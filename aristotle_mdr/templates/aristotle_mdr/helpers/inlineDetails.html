@@ -3,7 +3,7 @@
     {% include "aristotle_mdr/helpers/itemLink.html" %}
     {% endif %}
 <div class="attr"><small>Statuses:
-    {% for s in item.statuses.all %}
+    {% for s in item.statuses=item.current_statuses %}
         [{{ s.registrationAuthority }}: {{ s.state_name }}]
     {% empty %}
     <em>Unregistered</em>
