@@ -21,7 +21,16 @@ class RegistrationAuthoritySelect(forms.Select):
     def render(self, name, value, attrs=None, choices=()):
         if value is not None:
             attrs['disabled']='disabled'
-        return super(RegistrationAuthoritySelect, self).render(name, value, attrs, choices)
+            _id = attrs.get('id')
+            # Insert a hidden field with the same name as 'disabled' fields aren't submitted.
+            # http://stackoverflow.com/questions/368813/
+            hidden_input_with_value = '<input type="hidden" id="%s" name="%s" value="%s" />'%(_id,name,value)
+            attrs['id'] = _id+"_disabled"
+            name = name+"_disabled"
+            rendered = super(RegistrationAuthoritySelect, self).render(name, value, attrs, choices)
+            return mark_safe(rendered+hidden_input_with_value)
+        else:
+            return super(RegistrationAuthoritySelect, self).render(name, value, attrs, choices)
 
 class BootstrapChoiceInput(ChoiceInput):
     input_type = 'radio'

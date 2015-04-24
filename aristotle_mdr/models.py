@@ -184,9 +184,9 @@ class RegistrationAuthority(registryGroup):
             self.retired
         ]
 
-        unlocked = [(STATES[i],descriptions[i]) for i in self.unlocked_states]
-        locked = [(STATES[i],descriptions[i]) for i in self.locked_states]
-        public = [(STATES[i],descriptions[i]) for i in self.public_states]
+        unlocked = [(i,STATES[i],descriptions[i]) for i in self.unlocked_states]
+        locked = [(i,STATES[i],descriptions[i]) for i in self.locked_states]
+        public = [(i,STATES[i],descriptions[i]) for i in self.public_states]
 
         return (('unlocked',unlocked),('locked',locked),('public',public))
 
@@ -564,9 +564,13 @@ class _concept(baseAristotleObject):
             statuses = self.statuses.filter(registrationAuthority__in=self.workgroup.registrationAuthorities.all())
         elif  self.workgroup.ownership == WORKGROUP_OWNERSHIP.registry:
             statuses = self.statuses.all()
+
+        statuses = self.current_statuses(qs=statuses)
+
         return True in [s.state >= s.registrationAuthority.public_state for s in statuses]
 
     def is_public(self):
+        return self.check_is_public()
         return self._is_public
     is_public.boolean = True
     is_public.short_description = 'Public'
@@ -580,6 +584,7 @@ class _concept(baseAristotleObject):
             statuses = self.statuses.filter(registrationAuthority__in=self.workgroup.registrationAuthorities.all())
         elif  self.workgroup.ownership == WORKGROUP_OWNERSHIP.registry:
             statuses = self.statuses.all()
+        statuses = self.current_statuses(qs=statuses)
         return True in [s.state >= s.registrationAuthority.locked_state for s in statuses]
 
     def is_locked(self):
@@ -592,6 +597,23 @@ class _concept(baseAristotleObject):
         self._is_public = self.check_is_public()
         self._is_locked = self.check_is_locked()
         self.save()
+
+    def current_statuses(self,qs=None):
+        if qs is None:
+            qs = self.statuses.all()
+        registered_before_now = Q(registrationDate__lte=timezone.now())
+        registation_still_valid = Q(until_date__gte=timezone.now()) | Q(until_date__isnull=True)
+
+        states = qs.filter(registered_before_now and registation_still_valid).order_by("-registrationDate")
+
+        current=[]
+        seen_ras = []
+        for s in states:
+            ra = s.registrationAuthority
+            if ra not in seen_ras:
+                current.append(s)
+                seen_ras.append(ra)
+        return current
 
 class concept(_concept):
     """
@@ -630,25 +652,17 @@ class concept(_concept):
 class Status(TimeStampedModel):
     concept = models.ForeignKey(_concept,related_name="statuses")
     registrationAuthority = models.ForeignKey(RegistrationAuthority)
-    changeDetails = models.CharField(max_length=512,blank=True,null=True)
+    changeDetails = models.TextField(blank=True,null=True)
     state = models.IntegerField(choices=STATES, default=STATES.incomplete)
 
     inDictionary = models.BooleanField(default=True)
-    registrationDate = models.DateField()
+    #TODO: Below should be changed to 'effective_date' to match ISO IEC 11179-6 (Section 8.1.2.6.2.2)
+    registrationDate = models.DateField(_('Date registration effective'))
+    until_date = models.DateField(_('Date registration expires'),blank=True,null=True)
     tracker=FieldTracker()
 
     class Meta:
-        unique_together = ('concept', 'registrationAuthority',)
         verbose_name_plural = "Statuses"
-
-    def unique_error_message(self, model_class, unique_check):
-        if model_class == type(self) and unique_check == ('concept', 'registrationAuthority',):
-            return _('This Object %(obj)s already has a status in Registration Authority "%(ra)s". Please update the exisiting status field instead of creating a new one.')%\
-                    {'obj': self.concept,
-                      'ra': self.registrationAuthority.name
-                    }
-        else:
-            return super(Status, self).unique_error_message(model_class, unique_check)
 
     @property
     def state_name(self):

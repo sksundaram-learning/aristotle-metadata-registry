@@ -16,14 +16,23 @@
     {% if statuses and item %}
     <li class="viewHistory"><strong><a href="{% url 'aristotle:registrationHistory' item.id %}">{% trans 'View registration history'%}</a></strong></li>
     {% endif %}
-    {% for status in statuses.all %}
-    <li>
-        <a href="{% url 'aristotle:registrationAuthority' status.registrationAuthority.id %}">{{ status.registrationAuthority }}</a>
-        : {% trans status.state_name %} on {{ status.registrationDate }}
-        </li>
-    {% empty %}
-        <li><em>{% trans 'Not registered' %}</em>
-        </li>
-    {% endfor %}
+    {% if statuses.all %}
+        {% for status in statuses.all %}
+        <li>
+            <a href="{% url 'aristotle:registrationAuthority' status.registrationAuthority.id %}">{{ status.registrationAuthority }}</a>
+            : {% trans status.state_name %} on {{ status.registrationDate }}
+            </li>
+        {% endfor %}
+    {% else %}
+        {% for status in statuses %}
+        <li>
+            <a href="{% url 'aristotle:registrationAuthority' status.registrationAuthority.id %}">{{ status.registrationAuthority }}</a>
+            : {% trans status.state_name %} on {{ status.registrationDate }}
+            </li>
+        {% empty %}
+            <li><em>{% trans 'Not registered' %}</em>
+            </li>
+        {% endfor %}
+    {% endif %}
 </ul>
 {% if infoBox %}</dd>{% endif %}
