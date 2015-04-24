@@ -2,6 +2,8 @@ from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
 from django.utils import timezone
 
+import datetime
+
 import aristotle_mdr.models as models
 import aristotle_mdr.perms as perms
 from aristotle_mdr.utils import url_slugify_concept
@@ -38,6 +40,147 @@ class ManagedObjectVisibility(object):
 
         self.item = models._concept.objects.get(id=self.item.id) # Stupid cache
         self.assertEqual(self.item.is_public(),False)
+
+    def test_object_visibility_over_time(self):
+        date = datetime.date
+        s1 = models.Status.objects.create(
+            concept=self.item,
+            registrationAuthority=self.ra,
+            registrationDate=datetime.date(2000,1,1),
+            state=models.STATES.incomplete
+            )
+
+        # Overlaps s1 (it has no end)
+        s2 = models.Status.objects.create(
+            concept=self.item,
+            registrationAuthority=self.ra,
+            registrationDate=datetime.date(2005,1,1),
+            until_date=datetime.date(2005,06,29),
+            state=self.ra.public_state
+            )
+        # Deliberately miss 2005-06-30
+        # Overlaps s1 (no end)
+        s3 = models.Status.objects.create(
+            concept=self.item,
+            registrationAuthority=self.ra,
+            registrationDate=datetime.date(2005,7,1),
+            state=self.ra.public_state
+            )
+
+        # Overlaps s1 and s3 (no end)
+        s4 = models.Status.objects.create(
+            concept=self.item,
+            registrationAuthority=self.ra,
+            registrationDate=datetime.date(2006,1,1),
+            until_date=datetime.date(2006,12,30),
+            state=self.ra.locked_state
+            )
+
+        # Overlaps s1 and s3 (no end), completely contanied within s4
+        s5 = models.Status.objects.create(
+            concept=self.item,
+            registrationAuthority=self.ra,
+            registrationDate=datetime.date(2006,3,1),
+            until_date=datetime.date(2006,7,30),
+            state=self.ra.public_state
+            )
+
+        # Overlaps s1 and s3 (no end), overlaps s4 in 2006-11
+        s6 = models.Status.objects.create(
+            concept=self.item,
+            registrationAuthority=self.ra,
+            registrationDate=datetime.date(2006,11,1),
+            until_date=datetime.date(2008,7,30),
+            state=self.ra.public_state
+            )
+
+        # Overlaps s1 and s3
+        the_future = timezone.now() + datetime.timedelta(days=100)
+        s7 = models.Status.objects.create(
+            concept=self.item,
+            registrationAuthority=self.ra,
+            registrationDate=the_future,
+            state=self.ra.locked_state
+            )
+
+        d = when=date(1999,01,01)
+		self.assertEqual(self.item.check_is_public(when=d),False)
+        self.assertEqual(self.item.check_is_locked(when=d),False)
+        self.assertEqual(self.item.current_statuses(when=d),[])
+
+		d = date(2000,01,01)
+        self.assertEqual(self.item.check_is_public(when=d),False)
+        self.assertEqual(self.item.check_is_locked(when=d),False)
+        self.assertEqual(self.item.current_statuses(when=d),[s1])
+
+		d = date(2005,01,01)
+        self.assertEqual(self.item.check_is_public(when=d),True)
+        self.assertEqual(self.item.check_is_locked(when=d),True)
+        self.assertEqual(self.item.current_statuses(when=d),[s2])
+
+		d = date(2005,06,29)
+        self.assertEqual(self.item.check_is_public(when=d),True)
+        self.assertEqual(self.item.check_is_locked(when=d),True)
+        self.assertEqual(self.item.current_statuses(when=d),[s2])
+
+		d = date(2005,06,30)
+        self.assertEqual(self.item.check_is_public(when=d),False)
+        self.assertEqual(self.item.check_is_locked(when=d),True)
+        self.assertEqual(self.item.current_statuses(when=d),[s1])
+
+		d = date(2005,07,01)
+        self.assertEqual(self.item.check_is_public(when=d),True)
+        self.assertEqual(self.item.check_is_locked(when=d),True)
+        self.assertEqual(self.item.current_statuses(when=d),[s3])
+
+		d = date(2006,02,01)
+        self.assertEqual(self.item.check_is_public(when=d),False)
+        self.assertEqual(self.item.check_is_locked(when=d),True)
+        self.assertEqual(self.item.current_statuses(when=d),[s4])
+
+		d = date(2006,03,01)
+        self.assertEqual(self.item.check_is_public(when=d),True)
+        self.assertEqual(self.item.check_is_locked(when=d),True)
+        self.assertEqual(self.item.current_statuses(when=d),[s5])
+
+		d = date(2006,08,01)
+        self.assertEqual(self.item.check_is_public(when=d),False)
+        self.assertEqual(self.item.check_is_locked(when=d),True)
+        self.assertEqual(self.item.current_statuses(when=d),[s4])
+
+		d = date(2006,10,31)
+        self.assertEqual(self.item.check_is_public(when=d),False)
+        self.assertEqual(self.item.check_is_locked(when=d),True)
+        self.assertEqual(self.item.current_statuses(when=d),[s4])
+
+		d = date(2006,11,01)
+        self.assertEqual(self.item.check_is_public(when=d),True)
+        self.assertEqual(self.item.check_is_locked(when=d),True)
+        self.assertEqual(self.item.current_statuses(when=d),[s6])
+
+		d = date(2008,07,30)
+        self.assertEqual(self.item.check_is_public(when=d),True)
+        self.assertEqual(self.item.check_is_locked(when=d),True)
+        self.assertEqual(self.item.current_statuses(when=d),[s6])
+
+		d = date(2008,08,01)
+        self.assertEqual(self.item.check_is_public(when=d),True)
+        self.assertEqual(self.item.check_is_locked(when=d),True)
+        self.assertEqual(self.item.current_statuses(when=d),[s3])
+
+        self.assertEqual(self.item.check_is_public(),True)
+        self.assertEqual(self.item.check_is_locked(),True)
+        self.assertEqual(self.item.current_statuses(),[s3])
+
+		d = the_future - datetime.timedelta(days=1)
+        self.assertEqual(self.item.check_is_public(when=d),True)
+        self.assertEqual(self.item.check_is_locked(when=d),True)
+        self.assertEqual(self.item.current_statuses(when=d),[s3])
+
+		d = the_future + datetime.timedelta(days=1)
+        self.assertEqual(self.item.check_is_public(when=d),False)
+        self.assertEqual(self.item.check_is_locked(when=d),True)
+        self.assertEqual(self.item.current_statuses(when=d),[s7])
 
     def test_object_is_public_after_ra_state_changes(self):
         self.assertEqual(self.item.is_public(),False)

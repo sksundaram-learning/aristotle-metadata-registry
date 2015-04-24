@@ -555,18 +555,16 @@ class _concept(baseAristotleObject):
     def is_retired(self):
         return all(STATES.retired == status.state for status in self.statuses.all())and self.statuses.count() > 0
 
-    def check_is_public(self):
+    def check_is_public(self,when=timezone.now()):
         """
             A concept is public if any registration authority that a Registration Authority of the workgroup
             has advanced it to a public state in that RA.
         """
         if self.workgroup.ownership == WORKGROUP_OWNERSHIP.authority:
             statuses = self.statuses.filter(registrationAuthority__in=self.workgroup.registrationAuthorities.all())
-        elif  self.workgroup.ownership == WORKGROUP_OWNERSHIP.registry:
+        elif self.workgroup.ownership == WORKGROUP_OWNERSHIP.registry:
             statuses = self.statuses.all()
-
-        statuses = self.current_statuses(qs=statuses)
-
+        statuses = self.current_statuses(qs=statuses,when=when)
         return True in [s.state >= s.registrationAuthority.public_state for s in statuses]
 
     def is_public(self):
@@ -575,16 +573,16 @@ class _concept(baseAristotleObject):
     is_public.boolean = True
     is_public.short_description = 'Public'
 
-    def check_is_locked(self):
+    def check_is_locked(self,when=timezone.now()):
         """
             A concept is locked if any registration authority that a Registration Authority of the workgroup
             has advanced it to a locked state in that RA.
         """
         if self.workgroup.ownership == WORKGROUP_OWNERSHIP.authority:
             statuses = self.statuses.filter(registrationAuthority__in=self.workgroup.registrationAuthorities.all())
-        elif  self.workgroup.ownership == WORKGROUP_OWNERSHIP.registry:
+        elif self.workgroup.ownership == WORKGROUP_OWNERSHIP.registry:
             statuses = self.statuses.all()
-        statuses = self.current_statuses(qs=statuses)
+        statuses = self.current_statuses(qs=statuses,when=when)
         return True in [s.state >= s.registrationAuthority.locked_state for s in statuses]
 
     def is_locked(self):
@@ -598,11 +596,11 @@ class _concept(baseAristotleObject):
         self._is_locked = self.check_is_locked()
         self.save()
 
-    def current_statuses(self,qs=None):
+    def current_statuses(self,qs=None,when=timezone.now()):
         if qs is None:
             qs = self.statuses.all()
-        registered_before_now = Q(registrationDate__lte=timezone.now())
-        registation_still_valid = Q(until_date__gte=timezone.now()) | Q(until_date__isnull=True)
+        registered_before_now = Q(registrationDate__lte=when)
+        registation_still_valid = Q(until_date__gte=when) | Q(until_date__isnull=True)
 
         states = qs.filter(registered_before_now and registation_still_valid).order_by("-registrationDate")
 
