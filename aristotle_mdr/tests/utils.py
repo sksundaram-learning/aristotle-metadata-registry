@@ -8,6 +8,8 @@ import aristotle_mdr.models as models
 import aristotle_mdr.perms as perms
 from aristotle_mdr.utils import url_slugify_concept
 
+from django_tools.unittest_utils.BrowserDebug import debug_response
+
 # Since all managed objects have the same rules, these can be used to cover everything
 # This isn't an actual TestCase, we'll just pretend it is
 class ManagedObjectVisibility(object):
@@ -467,3 +469,21 @@ class LoggedInViewPages(object):
         response = self.client.post(reverse('django.contrib.auth.views.login'), {'username': 'reggie', 'password': 'registrar'})
         self.assertEqual(response.status_code,302)
         self.logout()
+
+    # These are lovingly lifted from django-reversion-compare
+    # https://github.com/jedie/django-reversion-compare/blob/master/tests/test_utils/test_cases.py
+    def assertContainsHtml(self, response, *args):
+        for html in args:
+            try:
+                self.assertContains(response, html, html=True)
+            except AssertionError as e:
+                debug_response(response, msg="%s" % e) # from django-tools
+                raise
+
+    def assertNotContainsHtml(self, response, *args):
+        for html in args:
+            try:
+                self.assertNotContains(response, html, html=True)
+            except AssertionError as e:
+                debug_response(response, msg="%s" % e) # from django-tools
+                raise
