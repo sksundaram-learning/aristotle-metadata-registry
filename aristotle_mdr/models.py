@@ -190,7 +190,7 @@ class RegistrationAuthority(registryGroup):
 
         return (('unlocked',unlocked),('locked',locked),('public',public))
 
-    def cascaded_register(self,item,state,user,**kwargs):
+    def cascaded_register(self,item,state,user,*args,**kwargs):
         revision_message = _("Cascade registration of item '%(name)s' (id:%(iid)s)\n") % {'name':item.name, 'iid': item.id}
         revision_message = revision_message + kwargs.get('changeDetails',"")
         seen_items = {'success':[],'failed':[]}
@@ -200,25 +200,25 @@ class RegistrationAuthority(registryGroup):
             reversion.set_comment(revision_message)
 
             for child_item in [item]+item.registry_cascade_items:
-                registered = self._register(item,state,user,**kwargs)
+                registered = self._register(child_item,state,user,*args,**kwargs)
                 if registered:
                     seen_items['success'] = seen_items['success'] + [item]
                 else:
                     seen_items['failed'] = seen_items['failed'] + [item]
         return seen_items
 
-    def register(self,item,state,user,**kwargs):
+    def register(self,item,state,user,*args,**kwargs):
         revision_message = kwargs.get('changeDetails',"")
         with transaction.atomic(), reversion.create_revision():
             reversion.set_user(user)
             reversion.set_comment(revision_message)
-            registered = self._register(item,state,user,**kwargs)
+            registered = self._register(item,state,user,*args,**kwargs)
         if registered:
             return {'success':[item],'failed':[]}
         else:
             return {'success':[],'failed':[item]}
 
-    def _register(self,item,state,user,**kwargs):
+    def _register(self,item,state,user,*args,**kwargs):
         changeDetails=kwargs.get('changeDetails',"")
         registrationDate=kwargs.get('registrationDate',timezone.now().date())
         until_date=kwargs.get('until_date',None)
@@ -944,7 +944,7 @@ def defaultData():
         name="ISO/IEC 11404 DataTypes",
         description="A collection of datatypes as described in the ISO/IEC 11404 Datatypes standard",
         workgroup=iso_wg)
-    iso.register(iso_package,STATES.standard,system,timezone.now())
+    iso.register(iso_package,STATES.standard,system,registrationDate=timezone.now())
     dataTypes = [
        ("Boolean","A binary value expressed using a string (e.g. true or false)."),
        ("Currency","A numeric value expressed using a particular medium of exchange."),
