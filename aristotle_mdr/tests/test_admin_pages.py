@@ -232,7 +232,8 @@ class AdminPageForConcept(utils.LoggedInViewPages):
                 reverse("admin:%s_%s_change"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=[self.item1.pk]),
                 updated_item
                 )
-        self.assertEqual(response.status_code,200)
+
+        self.assertEqual(response.status_code,302)
 
         self.item1 = self.itemType.objects.get(pk=self.item1.pk)
         self.assertEqual(self.item1.name,updated_name)

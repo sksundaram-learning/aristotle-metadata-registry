@@ -133,7 +133,6 @@ class ManagedObjectVisibility(object):
         self.assertEqual(self.item.current_statuses(when=d),[s2])
 
         d = date(2005,6,30)
-        print(self.item.current_statuses(when=d))
         self.assertEqual(self.item.check_is_public(when=d),False)
         self.assertEqual(self.item.check_is_locked(when=d),False)
         self.assertEqual(self.item.current_statuses(when=d),[s1])
