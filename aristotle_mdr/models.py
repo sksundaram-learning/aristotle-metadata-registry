@@ -568,7 +568,6 @@ class _concept(baseAristotleObject):
         return True in [s.state >= s.registrationAuthority.public_state for s in statuses]
 
     def is_public(self):
-        return self.check_is_public()
         return self._is_public
     is_public.boolean = True
     is_public.short_description = 'Public'
@@ -602,7 +601,7 @@ class _concept(baseAristotleObject):
         registered_before_now = Q(registrationDate__lte=when)
         registation_still_valid = Q(until_date__gte=when) | Q(until_date__isnull=True)
 
-        states = qs.filter(registered_before_now and registation_still_valid).order_by("-registrationDate")
+        states = qs.filter(registered_before_now & registation_still_valid).order_by("-registrationDate")
 
         current=[]
         seen_ras = []
@@ -652,7 +651,7 @@ class Status(TimeStampedModel):
     registrationAuthority = models.ForeignKey(RegistrationAuthority)
     changeDetails = models.TextField(blank=True,null=True)
     state = models.IntegerField(choices=STATES, default=STATES.incomplete)
-
+    # TODO: What are we going to do with 'inDictionary'?
     inDictionary = models.BooleanField(default=True)
     #TODO: Below should be changed to 'effective_date' to match ISO IEC 11179-6 (Section 8.1.2.6.2.2)
     registrationDate = models.DateField(_('Date registration effective'))
@@ -667,10 +666,12 @@ class Status(TimeStampedModel):
         return STATES[self.state]
 
     def __unicode__(self):
-        return "{obj} is {stat} for {ra}".format(
+        return "{obj} is {stat} for {ra} on {date} - {desc}".format(
                 obj = self.concept.name,
                 stat=self.state_name,
-                ra=self.registrationAuthority
+                ra=self.registrationAuthority,
+                desc=self.changeDetails,
+                date=self.registrationDate
             )
 
 class ObjectClass(concept):

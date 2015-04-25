@@ -47,7 +47,8 @@ class ManagedObjectVisibility(object):
             concept=self.item,
             registrationAuthority=self.ra,
             registrationDate=datetime.date(2000,1,1),
-            state=models.STATES.incomplete
+            state=models.STATES.incomplete,
+            changeDetails="s1",
             )
 
         # Overlaps s1 (it has no end)
@@ -56,7 +57,8 @@ class ManagedObjectVisibility(object):
             registrationAuthority=self.ra,
             registrationDate=datetime.date(2005,1,1),
             until_date=datetime.date(2005,06,29),
-            state=self.ra.public_state
+            state=self.ra.public_state,
+            changeDetails="s2",
             )
         # Deliberately miss 2005-06-30
         # Overlaps s1 (no end)
@@ -64,7 +66,8 @@ class ManagedObjectVisibility(object):
             concept=self.item,
             registrationAuthority=self.ra,
             registrationDate=datetime.date(2005,7,1),
-            state=self.ra.public_state
+            state=self.ra.public_state,
+            changeDetails="s3",
             )
 
         # Overlaps s1 and s3 (no end)
@@ -73,7 +76,8 @@ class ManagedObjectVisibility(object):
             registrationAuthority=self.ra,
             registrationDate=datetime.date(2006,1,1),
             until_date=datetime.date(2006,12,30),
-            state=self.ra.locked_state
+            state=self.ra.locked_state,
+            changeDetails="s4",
             )
 
         # Overlaps s1 and s3 (no end), completely contanied within s4
@@ -82,7 +86,8 @@ class ManagedObjectVisibility(object):
             registrationAuthority=self.ra,
             registrationDate=datetime.date(2006,3,1),
             until_date=datetime.date(2006,7,30),
-            state=self.ra.public_state
+            state=self.ra.public_state,
+            changeDetails="s5",
             )
 
         # Overlaps s1 and s3 (no end), overlaps s4 in 2006-11
@@ -91,7 +96,8 @@ class ManagedObjectVisibility(object):
             registrationAuthority=self.ra,
             registrationDate=datetime.date(2006,11,1),
             until_date=datetime.date(2008,7,30),
-            state=self.ra.public_state
+            state=self.ra.public_state,
+            changeDetails="s6",
             )
 
         # Overlaps s1 and s3
@@ -100,7 +106,8 @@ class ManagedObjectVisibility(object):
             concept=self.item,
             registrationAuthority=self.ra,
             registrationDate=the_future,
-            state=self.ra.locked_state
+            state=self.ra.locked_state,
+            changeDetails="s7",
             )
 
         d = date(1999,1,1)
@@ -124,8 +131,9 @@ class ManagedObjectVisibility(object):
         self.assertEqual(self.item.current_statuses(when=d),[s2])
 
         d = date(2005,6,30)
+        print(self.item.current_statuses(when=d))
         self.assertEqual(self.item.check_is_public(when=d),False)
-        self.assertEqual(self.item.check_is_locked(when=d),True)
+        self.assertEqual(self.item.check_is_locked(when=d),False)
         self.assertEqual(self.item.current_statuses(when=d),[s1])
 
         d = date(2005,7,1)
