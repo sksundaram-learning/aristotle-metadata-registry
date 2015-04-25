@@ -626,7 +626,7 @@ class _concept(baseAristotleObject):
         registered_before_now = Q(registrationDate__lte=when)
         registation_still_valid = Q(until_date__gte=when) | Q(until_date__isnull=True)
 
-        states = qs.filter(registered_before_now & registation_still_valid).order_by("-registrationDate")
+        states = qs.filter(registered_before_now & registation_still_valid).order_by("-registrationDate","-created")
 
         current=[]
         seen_ras = []
@@ -685,6 +685,7 @@ class Status(TimeStampedModel):
 
     class Meta:
         verbose_name_plural = "Statuses"
+
 
     @property
     def state_name(self):
