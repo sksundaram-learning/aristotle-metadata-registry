@@ -100,6 +100,40 @@ class AdminPageForConcept(utils.LoggedInViewPages):
     def create_items(self):
         self.item1 = self.itemType.objects.create(name="admin_page_test_oc",description=" ",workgroup=self.wg1,**self.create_defaults)
 
+    def test_registration_authority_inline_not_in_editor_admin_page(self):
+        self.login_editor()
+
+        response = self.client.get(reverse("admin:%s_%s_change"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=[self.item1.pk]))
+        self.assertEqual(response.status_code,200)
+
+        hidden_input='<input type="hidden" id="id_statuses-0-registrationAuthority" name="statuses-0-registrationAuthority" value="%s" />'%(self.ra.pk)
+        self.assertNotContainsHtml(response,hidden_input)
+
+        register = self.ra.register(self.item1,models.STATES.incomplete,self.su)
+        self.assertEqual(register,{'success':[self.item1],'failed':[]})
+        self.assertEqual(self.item1.current_statuses()[0].state,models.STATES.incomplete)
+
+        response = self.client.get(reverse("admin:%s_%s_change"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=[self.item1.pk]))
+        self.assertEqual(response.status_code,200)
+        self.assertNotContainsHtml(response,hidden_input)
+
+    def test_registration_authority_inline_inactive(self):
+        self.login_superuser()
+
+        response = self.client.get(reverse("admin:%s_%s_change"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=[self.item1.pk]))
+        self.assertEqual(response.status_code,200)
+
+        hidden_input='<input type="hidden" id="id_statuses-0-registrationAuthority" name="statuses-0-registrationAuthority" value="%s" />'%(self.ra.pk)
+        self.assertNotContainsHtml(response,hidden_input)
+
+        register = self.ra.register(self.item1,models.STATES.incomplete,self.su)
+        self.assertEqual(register,{'success':[self.item1],'failed':[]})
+        self.assertEqual(self.item1.current_statuses()[0].state,models.STATES.incomplete)
+
+        response = self.client.get(reverse("admin:%s_%s_change"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=[self.item1.pk]))
+        self.assertEqual(response.status_code,200)
+        self.assertContainsHtml(response,hidden_input)
+
     def test_editor_make_item(self):
         self.login_editor()
 
@@ -198,6 +232,9 @@ class AdminPageForConcept(utils.LoggedInViewPages):
                 reverse("admin:%s_%s_change"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=[self.item1.pk]),
                 updated_item
                 )
+
+        self.assertEqual(response.status_code,302)
+
         self.item1 = self.itemType.objects.get(pk=self.item1.pk)
         self.assertEqual(self.item1.name,updated_name)
 
