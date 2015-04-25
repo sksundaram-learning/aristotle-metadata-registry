@@ -401,10 +401,17 @@ def changeStatus(request, iid):
             regDate = form.cleaned_data['registrationDate']
             cascade = form.cleaned_data['cascadeRegistration']
             changeDetails = form.cleaned_data['changeDetails']
-            if regDate is None:
-                regDate = timezone.now().date()
             for ra in ras:
-                ra.register(item,state,request.user,regDate,cascade,changeDetails)
+                if cascade:
+                    register_method = ra.cascaded_register
+                else:
+                    register_method = ra.register
+
+                register_method(item,state,request.user,
+                        changeDetails=changeDetails,
+                        registrationDate=regDate,
+                    )
+                # TODO: notification and message on success/failure
             return HttpResponseRedirect(url_slugify_concept(item))
     else:
         form = MDRForms.ChangeStatusForm(user=request.user)

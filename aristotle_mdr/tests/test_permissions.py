@@ -371,7 +371,7 @@ class RegistryCascadeTest(TestCase):
         self.assertEqual(self.dec.statuses.count(),1)
 
         state=models.STATES.standard
-        self.ra.register(self.dec,state,user,cascade=True)
+        self.ra.cascaded_register(self.dec,state,user)
         self.assertEqual(self.dec.statuses.count(),1)
         self.assertEqual(self.oc.statuses.count(),1)
         self.assertEqual(self.pr.statuses.count(),1)
@@ -420,7 +420,7 @@ class RegistryCascadeTest(TestCase):
         self.assertEqual(self.de.statuses.count(),1)
 
         state=models.STATES.standard
-        self.ra.register(self.de,state,user,cascade=True)
+        self.ra.cascaded_register(self.de,state,user)
         self.assertEqual(self.de.statuses.count(),1)
         self.assertEqual(self.dec.statuses.count(),1)
         self.assertEqual(self.vd.statuses.count(),1)

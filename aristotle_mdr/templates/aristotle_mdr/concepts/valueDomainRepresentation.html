@@ -112,11 +112,6 @@ So we've split this out into its own template.
         </tbody>
 
     </table>
-    <div id="value_domain_modal" class="modal fade">
-      <div class="modal-dialog">
-          <div class="modal-content">
-          </div><!-- /.modal-content -->
-        </div><!-- /.modal-dialog -->
-    </div><!-- /.modal -->
+    {% bootstrap_modal "value_domain_modal" size='lg' %}
 {% endif %}
 </div>

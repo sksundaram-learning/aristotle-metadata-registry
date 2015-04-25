@@ -2,21 +2,21 @@ from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import absolute_import
 
-from django.contrib.auth.models import User, Group, Permission
-from django.contrib.contenttypes.models import ContentType
-from django.core.cache import cache
-from django.core.exceptions import ValidationError
+from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
-from django.db import models
+from django.db import models, transaction
 from django.db.models import Q
 from django.db.models.signals import post_save,m2m_changed
+from django.dispatch import receiver
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
+
 from model_utils.managers import InheritanceManager, InheritanceQuerySet
 from model_utils.models import TimeStampedModel
 from model_utils import Choices, FieldTracker
 from notifications import notify
-from django.dispatch import receiver
+
+import reversion
 
 import datetime
 from ckeditor.fields import RichTextField
@@ -190,29 +190,53 @@ class RegistrationAuthority(registryGroup):
 
         return (('unlocked',unlocked),('locked',locked),('public',public))
 
-    def register(self,item,state,user,registrationDate=timezone.now(),cascade=False,changeDetails=""):
+    def cascaded_register(self,item,state,user,**kwargs):
+        revision_message = _("Cascade registration of item '%(name)s' (id:%(iid)s)\n") % {'name':item.name, 'iid': item.id}
+        revision_message = revision_message + kwargs.get('changeDetails',"")
+        seen_items = {'success':[],'failed':[]}
+
+        with transaction.atomic(), reversion.create_revision():
+            reversion.set_user(user)
+            reversion.set_comment(revision_message)
+
+            for child_item in [item]+item.registry_cascade_items:
+                registered = self._register(item,state,user,**kwargs)
+                if registered:
+                    seen_items['success'] = seen_items['success'] + [item]
+                else:
+                    seen_items['failed'] = seen_items['failed'] + [item]
+        return seen_items
+
+    def register(self,item,state,user,**kwargs):
+        revision_message = kwargs.get('changeDetails',"")
+        with transaction.atomic(), reversion.create_revision():
+            reversion.set_user(user)
+            reversion.set_comment(revision_message)
+            registered = self._register(item,state,user,**kwargs)
+        if registered:
+            return {'success':[item],'failed':[]}
+        else:
+            return {'success':[],'failed':[item]}
+
+    def _register(self,item,state,user,**kwargs):
+        changeDetails=kwargs.get('changeDetails',"")
+        registrationDate=kwargs.get('registrationDate',timezone.now().date())
+        until_date=kwargs.get('until_date',None)
+
         if not perms.user_can_change_status(user,item):
-            # Should raise something here instead of quietly failing
-            return None
-        reg,created = Status.objects.get_or_create(
+            # Return a failure as this item isn't allowed
+            return False
+
+        Status.objects.create(
                 concept=item,
                 registrationAuthority=self,
-                defaults ={
-                    "registrationDate" : registrationDate,
-                    "state" : state,
-                    "changeDetails":changeDetails
-                    }
+                registrationDate=registrationDate,
+                state=state,
+                changeDetails=changeDetails,
+                until_date=until_date
                 )
-        if not created:
-            reg.changeDetails = changeDetails
-            reg.state = state
-            reg.registrationDate = registrationDate
-            reg.save()
-        if cascade:
-            for i in item.registry_cascade_items:
-                if i is not None and perms.user_can_change_status(user,i):
-                   self.register(i,state,user,registrationDate=registrationDate,cascade=cascade,changeDetails=changeDetails)
-        return reg
+        return True
+
     def giveRoleToUser(self,role,user):
         if role == 'registrar':
             self.registrars.add(user)
@@ -536,10 +560,11 @@ class _concept(baseAristotleObject):
     def registry_cascade_items(self):
         """
         This returns the items that can be registered along with the this item.
-        If a subclass of _concept (eg. X) defines this method, then when an item
-        of class X is registered with `cascade=True` then that item, and item
-        with returned by this method will all recieve the same registration.
-        Reimplementations of this MUST return lists
+        If a subclass of _concept defines this method, then when an instance
+        of that class is registered using a cascading method then that instance,
+        all instances returned by this method will all recieve the same registration status.
+
+        Reimplementations of this MUST return iterables.
         """
         return []
 
@@ -786,7 +811,6 @@ class SupplementaryValue(AbstractValue):
     pass
 
 
-
 class DataElementConcept(concept):
     property_ = property #redefine in this context as we need 'property' for the 11179 terminology
     template = "aristotle_mdr/concepts/dataElementConcept.html"
@@ -806,7 +830,7 @@ class DataElement(concept):
 
     @property
     def registry_cascade_items(self):
-        return [self.dataElementConcept,self.valueDomain]
+        return [self.dataElementConcept,self.valueDomain]+self.dataElementConcept.registry_cascade_items
 
 
 class DataElementDerivation(concept):
