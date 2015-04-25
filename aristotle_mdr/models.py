@@ -220,13 +220,13 @@ class RegistrationAuthority(registryGroup):
 
     def _register(self,item,state,user,*args,**kwargs):
         changeDetails=kwargs.get('changeDetails',"")
-        registrationDate=kwargs.get('registrationDate',timezone.now().date())
+        # If registrationDate is None (like from a form), override it with todays date
+        registrationDate= kwargs.get('registrationDate',None) or timezone.now().date()
         until_date=kwargs.get('until_date',None)
 
         if not perms.user_can_change_status(user,item):
             # Return a failure as this item isn't allowed
             return False
-
         Status.objects.create(
                 concept=item,
                 registrationAuthority=self,
