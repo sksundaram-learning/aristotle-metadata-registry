@@ -14,7 +14,7 @@
     {{ item.description | safe }}
 </div>
 <div class="status">
-    {% include "aristotle_mdr/statuses.html" with statuses=item.statuses only %}
+    {% include "aristotle_mdr/statuses.html" with statuses=item.current_statuses only %}
 </div>
 <table id="supersedes">
     <tr>

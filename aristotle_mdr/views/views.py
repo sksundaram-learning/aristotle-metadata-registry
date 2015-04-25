@@ -209,13 +209,17 @@ def registrationHistory(request, iid):
         else:
             raise PermissionDenied
 
-    history = []
-    for s in item.statuses.all():
-        past = default_revision_manager.get_for_object(s)
-        history.append((s,past))
+    history = item.statuses.order_by("registrationAuthority","-registrationDate")
+    out = {}
+    for status in history:
+        if status.registrationAuthority in out.keys():
+            out[status.registrationAuthority].append(status)
+        else:
+            out[status.registrationAuthority] = [status]
+
     return render(request,"aristotle_mdr/registrationHistory.html",
             {'item':item,
-             'history': history
+             'history': out
                 }
             )
 
@@ -397,10 +401,17 @@ def changeStatus(request, iid):
             regDate = form.cleaned_data['registrationDate']
             cascade = form.cleaned_data['cascadeRegistration']
             changeDetails = form.cleaned_data['changeDetails']
-            if regDate is None:
-                regDate = timezone.now().date()
             for ra in ras:
-                ra.register(item,state,request.user,regDate,cascade,changeDetails)
+                if cascade:
+                    register_method = ra.cascaded_register
+                else:
+                    register_method = ra.register
+
+                register_method(item,state,request.user,
+                        changeDetails=changeDetails,
+                        registrationDate=regDate,
+                    )
+                # TODO: notification and message on success/failure
             return HttpResponseRedirect(url_slugify_concept(item))
     else:
         form = MDRForms.ChangeStatusForm(user=request.user)

@@ -2,21 +2,21 @@ from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import absolute_import
 
-from django.contrib.auth.models import User, Group, Permission
-from django.contrib.contenttypes.models import ContentType
-from django.core.cache import cache
-from django.core.exceptions import ValidationError
+from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
-from django.db import models
+from django.db import models, transaction
 from django.db.models import Q
 from django.db.models.signals import post_save,m2m_changed
+from django.dispatch import receiver
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
+
 from model_utils.managers import InheritanceManager, InheritanceQuerySet
 from model_utils.models import TimeStampedModel
 from model_utils import Choices, FieldTracker
 from notifications import notify
-from django.dispatch import receiver
+
+import reversion
 
 import datetime
 from ckeditor.fields import RichTextField
@@ -184,35 +184,59 @@ class RegistrationAuthority(registryGroup):
             self.retired
         ]
 
-        unlocked = [(STATES[i],descriptions[i]) for i in self.unlocked_states]
-        locked = [(STATES[i],descriptions[i]) for i in self.locked_states]
-        public = [(STATES[i],descriptions[i]) for i in self.public_states]
+        unlocked = [(i,STATES[i],descriptions[i]) for i in self.unlocked_states]
+        locked = [(i,STATES[i],descriptions[i]) for i in self.locked_states]
+        public = [(i,STATES[i],descriptions[i]) for i in self.public_states]
 
         return (('unlocked',unlocked),('locked',locked),('public',public))
 
-    def register(self,item,state,user,registrationDate=timezone.now(),cascade=False,changeDetails=""):
+    def cascaded_register(self,item,state,user,*args,**kwargs):
+        revision_message = _("Cascade registration of item '%(name)s' (id:%(iid)s)\n") % {'name':item.name, 'iid': item.id}
+        revision_message = revision_message + kwargs.get('changeDetails',"")
+        seen_items = {'success':[],'failed':[]}
+
+        with transaction.atomic(), reversion.create_revision():
+            reversion.set_user(user)
+            reversion.set_comment(revision_message)
+
+            for child_item in [item]+item.registry_cascade_items:
+                registered = self._register(child_item,state,user,*args,**kwargs)
+                if registered:
+                    seen_items['success'] = seen_items['success'] + [item]
+                else:
+                    seen_items['failed'] = seen_items['failed'] + [item]
+        return seen_items
+
+    def register(self,item,state,user,*args,**kwargs):
+        revision_message = kwargs.get('changeDetails',"")
+        with transaction.atomic(), reversion.create_revision():
+            reversion.set_user(user)
+            reversion.set_comment(revision_message)
+            registered = self._register(item,state,user,*args,**kwargs)
+        if registered:
+            return {'success':[item],'failed':[]}
+        else:
+            return {'success':[],'failed':[item]}
+
+    def _register(self,item,state,user,*args,**kwargs):
+        changeDetails=kwargs.get('changeDetails',"")
+        # If registrationDate is None (like from a form), override it with todays date
+        registrationDate= kwargs.get('registrationDate',None) or timezone.now().date()
+        until_date=kwargs.get('until_date',None)
+
         if not perms.user_can_change_status(user,item):
-            # Should raise something here instead of quietly failing
-            return None
-        reg,created = Status.objects.get_or_create(
+            # Return a failure as this item isn't allowed
+            return False
+        Status.objects.create(
                 concept=item,
                 registrationAuthority=self,
-                defaults ={
-                    "registrationDate" : registrationDate,
-                    "state" : state,
-                    "changeDetails":changeDetails
-                    }
+                registrationDate=registrationDate,
+                state=state,
+                changeDetails=changeDetails,
+                until_date=until_date
                 )
-        if not created:
-            reg.changeDetails = changeDetails
-            reg.state = state
-            reg.registrationDate = registrationDate
-            reg.save()
-        if cascade:
-            for i in item.registry_cascade_items:
-                if i is not None and perms.user_can_change_status(user,i):
-                   self.register(i,state,user,registrationDate=registrationDate,cascade=cascade,changeDetails=changeDetails)
-        return reg
+        return True
+
     def giveRoleToUser(self,role,user):
         if role == 'registrar':
             self.registrars.add(user)
@@ -536,10 +560,11 @@ class _concept(baseAristotleObject):
     def registry_cascade_items(self):
         """
         This returns the items that can be registered along with the this item.
-        If a subclass of _concept (eg. X) defines this method, then when an item
-        of class X is registered with `cascade=True` then that item, and item
-        with returned by this method will all recieve the same registration.
-        Reimplementations of this MUST return lists
+        If a subclass of _concept defines this method, then when an instance
+        of that class is registered using a cascading method then that instance,
+        all instances returned by this method will all recieve the same registration status.
+
+        Reimplementations of this MUST return iterables.
         """
         return []
 
@@ -555,15 +580,16 @@ class _concept(baseAristotleObject):
     def is_retired(self):
         return all(STATES.retired == status.state for status in self.statuses.all())and self.statuses.count() > 0
 
-    def check_is_public(self):
+    def check_is_public(self,when=timezone.now()):
         """
             A concept is public if any registration authority that a Registration Authority of the workgroup
             has advanced it to a public state in that RA.
         """
         if self.workgroup.ownership == WORKGROUP_OWNERSHIP.authority:
             statuses = self.statuses.filter(registrationAuthority__in=self.workgroup.registrationAuthorities.all())
-        elif  self.workgroup.ownership == WORKGROUP_OWNERSHIP.registry:
+        elif self.workgroup.ownership == WORKGROUP_OWNERSHIP.registry:
             statuses = self.statuses.all()
+        statuses = self.current_statuses(qs=statuses,when=when)
         return True in [s.state >= s.registrationAuthority.public_state for s in statuses]
 
     def is_public(self):
@@ -571,15 +597,16 @@ class _concept(baseAristotleObject):
     is_public.boolean = True
     is_public.short_description = 'Public'
 
-    def check_is_locked(self):
+    def check_is_locked(self,when=timezone.now()):
         """
             A concept is locked if any registration authority that a Registration Authority of the workgroup
             has advanced it to a locked state in that RA.
         """
         if self.workgroup.ownership == WORKGROUP_OWNERSHIP.authority:
             statuses = self.statuses.filter(registrationAuthority__in=self.workgroup.registrationAuthorities.all())
-        elif  self.workgroup.ownership == WORKGROUP_OWNERSHIP.registry:
+        elif self.workgroup.ownership == WORKGROUP_OWNERSHIP.registry:
             statuses = self.statuses.all()
+        statuses = self.current_statuses(qs=statuses,when=when)
         return True in [s.state >= s.registrationAuthority.locked_state for s in statuses]
 
     def is_locked(self):
@@ -592,6 +619,23 @@ class _concept(baseAristotleObject):
         self._is_public = self.check_is_public()
         self._is_locked = self.check_is_locked()
         self.save()
+
+    def current_statuses(self,qs=None,when=timezone.now()):
+        if qs is None:
+            qs = self.statuses.all()
+        registered_before_now = Q(registrationDate__lte=when)
+        registation_still_valid = Q(until_date__gte=when) | Q(until_date__isnull=True)
+
+        states = qs.filter(registered_before_now & registation_still_valid).order_by("-registrationDate","-created")
+
+        current=[]
+        seen_ras = []
+        for s in states:
+            ra = s.registrationAuthority
+            if ra not in seen_ras:
+                current.append(s)
+                seen_ras.append(ra)
+        return current
 
 class concept(_concept):
     """
@@ -630,35 +674,30 @@ class concept(_concept):
 class Status(TimeStampedModel):
     concept = models.ForeignKey(_concept,related_name="statuses")
     registrationAuthority = models.ForeignKey(RegistrationAuthority)
-    changeDetails = models.CharField(max_length=512,blank=True,null=True)
+    changeDetails = models.TextField(blank=True,null=True)
     state = models.IntegerField(choices=STATES, default=STATES.incomplete)
-
+    # TODO: What are we going to do with 'inDictionary'?
     inDictionary = models.BooleanField(default=True)
-    registrationDate = models.DateField()
+    #TODO: Below should be changed to 'effective_date' to match ISO IEC 11179-6 (Section 8.1.2.6.2.2)
+    registrationDate = models.DateField(_('Date registration effective'))
+    until_date = models.DateField(_('Date registration expires'),blank=True,null=True)
     tracker=FieldTracker()
 
     class Meta:
-        unique_together = ('concept', 'registrationAuthority',)
         verbose_name_plural = "Statuses"
 
-    def unique_error_message(self, model_class, unique_check):
-        if model_class == type(self) and unique_check == ('concept', 'registrationAuthority',):
-            return _('This Object %(obj)s already has a status in Registration Authority "%(ra)s". Please update the exisiting status field instead of creating a new one.')%\
-                    {'obj': self.concept,
-                      'ra': self.registrationAuthority.name
-                    }
-        else:
-            return super(Status, self).unique_error_message(model_class, unique_check)
 
     @property
     def state_name(self):
         return STATES[self.state]
 
     def __unicode__(self):
-        return "{obj} is {stat} for {ra}".format(
+        return "{obj} is {stat} for {ra} on {date} - {desc}".format(
                 obj = self.concept.name,
                 stat=self.state_name,
-                ra=self.registrationAuthority
+                ra=self.registrationAuthority,
+                desc=self.changeDetails,
+                date=self.registrationDate
             )
 
 class ObjectClass(concept):
@@ -773,7 +812,6 @@ class SupplementaryValue(AbstractValue):
     pass
 
 
-
 class DataElementConcept(concept):
     property_ = property #redefine in this context as we need 'property' for the 11179 terminology
     template = "aristotle_mdr/concepts/dataElementConcept.html"
@@ -793,7 +831,7 @@ class DataElement(concept):
 
     @property
     def registry_cascade_items(self):
-        return [self.dataElementConcept,self.valueDomain]
+        return [self.dataElementConcept,self.valueDomain]+self.dataElementConcept.registry_cascade_items
 
 
 class DataElementDerivation(concept):
@@ -907,7 +945,7 @@ def defaultData():
         name="ISO/IEC 11404 DataTypes",
         description="A collection of datatypes as described in the ISO/IEC 11404 Datatypes standard",
         workgroup=iso_wg)
-    iso.register(iso_package,STATES.standard,system,timezone.now())
+    iso.register(iso_package,STATES.standard,system,registrationDate=timezone.now())
     dataTypes = [
        ("Boolean","A binary value expressed using a string (e.g. true or false)."),
        ("Currency","A numeric value expressed using a particular medium of exchange."),

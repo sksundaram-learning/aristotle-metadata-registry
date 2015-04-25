@@ -1,6 +1,7 @@
 {% extends "aristotle_mdr/workgroup.html" %}
+{% load aristotle_tags i18n %}
 {% url 'aristotle:item' item.id %}
-{% block title %}{{ workgroup.name }} members{% endblock %}
+{% block title %}{{ workgroup.name }} {% trans 'members' %}{% endblock %}
 {% block page %}
 <h1>{{ workgroup.name }} members</h1>
 <p>
@@ -84,12 +85,6 @@ Viewers are only able to view content in a workgroup. They may also participate 
 </p>
 </dd>
 </dl>
-
-<div id="addMember" class="modal fade">
-  <div class="modal-dialog">
-      <div class="modal-content">
-      </div><!-- /.modal-content -->
-    </div><!-- /.modal-dialog -->
-</div><!-- /.modal -->
+{% bootstrap_modal "addMember" %}
 
 {% endblock %}
