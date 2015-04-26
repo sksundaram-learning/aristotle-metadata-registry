@@ -93,7 +93,7 @@ def setup_mdr(name="",extensions=[],force_install=False,dry_install=False):
 
 def install_reqs(name):
     #pip.main(['install', package])
-    call(["pip", 'install', '-r ./%s/requirements.txt'%name])
+    call(["pip", 'install', '-r%s/requirements.txt'%name])
     return call 
 
 def collect_static(name):
