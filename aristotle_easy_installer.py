@@ -1,3 +1,16 @@
+"""
+Aristotle Easy Installer
+
+This script guides you through the setup of the Aristotle Metadata Registry.
+
+Command line options:
+ -d --dry   -- Dry run: Run as normal, configures settings and requirements, but
+               does not install them
+ -f --force -- Forces install of requirements without confirmation
+ -h --help  -- Prints this message
+ -n --name  -- The system name for your registry
+               eg. --name=registry or -nregistry
+"""
 from __future__ import unicode_literals, print_function
 
 import sys, os, pip, re
@@ -62,7 +75,8 @@ def setup_mdr(name="",extensions=[],force_install=False,dry_install=False):
     elif force_install:
         print("Installing from requirements.txt")
     else:
-        valid_input("Ready to install requirements? (y/n): ", yn)
+        valid_input("Ready to install requirements? (y): ", y)
+    install('./%s/requirements.txt'%name)
 
     if not dry_install:
         print("Running django command to fetch all required static files")
@@ -98,12 +112,18 @@ class Usage(Exception):
     def __init__(self, msg):
         self.msg = msg
 
+def is_opt(opts,*args):
+    for a in args:
+        if a in opts.keys():
+            return True
+    return False
+
 def main(argv=None):
     if argv is None:
         argv = sys.argv
     try:
         try:
-            opts, args = getopt.getopt(argv[1:], "hn:df", ["help","name=","dry","force"])
+            opts, args = getopt.getopt(argv[1:], "n:dfh", ["dry","force","help","name=",])
             opts = dict(opts)
         except getopt.error, msg:
              raise Usage(msg)
@@ -112,12 +132,15 @@ def main(argv=None):
         print >>sys.stderr, err.msg
         print >>sys.stderr, "for help use --help"
         return 2
+    if is_opt(opts,'-h','--help'):
+        print(__doc__)
+        return 0
     kwargs = {}
-    if '-n' in opts.keys() or '--name' in opts.keys():
+    if is_opt(opts,'-n','--name'):
         kwargs['name']=opts.get('-n',opts.get('--name'))
-    if '-d' in args or '--dry' in args:
+    if is_opt(opts,'-d','--dry'):
         kwargs['dry_install']=True
-    if '-f' in args or '--force' in args:
+    if is_opt(opts,'-f','--force'):
         kwargs['force_install']=True
 
     return setup_mdr(**kwargs)
