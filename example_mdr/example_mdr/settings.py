@@ -45,9 +45,9 @@ ALLOWED_HOSTS = []
 # * the url import in `example_mdr/urls.py`
 INSTALLED_APPS = (
     'haystack', # Provides search functionality in Aristotle-MDR (Must be installed first) - http://haystacksearch.org/
-    #'aristotle_ddi_utils', # Download formats in the DDI3.2 XML format - https://github.com/aristotle-mdr/aristotle-ddi-utils
-    #'aristotle_dse', # Additional models for describing datasets - https://github.com/aristotle-mdr/aristotle-dataset-extensions
-    #'aristotle_glossary', # Model for managing and inserting glossary content - https://github.com/aristotle-mdr/aristotle-glossary
+    #!aristotle_ddi! 'aristotle_ddi_utils', # Download formats in the DDI3.2 XML format - https://github.com/aristotle-mdr/aristotle-ddi-utils
+    #!aristotle_dse! 'aristotle_dse', # Additional models for describing datasets - https://github.com/aristotle-mdr/aristotle-dataset-extensions
+    #!aristotle_glossary! 'aristotle_glossary', # Model for managing and inserting glossary content - https://github.com/aristotle-mdr/aristotle-glossary
     'aristotle_mdr', #The main App for the Metadata Registry - https://github.com/aristotle-mdr/aristotle-metadata-registry
 ) + INSTALLED_APPS # Installs the required apps to run aristotle.
 
