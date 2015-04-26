@@ -75,7 +75,11 @@ def setup_mdr(name="",extensions=[],force_install=False,dry_install=False):
     elif force_install:
         print("Installing from requirements.txt")
     else:
-        valid_input("Ready to install requirements? (y): ", y)
+        do_install = 'y' == valid_input("Ready to install requirements? (y/n): ", yn).lower()
+        if not do_install:
+            print("Performing dry run, no requirements installed.")
+            print("You can finish installing by running - pip install requirements.txt - from the %s directory"%name)
+            return 0
     install('./%s/requirements.txt'%name)
 
     if not dry_install:
