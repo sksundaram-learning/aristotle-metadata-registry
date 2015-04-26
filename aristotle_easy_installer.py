@@ -25,9 +25,6 @@ optional_modules = [
     ("Aristotle DDI Downloaders","#!aristotle_ddi!")
 ]
 
-def install(package):
-    pip.main(['install', package])
-
 def valid_input(prompt,match):
     try:
         input = raw_input
@@ -80,13 +77,24 @@ def setup_mdr(name="",extensions=[],force_install=False,dry_install=False):
             print("Performing dry run, no requirements installed.")
             print("You can finish installing by running - pip install requirements.txt - from the %s directory"%name)
             return 0
-    install('./%s/requirements.txt'%name)
+    try:
+        install_reqs(name)
+    except:
+        print("Installing requirements failed.")
+        print("You can finish installing by running - pip install requirements.txt - from the %s directory"%name)
+        raise
 
-    if not dry_install:
+    if not dry_install and do_install:
         print("Running django command to fetch all required static files")
         collect_static(name)
 
         print("You can now locally test your installed registry by running the command './manage.py runserver'")
+
+
+def install_reqs(name):
+    #pip.main(['install', package])
+    call(["pip", 'install', '-r ./%s/requirements.txt'%name])
+    return call 
 
 def collect_static(name):
     call(["./%s/manage.py"%name, 'collectstatic'])
