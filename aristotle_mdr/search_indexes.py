@@ -12,7 +12,7 @@ logger.debug("Logging started for " + __name__)
 class ConceptFallbackCharField(indexes.CharField):
     def prepare_template(self, obj):
         try:
-            return super(ConceptFallbackCharField).prepare_template(self, obj)
+            return super(ConceptFallbackCharField,self).prepare_template(obj)
         except TemplateDoesNotExist:
 
             logger.debug("No search template found for %s, uning untyped fallback."%obj)
