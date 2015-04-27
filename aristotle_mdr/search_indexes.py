@@ -18,7 +18,7 @@ class ConceptFallbackCharField(indexes.CharField):
             logger.debug("No search template found for %s, uning untyped fallback."%obj)
 
             self.template_name = "search/indexes/aristotle_mdr/untyped_concept_text.txt"
-            return super(ConceptFallbackCharField).prepare_template(self, obj)
+            return super(ConceptFallbackCharField,self).prepare_template(obj)
 
 class baseObjectIndex(indexes.SearchIndex):
     text = ConceptFallbackCharField(document=True, use_template=True)
