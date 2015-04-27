@@ -1,4 +1,18 @@
 from __future__ import absolute_import
+"""
+Aristotle-MDR concept register
+
+This module allows developers to easily register new concept models with the core
+functionality of Aristotle-MDR. The ``register_concept`` is a wrapper around three
+methods that registers a new concept with the Django-Admin site, with the
+Django-Autocomplete and with a class for a Haystack search index. This is all done
+in a way that conforms to the permissions required for control item visibility.
+
+Other methods in this module can be called, to highly customise how concepts are
+used within the admin site and search, but should be considered internal methods
+and future releases of Aristotle-MDR may break code that uses these methods.
+"""
+
 import autocomplete_light
 
 from django.contrib import admin
@@ -13,6 +27,9 @@ from haystack import connections
 from haystack.constants import DEFAULT_ALIAS
 from haystack import indexes
 
+import logging
+logger = logging.getLogger(__name__)
+logger.debug("Logging started for " + __name__)
 
 def register_concept(concept_class, *args, **kwargs):
     """ .. py:function:: register_concept(concept_class, *args, **kwargs)
@@ -21,15 +38,13 @@ def register_concept(concept_class, *args, **kwargs):
     extension models based on ``aristotle_mdr.models.concept`` easier.
 
     Sets up the search index, django administrator page and autocomplete handlers.
-    All ``args`` and ``kwargs`` are passed to the called methods.
+    All ``args`` and ``kwargs`` are passed to the called methods. For examples of
+    what can be passed into this method review the other methods in
+    ``aristotle_mdr.register``.
 
     Example usage (based on the models in the extensions test suite):
 
         register_concept(Question, extra_fieldsets=[('Question','question_text'),]
-
-    :param concept concept_class: The model that is to be registered
-    :param list extra_fieldsets: A list of additional fieldsets to be displayed
-    :param list extra_inlines: A list of additional fieldsets to be displayed
     """
     register_concept_autocomplete(concept_class, *args, **kwargs)
     register_concept_admin(concept_class, *args, **kwargs)
@@ -51,8 +66,10 @@ def register_concept_autocomplete(concept_class, *args, **kwargs):
 def register_concept_search_index(concept_class, *args, **kwargs):
     """ .. py:function:: register_concept_search_index(concept_class, *args, **kwargs)
 
-    Registers the given ``concept`` with a Haystack search index that
-    registered conforms to Aristotle permissions.
+    Registers the given ``concept`` with a Haystack search index that conforms
+    to Aristotle permissions. If the concept to be registered does not have a
+    template for serving a search document, a basic document with just the basic
+    fields from ``aristotle_mdr.models._concept`` will be used when indexing items.
 
     :param concept concept_class: The model that is to be registered for searching.
     """

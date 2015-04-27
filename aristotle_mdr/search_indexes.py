@@ -2,10 +2,26 @@ import datetime
 import haystack.indexes as indexes
 
 import aristotle_mdr.models as models
+from django.template import TemplateDoesNotExist
 from django.utils import timezone
 
+import logging
+logger = logging.getLogger(__name__)
+logger.debug("Logging started for " + __name__)
+
+class ConceptFallbackCharField(indexes.CharField):
+    def prepare_template(self, obj):
+        try:
+            return super(ConceptFallbackCharField).prepare_template(self, obj)
+        except TemplateDoesNotExist:
+
+            logger.debug("No search template found for %s, uning untyped fallback."%obj)
+
+            self.template_name = "search/indexes/aristotle_mdr/untyped_concept_text.txt"
+            return super(ConceptFallbackCharField).prepare_template(self, obj)
+
 class baseObjectIndex(indexes.SearchIndex):
-    text = indexes.CharField(document=True, use_template=True)
+    text = ConceptFallbackCharField(document=True, use_template=True)
     modified = indexes.DateTimeField(model_attr='modified')
     created = indexes.DateTimeField(model_attr='created')
     name = indexes.CharField(model_attr='name',boost=1)
@@ -88,7 +104,3 @@ class conceptIndex(baseObjectIndex):
         states = ["%s___%s"%(str(s.registrationAuthority.id),str(s.state))
                     for s in obj.statuses.all()]
         return states
-    """
-    def get_model(self):
-        return models.managedObject
-    """

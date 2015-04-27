@@ -282,8 +282,8 @@ from this class can be done like so::
         # Inherits name and description.
         isoCode = models.CharField(maxLength=3)
 
-For example, in Aristotle "Unit of Measure" is an ``unmanagedObject`` type, that is used
-to give extra context to Value Domains.
+For example, in Aristotle-MDR "Measure" is an ``unmanagedObject`` type, that is used
+to give extra context to `UnitOfMeasure` objects.
 
 
 A complete example of an Aristotle Extension
