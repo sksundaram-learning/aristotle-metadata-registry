@@ -122,23 +122,6 @@ way to extend this is to add extra options to the end of the ``fieldsets`` like 
 otherwise there are circular dependancies across various apps when importing.
 This will prevent the app and the whole site from being used.
 
-Aristotle provides a replacement for the Grappelli autocomplete foreign key fields with those provided by
-Django-autocomplete-light. Using these will give a unified behavior to extensions, so using these is strongly
-recommended if model relations exist. These can be added by specifying options for the objects in the
-``light_autocomplete_lookup_fields`` class property for your Admin class. This is done by declaring fields
-in either the foreign key (``fk``) or many-to-many (``array``) within the ``light_autocomplete_lookup_fields``
-dictionary. Each of these keys provides a list of tuples that give the property of the Admin form
-to provide an autcomplete field for, and the model it is associated with.
-
-For example, for our ``QuestionAdmin`` class, we can replace the ``collectedDataElement`` field with a lookup
-field by adding the following setting::
-
-        light_autocomplete_lookup_fields = {
-            'fk': [
-                ('collectedDataElement',MDR.DataElement ),
-                ] +ConceptAdmin.light_autocomplete_lookup_fields['fk'],
-        }
-
 Lastly, Aristotle-MDR provides an easy way to give users a suggestion button when entering a name to
 ensure consistancy within the registry. This can be added to an Admin page by specifying the fields that
 are used to construct the name - however **these must be fields on the current model**.
@@ -172,11 +155,6 @@ fieldsets, autcompeletes and suggested names is::
                 ('Relations',
                     {'fields': ['collectedDataElement']}),
         ]
-        light_autocomplete_lookup_fields = {
-            'fk': [
-                ('collectedDataElement',MDR.DataElement ),
-                ] +ConceptAdmin.light_autocomplete_lookup_fields['fk'],
-        }
         name_suggest_fields = ['questionText','collectedDataElement']
 
 `For more information on configuring an admin site for Django models, consult the

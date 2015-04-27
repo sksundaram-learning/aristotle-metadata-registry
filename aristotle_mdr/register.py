@@ -2,7 +2,8 @@ from __future__ import absolute_import
 import autocomplete_light
 
 from django.contrib import admin
-from aristotle_mdr import admin as aristotle_admin # Must include 'admin' directly, otherwise causes issues.
+from django.utils.translation import ugettext_lazy as _
+
 from aristotle_mdr import autocomplete_light_registry as reg
 from aristotle_mdr.search_indexes import conceptIndex
 
@@ -77,32 +78,35 @@ def register_concept_admin(concept_class, *args, **kwargs):
     Additional parameters are only required if a model has additional fields or
     references to other models.
 
+    :param boolean auto_fieldsets: If no extra_fieldsets, when set to true this generates a list of fields for the admin page as "Extra fields for [class]"
     :param concept concept_class: The model that is to be registered
     :param list extra_fieldsets: Model-specific `fieldsets <https://docs.djangoproject.com/en/1.8/ref/contrib/admin/#django.contrib.admin.ModelAdmin.fieldsets>`_ to be displayed. Fields in the tuples given should be those *not* defined by the base ``aristotle_mdr.models._concept``class.
     :param list extra_inlines: Model-specific `inline <https://docs.djangoproject.com/en/1.8/ref/contrib/admin/#django.contrib.admin.ModelAdmin.inlines>`_ admin forms to be displayed.
     """
     extra_fieldsets = kwargs.get('extra_fieldsets',[])
     auto_fieldsets = kwargs.get('auto_fieldsets',False)
-    auto_fieldsets_name = kwargs.get('auto_fieldsets_name',False)
     extra_inlines = kwargs.get('extra_inlines',[])
+    extra_name_suggest_fields = kwargs.get('name_suggest_fields',[])
+
+    # late import this as we call this in aristotle_mdr.admin and need it to be ready before we call this.
+    from aristotle_mdr.admin import ConceptAdmin
 
     if not extra_fieldsets and auto_fieldsets:
         handled_fields = [ x
-            for name, k in aristotle_admin.ConceptAdmin.fieldsets
+            for name, k in ConceptAdmin.fieldsets
                 for x in k.get('fields',[]) ]
 
         auto_fieldset = [f.name for f in concept_class._meta.fields if f.name not in handled_fields]
 
-        extra_fieldsets_name = None
-        if auto_fieldsets_name:
-            extra_fieldsets_name = concept_class._meta.verbose_name.title()
-
+        extra_fieldsets_name = _('Extra fields for %(class_name)s') %{'class_name':concept_class._meta.verbose_name.title()}
         extra_fieldsets = [(extra_fieldsets_name, {'fields': auto_fieldset}),]
 
-    class SubclassedConceptAdmin(aristotle_admin.ConceptAdmin):
+    class SubclassedConceptAdmin(ConceptAdmin):
         model = concept_class
-        fieldsets = aristotle_admin.ConceptAdmin.fieldsets + extra_fieldsets
-        inlines = aristotle_admin.ConceptAdmin.inlines + extra_inlines
+        if extra_name_suggest_fields:
+            name_suggest_fields = extra_name_suggest_fields
+        fieldsets = ConceptAdmin.fieldsets + extra_fieldsets
+        inlines = ConceptAdmin.inlines + extra_inlines
 
     admin.site.register(concept_class,SubclassedConceptAdmin)
 

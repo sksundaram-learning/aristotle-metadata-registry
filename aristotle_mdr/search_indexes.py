@@ -92,30 +92,3 @@ class conceptIndex(baseObjectIndex):
     def get_model(self):
         return models.managedObject
     """
-class ObjectClassIndex(conceptIndex, indexes.Indexable):
-    def get_model(self):
-        return models.ObjectClass
-
-class PropertyIndex(conceptIndex, indexes.Indexable):
-    def get_model(self):
-        return models.Property
-
-class PackageIndex(conceptIndex, indexes.Indexable):
-    def get_model(self):
-        return models.Package
-
-class DataElementConceptIndex(conceptIndex, indexes.Indexable):
-    def get_model(self):
-        return models.DataElementConcept
-
-class DataElementIndex(conceptIndex, indexes.Indexable):
-    def get_model(self):
-        return models.DataElement
-
-class ValueDomainIndex(conceptIndex, indexes.Indexable):
-    def get_model(self):
-        return models.ValueDomain
-
-class ConceptualDomainIndex(conceptIndex, indexes.Indexable):
-    def get_model(self):
-        return models.ConceptualDomain
