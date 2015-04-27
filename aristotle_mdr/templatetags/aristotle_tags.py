@@ -305,3 +305,14 @@ def extra_content(extension,item,user):
     except template.TemplateDoesNotExist:
         # there is no extra content for this item, and thats ok.
         return ""
+
+@register.simple_tag
+def bootstrap_modal(_id,size=None):
+    size_class = ""
+    if size == 'lg':
+        size_class = "modal-lg"
+    elif size == 'sm':
+        size_class = "modal-sm"
+
+    modal = '<div id="%s" class="modal fade"><div class="modal-dialog %s"><div class="modal-content"></div></div></div>'
+    return modal%(_id,size_class)

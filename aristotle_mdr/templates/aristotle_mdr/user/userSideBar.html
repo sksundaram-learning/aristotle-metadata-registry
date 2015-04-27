@@ -83,7 +83,8 @@
         {% ifequal activeTab "registrarTools" %}
         <ul class="nav nav-pills nav-stacked nav-collapse dashSubMenu">
             <li><a href="{% url 'aristotle:userReadyForReview' %}">
-                <i class="fa fa-cog fa-fw"></i> {% trans 'Review list' %}
+                {% comment %}Translators: A link to the list of things to be reviewed.{% endcomment %}
+                <i class="fa fa-flag fa-fw"></i> {% trans 'Review list' %}
             </a></li>
         </ul>
         {% endifequal %}

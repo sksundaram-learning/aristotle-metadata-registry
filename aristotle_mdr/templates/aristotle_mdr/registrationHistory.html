@@ -1,5 +1,5 @@
 {% extends 'aristotle_mdr/base.html' %}
-{% load aristotle_tags %}
+{% load aristotle_tags i18n %}
 {% block title %}Registration History of {{ item.name }}{% endblock %}
 
 {% block content %}
@@ -13,63 +13,34 @@
     <li><a href="#">Registration History</a></li>
 </ol>
 {% if history %}
-    {% for status, action_list in history %}
-    <div>
-        <h2>History for <em><a href="{% url 'aristotle:registrationAuthority' status.registrationAuthority.id %}">{{ status.registrationAuthority }}</a></em></h2>
+    {% for ra, states in history.items %}
+        <h2>History for <em><a href="{% url 'aristotle:registrationAuthority' ra.id %}">{{ ra.name }}</a></em></h2>
         <table class="table">
-        <thead>
-            <th>Date</th>
-            <th>State</th>
-            <th>Status definition</th>
-            <th>Comments</th>
-            {% if item|can_edit:request.user %}
-                <th>Who</th>
-            {% endif %}
-        </thead>
-        <tbody>
-        {% for action in action_list %}
-            <tr>
-                <td>{{ action.field_dict.registrationDate }}</td>
-                <td>{{ action.field_dict.state|stateToText }}</td>
-                <td>{{ action.field_dict.meaning }}</td>
-                <td>{{ action.field_dict.changeDetails }}</td>
+            <thead>
+                <th>{% trans 'Date registration effective' %}</th>
+                <th>{% trans 'Date registration expires' %}</th>
+                <th>{% trans 'State' %}</th>
+                <th>Comments</th>
+                {% comment %}
                 {% if item|can_edit:request.user %}
-                    <td>
-                    {% with huser=action.revision.user %}
-                        {% if huser.first_name or huser.last_name %}
-                            {{ huser.first_name }}{{ huser.last_name }}
-                        {% else %}
-                            {{ huser.username }}
-                        {% endif %}
-                    {% endwith %}
-                    </td>
+                    <th>Who</th>
                 {% endif %}
-            </tr>
-            {% empty %}
-            {# if its empty it must have been imported and something weird has happened so show the current one #}
-            <tr>
-                <td>{{ status.registrationDate }}</td>
-                <td>{{ status.state|stateToText }}</td>
-                <td>{{ status.meaning }}</td>
-                <td>{{ status.changeDetails }}</td>
-                {% if item|can_edit:request.user %}
-                    <td>
-                    {% with huser=action.revision.user %}
-                        {% if huser.first_name or huser.last_name %}
-                            {{ huser.first_name }}{{ huser.last_name }}
-                        {% else %}
-                            {{ huser.username }}
-                        {% endif %}
-                    {% endwith %}
-                    </td>
-                {% endif %}
-            </tr>
-        {% endfor %}
-        </tbody>
+                {% endcomment %}
+            </thead>
+            <tbody>
+            {% for status in states %}
+                <tr>
+                    <td>{{ status.registrationDate }}</td>
+                    <td>{{ status.until_date }}</td>
+                    <td><a title='' href='{% url 'aristotle:registrationAuthority' ra.id %}#state_{{ status.state }}'>{{ status.state|stateToText }}</a></td>
+                    <td>{{ status.changeDetails }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
         </table>
-    </div>
     {% endfor %}
 {% else %}
-    <strong>This item has not yet been registered by any authority.</strong>
+    <strong>{% trans 'This item has not yet been registered by any authority' %}</strong>
 {% endif %}
+
 {% endblock %}

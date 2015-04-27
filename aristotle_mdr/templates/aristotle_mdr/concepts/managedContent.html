@@ -30,7 +30,7 @@
 
         {# Screen reader quick links #}
         {% if item|can_edit:request.user and request.user.is_staff %}
-            <a class="sr-only" accesskey="p" href="{% adminEdit item %}">{% trans 'Admin editor'%}</a>
+            <a class="sr-only" accesskey="p" href="{% adminEdit item %}">{% trans 'Edit in admin'%}</a>
         {% elif item|can_edit:request.user %}
             <a class="sr-only" accesskey="p" href="{% url 'aristotle:edit_item' item.id %}">{% trans 'Advanced editor'%}</a>
         {% endif %}
@@ -63,9 +63,14 @@
                     </a></li>
                     {# % endif % #}
                     <li class="divider"></li>
-                    <li><a class="" href="{% clone item %}">
+                    <li><a class="" href="{% url 'aristotle:clone_item' item.id %}">
                         <i class="fa fa-code-fork"></i> {% trans 'Clone this item'%}
                     </a></li>
+                    {% if request.user.is_staff %}
+                    <li><a class="" href="{% clone item %}">
+                        <i class="fa fa-code-fork"></i> {% trans 'Clone this item via admin'%}
+                    </a></li>
+                    {% endif %}
                   </ul>
                 </div>
             {% else %}
@@ -75,21 +80,8 @@
                     <i class="fa fa-pencil-square"></i> {% trans 'Edit'%}
                 </button>
             {% endif %}
-
-            <div id="infobox_adv_edit" class="modal fade">
-              <div class="modal-dialog modal-lg">
-                  <div class="modal-content">
-                  </div><!-- /.modal-content -->
-                </div><!-- /.modal-dialog -->
-            </div><!-- /.modal -->
+            {% bootstrap_modal "infobox_adv_edit" size='lg' %}
         {% endif %}
-        {% comment %}
-        {% if view == "technical" %}
-            <a href="?view=simple" id="viewChange" class="btn btn-default"><i class="fa fa-minus-square"></i> {% trans 'Simple View'%}</a>
-        {% else %}
-            <a href="?view=technical" id="viewChange" class="btn btn-default"><i class="fa fa-graduation-cap"></i> {% trans 'Technical View'%}</a>
-        {% endif %}
-        {% endcomment %}
         <div class="btn-group">
             <button accesskey="d" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
             <i class="fa fa-download"></i> {% trans 'Download'%} <span class="caret"></span>
@@ -150,12 +142,7 @@
         </a>
         {% endif %}
     </div>
-    {# Outside the above div to stop "info" colors #}
-    <div id="r2r_modals" class="modal fade">
-        <div class="modal-dialog">
-            <div class="modal-content"></div>
-        </div>
-    </div>
+    {% bootstrap_modal "r2r_modals" %}
     {% endif %}
     <dl id="alternate_names" class="hidden-xs">
         {% if item.shortName %}

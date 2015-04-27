@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.0.1a\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-04-21 00:02+0000\n"
+"POT-Creation-Date: 2015-04-21 22:03+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -503,8 +503,11 @@ msgid "View history"
 msgstr "Visa registeringshistoria"
 
 #: templates/aristotle_mdr/concepts/managedContent.html:33
-msgid "Admin editor"
-msgstr "Adimistratörs editor"
+#: templates/aristotle_mdr/concepts/managedContent.html:62
+#, fuzzy
+#| msgid "Edit menu"
+msgid "Edit in admin"
+msgstr "Editera menyn"
 
 #: templates/aristotle_mdr/concepts/managedContent.html:35
 #: templates/aristotle_mdr/concepts/managedContent.html:59
@@ -516,12 +519,6 @@ msgstr "Avancerad editor"
 #, fuzzy
 #| msgid "Edit menu"
 msgid "Edit"
-msgstr "Editera menyn"
-
-#: templates/aristotle_mdr/concepts/managedContent.html:62
-#, fuzzy
-#| msgid "Edit menu"
-msgid "Edit in admin"
 msgstr "Editera menyn"
 
 #: templates/aristotle_mdr/concepts/managedContent.html:67
@@ -747,17 +744,18 @@ msgstr "arbetsgrupper"
 msgid "Recent Actions"
 msgstr ""
 
-#: templates/aristotle_mdr/user/userSideBar.html:86
+#. Translators: A link to the list of things to be reviewed.
+#: templates/aristotle_mdr/user/userSideBar.html:87
 msgid "Review list"
 msgstr ""
 
-#: templates/aristotle_mdr/user/userSideBar.html:95
+#: templates/aristotle_mdr/user/userSideBar.html:96
 #, fuzzy
 #| msgid "Admin tools"
 msgid "Administrator tools"
 msgstr "Administera verktyg"
 
-#: templates/aristotle_mdr/user/userSideBar.html:101
+#: templates/aristotle_mdr/user/userSideBar.html:102
 #, fuzzy
 #| msgid "Registration status"
 msgid "Registry Statistics"
@@ -828,36 +826,40 @@ msgctxt "Created date"
 msgid "Created"
 msgstr "Skapad"
 
-#: utils.py:29
+#. Translators: The '(clone)' prefix is a noun, indicating an object is a clone of another - for example "Person-Sex" compared to "Person-Sex (clone)"
+#: utils.py:30
 msgid " (clone)"
 msgstr " (kopia)"
 
-#: utils.py:56
+#: utils.py:57
 #, fuzzy, python-format
 #| msgid "Change password"
 msgid "Changed %s."
 msgstr "Byt lösenord"
 
-#: utils.py:56 utils.py:66
+#: utils.py:57 utils.py:69
 msgid "and"
 msgstr ""
 
-#: utils.py:61
+#. Translators: A message in the version history of an item saying that an object with the name (name) of the type (object) has been created in the registry.
+#: utils.py:63
 #, python-format
 msgid "Added %(name)s \"%(object)s\"."
 msgstr ""
 
-#: utils.py:65
+#. Translators: A message in the version history of an item saying that an object with the name (name) of the type (object) has been changed in the registry.
+#: utils.py:68
 #, python-format
 msgid "Changed %(list)s for %(name)s \"%(object)s\"."
 msgstr ""
 
-#: utils.py:70
+#. Translators: A message in the version history of an item saying that an object with the name (name) of the type (object) has been deleted from the registry.
+#: utils.py:74
 #, python-format
 msgid "Deleted %(name)s \"%(object)s\"."
 msgstr ""
 
-#: utils.py:74
+#: utils.py:78
 msgid "No fields changed."
 msgstr ""
 
@@ -981,6 +983,9 @@ msgstr ""
 #, python-brace-format
 msgid "New Data Element '{name}' Saved - <a href='{url}'>id:{id}</a>"
 msgstr ""
+
+#~ msgid "Admin editor"
+#~ msgstr "Adimistratörs editor"
 
 #~ msgid "Yes"
 #~ msgstr "Ja"

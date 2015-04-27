@@ -6,6 +6,7 @@ from django.test.utils import setup_test_environment
 from django.utils.translation import ugettext_lazy as _
 
 from model_utils import Choices
+import datetime
 
 import aristotle_mdr.models as models
 import aristotle_mdr.perms as perms
@@ -348,7 +349,7 @@ class CustomConceptQuerySetTest_RegistryOwned_Slow(CustomConceptQuerySetTest_Slo
 class RegistryCascadeTest(TestCase):
     def test_superuser_DataElementConceptCascade(self):
         user = User.objects.create_superuser('super','','user')
-        self.ra = models.RegistrationAuthority.objects.create(name="Test RA")
+        self.ra = models.RegistrationAuthority.objects.create(name="Test RA - cascading")
         self.wg = models.Workgroup.objects.create(name="Setup WG")
         self.wg.registrationAuthorities.add(self.ra)
         self.wg.save()
@@ -365,20 +366,20 @@ class RegistryCascadeTest(TestCase):
         self.assertEqual(self.dec.statuses.count(),0)
 
         state=models.STATES.candidate
-        self.ra.register(self.dec,state,user)
+        self.ra.register(self.dec,state,user,registrationDate=datetime.date(2001,10,1),changeDetails='test DEC register')
         self.assertEqual(self.oc.statuses.count(),0)
         self.assertEqual(self.pr.statuses.count(),0)
         self.assertEqual(self.dec.statuses.count(),1)
 
         state=models.STATES.standard
-        self.ra.register(self.dec,state,user,cascade=True)
-        self.assertEqual(self.dec.statuses.count(),1)
-        self.assertEqual(self.oc.statuses.count(),1)
-        self.assertEqual(self.pr.statuses.count(),1)
+        self.ra.cascaded_register(self.dec,state,user,registrationDate=datetime.date(2010,10,1),changeDetails='test DEC cascade register')
+        self.assertEqual(len(self.dec.current_statuses()),1)
+        self.assertEqual(len(self.oc.current_statuses()),1)
+        self.assertEqual(len(self.pr.current_statuses()),1)
 
-        self.assertEqual(self.oc.statuses.all()[0].state,state)
-        self.assertEqual(self.pr.statuses.all()[0].state,state)
-        self.assertEqual(self.dec.statuses.all()[0].state,state)
+        self.assertEqual(self.oc.current_statuses()[0].state,state)
+        self.assertEqual(self.pr.current_statuses()[0].state,state)
+        self.assertEqual(self.dec.current_statuses()[0].state,state)
 
     def test_superuser_DataElementCascade(self):
         user = User.objects.create_superuser('super','','user')
@@ -412,24 +413,24 @@ class RegistryCascadeTest(TestCase):
         self.assertEqual(self.de.statuses.count(),0)
 
         state=models.STATES.candidate
-        self.ra.register(self.de,state,user)
-        self.assertEqual(self.oc.statuses.count(),0)
-        self.assertEqual(self.pr.statuses.count(),0)
-        self.assertEqual(self.vd.statuses.count(),0)
-        self.assertEqual(self.dec.statuses.count(),0)
-        self.assertEqual(self.de.statuses.count(),1)
+        self.ra.register(self.de,state,user,registrationDate=datetime.date(2001,10,1),)
+        self.assertEqual(len(self.oc.current_statuses()),0)
+        self.assertEqual(len(self.pr.current_statuses()),0)
+        self.assertEqual(len(self.vd.current_statuses()),0)
+        self.assertEqual(len(self.dec.current_statuses()),0)
+        self.assertEqual(len(self.de.current_statuses()),1)
 
         state=models.STATES.standard
-        self.ra.register(self.de,state,user,cascade=True)
-        self.assertEqual(self.de.statuses.count(),1)
-        self.assertEqual(self.dec.statuses.count(),1)
-        self.assertEqual(self.vd.statuses.count(),1)
-        self.assertEqual(self.oc.statuses.count(),1)
-        self.assertEqual(self.pr.statuses.count(),1)
+        self.ra.cascaded_register(self.de,state,user,registrationDate=datetime.date(2010,10,1),)
+        self.assertEqual(len(self.de.current_statuses()),1)
+        self.assertEqual(len(self.dec.current_statuses()),1)
+        self.assertEqual(len(self.vd.current_statuses()),1)
+        self.assertEqual(len(self.oc.current_statuses()),1)
+        self.assertEqual(len(self.pr.current_statuses()),1)
 
-        self.assertEqual(self.oc.statuses.all()[0].state,state)
-        self.assertEqual(self.pr.statuses.all()[0].state,state)
-        self.assertEqual(self.vd.statuses.all()[0].state,state)
-        self.assertEqual(self.dec.statuses.all()[0].state,state)
-        self.assertEqual(self.de.statuses.all()[0].state,state)
+        self.assertEqual(self.oc.current_statuses()[0].state,state)
+        self.assertEqual(self.pr.current_statuses()[0].state,state)
+        self.assertEqual(self.vd.current_statuses()[0].state,state)
+        self.assertEqual(self.dec.current_statuses()[0].state,state)
+        self.assertEqual(self.de.current_statuses()[0].state,state)
 

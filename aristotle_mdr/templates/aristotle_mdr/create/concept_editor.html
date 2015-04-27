@@ -7,12 +7,18 @@
         <li role="presentation" class="active">
             <a href="#definition" aria-controls="home" role="tab" data-toggle="tab">{% trans 'Definition' context 'creating items' %}</a>
         </li>
+
         <li role="presentation">
             <a href="#names" aria-controls="profile" role="tab" data-toggle="tab">Names & References</a>
         </li>
         <li role="presentation">
             <a href="#objSpecific" aria-controls="messages" role="tab" data-toggle="tab">{{ model_name|title }} {% trans 'Components' context 'For making an item' %}</a>
         </li>
+        {% if form.change_comments %}
+        <li role="presentation">
+            <a href="#changeComments" aria-controls="messages" role="tab" data-toggle="tab"><strong>{% trans 'Change message' context 'When saving changes to an item' %}</strong></a>
+        </li>
+        {% endif %}
         {% if help_guide %}
         <li role="presentation">
             <a href="#tips" aria-controls="messages" role="tab" data-toggle="tab">{% trans 'Tips' context 'creating items' %}</a>
@@ -131,6 +137,32 @@
                 You are ready to submit.
             </div>
         {% endfor %}
+        </div>
+        {% endif %}
+        {% if form.change_comments %}
+        <div role="tabpanel" class="tab-pane" id="changeComments">
+            <div class="alert alert-info">
+                <p><strong>Leaving a change message is optional.</strong>
+                If it is left an automatic messages stating which fields
+                have been changed will be generated on your behalf.
+                </p>
+                <p>However, stating <em>why</em> values in fields have changed
+                can be much more useful than knowing that a field has changed.
+                </p>
+            </div>
+            <div class="wizard_field">
+            {% with field=form.change_comments %}
+                <span>{{ field.label_tag }} {{ field.help_text }}</span>
+                {% if field.errors %}
+                <span class="alert alert-danger">
+                    {{ field.errors }}
+                {% endif %}
+                {{ field }}
+                {% if field.errors %}
+                    </span>
+                {% endif %}
+            {% endwith %}
+            </div>
         </div>
         {% endif %}
         {% if help_guide %}

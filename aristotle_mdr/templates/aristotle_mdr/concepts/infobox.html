@@ -47,25 +47,29 @@
             </dd>
             {% block includes %}{% endblock %}
 
-            {% include "aristotle_mdr/statuses.html" with statuses=item.statuses infoBox=True %}
+            {% include "aristotle_mdr/statuses.html" with statuses=item.current_statuses infoBox=True %}
             <dt>{% trans 'Last updated'%}</dt>
             <dd>
-                {#% if request.user.is_superuser or item.workgroup in request.user.workgroups %#}
                 {% if request.user.is_superuser or request.user.is_staff and item.workgroup in request.user.workgroups %}
                     <time title="{{ item.modified }}" datetime="{{ item.modified|date:'c' }}">
                         <a href="{% historyLink item %}">{{item.modified|naturaltime}}</a>
                     </time>
+                {% elif item.workgroup in request.user.workgroups %}
+                    <time title="{{ item.modified }}" datetime="{{ item.modified|date:'c' }}">
+                        <a href="{% url 'aristotle:item_history' iid=item.id %}">{{item.modified|naturaltime}}</a>
+                    </time>
                 {% else %}
                     {{item.modified|naturaltime}}
                 {% endif %}
-                {% if request.user.is_active %}
+                {% if request.user.is_superuser or request.user.is_active and item.workgroup in request.user.workgroups %}
                 <span style="display:inline-block">By {% with name=last_edit.revision.user.get_username %}
                         {% if name %}{{ name }}{% else %}<em title="{% trans 'This may have been added during an import.'%}">{% trans 'Unknown' context "Unknown import user"%}</em>{% endif %}
                         {% endwith %}
                 </span>
                 {% endif %}
             </dd>
-            <dt>{% trans 'Created'%}</dt><dd><time title="{{ item.created }}" datetime="{{ item.created|date:'c' }}">{{item.created|date}}</time></dd>
+            <dt>{% trans 'Created'%}</dt>
+            <dd><time title="{{ item.created }}" datetime="{{ item.created|date:'c' }}">{{item.created|date}}</time></dd>
 
         {% block asideContent %}{% endblock %}
 
@@ -104,17 +108,24 @@
             </li></ul>
             </dd>
         {% if request.user|in_workgroup:item.workgroup %}
+            <hr>
             <dt>{% trans 'Workgroup' %}</dt>
             <dd><a href="{% url 'aristotle:workgroup' iid=item.workgroup.id %}">{{ item.workgroup.name }}</a></dd>
             <dt>{% trans 'History' %}</dt>
             <dd><a href="{% url 'aristotle:item_history' iid=item.id %}">{% trans "View history" %}</a></dd>
+            {% if item.relatedDiscussions.exists %}
+            <dt>{% trans 'Discussions' %}</dt>
+            <dd><ul>
+                    {% for discussion in item.relatedDiscussions.all %}
+                    <li>
+                        <a href="{% url 'aristotle:discussionsPost' pid=discussion.id %}">{{ discussion.title }}</a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </dd>
+            {% endif %}
         {% endif %}
         </dl>
-        <div id="infobox_modal" class="modal fade">
-          <div class="modal-dialog">
-              <div class="modal-content">
-              </div><!-- /.modal-content -->
-            </div><!-- /.modal-dialog -->
-        </div><!-- /.modal -->
+        {% bootstrap_modal "infobox_modal" size='lg' %}
     </div>
 </aside>
