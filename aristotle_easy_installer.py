@@ -16,6 +16,8 @@ from __future__ import unicode_literals, print_function
 import sys, os, pip, re
 import getopt
 from subprocess import call
+from random import getrandbits
+import hashlib
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
@@ -57,13 +59,16 @@ def setup_mdr(name="",extensions=[],force_install=False,dry_install=False):
     if not extensions:
         do_install = valid_input("Do you wish to install any additional Aristotle modules? (y/n): ", yn ).lower()
         if do_install == 'y':
-            print("Select extensions to install (y/n)")        
+            print("Select extensions to install (y/n)")
             for display, ext_token in optional_modules:
                 do_ext = valid_input("  %s: "%display, yn ).lower()
                 if do_ext == 'y':
                     extensions.append(ext_token)
     if extensions:
         find_and_remove(name,extensions)
+
+    # Update the settings key
+    generate_secret_key(name)
 
     if dry_install:
         print("Performing dry run, no requirements installed.")
@@ -91,14 +96,25 @@ def setup_mdr(name="",extensions=[],force_install=False,dry_install=False):
         print("You can now locally test your installed registry by running the command './manage.py runserver'")
 
 
+def generate_secret_key(name):
+    key = "Change-this-key-as-soon-as-you-can"
+    gen_key = hashlib.sha224(str(getrandbits(128))).hexdigest() # This is probably not cryptographically secure, not for production.
+    fname = './%s/%s/settings.py'%(name,name)
+    with open(fname) as f:
+        s = f.read()
+    s = s.replace(key, gen_key)
+    with open(fname, "w") as f:
+        f.write(s)
+
 def install_reqs(name):
     #pip.main(['install', package])
     call(["pip", 'install', '-r%s/requirements.txt'%name])
-    return call 
+    return call
 
 def collect_static(name):
+    call(["./%s/manage.py"%name, 'migrate'])
     call(["./%s/manage.py"%name, 'collectstatic'])
-    return call 
+    return call
 
 def download_example_mdr():
     print("Attempting to retrieve example registry")
@@ -156,6 +172,6 @@ def main(argv=None):
         kwargs['force_install']=True
 
     return setup_mdr(**kwargs)
-        
+
 if __name__ == "__main__":
     sys.exit(main())

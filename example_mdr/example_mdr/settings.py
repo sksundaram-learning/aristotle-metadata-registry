@@ -25,7 +25,7 @@ from aristotle_mdr.required_settings import *
 # See https://docs.djangoproject.com/en/1.7/howto/deployment/checklist/
 # SECURITY WARNING: keep the secret key used in production secret!
 # You need to
-SECRET_KEY = 'Change-this-key-as-soon-as-you-can__$gn40vke+=@ck6'
+SECRET_KEY = 'Change-this-key-as-soon-as-you-can'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
