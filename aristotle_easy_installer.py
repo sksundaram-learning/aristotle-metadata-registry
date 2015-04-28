@@ -52,8 +52,7 @@ def setup_mdr(name="",extensions=[],force_install=False,dry_install=False):
         print ("   2. creating a new project using the django-admin tools and manually setting up a project")
         raise
 
-    os.rename('example_mdr',name)
-    os.rename(os.path.join(name,'example_mdr'),os.path.join(name,name))
+    rename_example_mdr(name)
 
     yn = '^[YyNn]?$' # yes/no regex
     if not extensions:
@@ -106,6 +105,11 @@ def generate_secret_key(name):
     with open(fname, "w") as f:
         f.write(s)
 
+def rename_example_mdr(name):
+    os.rename('example_mdr',name)
+    os.rename(os.path.join(name,'example_mdr'),os.path.join(name,name))
+    find_and_replace(name,'example_mdr',name)
+
 def install_reqs(name):
     #pip.main(['install', package])
     call(["pip", 'install', '-r%s/requirements.txt'%name])
@@ -123,8 +127,19 @@ def download_example_mdr():
     call(["svn", command, arg])
     return call
 
-def find_and_remove(mydir,extensions):
+def find_and_replace(mydir,old,new):
     """Really naive find and replace lovingly borrowed from stack overflow - http://stackoverflow.com/a/4205918/764357"""
+    for dname, dirs, files in os.walk(mydir):
+        for fname in files:
+            if fname.endswith(('py','txt','rst')):
+                fpath = os.path.join(dname, fname)
+                with open(fpath) as f:
+                    s = f.read()
+                s = s.replace(old,new)
+                with open(fpath, "w") as f:
+                    f.write(s)
+
+def find_and_remove(mydir,extensions):
     for dname, dirs, files in os.walk(mydir):
         for fname in files:
             if fname.endswith(('py','txt','rst')):

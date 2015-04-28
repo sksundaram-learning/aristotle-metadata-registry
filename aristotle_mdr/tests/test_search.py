@@ -35,7 +35,8 @@ class TestSearch(utils.LoggedInViewPages,TestCase):
             models.ObjectClass.objects.create(name=t,description="known xman",workgroup=self.xmen_wg,readyToReview=True)\
             for t in xmen.split() ]
         for item in self.item_xmen:
-            self.ra.register(item,models.STATES.standard,self.registrar)
+            registered = self.ra.register(item,models.STATES.standard,self.registrar)
+            self.assertTrue(item in registered['success'])
             self.assertTrue(item.is_public())
 
 

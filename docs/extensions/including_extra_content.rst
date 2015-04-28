@@ -20,8 +20,8 @@ Templates for comet content types are included under ``templates/comet/``. Under
 directory there is a further path ``extra_content``, so by creating a file
 named ``dataElement.html`` we can create a template for including extra relationship details.
 
-This will then be rendered in the "Relationships" section of the page.
+This will then be rendered in the "Related content" section of the page.
 
 The full path for a generic extra content template, would be::
 
-    templates/app_name/extra_content/model_name.html
+    templates/{app_name}/extra_content/{model_name}.html

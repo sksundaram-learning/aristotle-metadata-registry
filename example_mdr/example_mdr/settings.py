@@ -12,11 +12,16 @@ https://docs.djangoproject.com/en/1.7/ref/settings/
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
-BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 # Import all of the necessary settings to get the Aristotle server working.
 # These are defaults and can be overridden within this file.
 from aristotle_mdr.required_settings import *
+
+# Override these
+BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+TEMPLATE_DIRS = [os.path.join(BASE_DIR, 'templates')]
+FIXTURES_DIRS = [os.path.join(BASE_DIR, 'fixtures')]
+STATIC_ROOT =os.path.join(BASE_DIR, "static")
 
 # If you are using the Aristotle Glossary, uncomment the command below to enable
 # the glossary insertion button in the rich text editor

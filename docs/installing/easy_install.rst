@@ -51,7 +51,7 @@ For more information on configuring a more complete installation review the help
    If you wish to use these, removed the comments as directed by the documentation in ``settings.py``.
 
 6. If you are using a WSGI server (such as PythonAnywhere) you'll need to either point your server to
-   the `example_mdr/example_mdr/wsgi.py`` file or updated your WSGI configuration.
+   the projects `wsgi.py`` file or update your WSGI configuration.
 
    For more information on `configuring the PythonAnywhere WSGI server review their documentation <https://www.pythonanywhere.com/wiki/DjangoTutorial>`_.
 

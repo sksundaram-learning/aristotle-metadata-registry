@@ -1,12 +1,12 @@
-from django.test import TestCase
-from django.utils import timezone
-from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
+from django.test import TestCase
+from django.test.utils import setup_test_environment
+from django.utils import timezone
+
 import aristotle_mdr.models as models
 import aristotle_mdr.perms as perms
 from aristotle_mdr.utils import url_slugify_concept
 
-from django.test.utils import setup_test_environment
 setup_test_environment()
 from aristotle_mdr.tests import utils
 import datetime
@@ -352,6 +352,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
 
         self.assertEqual(self.item1.statuses.count(),1)
         self.item1 = self.itemType.objects.get(pk=self.item1.pk)
+        utils.wait_for_signal_to_fire()
         self.assertTrue(self.item1.is_public())
 
     def test_viewer_cannot_change_status(self):
