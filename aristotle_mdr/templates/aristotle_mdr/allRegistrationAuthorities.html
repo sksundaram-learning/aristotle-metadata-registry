@@ -13,7 +13,7 @@
 {% if registrationAuthorities.count > 0 %}
 <p>
     Below is a complete listing of the <a href="{% url 'aristotle:about' 'registration_authority' %}">registration authorities</a>
-    partcipating in the registry mainitained in this site - <a href="{% url 'aristotle:aboutThisSite' %}"><em>{{ config.SITE_NAME }}</em></a>
+    partcipating in the registry mainitained by this site.
 </p>
     <ul>
         {% for ra in registrationAuthorities %}
