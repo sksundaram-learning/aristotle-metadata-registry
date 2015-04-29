@@ -34,26 +34,7 @@
         {% block content %}
         {% endblock %}
     </div>
-    <footer class="footer">
-    <div class="container">
-    <div>
-        <a href="{% url 'aristotle:accessibility' %}">Accessibility</a>
-        <a href="{% url 'aristotle:copyright' %}">Copyright</a>
-        <a href="{% url 'aristotle:disclaimer' %}">Disclaimer</a>
-        <a href="{% url 'aristotle:privacy' %}">Privacy</a>
-    </div>
-    <div>
-        <a href="{% url 'aristotle:contact' %}">Contact</a>
-        <a href="{% url 'aristotle:helpMain' %}">Help</a>
-        <a href="#">Sitemap</a>
-    </div>
-    {# Removing or altering the following line may breach your licence #}
-    {# If you extend this file make sure the following link is retained in your footer #}
-    <span id="credit">
-        Powered by the <a href="https://github.com/aristotle-mdr/aristotle-metadata-registry">Aristotle MetaData Registry</a>
-    </span>
-    </div>
-    </footer>
+    {% include 'aristotle_mdr/footer.html' %}
     <div class="well hidden" id="loading_indicator"><i class="fa fa-spinner fa-spin"></i> {% trans 'Loading' %}</div>
    </body>
 </html>

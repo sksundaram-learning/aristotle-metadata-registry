@@ -31,8 +31,8 @@ class StatusInline(admin.TabularInline):
         return qs
 
     def has_change_permission(self, request,obj=None):
-        if obj is not None and perms.user_can_change_status(request.user,obj):
-            return True
+        if obj is not None:
+            return perms.user_can_change_status(request.user,obj)
         return super(StatusInline, self).has_change_permission(request,obj=None)
 
     def has_add_permission(self, request):
@@ -133,10 +133,8 @@ class ConceptAdmin(CompareVersionAdmin):
         if obj is None:
             return True
         else:
-            if perms.user_can_edit(request.user,obj):
-                return True
-            else:
-                return super(ConceptAdmin, self).has_change_permission(request,obj=None)
+            return perms.user_can_edit(request.user,obj)
+
     def has_add_permission(self, request):
         return perms.user_is_editor(request.user)
 
@@ -170,48 +168,16 @@ class ConceptAdmin(CompareVersionAdmin):
             response['location'] = reverse("aristotle:item",args=(obj.id,))
         return response
 
-
-class DataElementAdmin(ConceptAdmin):
-    name_suggest_fields = ['dataElementConcept','valueDomain']
-    fieldsets = ConceptAdmin.fieldsets + [
-            ('Components', {'fields': ['dataElementConcept','valueDomain']}),
-    ]
-
-class DataElementDerivationAdmin(ConceptAdmin):
-    fieldsets = ConceptAdmin.fieldsets + [
-            ('Components', {'fields': ['derivation_rule','derives','inputs']}),
-    ]
-
-class DataElementConceptAdmin(ConceptAdmin):
-    name_suggest_fields = ['objectClass','property']
-    fieldsets = ConceptAdmin.fieldsets + [
-            ('Components', {'fields': ['objectClass','property']}),
-    ]
-
-class ConceptualDomainAdmin(ConceptAdmin):  pass
-class DataTypeAdmin(ConceptAdmin):          pass
-class ObjectClassAdmin(ConceptAdmin):       pass
-class PackageAdmin(ConceptAdmin):           pass
-class PropertyAdmin(ConceptAdmin):          pass
-class UnitOfMeasureAdmin(ConceptAdmin):     pass
-
+#For ValueDomains
 class CodeValueInline(admin.TabularInline):
     form = MDRForms.PermissibleValueForm
     #fields = ("value","meaning")
     sortable_field_name = "order"
     extra = 1
-
 class PermissibleValueInline(CodeValueInline):
     model = MDR.PermissibleValue
 class SupplementaryValueInline(CodeValueInline):
     model = MDR.SupplementaryValue
-
-
-class ValueDomainAdmin(ConceptAdmin):
-    fieldsets = ConceptAdmin.fieldsets + [
-            ('Representation', {'fields': ['format','maximum_length','unit_of_measure','data_type']}),
-    ]
-    inlines = ConceptAdmin.inlines + [PermissibleValueInline,SupplementaryValueInline]
 
 class RegistrationAuthorityAdmin(admin.ModelAdmin):
     list_display = ['name', 'description','created','modified']
@@ -226,21 +192,8 @@ class RegistrationAuthorityAdmin(admin.ModelAdmin):
             {'fields': ['notprogressed','incomplete','candidate','recorded','qualified','standard','preferred','superseded','retired',]}),
     ]
 
-
-# Register your models here.
-admin.site.register(MDR.ConceptualDomain,ConceptualDomainAdmin)
-admin.site.register(MDR.DataElement,DataElementAdmin)
-admin.site.register(MDR.DataType,DataTypeAdmin)
-admin.site.register(MDR.DataElementDerivation,DataElementDerivationAdmin)
-admin.site.register(MDR.DataElementConcept,DataElementConceptAdmin)
-admin.site.register(MDR.Package,PackageAdmin)
-admin.site.register(MDR.Property,PropertyAdmin)
-admin.site.register(MDR.ObjectClass,ObjectClassAdmin)
 admin.site.register(MDR.RegistrationAuthority,RegistrationAuthorityAdmin)
-admin.site.register(MDR.UnitOfMeasure,UnitOfMeasureAdmin)
-admin.site.register(MDR.ValueDomain,ValueDomainAdmin)
 admin.site.register(MDR.Workgroup,WorkgroupAdmin)
-
 
 admin.site.register(MDR.Measure)
 #admin.site.register(MDR.)
@@ -273,3 +226,31 @@ admin.site.register(User, AristotleUserAdmin)
 
 #reversion.unregister(MDR.ValueDomain)
 #reversion.register(MDR.ValueDomain) #, follow=["permissibleValues","supplementaryValues"])
+
+
+from aristotle_mdr.register import register_concept
+register_concept(MDR.ObjectClass)
+register_concept(MDR.Property)
+register_concept(MDR.ValueDomain,
+    extra_fieldsets = [('Representation', {'fields': ['format','maximum_length','unit_of_measure','data_type']}),],
+    extra_inlines = [PermissibleValueInline,SupplementaryValueInline]
+    )
+register_concept(MDR.DataElementConcept,
+    name_suggest_fields = ['objectClass','property'],
+    extra_fieldsets = [('Components', {'fields': ['objectClass','property']}),]
+    )
+
+register_concept(MDR.DataElement,
+    name_suggest_fields = ['dataElementConcept','valueDomain'],
+    extra_fieldsets = [('Components', {'fields': ['dataElementConcept','valueDomain']}),]
+    )
+
+register_concept(MDR.DataElementDerivation,
+    extra_fieldsets = [('Derivation', {'fields': ['derivation_rule','derives','inputs']}),]
+    )
+
+register_concept(MDR.ConceptualDomain)
+register_concept(MDR.DataType)
+register_concept(MDR.Package)
+register_concept(MDR.UnitOfMeasure)
+

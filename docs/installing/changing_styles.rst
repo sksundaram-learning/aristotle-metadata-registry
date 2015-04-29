@@ -32,7 +32,7 @@ following location in the project site will be used instead::
     custom_site_static/aristotle_mdr/bootstrap/bootstrap.min.css
 
 More information about these is available in the
-`Django documentation on static files <https://docs.djangoproject.com/en/1.4/ref/contrib/staticfiles/#staticfiles-finders>`_.
+`Django documentation on static files <https://docs.djangoproject.com/en/stable/ref/contrib/staticfiles/#staticfiles-finders>`_.
 
 
 Changing the Bootstrap file by overriding the settings

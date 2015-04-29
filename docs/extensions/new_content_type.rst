@@ -1,8 +1,8 @@
 Making new item types
 =====================
 
-Most of the overhead for creating new item types in Aristotle is taken care of by
-inheritance within the Python language and the Django web framework.
+Most of the overhead for creating new item types in Aristotle-MDR is taken care
+of by inheritance within the Python language and the Django web framework.
 
 For example, creating a new item within the registry requires as little code as::
 
@@ -12,7 +12,7 @@ For example, creating a new item within the registry requires as little code as:
         responseLength = models.PositiveIntegerField()
 
 This code creates a new "Question" object in the registry that can be progressed
-like any standard item in Aristotle. Once the the appropriate admin pages are
+like any standard item in Aristotle-MDR. Once the the appropriate admin pages are
 set up, from a usability and publication standpoint this would be indistinguishable
 from an Aristotle-MDR item, and would get a instantly get a number of
 :doc:`features that are available to all Aristotle 'concepts' without having to write any additional code </extensions/out_of_the_box_features>`
@@ -23,12 +23,11 @@ registered and progressed within the registry and has all of the correct permiss
 associated with all of these actions.
 
 Likewise, creating relationships to pre-existing items only requires the correct
-application of `Django relationships <https://docs.djangoproject.com/en/1.6/topics/db/examples/>`_
+application of `Django relationships <https://docs.djangoproject.com/en/stable/topics/db/examples/>`_
 such as a ``ForeignKey`` or ``ManyToManyField``, like so::
 
     import aristotle_mdr
     from django.db import models
-    ...
 
     class Question(aristotle_mdr.models.concept):
         questionText = models.TextField()
@@ -39,7 +38,7 @@ such as a ``ForeignKey`` or ``ManyToManyField``, like so::
                 null=True,blank=True)
 
 This code, extends our Question model from the previous example and adds an optional
-link to the 11179 Data Element model managed by Aristotle and even add a new property
+link to the ISO 11179 Data Element model managed by Aristotle-MDR and even adds a new property
 on to Data Elements, so that ``myDataElement.questions`` would return of all Questions
 that are used to collect information for that Data Element. Its also possible to
 :doc:`include content from objects across relations on other pages </extensions/including_extra_content>`
@@ -51,7 +50,8 @@ Caveats: ``concept`` versus ``_concept``
 
 There is a need for some objects to link to any arbitrary concept, for example the
 ``aristotle.models.Package`` object and the favourites field of `aristotle.models.AristotleProfile`.
-Because of this there is a distinction between a ``concept`` and a ``_concept``.
+Because of this there is a distinction between the Aristotle-MDR model objects
+``concept`` and ``_concept``.
 
 Abstract base classes in Django allow for the easy creation of items that share
 similar properties, without introducing additional fields into the database. They also
@@ -61,11 +61,18 @@ than to the base type.
 .. autoclass:: aristotle_mdr.models._concept
 .. autoclass:: aristotle_mdr.models.concept
 
-The correct way to include both of these models would be as shown below::
+The correct way to use both of these models would be as shown below::
 
     import aristotle_mdr.models import concept, _concept
-    class AReallyComplexExampleItem(concept):
+    class ReallyComplexExampleItem(concept):
         relatedTo = models.ManyToManyField(_concept)
+
+In this example, the model ``ReallyComplexExampleItem`` inherits from ``concept``,
+but also includes a many-to-many relationship that links it to any number of
+registerable concepts, such as Data Element or Objects Classes, additionally
+because of the inheritance, this would allow links to extended models
+such as Questions or even self-referential links to other instances of the
+``ReallyComplexExampleItem`` model type.
 
 Retrieving the "true item" when you are returned a ``_concept``.
 ----------------------------------------------------------------
@@ -93,13 +100,25 @@ expected item, and not the ``_concept`` parent, is used.
 In the very worst case a single additional query is made and the right item is used, in
 the best case an very cheap Python property is called and the item is returned straight back.
 
-Creating admin pages for new items types
+
+Setting up search, admin pages and autocompletes for new items types
 ----------------------------------------
 
-The creation and registration of Admin page is done in the ``admin.py`` file of a Django app.
+The easiest way to configure an item for searching and editing within the
+django-admin app is using the ``aristotle_mdr.register.register_concept``
+method, described in :doc:`/extensions/registering_new_content_types`.
+
+However,
+
+Creating admin pages
+++++++++++++++++++++
+
+However, if customisation of Admin pages for an extension is required this can
+be done through the creation and registration of classes in the ``admin.py``
+file of a Django app.
 
 Because of the intricate permissions around content with the Aristotle Registry,
-its recommended that admin pages for new items extend from the existing
+its recommended that admin pages for new items extend from the
 ``aristotle.admin.ConceptAdmin`` class. This helps to ensure that there is a
 consistent ordering of fields, and information is exposed only to the correct
 users.
@@ -119,25 +138,8 @@ way to extend this is to add extra options to the end of the ``fieldsets`` like 
         ]
 
 **It is important to always import** ``aristotle.admin`` **with an alias as shown above**,
-otherwise there are circular dependancies across various apps when importing.
-This will prevent the app and the whole site from being used.
-
-Aristotle provides a replacement for the Grappelli autocomplete foreign key fields with those provided by
-Django-autocomplete-light. Using these will give a unified behavior to extensions, so using these is strongly
-recommended if model relations exist. These can be added by specifying options for the objects in the
-``light_autocomplete_lookup_fields`` class property for your Admin class. This is done by declaring fields
-in either the foreign key (``fk``) or many-to-many (``array``) within the ``light_autocomplete_lookup_fields``
-dictionary. Each of these keys provides a list of tuples that give the property of the Admin form
-to provide an autcomplete field for, and the model it is associated with.
-
-For example, for our ``QuestionAdmin`` class, we can replace the ``collectedDataElement`` field with a lookup
-field by adding the following setting::
-
-        light_autocomplete_lookup_fields = {
-            'fk': [
-                ('collectedDataElement',MDR.DataElement ),
-                ] +ConceptAdmin.light_autocomplete_lookup_fields['fk'],
-        }
+otherwise there are circular dependancies across various apps when importing which
+will prevent the app, and thus the whole site, from being used.
 
 Lastly, Aristotle-MDR provides an easy way to give users a suggestion button when entering a name to
 ensure consistancy within the registry. This can be added to an Admin page by specifying the fields that
@@ -172,21 +174,17 @@ fieldsets, autcompeletes and suggested names is::
                 ('Relations',
                     {'fields': ['collectedDataElement']}),
         ]
-        light_autocomplete_lookup_fields = {
-            'fk': [
-                ('collectedDataElement',MDR.DataElement ),
-                ] +ConceptAdmin.light_autocomplete_lookup_fields['fk'],
-        }
         name_suggest_fields = ['questionText','collectedDataElement']
 
 `For more information on configuring an admin site for Django models, consult the
-Django documentation <https://docs.djangoproject.com/en/1.6/ref/contrib/admin/>`_
+Django documentation <https://docs.djangoproject.com/en/stable/ref/contrib/admin/>`_
 as well as `the documentation for Grappelli admin extensions <https://django-grappelli.readthedocs.org/>`_.
 
 Making new item types searchable
---------------------------------
+++++++++++++++++++++++++++++++++
 
-The creation and registration of haystack search indexes is done in the ``search_indexes.py`` file of a Django app.
+The creation and registration of haystack search indexes is done in the
+``search_indexes.py`` file of a Django app.
 
 On an Aristotle-MDR powered site, it is possible to restrict search results across a number of
 criteria including the registration status of an item, its workgroup or Registration
@@ -304,8 +302,8 @@ from this class can be done like so::
         # Inherits name and description.
         isoCode = models.CharField(maxLength=3)
 
-For example, in Aristotle "Unit of Measure" is an ``unmanagedObject`` type, that is used
-to give extra context to Value Domains.
+For example, in Aristotle-MDR "Measure" is an ``unmanagedObject`` type, that is used
+to give extra context to `UnitOfMeasure` objects.
 
 
 A complete example of an Aristotle Extension

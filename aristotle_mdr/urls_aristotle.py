@@ -102,13 +102,7 @@ urlpatterns = patterns('aristotle_mdr.views',
     url(r'^help/(?P<template>.+)/?$', views.HelpTemplateView.as_view(), name="help"),
     url(r'^help/?$', TemplateView.as_view(template_name='aristotle_mdr/static/help/help.html'), name="helpMain"),
 
-
-    url(r'^about/?$', TemplateView.as_view(template_name='site/about.html'), name="aboutThisSite"),
-    url(r'^privacy/?$', TemplateView.as_view(template_name='site/privacy.html'), name="privacy"),
-    url(r'^copyright/?$', TemplateView.as_view(template_name='site/copyright.html'), name="copyright"),
-    url(r'^disclaimer/?$', TemplateView.as_view(template_name='site/disclaimer.html'), name="disclaimer"),
-    url(r'^accessibility/?$', TemplateView.as_view(template_name='site/accessibility.html'), name="accessibility"),
-    url(r'^contact/?$', TemplateView.as_view(template_name='site/contact.html'), name="contact"),
+    url(r'^accessibility/?$', TemplateView.as_view(template_name='aristotle_mdr/static/accessibility.html'), name="accessibility"),
 
     url(r'^search/?', search_view_factory(
      view_class=views.PermissionSearchView,

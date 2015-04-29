@@ -12,11 +12,16 @@ https://docs.djangoproject.com/en/1.7/ref/settings/
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
-BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 # Import all of the necessary settings to get the Aristotle server working.
 # These are defaults and can be overridden within this file.
 from aristotle_mdr.required_settings import *
+
+# Override these
+BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+TEMPLATE_DIRS = [os.path.join(BASE_DIR, 'templates')]
+FIXTURES_DIRS = [os.path.join(BASE_DIR, 'fixtures')]
+STATIC_ROOT =os.path.join(BASE_DIR, "static")
 
 # If you are using the Aristotle Glossary, uncomment the command below to enable
 # the glossary insertion button in the rich text editor
@@ -25,7 +30,7 @@ from aristotle_mdr.required_settings import *
 # See https://docs.djangoproject.com/en/1.7/howto/deployment/checklist/
 # SECURITY WARNING: keep the secret key used in production secret!
 # You need to
-SECRET_KEY = 'Change-this-key-as-soon-as-you-can__$gn40vke+=@ck6'
+SECRET_KEY = 'Change-this-key-as-soon-as-you-can'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -45,9 +50,9 @@ ALLOWED_HOSTS = []
 # * the url import in `example_mdr/urls.py`
 INSTALLED_APPS = (
     'haystack', # Provides search functionality in Aristotle-MDR (Must be installed first) - http://haystacksearch.org/
-    #'aristotle_ddi_utils', # Download formats in the DDI3.2 XML format - https://github.com/aristotle-mdr/aristotle-ddi-utils
-    #'aristotle_dse', # Additional models for describing datasets - https://github.com/aristotle-mdr/aristotle-dataset-extensions
-    #'aristotle_glossary', # Model for managing and inserting glossary content - https://github.com/aristotle-mdr/aristotle-glossary
+    #!aristotle_ddi! 'aristotle_ddi_utils', # Download formats in the DDI3.2 XML format - https://github.com/aristotle-mdr/aristotle-ddi-utils
+    #!aristotle_dse! 'aristotle_dse', # Additional models for describing datasets - https://github.com/aristotle-mdr/aristotle-dataset-extensions
+    #!aristotle_glossary! 'aristotle_glossary', # Model for managing and inserting glossary content - https://github.com/aristotle-mdr/aristotle-glossary
     'aristotle_mdr', #The main App for the Metadata Registry - https://github.com/aristotle-mdr/aristotle-metadata-registry
 ) + INSTALLED_APPS # Installs the required apps to run aristotle.
 

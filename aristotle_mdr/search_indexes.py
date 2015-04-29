@@ -2,10 +2,26 @@ import datetime
 import haystack.indexes as indexes
 
 import aristotle_mdr.models as models
+from django.template import TemplateDoesNotExist
 from django.utils import timezone
 
+import logging
+logger = logging.getLogger(__name__)
+logger.debug("Logging started for " + __name__)
+
+class ConceptFallbackCharField(indexes.CharField):
+    def prepare_template(self, obj):
+        try:
+            return super(ConceptFallbackCharField,self).prepare_template(obj)
+        except TemplateDoesNotExist:
+
+            logger.debug("No search template found for %s, uning untyped fallback."%obj)
+
+            self.template_name = "search/indexes/aristotle_mdr/untyped_concept_text.txt"
+            return super(ConceptFallbackCharField,self).prepare_template(obj)
+
 class baseObjectIndex(indexes.SearchIndex):
-    text = indexes.CharField(document=True, use_template=True)
+    text = ConceptFallbackCharField(document=True, use_template=True)
     modified = indexes.DateTimeField(model_attr='modified')
     created = indexes.DateTimeField(model_attr='created')
     name = indexes.CharField(model_attr='name',boost=1)
@@ -88,34 +104,3 @@ class conceptIndex(baseObjectIndex):
         states = ["%s___%s"%(str(s.registrationAuthority.id),str(s.state))
                     for s in obj.statuses.all()]
         return states
-    """
-    def get_model(self):
-        return models.managedObject
-    """
-class ObjectClassIndex(conceptIndex, indexes.Indexable):
-    def get_model(self):
-        return models.ObjectClass
-
-class PropertyIndex(conceptIndex, indexes.Indexable):
-    def get_model(self):
-        return models.Property
-
-class PackageIndex(conceptIndex, indexes.Indexable):
-    def get_model(self):
-        return models.Package
-
-class DataElementConceptIndex(conceptIndex, indexes.Indexable):
-    def get_model(self):
-        return models.DataElementConcept
-
-class DataElementIndex(conceptIndex, indexes.Indexable):
-    def get_model(self):
-        return models.DataElement
-
-class ValueDomainIndex(conceptIndex, indexes.Indexable):
-    def get_model(self):
-        return models.ValueDomain
-
-class ConceptualDomainIndex(conceptIndex, indexes.Indexable):
-    def get_model(self):
-        return models.ConceptualDomain

@@ -5,7 +5,7 @@ Installing Aristotle MetaData Registry
 .. toctree::
    :maxdepth: 2
 
-   quickstart.rst
+   easy_install.rst
    integrate_with_django_project.rst
    settings.rst
    adding_pages.rst
