@@ -123,7 +123,7 @@ def collect_static(name):
 def download_example_mdr():
     print("Attempting to retrieve example registry")
     command = "export"
-    arg = "https://github.com/legostormtroopr/aristotle-metadata-registry/branches/plato/example_mdr/"
+    arg = "https://github.com/aristotle-mdr/aristotle-metadata-registry/trunk/example_mdr/"
     call(["svn", command, arg])
     return call
 
