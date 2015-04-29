@@ -11,8 +11,8 @@ from aristotle_mdr.utils import url_slugify_concept
 from django_tools.unittest_utils.BrowserDebug import debug_response
 
 from time import sleep
-def wait_for_signal_to_fire():
-    sleep(1)
+def wait_for_signal_to_fire(seconds=1):
+    sleep(seconds)
 
 # Since all managed objects have the same rules, these can be used to cover everything
 # This isn't an actual TestCase, we'll just pretend it is
@@ -211,6 +211,7 @@ class ManagedObjectVisibility(object):
 
         from django.core import management # Lets recache this workgroup
         management.call_command('recache_registration_authority_item_visibility', ra=[self.ra.pk], verbosity=0)
+        wait_for_signal_to_fire(seconds=10) # Not sure if the above in async or not
 
         self.item = models._concept.objects.get(id=self.item.id) # Stupid cache
         self.assertEqual(self.item.is_public(),True)
@@ -220,6 +221,7 @@ class ManagedObjectVisibility(object):
 
         from django.core import management # Lets recache this workgroup
         management.call_command('recache_registration_authority_item_visibility', ra=[self.ra.pk], verbosity=0)
+        wait_for_signal_to_fire(seconds=10) # Not sure if the above in async or not
 
         self.item = models._concept.objects.get(id=self.item.id) # Stupid cache
         self.assertEqual(self.item.is_public(),False)
@@ -262,6 +264,7 @@ class ManagedObjectVisibility(object):
 
         from django.core import management # Lets recache this RA
         management.call_command('recache_registration_authority_item_visibility', ra=[self.ra.pk], verbosity=0)
+        wait_for_signal_to_fire(seconds=10) # Not sure if the above in async or not
 
         self.item = models._concept.objects.get(id=self.item.id) # Stupid cache
         self.assertEqual(self.item.is_locked(),False)
@@ -271,6 +274,7 @@ class ManagedObjectVisibility(object):
 
         from django.core import management # Lets recache this RA
         management.call_command('recache_registration_authority_item_visibility', ra=[self.ra.pk], verbosity=0)
+        wait_for_signal_to_fire(seconds=10) # Not sure if the above in async or not
 
         self.item = models._concept.objects.get(id=self.item.id) # Stupid cache
         self.assertEqual(self.item.is_locked(),True)
@@ -479,21 +483,24 @@ class LoggedInViewPages(object):
         for html in args:
             try:
                 self.assertContains(response, html, html=True)
-            except AssertionError as e:
+            except AssertionError as e: #pragma: no cover
+                # Needs no coverage as the test should pass to be successful
                 debug_response(response, msg="%s" % e) # from django-tools
                 raise
     def assertNotContainsHtml(self, response, *args):
         for html in args:
             try:
                 self.assertNotContains(response, html, html=True)
-            except AssertionError as e:
+            except AssertionError as e: #pragma: no cover
+                # Needs no coverage as the test should pass to be successful
                 debug_response(response, msg="%s" % e) # from django-tools
                 raise
 
     def assertResponseStatusCodeEqual(self,response,code):
             try:
                 self.assertEqual(response.status_code, code)
-            except AssertionError as e:
+            except AssertionError as e: #pragma: no cover
+                # Needs no coverage as the test should pass to be successful
                 print(response)
                 print(e)
                 raise

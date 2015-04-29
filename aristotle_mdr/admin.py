@@ -31,8 +31,8 @@ class StatusInline(admin.TabularInline):
         return qs
 
     def has_change_permission(self, request,obj=None):
-        if obj is not None and perms.user_can_change_status(request.user,obj):
-            return True
+        if obj is not None:
+            return perms.user_can_change_status(request.user,obj)
         return super(StatusInline, self).has_change_permission(request,obj=None)
 
     def has_add_permission(self, request):
@@ -133,10 +133,8 @@ class ConceptAdmin(CompareVersionAdmin):
         if obj is None:
             return True
         else:
-            if perms.user_can_edit(request.user,obj):
-                return True
-            else:
-                return super(ConceptAdmin, self).has_change_permission(request,obj=None)
+            return perms.user_can_edit(request.user,obj)
+
     def has_add_permission(self, request):
         return perms.user_is_editor(request.user)
 
