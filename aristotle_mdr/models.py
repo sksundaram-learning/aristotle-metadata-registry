@@ -87,9 +87,6 @@ class baseAristotleObject(TimeStampedModel):
     @property
     def url_name(self):
         return "item" # TODO: Changed as we've altered URL handling,but will refactor calls to this away later
-    @property
-    def help_name(self):
-        return self._meta.model_name
 
     def can_edit(self,user):
         raise NotImplementedError #pragma: no cover -- This should always be overridden
@@ -124,6 +121,9 @@ class registryGroup(unmanagedObject):
         abstract = True
     def can_edit(self,user):
         return user.is_superuser or self.managers.filter(pk=user.pk).exists()
+    @property
+    def help_name(self):
+        return self._meta.model_name
 
 """
 A registration authority is a proxy group that describes a governance process for "standardising" metadata.
@@ -659,6 +659,9 @@ class concept(_concept):
 
     class Meta:
         abstract = True
+    @property
+    def help_name(self):
+        return self._meta.model_name
 
     @property
     def item(self):
@@ -701,19 +704,29 @@ class Status(TimeStampedModel):
             )
 
 class ObjectClass(concept):
+    """set of ideas, abstractions or things in the real world that are identified
+    with explicit boundaries and meaning and whose properties and behaviour follow
+    the same rules (3.2.88)
+    """
     template = "aristotle_mdr/concepts/objectClass.html"
 
     class Meta:
         verbose_name_plural = "Object Classes"
 
 class Property(concept):
+    """quality common to all members of an :model:`aristotle_mdr.ObjectClass` (3.2.100)
+    """
     template = "aristotle_mdr/concepts/property.html"
     class Meta:
         verbose_name_plural = "Properties"
 
 class Measure(unmanagedObject):
     pass
+
 class UnitOfMeasure(concept):
+    """actual units in which the associated values are measured
+    [:model:`aristotle_mdr.ValueDomain`] (3.2.138)
+    """
     class Meta:
         verbose_name_plural = "Units Of Measure"
 
@@ -722,14 +735,17 @@ class UnitOfMeasure(concept):
     symbol =  models.CharField(max_length=20,blank=True)
 
 class DataType(concept):
+    """set of distinct values, characterized by properties of those values and
+    by operations on those values (3.1.9)"""
     template = "aristotle_mdr/concepts/dataType.html"
 
 class ConceptualDomain(concept):
+    """ concept that expresses its description or valid instance meanings (3.2.21)
     """
-    Implementation note: Since a Conceptual domain "must be either one or
-    both an Enumerated Conceptual or a Described_Conceptual_Domain" there is
-    no reason to model them separately.
-    """
+
+    #Implementation note: Since a Conceptual domain "must be either one or
+    #both an Enumerated Conceptual or a Described_Conceptual_Domain" there is
+    #no reason to model them separately.
 
     template = "aristotle_mdr/concepts/conceptualDomain.html"
     #TODO: This needs to be changed to just 'description'
@@ -755,11 +771,11 @@ class ValueMeaning(aristotleComponent):
 
 
 class ValueDomain(concept):
-    """
-    Implementation note: Since a Value domain "must be either one or
-    both an Enumerated Valued or a Described_Value_Domain" there is
-    no reason to model them separately.
-    """
+    """set of permissible values (3.2.140)"""
+
+    #Implementation note: Since a Value domain "must be either one or
+    #both an Enumerated Valued or a Described_Value_Domain" there is
+    #no reason to model them separately.
 
     template = "aristotle_mdr/concepts/valueDomain.html"
 
@@ -813,6 +829,8 @@ class SupplementaryValue(AbstractValue):
 
 
 class DataElementConcept(concept):
+    """concept that is an association of a :model:`aristotle_mdr.Property` with an :model:`aristotle_mdr.ObjectClass` (3.2.29)"""
+
     property_ = property #redefine in this context as we need 'property' for the 11179 terminology
     template = "aristotle_mdr/concepts/dataElementConcept.html"
     objectClass = models.ForeignKey(ObjectClass,blank=True,null=True)
@@ -825,6 +843,8 @@ class DataElementConcept(concept):
 
 # Yes this name looks bad - blame 11179:3:2013 for renaming "administered item" to "concept"
 class DataElement(concept):
+    """unit of data that is considered in context to be indivisible (3.2.28)"""
+
     template = "aristotle_mdr/concepts/dataElement.html"
     dataElementConcept = models.ForeignKey(DataElementConcept,verbose_name = "Data Element Concept",blank=True,null=True)
     valueDomain = models.ForeignKey(ValueDomain,verbose_name = "Value Domain",blank=True,null=True)
@@ -835,6 +855,10 @@ class DataElement(concept):
 
 
 class DataElementDerivation(concept):
+    """application of a derivation rule to one or more
+    input :model:`aristotle_mdr.DataElement`s to derive one or more
+    output :model:`aristotle_mdr.DataElement`s (3.2.33)"""
+
     derives = models.ForeignKey(DataElement,related_name="derived_from",
                 blank=True,null=True)
     inputs = models.ManyToManyField(DataElement,
@@ -844,6 +868,7 @@ class DataElementDerivation(concept):
 
 
 class Package(concept):
+    """ Generic collection of concepts """
     items = models.ManyToManyField(_concept,related_name="packages",blank=True,null=True)
     template = "aristotle_mdr/concepts/package.html"
 

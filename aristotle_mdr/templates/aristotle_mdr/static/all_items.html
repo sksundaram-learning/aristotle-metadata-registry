@@ -8,15 +8,32 @@
 {% endblock %}
 {% block description %}
 <div>
-{% for app,app_models in models.items %}
-<h2>{{ app }}</h2>
+    Below is a list of items with help pages from this repository
+    {% if models.items|length > 1 %} and the extension in which it is defined.{% endif %}
+    Help for each item
+    {% if models.items|length > 1 %} or extension {% endif %}
+    is available by clicking its name.
+
+<dl>
+{% for label,app in models.items %}
+<dt>                {% if app.about_url %}
+                    <a href="{{ app.about_url }}">{{ app.verbose_name }}</a>
+                {% else %}
+                    {{ app.verbose_name }}
+                {% endif %}
+</dt><dd>
     <ul>
-    {% for m in app_models %}
-        {% if m.help_name %}
-        <li><a href="{% url 'aristotle:about' m.help_name %}">{{ m.get_verbose_name }}</a></li>
-        {% endif %}
+    {% for m in app.mymodels %}
+        {% with model=m.model_class %}
+            {% if model.help_name %}
+            <li>
+                <a href="{% url 'aristotle:about' model.help_name %}">{{ model.get_verbose_name }}</a>
+            </li>
+            {% endif %}
+        {% endwith %}
     {% endfor %}
-    </ul>
+    </ul></dd>
 {% endfor %}
+</dl>
 </div>
 {% endblock %}

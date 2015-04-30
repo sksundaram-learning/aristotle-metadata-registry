@@ -326,7 +326,6 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.assertRedirects(response,reverse('django.contrib.auth.views.login')+"?next="+reverse('aristotle:toggleFavourite', args=[self.item1.id]))
 
     def test_registrar_can_change_status(self):
-        self.logout()
         self.login_registrar()
 
         self.assertFalse(perms.user_can_view(self.registrar,self.item1))
@@ -355,6 +354,39 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         utils.wait_for_signal_to_fire()
         self.assertTrue(self.item1.is_public())
 
+    def test_registrar_cannot_use_faulty_statuses(self):
+        self.login_registrar()
+
+        self.assertFalse(perms.user_can_view(self.registrar,self.item1))
+        self.item1.readyToReview = True
+        self.item1.save()
+        self.item1 = self.itemType.objects.get(pk=self.item1.pk)
+
+        self.assertTrue(perms.user_can_view(self.registrar,self.item1))
+        self.assertTrue(perms.user_can_change_status(self.registrar,self.item1))
+
+        response = self.client.get(reverse('aristotle:changeStatus',args=[self.item1.id]))
+        self.assertEqual(response.status_code,200)
+
+        self.assertEqual(self.item1.statuses.count(),0)
+        response = self.client.post(reverse('aristotle:changeStatus',args=[self.item1.id]),
+                    {   'registrationAuthorities': [str(self.ra.id)],
+                        'state': "Not a number",#obviously wrong
+                        'changeDetails': "testing",
+                        'cascadeRegistration': 0, #no
+                    }
+                )
+        self.assertFormError(response, 'form', 'state', 'Select a valid choice. Not a number is not one of the available choices.')
+
+        response = self.client.post(reverse('aristotle:changeStatus',args=[self.item1.id]),
+                    {   'registrationAuthorities': [str(self.ra.id)],
+                        'state': "343434", #also wrong
+                        'changeDetails': "testing",
+                        'cascadeRegistration': 0, #no
+                    }
+                )
+        self.assertFormError(response, 'form', 'state', 'Select a valid choice. 343434 is not one of the available choices.')
+
     def test_viewer_cannot_change_status(self):
         self.login_viewer()
 
@@ -367,6 +399,17 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
 
         response = self.client.get(reverse('aristotle:changeStatus',args=[self.item1.id]))
         self.assertRedirects(response,reverse('django.contrib.auth.views.login')+"?next="+reverse('aristotle:changeStatus', args=[self.item1.id]))
+
+    def assertRedirects(self,*args,**kwargs):
+        # There is an issue with these failing when we check a response very quickly after changing status
+        # so if the redirect fails, wait and try again
+        try:
+            super(LoggedInViewConceptPages, self).assertRedirects(*args,**kwargs)
+        except AssertionError: # pragma: no cover
+            # This shouldn't fire, so no coverage is needed
+            print("Assertion error, waiting and retrying")
+            utils.wait_for_signal_to_fire(3)
+            super(LoggedInViewConceptPages, self).assertRedirects(*args,**kwargs)
 
 class ObjectClassViewPage(LoggedInViewConceptPages,TestCase):
     url_name='objectClass'

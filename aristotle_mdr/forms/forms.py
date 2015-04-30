@@ -128,13 +128,8 @@ class ChangeStatusForm(forms.Form):
 
     def clean_state(self):
         state = self.cleaned_data['state']
-        try:
-            state = int(state)
-            MDR.STATES[state]
-        except (ValueError, IndexError):
-            # state is either not a string or not a valid STATE, so raise an error
-            # Any other errors will be thrown accordingly
-            raise forms.ValidationError("Please select a valid status.")
+        state = int(state)
+        MDR.STATES[state]
         return state
 
 # Thanks http://stackoverflow.com/questions/6958708/grappelli-to-hide-sortable-field-in-inline-sortable-django-admin
