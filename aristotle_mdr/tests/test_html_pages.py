@@ -376,7 +376,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
                         'cascadeRegistration': 0, #no
                     }
                 )
-        self.assertFormError(response, 'form', 'state', 'Please select a valid status.')
+        self.assertFormError(response, 'form', 'state', 'Select a valid choice. Not a number is not one of the available choices.')
 
         response = self.client.post(reverse('aristotle:changeStatus',args=[self.item1.id]),
                     {   'registrationAuthorities': [str(self.ra.id)],
@@ -385,7 +385,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
                         'cascadeRegistration': 0, #no
                     }
                 )
-        self.assertFormError(response, 'form', 'state', 'Please select a valid status.')
+        self.assertFormError(response, 'form', 'state', 'Select a valid choice. 343434 is not one of the available choices.')
 
     def test_viewer_cannot_change_status(self):
         self.login_viewer()

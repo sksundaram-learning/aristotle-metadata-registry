@@ -126,19 +126,6 @@ class ChangeStatusForm(forms.Form):
         return [MDR.RegistrationAuthority.objects.get(id=int(ra))
                     for ra in self.cleaned_data['registrationAuthorities']]
 
-    def clean_state(self):
-        state = self.cleaned_data['state']
-        try:
-            state = int(state)
-            MDR.STATES[state]
-        except ValueError:
-            # When the entered state is not able to be cast as an integer
-            raise forms.ValidationError(_("Please select a valid status."))
-        except IndexError:
-            # When the value of the state is not a valid option from models.STATES
-            raise forms.ValidationError(_("Please select a valid status."))
-        return state
-
 # Thanks http://stackoverflow.com/questions/6958708/grappelli-to-hide-sortable-field-in-inline-sortable-django-admin
 class PermissibleValueForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
