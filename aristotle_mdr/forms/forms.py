@@ -126,6 +126,12 @@ class ChangeStatusForm(forms.Form):
         return [MDR.RegistrationAuthority.objects.get(id=int(ra))
                     for ra in self.cleaned_data['registrationAuthorities']]
 
+    def clean_state(self):
+        state = self.cleaned_data['state']
+        state = int(state)
+        MDR.STATES[state]
+        return state
+
 # Thanks http://stackoverflow.com/questions/6958708/grappelli-to-hide-sortable-field-in-inline-sortable-django-admin
 class PermissibleValueForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
