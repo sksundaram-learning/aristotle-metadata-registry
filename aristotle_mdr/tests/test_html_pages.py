@@ -400,6 +400,16 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         response = self.client.get(reverse('aristotle:changeStatus',args=[self.item1.id]))
         self.assertRedirects(response,reverse('django.contrib.auth.views.login')+"?next="+reverse('aristotle:changeStatus', args=[self.item1.id]))
 
+    def assertRedirects(self,*args,**kwargs):
+        # There is an issue with these failing when we check a response very quickly after changing status
+        # so if the redirect fails, wait and try again
+        try:
+            super(LoggedInViewConceptPages, self).assertRedirects(*args,**kwargs)
+        except AssertionError:
+            print("Assertion error, waiting and retrying")
+            utils.wait_for_signal_to_fire(3)
+            super(LoggedInViewConceptPages, self).assertRedirects(*args,**kwargs)
+
 class ObjectClassViewPage(LoggedInViewConceptPages,TestCase):
     url_name='objectClass'
     itemType=models.ObjectClass
