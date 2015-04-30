@@ -87,9 +87,6 @@ class baseAristotleObject(TimeStampedModel):
     @property
     def url_name(self):
         return "item" # TODO: Changed as we've altered URL handling,but will refactor calls to this away later
-    @property
-    def help_name(self):
-        return self._meta.model_name
 
     def can_edit(self,user):
         raise NotImplementedError #pragma: no cover -- This should always be overridden
@@ -124,6 +121,9 @@ class registryGroup(unmanagedObject):
         abstract = True
     def can_edit(self,user):
         return user.is_superuser or self.managers.filter(pk=user.pk).exists()
+    @property
+    def help_name(self):
+        return self._meta.model_name
 
 """
 A registration authority is a proxy group that describes a governance process for "standardising" metadata.
@@ -659,6 +659,9 @@ class concept(_concept):
 
     class Meta:
         abstract = True
+    @property
+    def help_name(self):
+        return self._meta.model_name
 
     @property
     def item(self):
@@ -713,6 +716,7 @@ class Property(concept):
 
 class Measure(unmanagedObject):
     pass
+
 class UnitOfMeasure(concept):
     class Meta:
         verbose_name_plural = "Units Of Measure"

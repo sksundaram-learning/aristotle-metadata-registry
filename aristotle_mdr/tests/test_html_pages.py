@@ -326,7 +326,6 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.assertRedirects(response,reverse('django.contrib.auth.views.login')+"?next="+reverse('aristotle:toggleFavourite', args=[self.item1.id]))
 
     def test_registrar_can_change_status(self):
-        self.logout()
         self.login_registrar()
 
         self.assertFalse(perms.user_can_view(self.registrar,self.item1))
@@ -354,6 +353,39 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.item1 = self.itemType.objects.get(pk=self.item1.pk)
         utils.wait_for_signal_to_fire()
         self.assertTrue(self.item1.is_public())
+
+    def test_registrar_cannot_use_faulty_statuses(self):
+        self.login_registrar()
+
+        self.assertFalse(perms.user_can_view(self.registrar,self.item1))
+        self.item1.readyToReview = True
+        self.item1.save()
+        self.item1 = self.itemType.objects.get(pk=self.item1.pk)
+
+        self.assertTrue(perms.user_can_view(self.registrar,self.item1))
+        self.assertTrue(perms.user_can_change_status(self.registrar,self.item1))
+
+        response = self.client.get(reverse('aristotle:changeStatus',args=[self.item1.id]))
+        self.assertEqual(response.status_code,200)
+
+        self.assertEqual(self.item1.statuses.count(),0)
+        response = self.client.post(reverse('aristotle:changeStatus',args=[self.item1.id]),
+                    {   'registrationAuthorities': [str(self.ra.id)],
+                        'state': "Not a number",#obviously wrong
+                        'changeDetails': "testing",
+                        'cascadeRegistration': 0, #no
+                    }
+                )
+        self.assertFormError(response, 'form', 'state', 'Please select a valid status.')
+
+        response = self.client.post(reverse('aristotle:changeStatus',args=[self.item1.id]),
+                    {   'registrationAuthorities': [str(self.ra.id)],
+                        'state': "343434", #also wrong
+                        'changeDetails': "testing",
+                        'cascadeRegistration': 0, #no
+                    }
+                )
+        self.assertFormError(response, 'form', 'state', 'Please select a valid status.')
 
     def test_viewer_cannot_change_status(self):
         self.login_viewer()

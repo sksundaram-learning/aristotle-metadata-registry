@@ -12,7 +12,7 @@
 <form id="homeSearch" action="{% url 'aristotle:search' %}" method="get" >
         <input type="text" class="form-control" id="searchText" name="q" accesskey="q"></input>
         <div class="text-center" style="margin-top:5px;">
-            <a href="/search" class="btn btn-default">{% trans 'More options' context "Front page search options" %}...</a>
+            <a href="{% url 'aristotle:search' %}" class="btn btn-default">{% trans 'More options' context "Front page search options" %}...</a>
             <button class="btn btn-primary" type="submit">
                 {% trans 'Search' %} <i class="fa fa-search"></i>
             </button>

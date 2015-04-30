@@ -131,10 +131,12 @@ class ChangeStatusForm(forms.Form):
         try:
             state = int(state)
             MDR.STATES[state]
-        except (ValueError, IndexError):
-            # state is either not a string or not a valid STATE, so raise an error
-            # Any other errors will be thrown accordingly
-            raise forms.ValidationError("Please select a valid status.")
+        except ValueError:
+            # When the entered state is not able to be cast as an integer
+            raise forms.ValidationError(_("Please select a valid status."))
+        except IndexError:
+            # When the value of the state is not a valid option from models.STATES
+            raise forms.ValidationError(_("Please select a valid status."))
         return state
 
 # Thanks http://stackoverflow.com/questions/6958708/grappelli-to-hide-sortable-field-in-inline-sortable-django-admin
