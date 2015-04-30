@@ -405,7 +405,8 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         # so if the redirect fails, wait and try again
         try:
             super(LoggedInViewConceptPages, self).assertRedirects(*args,**kwargs)
-        except AssertionError:
+        except AssertionError: # pragma: no cover
+            # This shouldn't fire, so no coverage is needed
             print("Assertion error, waiting and retrying")
             utils.wait_for_signal_to_fire(3)
             super(LoggedInViewConceptPages, self).assertRedirects(*args,**kwargs)
