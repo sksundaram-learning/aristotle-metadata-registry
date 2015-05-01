@@ -1,5 +1,4 @@
 import autocomplete_light
-autocomplete_light.autodiscover()
 
 from django import forms
 import aristotle_mdr.models as MDR

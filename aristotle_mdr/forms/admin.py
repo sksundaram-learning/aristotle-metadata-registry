@@ -1,5 +1,4 @@
 import autocomplete_light
-autocomplete_light.autodiscover()
 
 from django import forms
 from django.contrib.admin.widgets import FilteredSelectMultiple

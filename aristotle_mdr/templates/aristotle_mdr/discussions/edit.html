@@ -1,6 +1,10 @@
 {% extends "aristotle_mdr/discussions/base.html" %}
 {% block title %}Editing post {{ post.title }}{% endblock %}
 
+{% block extra_head_scripts %}
+    {% include 'autocomplete_light/static.html' %}
+{% endblock %}
+
 {% block breadcrumbs %}
     <li>
         <a href="{% url 'aristotle:discussionsWorkgroup' post.workgroup.id %}">{{ post.workgroup }}</a>

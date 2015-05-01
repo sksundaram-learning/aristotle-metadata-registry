@@ -3,7 +3,7 @@ Integrating Aristotle-MDR with a Django project
 
 **Note:** this guide relies on some experience with Python and Django.
 For new users looking at getting a site up and running look at the
-:doc:`/installing/quickstart`.
+:doc:`/installing/easy_install`.
 
 The first step is `starting a project as described in the Django tutorial<https://docs.djangoproject.com/en/1.7/intro/tutorial01/>`_.
 Once this is done, follow the steps below to setup Aristotle-MDR.
