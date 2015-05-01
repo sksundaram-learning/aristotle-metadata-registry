@@ -4,6 +4,7 @@ from django.test import TestCase
 from django.test.utils import setup_test_environment
 
 import aristotle_mdr.models as models
+import aristotle_mdr.perms as perms
 import aristotle_mdr.tests.utils as utils
 
 setup_test_environment()
@@ -183,7 +184,11 @@ class AdminPageForConcept(utils.LoggedInViewPages):
         self.assertEqual(self.wg1.items.count(),1)
         before_count = self.wg1.items.count()
         self.ra.register(self.item1,models.STATES.standard,self.registrar)
+
+        self.item1 = self.itemType.objects.get(pk=self.item1.pk) # Dang DB cache
         self.assertTrue(self.item1.is_registered)
+        self.assertTrue(self.item1.is_locked())
+        self.assertFalse(perms.user_can_edit(self.editor,self.item1))
 
         before_count = self.wg1.items.count()
         response = self.client.get(reverse("admin:%s_%s_delete"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=[self.item1.pk]))

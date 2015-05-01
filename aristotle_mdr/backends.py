@@ -18,6 +18,7 @@ class AristotleBackend(ModelBackend):
         return super(AristotleBackend, self).has_module_perms(user_obj, app_label)
 
     def has_perm(self, user_obj, perm, obj=None):
+
         if not user_obj.is_active:
             return False
         if user_obj.is_superuser:

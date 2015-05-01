@@ -28,7 +28,7 @@ def user_can_view(user,item):
         return cached_can_view
 
     _can_view = False
-    # A user can view their own details
+
     _can_view = item.can_view(user)
     cache.set('user_can_view_%s|%s'%(str(user.id),str(item.id)),_can_view,120)
     return _can_view
@@ -40,8 +40,8 @@ def user_can_edit(user,item):
     if item.__class__ == User:              # -- Sometimes duck-typing fails --
         return user == item                 # A user can edit their own details
 
-    # If the item was modified in the last 15 seconds, don't use cache
-    if hasattr(item, "was_modified_very_recently") and item.was_modified_very_recently :
+    if hasattr(item, "was_modified_very_recently") and item.was_modified_very_recently() :
+        # If the item was modified in the last 15 seconds, don't use cache
         can_use_cache = False
     else:
         can_use_cache = True
@@ -54,8 +54,8 @@ def user_can_edit(user,item):
 
     if not user_can_view(user,item):
         _can_edit = False
-
-    _can_edit = item.can_edit(user)
+    else:
+        _can_edit = item.can_edit(user)
     cache.set('user_can_edit_%s|%s'%(str(user.id),str(item.id)),_can_edit,60)
 
     return _can_edit
