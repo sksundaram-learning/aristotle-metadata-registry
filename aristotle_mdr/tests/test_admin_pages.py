@@ -233,6 +233,7 @@ class AdminPageForConcept(utils.LoggedInViewPages):
             'statuses-TOTAL_FORMS': 0, 'statuses-INITIAL_FORMS': 0 #no statuses
         })
         updated_item.update(self.form_defaults)
+        self.assertTrue(self.wg1 in self.editor.profile.myWorkgroups)
 
         response = self.client.post(
                 reverse("admin:%s_%s_change"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=[self.item1.pk]),
