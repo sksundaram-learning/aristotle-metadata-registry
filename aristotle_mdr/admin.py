@@ -43,7 +43,7 @@ class StatusInline(admin.TabularInline):
 class WorkgroupFilter(RelatedFieldListFilter):
     def __init__(self, field, request, *args, **kwargs):
         if not request.user.is_superuser:
-            wg_ids = [w.id for w in request.user.profile.myWorkgroups.all()]
+            wg_ids = [w.id for w in request.user.profile.workgroups.all()]
 
             #Limit the choices on the field
             field.rel.limit_choices_to = {'id__in': wg_ids}
@@ -61,7 +61,7 @@ class WorkgroupAdmin(CompareVersionAdmin):
         if request.user.is_superuser:
             return qs
         else:
-            return request.user.profile.myWorkgroups.all()
+            return request.user.profile.workgroups.all()
     def has_add_permission(self, request):
         return request.user.is_superuser
 
@@ -111,7 +111,7 @@ class ConceptAdmin(CompareVersionAdmin):
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "workgroup":
-            kwargs['queryset'] = request.user.profile.myWorkgroups.all()
+            kwargs['queryset'] = request.user.profile.workgroups.all()
             kwargs['initial'] = request.user.profile.activeWorkgroup
         return super(ConceptAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
