@@ -493,21 +493,6 @@ class ConceptManager(InheritanceManager):
         else:
             return getattr(self.__class__, attr, *args)
 
-import types
-def concept_modified_pre_save(field, model_instance, add):
-    if model_instance.non_cached_fields_changed:
-        # Only update the modified if a non-cached item changes
-        value = timezone.now()
-        setattr(model_instance, field.attname, value)
-        return value
-    elif add:
-        #If its a new item, then set a value
-        value = timezone.now()
-        setattr(model_instance, field.attname, value)
-        return value
-    else:
-        return getattr(model_instance, field.attname)
-
 class _concept(baseAristotleObject):
     """
     This is the base concrete class that ``Status`` items attach to, and to which
@@ -528,15 +513,6 @@ class _concept(baseAristotleObject):
 
     class Meta:
         verbose_name = "item" # So the url_name works for items we can't determine
-
-    def __init__(self,*args,**kwargs):
-        super(_concept,self).__init__(*args,**kwargs)
-        #self._meta.get_field('modified').pre_save = AutoModifiedField.pre_save
-        #self._meta.get_field('modified').pre_save = concept_modified_pre_save
-
-        modified_field = self._meta.get_field('modified')
-        # This is a massive hack.
-        #modified_field.pre_save = types.MethodType(concept_modified_pre_save, modified_field, AutoLastModifiedField) # Bind f to an instance of C
 
     @property
     def non_cached_fields_changed(self):
@@ -744,7 +720,7 @@ class Status(TimeStampedModel):
                 desc=self.changeDetails,
                 date=self.registrationDate
             )
-def recache_concept_states(sender, instance, created, **kwargs):
+def recache_concept_states(sender, instance, *args, **kwargs):
     instance.concept.recache_states()
 post_save.connect(recache_concept_states, sender=Status)
 post_delete.connect(recache_concept_states, sender=Status)
