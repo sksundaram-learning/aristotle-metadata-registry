@@ -623,6 +623,7 @@ class _concept(baseAristotleObject):
     def current_statuses(self,qs=None,when=timezone.now()):
         if qs is None:
             qs = self.statuses.all()
+        when = when.date()
         registered_before_now = Q(registrationDate__lte=when)
         registation_still_valid = Q(until_date__gte=when) | Q(until_date__isnull=True)
 
@@ -895,7 +896,7 @@ class PossumProfile(models.Model):
 
     @property
     def activeWorkgroup(self):
-        return self.savedActiveWorkgroup or self.workgroups.first() or self.myWorkgroups.first()
+        return self.savedActiveWorkgroup or self.editable_workgroups.first()
 
     @property
     def workgroups(self):
@@ -910,6 +911,14 @@ class PossumProfile(models.Model):
     @property
     def myWorkgroups(self):
         return self.workgroups.filter(archived=False)
+
+    @property
+    def editable_workgroups(self):
+        if self.user.is_superuser:
+            return Workgroup.objects.all()
+        else:
+            return (self.user.submitter_in.all() | self.user.steward_in.all()).distinct().filter(archived=False)
+
 
     @property
     def is_registrar(self):

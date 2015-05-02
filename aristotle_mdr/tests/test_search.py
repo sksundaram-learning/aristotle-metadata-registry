@@ -37,6 +37,7 @@ class TestSearch(utils.LoggedInViewPages,TestCase):
         for item in self.item_xmen:
             registered = self.ra.register(item,models.STATES.standard,self.registrar)
             self.assertTrue(item in registered['success'])
+            item = models._concept.objects.get(pk=item.pk).item # Stupid cache
             self.assertTrue(item.is_public())
 
 

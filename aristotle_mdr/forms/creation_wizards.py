@@ -20,7 +20,7 @@ class UserAwareModelForm(autocomplete_light.ModelForm):
         super(UserAwareModelForm, self).__init__(*args, **kwargs)
 
     def _media(self):
-        js = ('aristotle_mdr/aristotle.wizard.js','/static/tiny_mce/tiny_mce.js','/static/aristotle_mdr/aristotle.tinymce.js')
+        js = ('aristotle_mdr/aristotle.wizard.js',) #,'/static/tiny_mce/tiny_mce.js','/static/aristotle_mdr/aristotle.tinymce.js')
         #js = ('/static/admin/js/jquery.min.js','aristotle_mdr/aristotle.wizard.js','/static/tiny_mce/tiny_mce.js')
         media = forms.Media(js=js)
         for field in self.fields.values():
@@ -39,7 +39,7 @@ class ConceptForm(UserAwareModelForm):
         first_load = kwargs.pop('first_load', None)
         super(ConceptForm, self).__init__(*args, **kwargs)
         if not self.user.is_superuser:
-            self.fields['workgroup'].queryset = self.user.profile.myWorkgroups
+            self.fields['workgroup'].queryset = self.user.profile.editable_workgroups
         self.fields['name'].widget = forms.widgets.TextInput()
 
 
@@ -99,8 +99,7 @@ class Concept_2_Results(ConceptForm):
     def __init__(self, *args, **kwargs):
         self.check_similar = kwargs.pop('check_similar',True)
         super(Concept_2_Results, self).__init__(*args, **kwargs)
-        if not self.user.is_superuser:
-            self.fields['workgroup'].queryset = self.user.profile.myWorkgroups
+        self.fields['workgroup'].queryset = self.user.profile.editable_workgroups
         self.fields['workgroup'].initial = self.user.profile.activeWorkgroup
         self.fields['name'].widget = forms.widgets.TextInput()
         #self.fields['description'].widget = forms.widgets.TextInput()
