@@ -1,7 +1,6 @@
 from __future__ import division
 
 import autocomplete_light
-autocomplete_light.autodiscover()
 
 from django import forms
 from django.utils.translation import ugettext_lazy as _

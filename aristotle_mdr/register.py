@@ -1,6 +1,6 @@
-from __future__ import absolute_import
 """
 Aristotle-MDR concept register
+------------------------------
 
 This module allows developers to easily register new concept models with the core
 functionality of Aristotle-MDR. The ``register_concept`` is a wrapper around three
@@ -12,7 +12,7 @@ Other methods in this module can be called, to highly customise how concepts are
 used within the admin site and search, but should be considered internal methods
 and future releases of Aristotle-MDR may break code that uses these methods.
 """
-
+from __future__ import absolute_import
 import autocomplete_light
 
 from django.contrib import admin
@@ -32,9 +32,7 @@ logger = logging.getLogger(__name__)
 logger.debug("Logging started for " + __name__)
 
 def register_concept(concept_class, *args, **kwargs):
-    """ .. py:function:: register_concept(concept_class, *args, **kwargs)
-
-    A handler for third-party apps to make registering
+    """ A handler for third-party apps to make registering
     extension models based on ``aristotle_mdr.models.concept`` easier.
 
     Sets up the search index, django administrator page and autocomplete handlers.
@@ -51,9 +49,7 @@ def register_concept(concept_class, *args, **kwargs):
     register_concept_search_index(concept_class, *args, **kwargs)
 
 def register_concept_autocomplete(concept_class, *args, **kwargs):
-    """ .. py:function:: register_concept_autocomplete(concept_class, *args, **kwargs)
-
-    Registers the given ``concept`` with ``autocomplete_light`` based on the
+    """ Registers the given ``concept`` with ``autocomplete_light`` based on the
     in-built ``aristotle_mdr.autocomplete_light_registry.PermissionsAutocomplete``.
     This ensures the autocomplete for the registered conforms to Aristotle permissions.
 
@@ -64,9 +60,7 @@ def register_concept_autocomplete(concept_class, *args, **kwargs):
     autocomplete_light.register(concept_class,reg.PermissionsAutocomplete,**x)
 
 def register_concept_search_index(concept_class, *args, **kwargs):
-    """ .. py:function:: register_concept_search_index(concept_class, *args, **kwargs)
-
-    Registers the given ``concept`` with a Haystack search index that conforms
+    """ Registers the given ``concept`` with a Haystack search index that conforms
     to Aristotle permissions. If the concept to be registered does not have a
     template for serving a search document, a basic document with just the basic
     fields from ``aristotle_mdr.models._concept`` will be used when indexing items.
@@ -87,9 +81,7 @@ def create(cls):
 
 
 def register_concept_admin(concept_class, *args, **kwargs):
-    """ .. py:function:: register_concept_admin(concept_class, *args, **kwargs)
-
-    Registers the given ``concept`` with the Django admin backend based on the default
+    """Registers the given ``concept`` with the Django admin backend based on the default
     ``aristotle_mdr.admin.ConceptAdmin``.
 
     Additional parameters are only required if a model has additional fields or
@@ -107,16 +99,17 @@ def register_concept_admin(concept_class, *args, **kwargs):
 
     # late import this as we call this in aristotle_mdr.admin and need it to be ready before we call this.
     from aristotle_mdr.admin import ConceptAdmin
+    from aristotle_mdr.models import concept
 
     if not extra_fieldsets and auto_fieldsets:
-        handled_fields = [ x
-            for name, k in ConceptAdmin.fieldsets
-                for x in k.get('fields',[]) ]
+        # returns every field that isn't in a concept
+        field_names = concept._meta.get_all_field_names()+['supersedes']
 
-        auto_fieldset = [f.name for f in concept_class._meta.fields if f.name not in handled_fields]
+        auto_fieldset = [f for f in concept_class._meta.get_all_field_names() if f not in field_names]
 
-        extra_fieldsets_name = _('Extra fields for %(class_name)s') %{'class_name':concept_class._meta.verbose_name.title()}
-        extra_fieldsets = [(extra_fieldsets_name, {'fields': auto_fieldset}),]
+        if auto_fieldset:
+            extra_fieldsets_name = _('Extra fields for %(class_name)s') %{'class_name':concept_class._meta.verbose_name.title()}
+            extra_fieldsets = [(extra_fieldsets_name, {'fields': auto_fieldset}),]
 
     class SubclassedConceptAdmin(ConceptAdmin):
         model = concept_class

@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.db import models, transaction
 from django.db.models import Q
-from django.db.models.signals import post_save,m2m_changed
+from django.db.models.signals import post_save,m2m_changed,post_delete
 from django.dispatch import receiver
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
@@ -22,6 +22,7 @@ import datetime
 from ckeditor.fields import RichTextField
 from aristotle_mdr import perms
 from aristotle_mdr.utils import url_slugify_concept, url_slugify_workgroup
+from model_utils.fields import AutoLastModifiedField
 
 import logging
 logger = logging.getLogger(__name__)
@@ -501,8 +502,17 @@ class _concept(baseAristotleObject):
     _is_public =  models.BooleanField(default=False)
     _is_locked =  models.BooleanField(default=False)
 
+    tracker=FieldTracker()
+
     class Meta:
         verbose_name = "item" # So the url_name works for items we can't determine
+
+    @property
+    def non_cached_fields_changed(self):
+        changed = self.tracker.changed()
+        public_changed = changed.pop('_is_public',False)
+        locked_changed = changed.pop('_is_locked',False)
+        return len(changed.keys()) > 0
 
     def can_edit(self,user):
         if self.is_public():
@@ -544,9 +554,6 @@ class _concept(baseAristotleObject):
         """
         return _concept.objects.get_subclass(pk=self.pk)
 
-    def relatedItems(self,user=None):
-        return []
-
     @classmethod
     def get_autocomplete_name(self):
         return 'Autocomplete'+"".join(self._meta.verbose_name.title().split())
@@ -582,7 +589,7 @@ class _concept(baseAristotleObject):
 
     def check_is_public(self,when=timezone.now()):
         """
-            A concept is public if any registration authority that a Registration Authority of the workgroup
+            A concept is public if any registration authority of the workgroup
             has advanced it to a public state in that RA.
         """
         if self.workgroup.ownership == WORKGROUP_OWNERSHIP.authority:
@@ -599,7 +606,7 @@ class _concept(baseAristotleObject):
 
     def check_is_locked(self,when=timezone.now()):
         """
-            A concept is locked if any registration authority that a Registration Authority of the workgroup
+            A concept is locked if any registration authority of the workgroup
             has advanced it to a locked state in that RA.
         """
         if self.workgroup.ownership == WORKGROUP_OWNERSHIP.authority:
@@ -623,6 +630,8 @@ class _concept(baseAristotleObject):
     def current_statuses(self,qs=None,when=timezone.now()):
         if qs is None:
             qs = self.statuses.all()
+        if hasattr(when,'date'):
+            when = when.date()
         registered_before_now = Q(registrationDate__lte=when)
         registation_still_valid = Q(until_date__gte=when) | Q(until_date__isnull=True)
 
@@ -689,7 +698,6 @@ class Status(TimeStampedModel):
     class Meta:
         verbose_name_plural = "Statuses"
 
-
     @property
     def state_name(self):
         return STATES[self.state]
@@ -702,6 +710,10 @@ class Status(TimeStampedModel):
                 desc=self.changeDetails,
                 date=self.registrationDate
             )
+def recache_concept_states(sender, instance, *args, **kwargs):
+    instance.concept.recache_states()
+post_save.connect(recache_concept_states, sender=Status)
+post_delete.connect(recache_concept_states, sender=Status)
 
 class ObjectClass(concept):
     """set of ideas, abstractions or things in the real world that are identified
@@ -895,7 +907,7 @@ class PossumProfile(models.Model):
 
     @property
     def activeWorkgroup(self):
-        return self.savedActiveWorkgroup or self.workgroups.first() or self.myWorkgroups.first()
+        return self.savedActiveWorkgroup or self.editable_workgroups.first()
 
     @property
     def workgroups(self):
@@ -910,6 +922,14 @@ class PossumProfile(models.Model):
     @property
     def myWorkgroups(self):
         return self.workgroups.filter(archived=False)
+
+    @property
+    def editable_workgroups(self):
+        if self.user.is_superuser:
+            return Workgroup.objects.all()
+        else:
+            return (self.user.submitter_in.all() | self.user.steward_in.all()).distinct().filter(archived=False)
+
 
     @property
     def is_registrar(self):
@@ -943,10 +963,6 @@ def create_user_profile(sender, instance, created, **kwargs):
     if created:
        profile, created = PossumProfile.objects.get_or_create(user=instance)
 post_save.connect(create_user_profile, sender=User)
-
-def recache_concept_states(sender, instance, created, **kwargs):
-    instance.concept.recache_states()
-post_save.connect(recache_concept_states, sender=Status)
 
 
 #"""
@@ -1029,6 +1045,9 @@ def workgroup_item_new(recipient,obj):
 @receiver(post_save)
 def concept_saved(sender, instance, created, **kwargs):
     if not issubclass(sender, _concept):
+        return
+    if not instance.non_cached_fields_changed:
+        #If the only thing that has changed is a cached public/locked status then don't notify
         return
     if kwargs.get('raw'):
         # Don't run during loaddata

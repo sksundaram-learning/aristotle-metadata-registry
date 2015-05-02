@@ -37,6 +37,7 @@ class TestSearch(utils.LoggedInViewPages,TestCase):
         for item in self.item_xmen:
             registered = self.ra.register(item,models.STATES.standard,self.registrar)
             self.assertTrue(item in registered['success'])
+            item = models._concept.objects.get(pk=item.pk).item # Stupid cache
             self.assertTrue(item.is_public())
 
 
@@ -223,7 +224,7 @@ class TestTokenSearch(TestCase):
         self.ra = models.RegistrationAuthority.objects.create(name="Kelly Act")
         self.registrar = User.objects.create_user('stryker','william.styker@weaponx.mil','mutantsMustDie')
         self.ra.giveRoleToUser('registrar',self.registrar)
-        xmen = "professorX cyclops iceman angel beast phoenix wolverine storm nightcrawler"
+        xmen = "wolverine professorX cyclops iceman angel beast phoenix storm nightcrawler"
         self.xmen_wg = models.Workgroup.objects.create(name="X Men")
         self.xmen_wg.registrationAuthorities.add(self.ra)
         self.xmen_wg.save()
@@ -239,6 +240,7 @@ class TestTokenSearch(TestCase):
             self.ra.register(item,models.STATES.standard,self.registrar)
 
     def test_token_version_search(self):
+        self.assertEqual(models.ObjectClass.objects.get(version='0.1.0').name,"wolverine")
 
         response = self.client.get(reverse('aristotle:search')+"?q=version:0.1.0")
         self.assertEqual(response.status_code,200)

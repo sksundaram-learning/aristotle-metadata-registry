@@ -21,6 +21,7 @@ def render_to_pdf(template_src, context_dict):
     return HttpResponse('We had some errors<pre>%s</pre>' % cgi.escape(html))
 
 def download(request,downloadType,item):
+    """Built in download method"""
     template = get_download_template_path_for_item(item,downloadType)
     from django.conf import settings
     page_size = getattr(settings, 'PDF_PAGE_SIZE', "A4")

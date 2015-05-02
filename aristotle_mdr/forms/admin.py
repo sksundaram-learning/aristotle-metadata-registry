@@ -1,5 +1,4 @@
 import autocomplete_light
-autocomplete_light.autodiscover()
 
 from django import forms
 from django.contrib.admin.widgets import FilteredSelectMultiple
@@ -65,13 +64,6 @@ class AdminConceptForm(autocomplete_light.ModelForm):
     class Meta:
         model = MDR._concept
         fields = "__all__"
-    def _media(self):
-        js = ('/static/aristotle_mdr/aristotle.tinymce.js',)
-        media = forms.Media(js=js)
-        for field in self.fields.values():
-            media = media + field.widget.media
-        return media
-    media = property(_media)
 
     deprecated = forms.ModelMultipleChoiceField(queryset=MDR._concept.objects.all())
 
@@ -101,6 +93,8 @@ class AdminConceptForm(autocomplete_light.ModelForm):
 
         if name_suggest_fields:
             self.fields['name'].widget = widgets.NameSuggestInput(name_suggest_fields=name_suggest_fields,separator=separator)
+        self.fields['workgroup'].queryset = self.request.user.profile.editable_workgroups.all()
+        self.fields['workgroup'].initial = self.request.user.profile.activeWorkgroup
 
 
     def save(self, *args, **kwargs):

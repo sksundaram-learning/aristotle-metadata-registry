@@ -2,6 +2,10 @@
 
 {% block title %}New post{% endblock %}
 
+{% block extra_head_scripts %}
+    {% include 'autocomplete_light/static.html' %}
+{% endblock %}
+
 {% block breadcrumbs %}
     <li>
         New Post
@@ -23,5 +27,4 @@
     <button class="btn btn-primary" type='submit' value='Submit'><i class="fa fa-pencil  fa-fw"></i>New post</button>
     <a class="btn btn-default" href="{% url 'aristotle:discussions' %}"><i class="fa fa-times fa-fw"></i>Cancel</a>
 </form>
-{% include 'autocomplete_light/static.html' %}
 {% endblock %}

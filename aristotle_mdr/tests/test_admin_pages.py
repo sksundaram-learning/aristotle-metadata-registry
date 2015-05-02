@@ -4,6 +4,7 @@ from django.test import TestCase
 from django.test.utils import setup_test_environment
 
 import aristotle_mdr.models as models
+import aristotle_mdr.perms as perms
 import aristotle_mdr.tests.utils as utils
 
 setup_test_environment()
@@ -11,6 +12,45 @@ setup_test_environment()
 class AdminPage(utils.LoggedInViewPages,TestCase):
     def setUp(self):
         super(AdminPage, self).setUp()
+
+    def test_workgroup_list(self):
+        new_editor = User.objects.create_user('new_eddie','','editor')
+        new_editor.is_staff=True
+        new_editor.save()
+
+        wg_nm = models.Workgroup.objects.create(name="normal and is manager")
+        wg_am = models.Workgroup.objects.create(name="archived and is manager",archived=True)
+        wg_nv = models.Workgroup.objects.create(name="normal and is viewer")
+        wg_av = models.Workgroup.objects.create(name="archived and is viewer",archived=True)
+        wg_ns = models.Workgroup.objects.create(name="normal and is submitter")
+        wg_as = models.Workgroup.objects.create(name="archived and is submitter",archived=True)
+        wg_nw = models.Workgroup.objects.create(name="normal and is steward")
+        wg_aw = models.Workgroup.objects.create(name="archived and is steward",archived=True)
+
+        wg_nm.managers.add(new_editor)
+        wg_am.managers.add(new_editor)
+        wg_nv.viewers.add(new_editor)
+        wg_av.viewers.add(new_editor)
+        wg_ns.submitters.add(new_editor)
+        wg_as.submitters.add(new_editor)
+        wg_nw.stewards.add(new_editor)
+        wg_aw.stewards.add(new_editor)
+
+        new_editor = User.objects.get(pk=new_editor.pk) #decache
+
+        self.assertEqual(new_editor.profile.editable_workgroups.count(),2)
+        self.assertTrue(wg_ns in new_editor.profile.editable_workgroups.all())
+        self.assertTrue(wg_nw in new_editor.profile.editable_workgroups.all())
+
+        self.logout()
+        response = self.client.post(reverse('django.contrib.auth.views.login'), {'username': 'new_eddie', 'password': 'editor'})
+        self.assertEqual(response.status_code,302)
+
+        t = models.ObjectClass
+        response = self.client.get(reverse("admin:%s_%s_add"%(t._meta.app_label,t._meta.model_name)))
+        self.assertEqual(response.context['adminform'].form.fields['workgroup'].queryset.count(),2)
+        self.assertTrue(wg_ns in response.context['adminform'].form.fields['workgroup'].queryset.all())
+        self.assertTrue(wg_nw in response.context['adminform'].form.fields['workgroup'].queryset.all())
 
     def test_clone(self):
         from aristotle_mdr.utils import concept_to_clone_dict
@@ -128,6 +168,7 @@ class AdminPageForConcept(utils.LoggedInViewPages):
 
         register = self.ra.register(self.item1,models.STATES.incomplete,self.su)
         self.assertEqual(register,{'success':[self.item1],'failed':[]})
+        self.item1 = self.itemType.objects.get(pk=self.item1.pk) # Stupid cache
         self.assertEqual(self.item1.current_statuses()[0].state,models.STATES.incomplete)
 
         response = self.client.get(reverse("admin:%s_%s_change"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=[self.item1.pk]))
@@ -183,7 +224,11 @@ class AdminPageForConcept(utils.LoggedInViewPages):
         self.assertEqual(self.wg1.items.count(),1)
         before_count = self.wg1.items.count()
         self.ra.register(self.item1,models.STATES.standard,self.registrar)
+
+        self.item1 = self.itemType.objects.get(pk=self.item1.pk) # Dang DB cache
         self.assertTrue(self.item1.is_registered)
+        self.assertTrue(self.item1.is_locked())
+        self.assertFalse(perms.user_can_edit(self.editor,self.item1))
 
         before_count = self.wg1.items.count()
         response = self.client.get(reverse("admin:%s_%s_delete"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=[self.item1.pk]))
@@ -228,6 +273,9 @@ class AdminPageForConcept(utils.LoggedInViewPages):
             'statuses-TOTAL_FORMS': 0, 'statuses-INITIAL_FORMS': 0 #no statuses
         })
         updated_item.update(self.form_defaults)
+        self.assertTrue(self.wg1 in self.editor.profile.myWorkgroups)
+
+        self.assertEqual([self.wg1],list(response.context['adminform'].form.fields['workgroup'].queryset))
 
         response = self.client.post(
                 reverse("admin:%s_%s_change"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=[self.item1.pk]),

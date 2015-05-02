@@ -349,9 +349,9 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
                 )
         self.assertRedirects(response,url_slugify_concept(self.item1))
 
-        self.assertEqual(self.item1.statuses.count(),1)
         self.item1 = self.itemType.objects.get(pk=self.item1.pk)
-        utils.wait_for_signal_to_fire()
+        self.assertEqual(self.item1.statuses.count(),1)
+        self.assertTrue(self.item1.is_registered)
         self.assertTrue(self.item1.is_public())
 
     def test_registrar_cannot_use_faulty_statuses(self):
