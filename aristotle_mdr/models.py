@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.db import models, transaction
 from django.db.models import Q
-from django.db.models.signals import post_save,m2m_changed
+from django.db.models.signals import post_save,m2m_changed,post_delete
 from django.dispatch import receiver
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
@@ -286,6 +286,13 @@ class Workgroup(registryGroup):
             related_name="workgroups",
             verbose_name=_('Registration Authorities'),
             )
+
+    @property
+    def owning_authorities(self):
+        if self.ownership == WORKGROUP_OWNERSHIP.authority:
+            return self.registrationAuthorities.all()
+        elif self.workgroup.ownership == WORKGROUP_OWNERSHIP.registry:
+            return RegistrationAuthority.objects.all()
 
     viewers    = models.ManyToManyField(User,blank=True,related_name='viewer_in',verbose_name=_('Viewers'))
     submitters = models.ManyToManyField(User,blank=True,related_name='submitter_in',verbose_name=_('Submitters'))
@@ -627,10 +634,6 @@ class _concept(baseAristotleObject):
         return True in [s.state >= s.registrationAuthority.public_state for s in statuses]
 
     def is_public(self):
-        if self.was_modified_very_recently:
-            # caching is hard, if it was recently edited, just redo it.
-            self._is_public = self.check_is_public()
-            self.save()
         return self._is_public
     is_public.boolean = True
     is_public.short_description = 'Public'
@@ -648,10 +651,6 @@ class _concept(baseAristotleObject):
         return True in [s.state >= s.registrationAuthority.locked_state for s in statuses]
 
     def is_locked(self):
-        if self.was_modified_very_recently:
-            # caching is hard, if it was recently edited, just redo it.
-            self._is_locked = self.check_is_locked()
-            self.save()
         return self._is_locked
 
     is_locked.boolean = True
@@ -733,7 +732,6 @@ class Status(TimeStampedModel):
     class Meta:
         verbose_name_plural = "Statuses"
 
-
     @property
     def state_name(self):
         return STATES[self.state]
@@ -746,6 +744,10 @@ class Status(TimeStampedModel):
                 desc=self.changeDetails,
                 date=self.registrationDate
             )
+def recache_concept_states(sender, instance, created, **kwargs):
+    instance.concept.recache_states()
+post_save.connect(recache_concept_states, sender=Status)
+post_delete.connect(recache_concept_states, sender=Status)
 
 class ObjectClass(concept):
     """set of ideas, abstractions or things in the real world that are identified
@@ -995,10 +997,6 @@ def create_user_profile(sender, instance, created, **kwargs):
     if created:
        profile, created = PossumProfile.objects.get_or_create(user=instance)
 post_save.connect(create_user_profile, sender=User)
-
-def recache_concept_states(sender, instance, created, **kwargs):
-    instance.concept.recache_states()
-post_save.connect(recache_concept_states, sender=Status)
 
 
 #"""
