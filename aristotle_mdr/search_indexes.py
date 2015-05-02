@@ -74,7 +74,7 @@ class conceptIndex(baseObjectIndex):
         return ras
 
     def prepare_is_public(self,obj):
-        return obj.is_public()
+        return obj.check_is_public()
 
     def prepare_workgroup(self,obj):
         return int(obj.workgroup.id)

@@ -22,6 +22,7 @@ import datetime
 from ckeditor.fields import RichTextField
 from aristotle_mdr import perms
 from aristotle_mdr.utils import url_slugify_concept, url_slugify_workgroup
+from model_utils.fields import AutoLastModifiedField
 
 import logging
 logger = logging.getLogger(__name__)
@@ -485,6 +486,21 @@ class ConceptManager(InheritanceManager):
         else:
             return getattr(self.__class__, attr, *args)
 
+import types
+def concept_modified_pre_save(field, model_instance, add):
+    if model_instance.non_cached_fields_changed:
+        # Only update the modified if a non-cached item changes
+        value = timezone.now()
+        setattr(model_instance, field.attname, value)
+        return value
+    elif add:
+        #If its a new item, then set a value
+        value = timezone.now()
+        setattr(model_instance, field.attname, value)
+        return value
+    else:
+        return getattr(model_instance, field.attname)
+
 class _concept(baseAristotleObject):
     """
     This is the base concrete class that ``Status`` items attach to, and to which
@@ -501,8 +517,26 @@ class _concept(baseAristotleObject):
     _is_public =  models.BooleanField(default=False)
     _is_locked =  models.BooleanField(default=False)
 
+    tracker=FieldTracker()
+
     class Meta:
         verbose_name = "item" # So the url_name works for items we can't determine
+
+    def __init__(self,*args,**kwargs):
+        super(_concept,self).__init__(*args,**kwargs)
+        #self._meta.get_field('modified').pre_save = AutoModifiedField.pre_save
+        #self._meta.get_field('modified').pre_save = concept_modified_pre_save
+
+        modified_field = self._meta.get_field('modified')
+        # This is a massive hack.
+        modified_field.pre_save = types.MethodType(concept_modified_pre_save, modified_field, AutoLastModifiedField) # Bind f to an instance of C
+
+    @property
+    def non_cached_fields_changed(self):
+        changed = self.tracker.changed()
+        public_changed = changed.pop('_is_public',False)
+        locked_changed = changed.pop('_is_locked',False)
+        return len(changed.keys()) > 0
 
     def can_edit(self,user):
         if self.is_public():
@@ -582,7 +616,7 @@ class _concept(baseAristotleObject):
 
     def check_is_public(self,when=timezone.now()):
         """
-            A concept is public if any registration authority that a Registration Authority of the workgroup
+            A concept is public if any registration authority of the workgroup
             has advanced it to a public state in that RA.
         """
         if self.workgroup.ownership == WORKGROUP_OWNERSHIP.authority:
@@ -593,13 +627,17 @@ class _concept(baseAristotleObject):
         return True in [s.state >= s.registrationAuthority.public_state for s in statuses]
 
     def is_public(self):
+        if self.was_modified_very_recently:
+            # caching is hard, if it was recently edited, just redo it.
+            self._is_public = self.check_is_public()
+            self.save()
         return self._is_public
     is_public.boolean = True
     is_public.short_description = 'Public'
 
     def check_is_locked(self,when=timezone.now()):
         """
-            A concept is locked if any registration authority that a Registration Authority of the workgroup
+            A concept is locked if any registration authority of the workgroup
             has advanced it to a locked state in that RA.
         """
         if self.workgroup.ownership == WORKGROUP_OWNERSHIP.authority:
@@ -610,6 +648,10 @@ class _concept(baseAristotleObject):
         return True in [s.state >= s.registrationAuthority.locked_state for s in statuses]
 
     def is_locked(self):
+        if self.was_modified_very_recently:
+            # caching is hard, if it was recently edited, just redo it.
+            self._is_locked = self.check_is_locked()
+            self.save()
         return self._is_locked
 
     is_locked.boolean = True
@@ -623,7 +665,8 @@ class _concept(baseAristotleObject):
     def current_statuses(self,qs=None,when=timezone.now()):
         if qs is None:
             qs = self.statuses.all()
-        when = when.date()
+        if hasattr(when,'date'):
+            when = when.date()
         registered_before_now = Q(registrationDate__lte=when)
         registation_still_valid = Q(until_date__gte=when) | Q(until_date__isnull=True)
 
@@ -1038,6 +1081,9 @@ def workgroup_item_new(recipient,obj):
 @receiver(post_save)
 def concept_saved(sender, instance, created, **kwargs):
     if not issubclass(sender, _concept):
+        return
+    if not instance.non_cached_fields_changed:
+        #If the only thing that has changed is a cached public/locked status then don't notify
         return
     if kwargs.get('raw'):
         # Don't run during loaddata
