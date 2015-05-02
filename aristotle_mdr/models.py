@@ -287,13 +287,6 @@ class Workgroup(registryGroup):
             verbose_name=_('Registration Authorities'),
             )
 
-    @property
-    def owning_authorities(self):
-        if self.ownership == WORKGROUP_OWNERSHIP.authority:
-            return self.registrationAuthorities.all()
-        elif self.workgroup.ownership == WORKGROUP_OWNERSHIP.registry:
-            return RegistrationAuthority.objects.all()
-
     viewers    = models.ManyToManyField(User,blank=True,related_name='viewer_in',verbose_name=_('Viewers'))
     submitters = models.ManyToManyField(User,blank=True,related_name='submitter_in',verbose_name=_('Submitters'))
     stewards   = models.ManyToManyField(User,blank=True,related_name='steward_in',verbose_name=_('Stewards'))
@@ -560,9 +553,6 @@ class _concept(baseAristotleObject):
         subclassed item
         """
         return _concept.objects.get_subclass(pk=self.pk)
-
-    def relatedItems(self,user=None):
-        return []
 
     @classmethod
     def get_autocomplete_name(self):

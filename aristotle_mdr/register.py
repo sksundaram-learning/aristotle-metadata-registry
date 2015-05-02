@@ -99,16 +99,17 @@ def register_concept_admin(concept_class, *args, **kwargs):
 
     # late import this as we call this in aristotle_mdr.admin and need it to be ready before we call this.
     from aristotle_mdr.admin import ConceptAdmin
+    from aristotle_mdr.models import concept
 
     if not extra_fieldsets and auto_fieldsets:
-        handled_fields = [ x
-            for name, k in ConceptAdmin.fieldsets
-                for x in k.get('fields',[]) ]
+        # returns every field that isn't in a concept
+        field_names = concept._meta.get_all_field_names()+['supersedes']
 
-        auto_fieldset = [f.name for f in concept_class._meta.fields if f.name not in handled_fields]
+        auto_fieldset = [f for f in concept_class._meta.get_all_field_names() if f not in field_names]
 
-        extra_fieldsets_name = _('Extra fields for %(class_name)s') %{'class_name':concept_class._meta.verbose_name.title()}
-        extra_fieldsets = [(extra_fieldsets_name, {'fields': auto_fieldset}),]
+        if auto_fieldset:
+            extra_fieldsets_name = _('Extra fields for %(class_name)s') %{'class_name':concept_class._meta.verbose_name.title()}
+            extra_fieldsets = [(extra_fieldsets_name, {'fields': auto_fieldset}),]
 
     class SubclassedConceptAdmin(ConceptAdmin):
         model = concept_class

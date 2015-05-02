@@ -21,7 +21,6 @@ class UserAwareModelForm(autocomplete_light.ModelForm):
 
     def _media(self):
         js = ('aristotle_mdr/aristotle.wizard.js',) #,'/static/tiny_mce/tiny_mce.js','/static/aristotle_mdr/aristotle.tinymce.js')
-        #js = ('/static/admin/js/jquery.min.js','aristotle_mdr/aristotle.wizard.js','/static/tiny_mce/tiny_mce.js')
         media = forms.Media(js=js)
         for field in self.fields.values():
             media = media + field.widget.media
