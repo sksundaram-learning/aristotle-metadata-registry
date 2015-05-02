@@ -51,6 +51,8 @@ class QuestionViewPage(LoggedInViewExtensionConceptPages,TestCase):
         response = self.client.get(self.get_help_page())
         self.assertEqual(response.status_code,200)
 
+# ---- Questionnaire tests
+
 class QuestionnaireVisibility(utils.ManagedObjectVisibility,TestCase):
     def setUp(self):
         super(QuestionnaireVisibility, self).setUp()

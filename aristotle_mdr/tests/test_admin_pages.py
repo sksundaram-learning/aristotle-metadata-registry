@@ -235,6 +235,8 @@ class AdminPageForConcept(utils.LoggedInViewPages):
         updated_item.update(self.form_defaults)
         self.assertTrue(self.wg1 in self.editor.profile.myWorkgroups)
 
+        self.assertEqual([self.wg1],list(response.context['adminform'].form.fields['workgroup'].queryset))
+
         response = self.client.post(
                 reverse("admin:%s_%s_change"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=[self.item1.pk]),
                 updated_item
