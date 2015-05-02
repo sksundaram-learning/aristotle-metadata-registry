@@ -536,7 +536,7 @@ class _concept(baseAristotleObject):
 
         modified_field = self._meta.get_field('modified')
         # This is a massive hack.
-        modified_field.pre_save = types.MethodType(concept_modified_pre_save, modified_field, AutoLastModifiedField) # Bind f to an instance of C
+        #modified_field.pre_save = types.MethodType(concept_modified_pre_save, modified_field, AutoLastModifiedField) # Bind f to an instance of C
 
     @property
     def non_cached_fields_changed(self):

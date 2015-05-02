@@ -33,7 +33,7 @@ class CachingForRawPermissions(TestCase):
         sleep(models.VERY_RECENTLY_SECONDS+2)
         self.assertTrue(perms.user_can_edit(self.submitter,self.item))
         # register then immediately check the permissions to make sure the cache is ignored
-        # technically we haven't edited the item yet, although ``concept.recache_states`` might be called.
+        # technically we haven't edited the item yet, although ``concept.recache_states`` will be called.
         reg,c = models.Status.objects.get_or_create(
             concept=self.item,
             registrationAuthority=self.ra,
@@ -57,7 +57,7 @@ class CachingForRawPermissions(TestCase):
         self.assertTrue(perms.user_can_view(self.submitter,self.item))
         self.assertFalse(perms.user_can_view(self.viewer,self.item))
         # register then immediately check the permissions to make sure the cache is ignored
-        # technically we haven't edited the item yet, although ``concept.recache_states`` might be called.
+        # technically we haven't edited the item yet, although ``concept.recache_states`` will be called.
         reg,c = models.Status.objects.get_or_create(
             concept=self.item,
             registrationAuthority=self.ra,
@@ -67,15 +67,3 @@ class CachingForRawPermissions(TestCase):
         self.assertTrue(perms.user_can_view(self.submitter,self.item))
         self.assertTrue(perms.user_can_view(self.viewer,self.item))
 
-"""
-class TestPageViewCaches(utils.LoggedInViewPages,TestCase):
-    def setUp(self):
-        super(TestPageViewCaches, self).setUp()
-        self.viewer2 = User.objects.create_user('viewer2','','viewer') # not in any workgroup
-        self.viewer3 = User.objects.create_user('viewer3','','viewer') # not in our "primary testing workgroup" (self.wg1)
-        self.wg1.giveRoleToUser('viewer',self.viewer3)
-        self.wg2 = models.Workgroup.objects.create(name="Test WG 2")
-
-    def can_the_current_logged_in_user_post(self):
-        pass
-"""
