@@ -107,7 +107,7 @@ class ManagedObjectVisibility(object):
             )
 
         # Overlaps s1 and s3
-        the_future = timezone.now() + datetime.timedelta(days=100)
+        the_future = (timezone.now() + datetime.timedelta(days=100)).date()
         s7 = models.Status.objects.create(
             concept=self.item,
             registrationAuthority=self.ra,
