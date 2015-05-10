@@ -78,6 +78,21 @@ def can_edit(item,user):
         return None
 
 @register.filter
+def can_view(item,user):
+    """
+    A filter that acts as a wrapper around ``aristotle_mdr.perms.user_can_view``.
+    Returns true if the user has permission to view the item, otherwise it returns False.
+    If calling ``user_can_view`` throws an exception it safely returns False.
+
+    For example::
+
+      {% if myItem|can_view:request.user %}
+        {{ item }}
+      {% endif %}
+    """
+    return perms.user_can_view(user,item)
+
+@register.filter
 def can_view_iter(qs,user):
     """
     A filter that is a simple wrapper that applies the ``aristotle_mdr.models.ConceptManager.visible(user)``
