@@ -1,4 +1,3 @@
-#aristotle_ddi_utils
 from aristotle_mdr.utils import get_download_template_path_for_item
 from django.shortcuts import render
 

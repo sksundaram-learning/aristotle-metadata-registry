@@ -129,6 +129,21 @@ class PermissionSearchQuerySet(SearchQuerySet):
         sqs = sqs.filter(q)
         return sqs
 
+    def apply_registration_status_filters(self,states=[],ras=[]):
+        sqs = self
+        if states and not ras:
+            states = [MDR.STATES[int(s)] for s in states]
+            sqs = sqs.filter(statuses__in=states)
+        elif ras and not states:
+            ras = [ra for ra in ras]
+            sqs = sqs.filter(registrationAuthorities__in=ras)
+        elif states and ras:
+            # If we have both states and ras, merge them so we only search for
+            # items with those statuses in those ras
+            terms = ["%s___%s"%(str(r),str(s)) for r in ras for s in states]
+            sqs = sqs.filter(ra_statuses__in=terms)
+        return sqs
+
 class TokenSearchForm(SearchForm):
     def prepare_tokens(self):
         try:
@@ -179,7 +194,7 @@ class TokenSearchForm(SearchForm):
             return self.no_query_found()
 
         sqs = self.searchqueryset.auto_query(self.query_text)
-        if self.models:
+        if hasattr(self,'models'):
             sqs = sqs.models(*self.models)
         if kwargs:
             sqs = sqs.filter(**kwargs)
@@ -244,6 +259,7 @@ class PermissionSearchForm(TokenSearchForm):
                 )
 
     def __init__(self,*args, **kwargs):
+        print ("this -- ",args, kwargs.keys())
         kwargs['searchqueryset'] = PermissionSearchQuerySet()
         super(PermissionSearchForm, self).__init__(*args, **kwargs)
 
@@ -272,13 +288,16 @@ class PermissionSearchForm(TokenSearchForm):
 
         filters = "mq cq cds cde mds mde state ra".split()
         has_filter = any([self.cleaned_data.get(f,False) for f in filters])
-        if has_filter and not self.query_text and not self.kwargs:
+        if has_filter and not self.query_text: # and not self.kwargs:
             # If there is a filter, but no query then we'll force some results.
             sqs = self.searchqueryset.order_by('-modified')
             self.filter_search = True
             self.attempted_filter_search = True
 
-        sqs = self.apply_registration_status_filters(sqs)
+        states = self.cleaned_data['state']
+        ras = self.cleaned_data['ra']
+        sqs = sqs.apply_registration_status_filters(states,ras)
+
         sqs = self.apply_date_filtering(sqs)
         sqs = sqs.apply_permission_checks(  user=self.request.user,
                                             public_only=self.cleaned_data['public_only'],
@@ -329,21 +348,6 @@ class PermissionSearchForm(TokenSearchForm):
             self.original_query = self.cleaned_data.get('q')
             self.suggested_query = quote_plus(' '.join(suggested_query),safe="")
 
-    def apply_registration_status_filters(self,sqs):
-        states = self.cleaned_data['state']
-        ras = self.cleaned_data['ra']
-        if states and not ras:
-            states = [MDR.STATES[int(s)] for s in self.cleaned_data['state']]
-            sqs = sqs.filter(statuses__in=states)
-        elif ras and not states:
-            ras = [ra for ra in self.cleaned_data['ra']]
-            sqs = sqs.filter(registrationAuthorities__in=ras)
-        elif states and ras:
-            # If we have both states and ras, merge them so we only search for
-            # items with those statuses in those ras
-            terms = ["%s___%s"%(str(r),str(s)) for r in ras for s in states]
-            sqs = sqs.filter(ra_statuses__in=terms)
-        return sqs
 
     def apply_date_filtering(self,sqs):
         modify_quick_date = self.cleaned_data['mq']
