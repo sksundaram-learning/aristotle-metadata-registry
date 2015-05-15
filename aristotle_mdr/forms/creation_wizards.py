@@ -162,7 +162,7 @@ class DEC_Complete(UserAwareForm):
     def save(self, *args, **kwargs):
         pass
 
-
+#Data Element - Object Class / Property / Value Domain search form
 class DE_OCPVD_Search(UserAwareForm):
     template = "aristotle_mdr/create/de_1_initial_search.html"
     # Object Class fields
