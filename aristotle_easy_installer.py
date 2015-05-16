@@ -25,6 +25,7 @@ optional_modules = [
     ("Aristotle Glossary Extension","#!aristotle_glossary!"),
     ("Aristotle Dataset Extensions","#!aristotle_dse!"),
     ("Aristotle DDI Downloaders","#!aristotle_ddi!")
+    ("Aristotle MDR API","#!aristotle_mdr_api!")
 ]
 
 def valid_input(prompt,match):
