@@ -96,6 +96,8 @@ class EmptyPermissionSearchQuerySet(EmptySearchQuerySet):
     # But returns nothing all the time.
     def apply_permission_checks(self,user=None,public_only=False,user_workgroups_only=False):
         return self
+    def apply_registration_status_filters(self,*args,**kwargs):
+        return self
 
 class PermissionSearchQuerySet(SearchQuerySet):
     def models(self,*mods):
@@ -259,7 +261,6 @@ class PermissionSearchForm(TokenSearchForm):
                 )
 
     def __init__(self,*args, **kwargs):
-        print ("this -- ",args, kwargs.keys())
         kwargs['searchqueryset'] = PermissionSearchQuerySet()
         super(PermissionSearchForm, self).__init__(*args, **kwargs)
 
