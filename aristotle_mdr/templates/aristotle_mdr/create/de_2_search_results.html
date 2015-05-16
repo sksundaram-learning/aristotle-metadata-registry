@@ -9,6 +9,10 @@
     <div class="panel-body">
         <p>Reusing existing content makes comparing items in the future easier.
         <p>Consider reviewing these similar items to see if an existing piece of content meets your needs.
+    {% if form.oc_options|length > 20 or form.pr_options|length > 20 or form.vd_options.field.choices|length > 20 %}
+        <div class="alert alert-warning">The terms you entered have returned too many results to show, consider going back and narrowing your search terms.</div>
+    {% endif %}
+
     </div>
 </div>
 {% endif %}
