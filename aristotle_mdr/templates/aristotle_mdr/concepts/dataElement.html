@@ -71,7 +71,7 @@
         available at "{% include "aristotle_mdr/helpers/itemLink.html" with item=item.valueDomain %}".
             {% include "aristotle_mdr/concepts/valueDomainRepresentation.html" with item=item.valueDomain %}
     {% endif %}
-    {% if item.input_to_derivation or item.derived_from %}
+    {% if item.input_to_derivation.all|length > 0 or item.derived_from.all|length > 0 %}
         <h2>Derivations</h2>
         <dl>
             <dt>Input to</dt>

@@ -16,7 +16,7 @@ import aristotle_mdr.models as MDR
 from aristotle_mdr.widgets import BootstrapDropdownSelectMultiple, BootstrapDropdownIntelligentDate, BootstrapDropdownSelect
 
 QUICK_DATES = Choices (
-       ('a','anytime',_('Any time')),
+       ('','anytime',_('Any time')),
        ('h','hour',_('Last hour')),
        ('t','today',_('Today')),
        ('w','week',_('This week')),
