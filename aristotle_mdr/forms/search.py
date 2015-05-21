@@ -331,16 +331,30 @@ class PermissionSearchForm(TokenSearchForm):
 
     def check_spelling(self,sqs):
         if self.query_text:
+            original_query = self.cleaned_data.get('q',"")
+
             from urllib import quote_plus
             suggestions = []
             has_suggestions = False
             suggested_query = []
+
+            #lets assume the words are ordered in importance
+            # So we suggest words in order
+            optimal_query = original_query
             for token in self.cleaned_data.get('q',"").split(" "):
                 if token: # remove blanks
                     suggestion = self.searchqueryset.spelling_suggestion(token)
                     if suggestion:
-                        suggested_query.append(suggestion)
-                        has_suggestions = True
+                        test_query = optimal_query.replace(token,suggestion)
+                        # Haystack can *over correct* so we'll do a quick search with the
+                        # suggested spelling to compare words against
+                        try:
+                            PermissionSearchQuerySet().auto_query(test_query)[0]
+                            suggested_query.append(suggestion)
+                            has_suggestions = True
+                            optimal_query = test_query
+                        except:
+                            suggestion = None
                     else:
                         suggested_query.append(token)
                     suggestions.append((token,suggestion))

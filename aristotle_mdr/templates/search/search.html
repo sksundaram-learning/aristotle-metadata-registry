@@ -18,7 +18,7 @@
 {% block header %}
    {% include 'aristotle_mdr/header.html' with hide_search=True %}
 {% endblock %}
-{% block title %}{% trans "Search" %}{% if query %} {% trans "results" context 'Search results' %}{% endif %}{% endblock %}
+{% block title %}{% trans "Search" %}{% if query %} {% trans "results" context 'Search results' %} - {{ query }}{% endif %}{% endblock %}
 {% block content %}
     <form method="get"> {# open main_search_form #}
         <div id="searchbar" class="row">
@@ -157,13 +157,28 @@
                 </p>
                 <strong>Searching instead for:</strong>
                 <span>
+                    <a href="?q={{form.suggested_query}}">
+                    {% for word,suggestion in form.spelling_suggestions %}
+                        {% if suggestion %}
+                            <em>{{ suggestion }}</em>
+                        {% else %}
+                            {{ word }}
+                        {% endif %}
+                    {% endfor %}
+                    </a>
+                </span>
+            {% else %}
+                <p><strong>No results for:</strong> {{ form.original_query }}
+                </p>
+                <strong>Tried searching instead for:</strong>
+                <span>
                 {% for word,suggestion in form.spelling_suggestions %}
                     {% if suggestion %}
                         <em>{{ suggestion }}</em>
                     {% else %}
                         {{ word }}
                     {% endif %}
-                {% endfor %}
+                {% endfor %}, but no results were found.
                 </span>
             {% endif %}
         {% elif form.has_spelling_suggestions  %}
