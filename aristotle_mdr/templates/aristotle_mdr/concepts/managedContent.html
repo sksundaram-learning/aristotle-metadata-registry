@@ -52,7 +52,7 @@
                   <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                     <i class="fa fa-pencil-square-o"></i> {% trans 'Edit'%} <span class="caret"></span>
                   </button>
-                  <ul class="dropdown-menu" role="menu">
+                  <ul class="dropdown-menu dropdown-menu-right" role="menu">
                     <!-- li><a id="ActivateInplaceEdit" class=""></a></li -->
                     <li><a class="" href="{% url 'aristotle:edit_item' item.id %}"
                                     data-toggle="modal" data-target="#infobox_adv_edit">
@@ -144,21 +144,21 @@
     </div>
     {% bootstrap_modal "r2r_modals" %}
     {% endif %}
-    <dl id="alternate_names" class="hidden-xs">
-        {% if item.shortName %}
-        <dt>{% trans 'Short name'%}</dt><dd>{{ item.shortName }}</dd>
-        {% endif %}
-        {% if item.version %}
-        <dt class="visible-xs">{% trans 'Version'%}</dt><dd class="visible-xs">{{ item.version }}</dd>
+    <h2>{% trans 'Definition'%}</h2>
+    <div id="description" class="description">
+        {{ item.description | safe}}
+    </div>
+    {% if item.short_name or item.synonyms %}
+    <h3>Alternate names:</h3>
+    <dl id="alternate_names">
+        {% if item.short_name %}
+        <dt>{% trans 'Short name'%}</dt><dd>{{ item.short_name }}</dd>
         {% endif %}
         {% if item.synonyms %}
         <dt>{% trans 'Synonyms'%}</dt><dd>{{ item.synonyms }}</dd>
         {% endif %}
     </dl>
-    <h2>{% trans 'Definition'%}</h2>
-    <div id="description" class="description">
-        {{ item.description | safe}}
-    </div>
+    {% endif %}
 
     {% block objSpecific %}{% endblock %}
 
