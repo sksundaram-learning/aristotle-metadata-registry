@@ -55,7 +55,9 @@ class ConceptForm(UserAwareModelForm):
         # returns every field that isn't in a concept
         field_names = [field.name for field in MDR.concept._meta.fields]
         for name in self.fields:
-            if name not in field_names and name != 'make_new_item':
+            # Exclude fields in the based concept class
+            # Excldue fields that are used for editing
+            if name not in field_names and name not in ['make_new_item','change_comments']:
                 yield self[name]
 
 class Concept_1_Search(UserAwareForm):
