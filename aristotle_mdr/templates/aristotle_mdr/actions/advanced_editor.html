@@ -24,11 +24,13 @@
                 {% trans 'This item has been superseded by the newer version,'%}
                 <em>{% include "aristotle_mdr/helpers/itemLink.html" with item=item.superseded_by %}</em>.
             </div>
-        {% elif item.is_retired %}
+        {% endif %}
+        {% if item.is_retired %}
             <div class=" alert alert-warning">
                 {% trans 'This item has been retired and is not recommended for use by any registration authority.'%}
             </div>
-        {% elif item.is_public %}
+        {% endif %}
+        {% if item.is_public %}
             {# split the if condition as if its public and not technical, we want nothing not one of the lower alerts #}
             <div class='alert alert-danger alert-dismissible'>
                 <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button>
@@ -37,10 +39,6 @@
         {% elif item.is_locked %}
             <div class=" alert alert-info">
                 {% trans 'This item is currently under development.'%}
-            </div>
-        {% else %}
-            <div class=" alert alert-success">
-                {% trans 'This item is under active development. Content may change frequently.'%}
             </div>
         {% endif %}
 
