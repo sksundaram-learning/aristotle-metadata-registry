@@ -79,20 +79,6 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         response = self.client.get(reverse('aristotle:item',args=[self.item1.id])+"/this-isnt-even-a-proper-stub")
         self.assertRedirects(response,url_slugify_concept(self.item1))
 
-    def test_viewer_can_view_related_packages(self):
-        self.login_viewer()
-        response = self.client.get(reverse('aristotle:itemPackages',args=[self.item1.id]))
-        self.assertEqual(response.status_code,200)
-        response = self.client.get(reverse('aristotle:itemPackages',args=[self.item2.id]))
-        self.assertEqual(response.status_code,403)
-
-    def test_anon_cannot_view_related_packages(self):
-        self.logout()
-        response = self.client.get(reverse('aristotle:itemPackages',args=[self.item1.id]))
-        self.assertEqual(response.status_code,302)
-        response = self.client.get(reverse('aristotle:itemPackages',args=[self.item2.id]))
-        self.assertEqual(response.status_code,302)
-
     def test_anon_cannot_view_edit_page(self):
         self.logout()
         response = self.client.get(reverse('aristotle:edit_item',args=[self.item1.id]))
@@ -586,7 +572,7 @@ class RegistrationAuthorityViewPage(LoggedInViewUnmanagedPages,TestCase):
     def setUp(self):
         super(RegistrationAuthorityViewPage, self).setUp()
 
-        self.item2 = models.Package.objects.create(name="OC1",workgroup=self.wg1,**self.defaults)
+        self.item2 = models.DataElement.objects.create(name="OC1",workgroup=self.wg1,**self.defaults)
 
         s = models.Status.objects.create(
                 concept=self.item2,

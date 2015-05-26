@@ -21,7 +21,6 @@ sqs = SearchQuerySet()
     url(r'^dataelementderivation/(?P<iid>\d+)?(?:-[a-z\-]*)?/?$', views.items.dataelementderivation, name='dataElementDerivation'),
     url(r'^datatype/(?P<iid>\d+)/?$', views.items.datatype, name='dataType'),
     url(r'^unitofmeasure/(?P<iid>\d+)/?$', views.items.unitofmeasure, name='unitOfMeasure'),
-    url(r'^package/(?P<iid>\d+)/?$', views.items.package, name='package'),
     """
 
 urlpatterns = patterns('aristotle_mdr.views',
@@ -54,7 +53,6 @@ urlpatterns = patterns('aristotle_mdr.views',
     url(r'^item/(?P<iid>\d+)(?:\/(?P<model_slug>\w+)\/(?P<name_slug>.+))?/?$', views.concept, name='item'),
     url(r'^item/(?P<iid>\d+)/edit/?$', views.edit_item, name='edit_item'),
     url(r'^item/(?P<iid>\d+)/clone/?$', views.clone_item, name='clone_item'),
-    url(r'^item/(?P<iid>\d+)/packages/?$', views.itemPackages, name='itemPackages'),
     url(r'^item/(?P<iid>\d+)/history/?$', views.item_history, name='item_history'),
     url(r'^item/(?P<iid>\d+)/registrationHistory/?$', views.registrationHistory, name='registrationHistory'),
     url(r'^item/(?P<iid>\d+)(?:\/.*)?$', views.concept, name='item'), # Catch every other 'item' URL and throw it for a redirect

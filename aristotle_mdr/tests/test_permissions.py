@@ -83,12 +83,6 @@ class DataTypeVisibility(utils.ManagedObjectVisibility,TestCase):
         self.item = models.DataType.objects.create(name="Test DT",
             workgroup=self.wg,
             )
-class PackageVisibility(utils.ManagedObjectVisibility,TestCase):
-    def setUp(self):
-        super(PackageVisibility, self).setUp()
-        self.item = models.Package.objects.create(name="Test Package",
-            workgroup=self.wg,
-            )
 
 class WorkgroupPermissions(TestCase):
     def test_workgroup_add_members(self):
