@@ -161,29 +161,6 @@ def render_if_condition_met(request,condition,objtype,iid,model_slug=None,name_s
 
     return HttpResponse(template.render(context))
 
-def itemPackages(request, iid):
-    item = get_if_user_can_view(MDR._concept,request.user,iid=iid)
-    if not item:
-        if request.user.is_anonymous():
-            return redirect(reverse('django.contrib.auth.views.login')+'?next=%s' % request.path)
-        else:
-            raise PermissionDenied
-
-    packages = item.packages.all().visible(request.user)
-    paginator = Paginator(packages, PAGES_PER_RELATED_ITEM)
-    page = request.GET.get('page')
-    try:
-        packages = paginator.page(page)
-    except PageNotAnInteger:
-        packages = paginator.page(1)
-    except EmptyPage:
-        packages = paginator.page(paginator.num_pages)
-
-    return render(request,"aristotle_mdr/relatedPackages.html",
-        {'item':item.item,
-         'packages':packages,}
-        )
-
 def item_history(request,iid):
     item = get_if_user_can_view(MDR._concept,request.user,iid)
     if not item:

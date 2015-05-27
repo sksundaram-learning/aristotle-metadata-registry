@@ -267,10 +267,11 @@ WORKGROUP_OWNERSHIP = Choices (
 class Workgroup(registryGroup):
     """
     A workgroup is a collection of associated users given control to work on a specific piece of work.
-    Usually this work will be a specific collection or subset of objects, such as data elements or indicators, for a specific topic.
+    Usually this work will be the creation of a specific collection of objects,
+    such as data elements, for a specific topic.
 
     Workgroup owners may choose to 'archive' a workgroup. All content remains visible,
-    but the workgroup is hidden in lists.
+    but the workgroup is hidden in lists and new items cannot be created in that workgroup.
     """
     template = "aristotle_mdr/workgroup.html"
     ownership = models.IntegerField(
@@ -688,8 +689,6 @@ class Status(TimeStampedModel):
     registrationAuthority = models.ForeignKey(RegistrationAuthority)
     changeDetails = models.TextField(blank=True,null=True)
     state = models.IntegerField(choices=STATES, default=STATES.incomplete)
-    # TODO: What are we going to do with 'inDictionary'?
-    inDictionary = models.BooleanField(default=True)
     #TODO: Below should be changed to 'effective_date' to match ISO IEC 11179-6 (Section 8.1.2.6.2.2)
     registrationDate = models.DateField(_('Date registration effective'))
     until_date = models.DateField(_('Date registration expires'),blank=True,null=True)
@@ -879,15 +878,6 @@ class DataElementDerivation(concept):
     derivation_rule = models.TextField(blank=True)
 
 
-class Package(concept):
-    """ Generic collection of concepts """
-    items = models.ManyToManyField(_concept,related_name="packages",blank=True,null=True)
-    template = "aristotle_mdr/concepts/package.html"
-
-    @property
-    def classedItems(self):
-        return self.items.select_subclasses()
-
 # Create a 1-1 user profile so we don't need to extend user
 # Thanks to http://stackoverflow.com/a/965883/764357
 class PossumProfile(models.Model):
@@ -982,11 +972,6 @@ def defaultData():
     iso ,c = RegistrationAuthority.objects.get_or_create(
                 name="ISO/IEC",description="ISO/IEC")
     iso_wg,c = Workgroup.objects.get_or_create(name="ISO/IEC Workgroup")
-    iso_package,c = Package.objects.get_or_create(
-        name="ISO/IEC 11404 DataTypes",
-        description="A collection of datatypes as described in the ISO/IEC 11404 Datatypes standard",
-        workgroup=iso_wg)
-    iso.register(iso_package,STATES.standard,system,registrationDate=timezone.now())
     dataTypes = [
        ("Boolean","A binary value expressed using a string (e.g. true or false)."),
        ("Currency","A numeric value expressed using a particular medium of exchange."),
@@ -998,7 +983,6 @@ def defaultData():
     for name,desc in dataTypes:
         dt,created = DataType.objects.get_or_create(name=name,description=desc,workgroup=iso_wg)
         iso.register(dt,STATES.standard,system,datetime.date(2000,1,1))
-        iso_package.items.add(dt)
         print("{name} ".format(name=name),end="")
     print("")
 

@@ -48,8 +48,8 @@ pertinant information about questions to appear on data elements, and vice versa
 Caveats: ``concept`` versus ``_concept``
 ----------------------------------------
 
-There is a need for some objects to link to any arbitrary concept, for example the
-``aristotle.models.Package`` object and the favourites field of `aristotle.models.AristotleProfile`.
+There is a need for some objects to link to any arbitrary concept, for example
+the favourites field of `aristotle.models.AristotleProfile`.
 Because of this there is a distinction between the Aristotle-MDR model objects
 ``concept`` and ``_concept``.
 
@@ -308,8 +308,8 @@ to give extra context to `UnitOfMeasure` objects.
 
 A complete example of an Aristotle Extension
 --------------------------------------------
-The first package of content extension for Aristotle that helped clarify a lot
-of the issues around inheritance was the
+The first content extension for Aristotle that helps clarify a lot
+of the issues around inheritance is the
 `Comet Indicator Registry <https://github.com/aristotle-mdr/comet-indicator-registry>`_.
 This adds 6 new content types along with admin pages, search indexes and templates and extra content for
 display on the included Aristotle ``DataElement`` template - which was all achieved with less than 600 lines of code.

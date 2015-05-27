@@ -251,6 +251,5 @@ register_concept(MDR.DataElementDerivation,
 
 register_concept(MDR.ConceptualDomain)
 register_concept(MDR.DataType)
-register_concept(MDR.Package)
 register_concept(MDR.UnitOfMeasure)
 
