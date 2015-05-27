@@ -170,13 +170,6 @@ def ternary(condition, a, b):
     else:
         return b
 
-@register.simple_tag
-def pluralmodel(item,value):
-    if value == 1:
-        return item.get_verbose_name()
-    else:
-        return item.get_verbose_name_plural()
-
 @register.filter
 def paginator_range(page,mode):
     if mode=="start":
