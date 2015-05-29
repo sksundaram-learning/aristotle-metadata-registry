@@ -62,7 +62,7 @@ class ManagedObjectVisibility(object):
             concept=self.item,
             registrationAuthority=self.ra,
             registrationDate=datetime.date(2005,1,1),
-            until_date=datetime.date(2005,06,29),
+            until_date=datetime.date(2005,6,29),
             state=self.ra.public_state,
             changeDetails="s2",
             )
