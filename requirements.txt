@@ -1,7 +1,5 @@
 --index-url https://pypi.python.org/simple/
 
--e git://github.com/LegoStormtroopr/django-notifications#egg=notifications
-
 -e .
 
 #Some stuff fails on Django 1.7
