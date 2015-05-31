@@ -43,7 +43,7 @@ class AdminPage(utils.LoggedInViewPages,TestCase):
         self.assertTrue(wg_nw in new_editor.profile.editable_workgroups.all())
 
         self.logout()
-        response = self.client.post(reverse('django.contrib.auth.views.login'), {'username': 'new_eddie', 'password': 'editor'})
+        response = self.client.post(reverse('friendly_login'), {'username': 'new_eddie', 'password': 'editor'})
         self.assertEqual(response.status_code,302)
 
         t = models.ObjectClass

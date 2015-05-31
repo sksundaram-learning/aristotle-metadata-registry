@@ -49,7 +49,7 @@ class SupersedePage(utils.LoggedInViewPages,TestCase):
         self.logout()
         response = self.client.get(reverse('aristotle:supersede',args=[self.item1.id]))
         self.assertRedirects(response,
-            reverse("django.contrib.auth.views.login",)+"?next="+
+            reverse("friendly_login",)+"?next="+
             reverse('aristotle:supersede',args=[self.item1.id])
             )
 
@@ -96,7 +96,7 @@ class DeprecatePage(utils.LoggedInViewPages,TestCase):
         self.logout()
         response = self.client.get(reverse('aristotle:deprecate',args=[self.item1.id]))
         self.assertRedirects(response,
-            reverse("django.contrib.auth.views.login",)+"?next="+
+            reverse("friendly_login",)+"?next="+
             reverse('aristotle:deprecate',args=[self.item1.id])
             )
 
