@@ -151,7 +151,7 @@
             </li>
         {% else %}
             <li accesskey="l">
-            <a href="{% url 'django.contrib.auth.views.login' %}?next={{request.path}}">
+            <a href="{% url 'friendly_login' %}?next={{request.path}}">
                 <i class="fa fa-sign-in fa-lg"></i>  {% trans 'Log in'%}
             </a>
             </li>

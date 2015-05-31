@@ -75,7 +75,7 @@ urlpatterns = patterns('aristotle_mdr.views',
     url(r'^changestatus/(?P<iid>\d+)$', views.changeStatus, name='changeStatus'),
     #url(r'^remove/WorkgroupUser/(?P<iid>\d+)/(?P<userid>\d+)$', views.removeWorkgroupUser, name='removeWorkgroupUser'),
 
-    url(r'^account/?$', RedirectView.as_view(url='account/home/', permanent=False)),
+    url(r'^account/?$', RedirectView.as_view(url='account/home/', permanent=True)),
     url(r'^account/home/?$', views.user_pages.home, name='userHome'),
     url(r'^account/admin/?$', views.user_pages.admin_tools, name='userAdminTools'),
     url(r'^account/admin/statistics/?$', views.user_pages.admin_stats, name='userAdminStats'),
