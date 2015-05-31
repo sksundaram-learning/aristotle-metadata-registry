@@ -9,12 +9,11 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 
-from reversion.models import Revision, Version
+from reversion.models import Revision
 
 from aristotle_mdr import forms as MDRForms
 from aristotle_mdr import models as MDR
 from aristotle_mdr.views.utils import paginated_list, paginated_reversion_list
-
 
 def friendly_redirect_login(request):
     if request.user.is_authenticated():
