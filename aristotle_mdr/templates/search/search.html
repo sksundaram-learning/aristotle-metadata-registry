@@ -149,51 +149,53 @@
             </p>
             </div>
             {% endif %}
-    <div class="col-md-10 col-md-offset-1">
         {#  ----- If there are spelling suggestions, show them. ----- #}
-        {% if form.auto_correct_spell_search %}
-            {% if page.object_list %}
-                <p><strong>No results for:</strong> {{ form.original_query }}
-                </p>
-                <strong>Searching instead for:</strong>
-                <span>
-                    <a href="?q={{form.suggested_query}}">
+        {% if form.auto_correct_spell_search or form.has_spelling_suggestions %}
+            {% if form.auto_correct_spell_search %}
+            <div id="spelling" class="col-md-10 col-md-offset-1">
+                {% if page.object_list %}
+                    <p><strong>No results for:</strong> {{ form.original_query }}
+                    </p>
+                    <strong>Searching instead for:</strong>
+                    <span>
+                        <a href="?q={{form.suggested_query}}">
+                        {% for word,suggestion in form.spelling_suggestions %}
+                            {% if suggestion %}
+                                <em>{{ suggestion }}</em>
+                            {% else %}
+                                {{ word }}
+                            {% endif %}
+                        {% endfor %}
+                        </a>
+                    </span>
+                {% else %}
+                    <p><strong>No results for:</strong> {{ form.original_query }}
+                    </p>
+                    <strong>Tried searching instead for:</strong>
+                    <span>
                     {% for word,suggestion in form.spelling_suggestions %}
                         {% if suggestion %}
                             <em>{{ suggestion }}</em>
                         {% else %}
                             {{ word }}
                         {% endif %}
-                    {% endfor %}
-                    </a>
-                </span>
-            {% else %}
-                <p><strong>No results for:</strong> {{ form.original_query }}
-                </p>
-                <strong>Tried searching instead for:</strong>
-                <span>
+                    {% endfor %}, but no results were found.
+                    </span>
+                {% endif %}
+            {% elif form.has_spelling_suggestions  %}
+                Did you mean:
+                <a href="?q={{ form.suggested_query }}">
                 {% for word,suggestion in form.spelling_suggestions %}
                     {% if suggestion %}
                         <em>{{ suggestion }}</em>
                     {% else %}
                         {{ word }}
                     {% endif %}
-                {% endfor %}, but no results were found.
-                </span>
+                {% endfor %}
+                </a>
             {% endif %}
-        {% elif form.has_spelling_suggestions  %}
-            Did you mean:
-            <a href="?q={{ form.suggested_query }}">
-            {% for word,suggestion in form.spelling_suggestions %}
-                {% if suggestion %}
-                    <em>{{ suggestion }}</em>
-                {% else %}
-                    {{ word }}
-                {% endif %}
-            {% endfor %}
-            </a>
+            </div>
         {% endif %}
-    </div>
     {#  ----- MAIN RESULTS PAGE STARTS HERE ----- #}
     {% if query or form.filter_search %}
 
