@@ -33,5 +33,5 @@ def new_comment_created(comment):
 def new_post_created(post,recipient):
     op_name = post.author.get_full_name() or post.author
     notify.send(post.author, recipient=recipient, verb="made a post", target=post.workgroup,
-                description=_('%(op)s made a new post <a href="%(post)s">"%(post)s"</a> in the workgroup "%(workgroup)s" ')
+                description=_('%(op)s made a new post <a href="%(post_url)s">"%(post)s"</a> in the workgroup "%(workgroup)s" ')
                 % {'op':op_name, 'post':post.title, 'workgroup':post.workgroup, 'post_url':reverse("aristotle:discussionsPost",args=[post.id])})
