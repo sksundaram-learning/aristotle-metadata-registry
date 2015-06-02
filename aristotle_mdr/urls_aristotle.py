@@ -6,6 +6,7 @@ from django.conf.urls import patterns, url
 import aristotle_mdr.views as views
 import aristotle_mdr.forms as forms
 from django.views.generic import TemplateView
+from django.views.generic.base import RedirectView
 
 from haystack.query import SearchQuerySet
 from haystack.views import search_view_factory
@@ -21,7 +22,6 @@ sqs = SearchQuerySet()
     url(r'^dataelementderivation/(?P<iid>\d+)?(?:-[a-z\-]*)?/?$', views.items.dataelementderivation, name='dataElementDerivation'),
     url(r'^datatype/(?P<iid>\d+)/?$', views.items.datatype, name='dataType'),
     url(r'^unitofmeasure/(?P<iid>\d+)/?$', views.items.unitofmeasure, name='unitOfMeasure'),
-    url(r'^package/(?P<iid>\d+)/?$', views.items.package, name='package'),
     """
 
 urlpatterns = patterns('aristotle_mdr.views',
@@ -54,7 +54,6 @@ urlpatterns = patterns('aristotle_mdr.views',
     url(r'^item/(?P<iid>\d+)(?:\/(?P<model_slug>\w+)\/(?P<name_slug>.+))?/?$', views.concept, name='item'),
     url(r'^item/(?P<iid>\d+)/edit/?$', views.edit_item, name='edit_item'),
     url(r'^item/(?P<iid>\d+)/clone/?$', views.clone_item, name='clone_item'),
-    url(r'^item/(?P<iid>\d+)/packages/?$', views.itemPackages, name='itemPackages'),
     url(r'^item/(?P<iid>\d+)/history/?$', views.item_history, name='item_history'),
     url(r'^item/(?P<iid>\d+)/registrationHistory/?$', views.registrationHistory, name='registrationHistory'),
     url(r'^item/(?P<iid>\d+)(?:\/.*)?$', views.concept, name='item'), # Catch every other 'item' URL and throw it for a redirect
@@ -76,6 +75,7 @@ urlpatterns = patterns('aristotle_mdr.views',
     url(r'^changestatus/(?P<iid>\d+)$', views.changeStatus, name='changeStatus'),
     #url(r'^remove/WorkgroupUser/(?P<iid>\d+)/(?P<userid>\d+)$', views.removeWorkgroupUser, name='removeWorkgroupUser'),
 
+    url(r'^account/?$', RedirectView.as_view(url='account/home/', permanent=True)),
     url(r'^account/home/?$', views.user_pages.home, name='userHome'),
     url(r'^account/admin/?$', views.user_pages.admin_tools, name='userAdminTools'),
     url(r'^account/admin/statistics/?$', views.user_pages.admin_stats, name='userAdminStats'),

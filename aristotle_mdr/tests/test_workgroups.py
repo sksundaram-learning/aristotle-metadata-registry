@@ -63,13 +63,13 @@ class WorkgroupAnonTests(utils.LoggedInViewPages,TestCase):
         self.logout()
         response = self.client.get(reverse('aristotle:addWorkgroupMembers',args=[self.wg1.id]))
         self.assertRedirects(response,
-            reverse("django.contrib.auth.views.login",)+"?next="+
+            reverse("friendly_login",)+"?next="+
             reverse('aristotle:addWorkgroupMembers',args=[self.wg1.id])
             )
 
         response = self.client.get(reverse('aristotle:removeWorkgroupRole',args=[self.wg1.id,'Viewer',self.newuser.pk]))
         self.assertRedirects(response,
-            reverse("django.contrib.auth.views.login",)+"?next="+
+            reverse("friendly_login",)+"?next="+
             reverse('aristotle:removeWorkgroupRole',args=[self.wg1.id,'Viewer',self.newuser.pk])
             )
 
@@ -79,7 +79,7 @@ class WorkgroupAnonTests(utils.LoggedInViewPages,TestCase):
              'users':[self.newuser.pk]
             })
         self.assertRedirects(response,
-            reverse("django.contrib.auth.views.login",)+"?next="+
+            reverse("friendly_login",)+"?next="+
             reverse('aristotle:addWorkgroupMembers',args=[self.wg1.id])
             )
         self.assertListEqual(list(self.newuser.profile.workgroups.all()),[])
@@ -135,7 +135,7 @@ class WorkgroupMemberTests(utils.LoggedInViewPages,TestCase):
     def test_workgroup_members_can_view_pages(self):
         self.logout()
         # Anonymous user can't see workgroup pages
-        n = reverse('django.contrib.auth.views.login')+"?next="
+        n = reverse('friendly_login')+"?next="
         response = self.client.get(reverse('aristotle:workgroup',args=[self.wg1.id]))
         self.assertRedirects(response,n+reverse('aristotle:workgroup',args=[self.wg1.id]),302,200)
         response = self.client.get(reverse('aristotle:workgroupMembers',args=[self.wg1.id]))
@@ -144,7 +144,7 @@ class WorkgroupMemberTests(utils.LoggedInViewPages,TestCase):
         self.assertRedirects(response,n+reverse('aristotle:workgroupItems',args=[self.wg1.id]),302,200)
 
         # Logged in non-member can't see workgroup pages
-        response = self.client.post(reverse('django.contrib.auth.views.login'), {'username': 'nathan', 'password': 'noobie'})
+        response = self.client.post(reverse('friendly_login'), {'username': 'nathan', 'password': 'noobie'})
         response = self.client.get(reverse('aristotle:workgroup',args=[self.wg1.id]))
         self.assertEqual(response.status_code,302) # can't use assertRedirect as we redirect to a forbidden page?
 

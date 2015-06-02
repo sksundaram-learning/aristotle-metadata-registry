@@ -73,10 +73,10 @@ Screenshots for users
 
 `More screenshots available in the Aristotle-MDR Wiki <https://github.com/aristotle-mdr/aristotle-metadata-registry/wiki/Screenshots>`_.
 
-A newly created data element.
+A data element on shown desktop and mobile
 |newitemsample|
 
-An item being without changing screens
+An item being editted without changing screens
 |itemeditsample|
 
 Information for developers
@@ -129,8 +129,8 @@ About the badges (plus some extras):
     :scale: 100%
     :target: https://gitter.im/LegoStormtroopr/aristotle-metadata-registry?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge
 
-.. |newitemsample| image:: http://i.imgur.com/8mtkFQv.png
-    :alt: The newly created Data Element
+.. |newitemsample| image:: https://cloud.githubusercontent.com/assets/2173174/7829993/4de09a2a-048b-11e5-8b25-c1935da42a2d.png
+    :alt:  Data Element on desktop and mobile
     :scale: 100%
 
 .. |itemeditsample| image:: http://i.imgur.com/dAEboRg.png

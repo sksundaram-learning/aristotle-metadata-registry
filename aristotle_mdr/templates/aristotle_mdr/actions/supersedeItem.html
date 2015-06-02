@@ -11,7 +11,8 @@
         </header>
         <section>
         {# Or you can <a href="#">clone <em>{{ item.name }}</em> and immediately supersede it.</a> #}
-        {{ form }}
+
+        {% include "aristotle_mdr/helpers/fancy_form.html" with form=form %}
 
         {% block save %}
         {% endblock %}
