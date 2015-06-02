@@ -10,7 +10,8 @@
                 This will state the newest version of the selected items is <em>{{ item.name }}</em>
         </header>
         <section style="height:50%;" id='deprecate'>
-        {{ form }}
+
+        {% include "aristotle_mdr/helpers/fancy_form.html" with form=form %}
 
         {% block save %}
         {% endblock %}
