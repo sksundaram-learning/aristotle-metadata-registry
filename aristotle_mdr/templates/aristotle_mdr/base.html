@@ -5,6 +5,7 @@
       <meta http-equiv="content-type" content="text/html; charset=UTF-8">
       <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=IE8" />
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <link rel="icon" type="image/png" href="{% static 'aristotle_mdr/images/favicon.png' %}"/>
       <title>{% block title %}{% endblock %} - {{ config.SITE_NAME }}</title>
     {% include 'aristotle_mdr/scripts.html' %}
     {% block extra_head_scripts %}
@@ -17,7 +18,7 @@
 
    <body>
    {% block header %}
-   {% include 'aristotle_mdr/header.html' %}
+    {% include 'aristotle_mdr/header.html' %}
    {% endblock %}
    <div id='content' class="container">
         {% if messages %}

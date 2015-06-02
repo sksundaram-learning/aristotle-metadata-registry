@@ -18,7 +18,7 @@
               <i class="fg fa fa-user"></i>
             </span>
 
-            <form class="form-signin" method="post" action="{% url 'django.contrib.auth.views.login' %}">
+            <form class="form-signin" method="post" action="{% url 'friendly_login' %}">
             {% csrf_token %}
     {% if form.errors %}
         <div class="alert alert-danger">Your username and password didn't match. Please try again.</div>

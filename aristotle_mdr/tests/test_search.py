@@ -79,7 +79,7 @@ class TestSearch(utils.LoggedInViewPages,TestCase):
 
     def test_registrar_search(self):
         self.logout()
-        response = self.client.post(reverse('django.contrib.auth.views.login'),
+        response = self.client.post(reverse('friendly_login'),
                     {'username': 'stryker', 'password': 'mutantsMustDie'})
 
         self.assertEqual(response.status_code,302) # logged in
@@ -114,7 +114,7 @@ class TestSearch(utils.LoggedInViewPages,TestCase):
 
     def test_registrar_search_after_adding_new_ra_to_workgroup(self):
         self.logout()
-        response = self.client.post(reverse('django.contrib.auth.views.login'),
+        response = self.client.post(reverse('friendly_login'),
                     {'username': 'stryker', 'password': 'mutantsMustDie'})
 
         steve_rogers = models.ObjectClass.objects.get(name="captainAmerica")
@@ -149,7 +149,7 @@ class TestSearch(utils.LoggedInViewPages,TestCase):
         self.viewer = User.objects.create_user('charles.xavier','charles@schoolforgiftedyoungsters.edu','equalRightsForAll')
         self.weaponx_wg = models.Workgroup.objects.create(name="WeaponX")
 
-        response = self.client.post(reverse('django.contrib.auth.views.login'),
+        response = self.client.post(reverse('friendly_login'),
                     {'username': 'charles.xavier', 'password': 'equalRightsForAll'})
 
         self.assertEqual(response.status_code,302) # logged in

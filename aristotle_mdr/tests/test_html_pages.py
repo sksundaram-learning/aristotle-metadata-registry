@@ -288,7 +288,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.login_viewer()
         self.assertTrue(perms.user_can_view(self.viewer,self.item1))
 
-        response = self.client.post(reverse('django.contrib.auth.views.login'), {'username': 'vicky', 'password': 'viewer'})
+        response = self.client.post(reverse('friendly_login'), {'username': 'vicky', 'password': 'viewer'})
         self.assertEqual(response.status_code,302)
         self.assertEqual(self.viewer.profile.favourites.count(),0)
 
@@ -309,7 +309,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.logout()
 
         response = self.client.get(reverse('aristotle:toggleFavourite', args=[self.item1.id]))
-        self.assertRedirects(response,reverse('django.contrib.auth.views.login')+"?next="+reverse('aristotle:toggleFavourite', args=[self.item1.id]))
+        self.assertRedirects(response,reverse('friendly_login')+"?next="+reverse('aristotle:toggleFavourite', args=[self.item1.id]))
 
     def test_registrar_can_change_status(self):
         self.login_registrar()
@@ -384,7 +384,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.logout()
 
         response = self.client.get(reverse('aristotle:changeStatus',args=[self.item1.id]))
-        self.assertRedirects(response,reverse('django.contrib.auth.views.login')+"?next="+reverse('aristotle:changeStatus', args=[self.item1.id]))
+        self.assertRedirects(response,reverse('friendly_login')+"?next="+reverse('aristotle:changeStatus', args=[self.item1.id]))
 
     def assertRedirects(self,*args,**kwargs):
         # There is an issue with these failing when we check a response very quickly after changing status
@@ -432,9 +432,9 @@ class ValueDomainViewPage(LoggedInViewConceptPages,TestCase):
     def test_anon_cannot_use_value_page(self):
         self.logout()
         response = self.client.get(reverse('aristotle:valueDomain_edit_values',args=[self.item1.id,'permissible']))
-        self.assertRedirects(response,reverse('django.contrib.auth.views.login')+"?next="+reverse('aristotle:valueDomain_edit_values',args=[self.item1.id,'permissible']))
+        self.assertRedirects(response,reverse('friendly_login')+"?next="+reverse('aristotle:valueDomain_edit_values',args=[self.item1.id,'permissible']))
         response = self.client.get(reverse('aristotle:valueDomain_edit_values',args=[self.item1.id,'supplementary']))
-        self.assertRedirects(response,reverse('django.contrib.auth.views.login')+"?next="+reverse('aristotle:valueDomain_edit_values',args=[self.item1.id,'supplementary']))
+        self.assertRedirects(response,reverse('friendly_login')+"?next="+reverse('aristotle:valueDomain_edit_values',args=[self.item1.id,'supplementary']))
 
     def loggedin_user_can_use_value_page(self,value_type,current_item,http_code):
         response = self.client.get(reverse('aristotle:valueDomain_edit_values',args=[current_item.id,value_type]))

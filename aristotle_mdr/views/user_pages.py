@@ -2,16 +2,27 @@ import datetime
 from django.apps import apps
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.views import login
 from django.core.cache import cache
 from django.core.exceptions import PermissionDenied
 from django.core.urlresolvers import reverse
+from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
+
+from reversion.models import Revision
 
 from aristotle_mdr import forms as MDRForms
 from aristotle_mdr import models as MDR
 from aristotle_mdr.views.utils import paginated_list, paginated_reversion_list
 
-from reversion.models import Revision, Version
+def friendly_redirect_login(request):
+    if request.user.is_authenticated():
+        if 'next' in request.GET:
+            return HttpResponseRedirect(request.GET.get('next'))
+        else:
+            return HttpResponseRedirect(reverse('aristotle:userHome',))
+    else:
+        return login(request)
 
 @login_required
 def home(request):

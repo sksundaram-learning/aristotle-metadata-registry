@@ -98,7 +98,7 @@ def download(request,downloadType,iid=None):
     item = get_if_user_can_view(item.__class__,request.user, iid)
     if not item:
         if request.user.is_anonymous():
-            return redirect(reverse('django.contrib.auth.views.login')+'?next=%s' % request.path)
+            return redirect(reverse('friendly_login')+'?next=%s' % request.path)
         else:
             raise PermissionDenied
 
@@ -137,7 +137,7 @@ def render_if_condition_met(request,condition,objtype,iid,model_slug=None,name_s
         return redirect(url_slugify_concept(item))
     if not condition(request.user, item):
         if request.user.is_anonymous():
-            return redirect(reverse('django.contrib.auth.views.login')+'?next=%s' % request.path)
+            return redirect(reverse('friendly_login')+'?next=%s' % request.path)
         else:
             raise PermissionDenied
 
@@ -165,7 +165,7 @@ def item_history(request,iid):
     item = get_if_user_can_view(MDR._concept,request.user,iid)
     if not item:
         if request.user.is_anonymous():
-            return redirect(reverse('django.contrib.auth.views.login')+'?next=%s' % request.path)
+            return redirect(reverse('friendly_login')+'?next=%s' % request.path)
         else:
             raise PermissionDenied
     item = item.item
@@ -182,7 +182,7 @@ def registrationHistory(request, iid):
     item = get_if_user_can_view(MDR._concept,request.user,iid)
     if not item:
         if request.user.is_anonymous():
-            return redirect(reverse('django.contrib.auth.views.login')+'?next=%s' % request.path)
+            return redirect(reverse('friendly_login')+'?next=%s' % request.path)
         else:
             raise PermissionDenied
 
@@ -204,7 +204,7 @@ def edit_item(request,iid,*args,**kwargs):
     item = get_object_or_404(MDR._concept,pk=iid).item
     if not user_can_edit(request.user, item):
         if request.user.is_anonymous():
-            return redirect(reverse('django.contrib.auth.views.login')+'?next=%s' % request.path)
+            return redirect(reverse('friendly_login')+'?next=%s' % request.path)
         else:
             raise PermissionDenied
 
@@ -233,7 +233,7 @@ def clone_item(request,iid,*args,**kwargs):
     item_to_clone = get_object_or_404(MDR._concept,pk=iid).item
     if not user_can_edit(request.user, item_to_clone):
         if request.user.is_anonymous():
-            return redirect(reverse('django.contrib.auth.views.login')+'?next=%s' % request.path)
+            return redirect(reverse('friendly_login')+'?next=%s' % request.path)
         else:
             raise PermissionDenied
     base_form = MDRForms.wizards.subclassed_modelform(item_to_clone.__class__)
@@ -264,7 +264,7 @@ def unauthorised(request, path=''):
 
 def create_list(request):
     if request.user.is_anonymous():
-        return redirect(reverse('django.contrib.auth.views.login')+'?next=%s' % request.path)
+        return redirect(reverse('friendly_login')+'?next=%s' % request.path)
     if not perms.user_is_editor(request.user):
         raise PermissionDenied
 
@@ -297,7 +297,7 @@ def toggleFavourite(request, iid):
     item = get_object_or_404(MDR._concept,pk=iid).item
     if not user_can_view(request.user, item):
         if request.user.is_anonymous():
-            return redirect(reverse('django.contrib.auth.views.login')+'?next=%s' % request.path)
+            return redirect(reverse('friendly_login')+'?next=%s' % request.path)
         else:
             raise PermissionDenied
     request.user.profile.toggleFavourite(item)
@@ -355,7 +355,7 @@ def mark_ready_to_review(request,iid):
     item = get_object_or_404(MDR._concept,pk=iid).item
     if not (item and user_can_edit(request.user,item)):
         if request.user.is_anonymous():
-            return redirect(reverse('django.contrib.auth.views.login')+'?next=%s' % request.path)
+            return redirect(reverse('friendly_login')+'?next=%s' % request.path)
         else:
             raise PermissionDenied
 
@@ -375,7 +375,7 @@ def changeStatus(request, iid):
     item = get_object_or_404(MDR._concept,pk=iid).item
     if not (item and user_can_change_status(request.user,item)):
         if request.user.is_anonymous():
-            return redirect(reverse('django.contrib.auth.views.login')+'?next=%s' % request.path)
+            return redirect(reverse('friendly_login')+'?next=%s' % request.path)
         else:
             raise PermissionDenied
     # There would be an else here, but both branches above return,
@@ -413,7 +413,7 @@ def supersede(request, iid):
     item = get_object_or_404(MDR._concept,pk=iid).item
     if not (item and user_can_edit(request.user,item)):
         if request.user.is_anonymous():
-            return redirect(reverse('django.contrib.auth.views.login')+'?next=%s' % request.path)
+            return redirect(reverse('friendly_login')+'?next=%s' % request.path)
         else:
             raise PermissionDenied
     qs=item.__class__.objects.all()
@@ -435,7 +435,7 @@ def deprecate(request, iid):
     item = get_object_or_404(MDR._concept,pk=iid).item
     if not (item and user_can_edit(request.user,item)):
         if request.user.is_anonymous():
-            return redirect(reverse('django.contrib.auth.views.login')+'?next=%s' % request.path)
+            return redirect(reverse('friendly_login')+'?next=%s' % request.path)
         else:
             raise PermissionDenied
     qs=item.__class__.objects.filter().editable(request.user)
@@ -466,7 +466,7 @@ def valuedomain_value_edit(request,iid,value_type):
     item = get_object_or_404(MDR._concept,pk=iid).item
     if not user_can_edit(request.user,item):
         if request.user.is_anonymous():
-            return redirect(reverse('django.contrib.auth.views.login')+'?next=%s' % request.path)
+            return redirect(reverse('friendly_login')+'?next=%s' % request.path)
         else:
             raise PermissionDenied
     value_model = { 'permissible'   : MDR.PermissibleValue,

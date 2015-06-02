@@ -106,6 +106,17 @@ class UserHomePages(utils.LoggedInViewPages,TestCase):
         self.assertEqual(response.status_code,200)
         self.logout()
 
+    def test_login_redirects(self):
+        response = self.client.get("/login")
+        self.assertEqual(response.status_code,200)
+
+        self.login_superuser()
+        response = self.client.get("/login")
+        self.assertRedirects(response,reverse('aristotle:userHome'))
+
+        response = self.client.get("/login?next="+reverse('aristotle:userFavourites'))
+        self.assertRedirects(response,reverse('aristotle:userFavourites'))
+
 class UserDashRecentItems(utils.LoggedInViewPages,TestCase):
     def setUp(self):
         super(UserDashRecentItems, self).setUp()
