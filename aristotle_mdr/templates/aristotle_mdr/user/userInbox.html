@@ -44,21 +44,18 @@
             {% endif %}
         </td>
         <td>
-            {% if 'comment' in notice.verb %}
-                {{ notice.actor }}
-            {% else %}
-                Someone
-            {% endif %}
-            {{ notice.verb }}
-            {% if notice.target %} :
-                {% if 'item' in notice.verb %}
-                    <a href="{% url 'aristotle:item' notice.target.id %}">{{ notice.target.name }}</a>
-                {% elif 'comment' in notice.verb %}
-                    <a href="{% url 'aristotle:discussionsPost' notice.target.id %}">{{ notice.target.title }}</a>
-                {% endif %}
-            {% endif %}
             {% if notice.description %}
-            <p>{{ notice.description|linebreaksbr }}</p>
+                {{ notice.description|safe }}
+            {% else %}
+                {% if notice.target %}
+                    {{ notice.obj }}
+                    {{ notice.verb }}
+                    {% if 'item' in notice.verb %}
+                        <a href="{% url 'aristotle:item' notice.target.id %}">{{ notice.target.name }}</a>
+                    {% elif 'comment' in notice.verb %}
+                        <a href="{% url 'aristotle:discussionsPost' notice.target.id %}">{{ notice.target.title }}</a>
+                    {% endif %}
+                {% endif %}
             {% endif %}
         </td>
         <td>{{ notice.timesince }} ago</td>
