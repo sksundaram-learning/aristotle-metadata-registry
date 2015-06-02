@@ -1027,12 +1027,12 @@ def concept_saved(sender, instance, created, **kwargs):
         # Don't run during loaddata
         return
     for p in instance.favourited_by.all():
-        favourite_updated(recipient=p.user,obj=instance)
+        messages.favourite_updated(recipient=p.user,obj=instance)
     for user in instance.workgroup.viewers.all():
         if created:
-            workgroup_item_new(recipient=user,obj=instance)
+            messages.workgroup_item_new(recipient=user,obj=instance)
         else:
-            workgroup_item_updated(recipient=user,obj=instance)
+            messages.workgroup_item_updated(recipient=user,obj=instance)
     try:
         # This will fail during first load, and if admins delete aristotle.
         system = User.objects.get(username="aristotle")

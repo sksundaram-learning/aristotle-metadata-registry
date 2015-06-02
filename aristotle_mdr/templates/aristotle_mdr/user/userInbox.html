@@ -9,15 +9,9 @@
 {% endblock %}
 
 {% block page %}
-<h1>{% block title %}Notifications{% endblock %}</h1>
-<aside>
-<section id="members">
-</section>
-</aside>
-
+<h1>{% block title %}Notifications {% if folder %}- {{ folder }}{% endif %}{% endblock %}</h1>
 <a class="btn btn-default" href="{% url 'notifications:mark_all_as_read' %}"><i class="fa fa-envelope-o"></i> Mark all as read</a>
 
-<h1>{{ folder }}</h1>
 <table class="notifications table">
   <thead>
       <tr>
