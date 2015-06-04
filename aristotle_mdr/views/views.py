@@ -244,7 +244,7 @@ def clone_item(request,iid,*args,**kwargs):
             with transaction.atomic(), reversion.create_revision():
                 new_clone = form.save()
                 reversion.set_user(request.user)
-                reversion.set_comment(_("Cloned from %s (id: %s)")%(item_to_clone.name,str(item_to_clone.pk)))
+                reversion.set_comment("Cloned from %s (id: %s)"%(item_to_clone.name,str(item_to_clone.pk)))
                 return HttpResponseRedirect(url_slugify_concept(new_clone))
     else:
         form = base_form(initial=concept_to_clone_dict(item_to_clone),user=request.user)
