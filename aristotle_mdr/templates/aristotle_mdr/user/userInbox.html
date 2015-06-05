@@ -1,5 +1,5 @@
 {% extends "aristotle_mdr/user/userHome.html" %}
-{% load notifications_tags %}
+{% load notifications_tags i18n %}
 
 {% block collapse-link%}
     <i class="fa fa-envelope fa-fw"></i> Notifications</a>
@@ -38,20 +38,32 @@
             {% endif %}
         </td>
         <td>
-            {% if notice.description %}
-                {{ notice.description|safe }}
+            {% if notice.actor == notice.target %}
+            {% elif notice.actor.get_absolute_url %}
+                <a href="{{notice.actor.get_absolute_url}}">{{ notice.actor }}</a>
             {% else %}
-                {% if notice.target %}
-                    {{ notice.obj }}
-                    {{ notice.verb }}
-                    {% if 'item' in notice.verb %}
-                        <a href="{% url 'aristotle:item' notice.target.id %}">{{ notice.target.name }}</a>
-                    {% elif 'comment' in notice.verb %}
-                        <a href="{% url 'aristotle:discussionsPost' notice.target.id %}">{{ notice.target.title }}</a>
-                    {% endif %}
+                {{ notice.actor }}
+            {% endif %}
+
+            {{ notice.verb }}
+
+            {% if notice.target %}
+                {% if notice.target.get_absolute_url %}
+                    <a href="{{notice.target.get_absolute_url}}">{{ notice.target }}</a>
+                {% else %}
+                    {{ notice.target }}
                 {% endif %}
             {% endif %}
-        </td>
+
+            {% if notice.action_object %}
+                {% trans "in" %}
+                {% if notice.action_object.get_absolute_url %}
+                    <a href="{{notice.target.get_absolute_url}}">{{ notice.action_object }}</a>
+                {% else %}
+                    {{ notice.action_object }}
+                {% endif %}
+            {% endif %}
+            </td>
         <td>{{ notice.timesince }} ago</td>
         <td>
             <a href="{% url 'notifications:delete' slug=notice.slug %}?next={{ request.path }}">
