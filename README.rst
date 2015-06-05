@@ -97,7 +97,7 @@ About the badges (plus some extras):
 * |codecov| - Codecov.io, showing even more in-depther code coverage with branch coverage
 * |demoserver| - A link to a live demo and development server
 * |gitter| - Gitter, a git-powered chat room for developers
-
+* |waffleio| - Waffle.io bugs ready to be actioned.
 
 .. |build-status| image:: https://travis-ci.org/aristotle-mdr/aristotle-metadata-registry.svg?branch=master
     :alt: build status
@@ -128,6 +128,10 @@ About the badges (plus some extras):
     :alt: visit the gitter chat room for this project
     :scale: 100%
     :target: https://gitter.im/LegoStormtroopr/aristotle-metadata-registry?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge
+
+.. |waffleio| image:: https://badge.waffle.io/aristotle-mdr/aristotle-metadata-registry.png?label=ready&title=Ready 
+    :target: https://waffle.io/aristotle-mdr/aristotle-metadata-registry 
+    :alt: 'Stories in Ready'
 
 .. |newitemsample| image:: https://cloud.githubusercontent.com/assets/2173174/7829993/4de09a2a-048b-11e5-8b25-c1935da42a2d.png
     :alt:  Data Element on desktop and mobile
