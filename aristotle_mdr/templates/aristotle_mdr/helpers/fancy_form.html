@@ -1,4 +1,5 @@
 {% for field in form %}
+<div>
     {{ field.label_tag }}
     {% if field.errors %}
         <ul class="alert alert-danger">
@@ -7,6 +8,8 @@
             {% endfor %}
         </ul>
     {% endif %}
+    <div>
     {{ field }}
     </div>
+</div>
 {% endfor %}

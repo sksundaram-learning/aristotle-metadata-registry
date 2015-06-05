@@ -11,7 +11,7 @@ class NewPostForm(forms.ModelForm):
                 widget=autocomplete_light.MultipleChoiceWidget('Autocomplete_concept'))
     class Meta:
         model = MDR.DiscussionPost
-        exclude = ['author','closed']
+        fields = ['title','body','workgroup','relatedItems',]
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user', None)

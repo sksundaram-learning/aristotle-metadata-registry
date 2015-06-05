@@ -14,13 +14,13 @@ from django.utils.translation import ugettext_lazy as _
 from model_utils.managers import InheritanceManager, InheritanceQuerySet
 from model_utils.models import TimeStampedModel
 from model_utils import Choices, FieldTracker
-from notifications import notify
 
 import reversion
 
 import datetime
 from ckeditor.fields import RichTextField
 from aristotle_mdr import perms
+from aristotle_mdr import messages
 from aristotle_mdr.utils import url_slugify_concept, url_slugify_workgroup
 from model_utils.fields import AutoLastModifiedField
 
@@ -1016,16 +1016,6 @@ def defaultData():
             print("{name}".format(name=name),end="")
         print("")
 
-def favourite_updated(recipient,obj):
-    notify.send(obj, recipient=recipient, verb="changed a favourited item",
-                comment=_('A favourite item (%(item)s) has been changed.') % {'item': obj})
-def workgroup_item_updated(recipient,obj):
-    notify.send(obj, recipient=recipient, verb="motified item in workgroup", target=obj.workgroup,
-                comment=_('An item (%(item)s) has been updated in the workgroup "%(workgroup)s"') % {'item':obj, 'workgroup': obj.workgroup})
-def workgroup_item_new(recipient,obj):
-    notify.send(obj, recipient=recipient, verb="new item in workgroup", target=obj.workgroup,
-                comment=_('An new item (%(item)s) is in the workgroup "%(workgroup)s"') % {'item':obj, 'workgroup': obj.workgroup})
-
 @receiver(post_save)
 def concept_saved(sender, instance, created, **kwargs):
     if not issubclass(sender, _concept):
@@ -1037,12 +1027,12 @@ def concept_saved(sender, instance, created, **kwargs):
         # Don't run during loaddata
         return
     for p in instance.favourited_by.all():
-        favourite_updated(recipient=p.user,obj=instance)
+        messages.favourite_updated(recipient=p.user,obj=instance)
     for user in instance.workgroup.viewers.all():
         if created:
-            workgroup_item_new(recipient=user,obj=instance)
+            messages.workgroup_item_new(recipient=user,obj=instance)
         else:
-            workgroup_item_updated(recipient=user,obj=instance)
+            messages.workgroup_item_updated(recipient=user,obj=instance)
     try:
         # This will fail during first load, and if admins delete aristotle.
         system = User.objects.get(username="aristotle")
@@ -1070,8 +1060,7 @@ def new_comment_created(sender, **kwargs):
         return # We don't need to notify a topic poster of an edit.
     if comment.author == post.author:
         return # We don't need to tell someone they replied to themselves
-    notify.send(comment.author, recipient=post.author, verb="comment on post", target=post,
-                comment=_('%(commenter)s) commented on the post "%(post)s"') % {'commenter':comment.author, 'post':post.title})
+    messages.new_comment_created(comment)
 
 @receiver(post_save,sender=DiscussionPost)
 def new_post_created(sender, **kwargs):
@@ -1081,12 +1070,9 @@ def new_post_created(sender, **kwargs):
         return
     if not kwargs['created']:
         return # We don't need to notify a topic poster of an edit.
-    for user in post.workgroup.viewers.all():
-        if user == post.author:
-            return # We don't need to tell someone they made a post
-        notify.send(post.author, recipient=post.author, verb="made a post", target=post.workgroup,
-                    comment=_('%(op)s made a new post "%(post)s" in the workgroup "%(workgroup)s" ')
-                    % {'op':post.author, 'post':post.title, 'workgroup':post.workgroup})
+    for user in post.workgroup.members.all():
+        if user != post.author:
+            messages.new_post_created(post,user)
 
 # Loads example data, this is never used in formal testing.
 def exampleData(): # pragma: no cover
