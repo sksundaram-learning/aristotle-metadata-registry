@@ -95,11 +95,11 @@ class CustomConceptQuerySetTest_Slow(object):
 
         cls.super_user.delete()
         for wg in cls.wgs:
-            for i in wg.values():
+            for i in wg.items():
                 i.delete()
             wg.delete()
 
-        for i in cls.wg_users+cls.ra_users+cls.ras.items():
+        for i in cls.wg_users+cls.ra_users+cls.ras.values():
             i.delete()
 
     def test_is_public(self):
