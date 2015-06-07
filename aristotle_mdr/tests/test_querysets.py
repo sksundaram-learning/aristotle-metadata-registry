@@ -95,7 +95,7 @@ class CustomConceptQuerySetTest_Slow(object):
 
         cls.super_user.delete()
         for wg in cls.wgs:
-            for i in wg.items():
+            for i in wg.items.all():
                 i.delete()
             wg.delete()
 
