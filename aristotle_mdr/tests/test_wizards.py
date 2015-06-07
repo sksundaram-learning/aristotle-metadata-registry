@@ -125,7 +125,7 @@ class ConceptWizardPage(utils.LoggedInViewPages):
         # must submit a description at this step. But we are using a non-permitted workgroup.
         step_2_data.update({
             'results-description':"Test Description",
-            'results-workgroup':self.wg2.pk
+            'results-workgroup':self.wg2.id
             })
         response = self.client.post(self.wizard_url, step_2_data)
         self.assertEqual(response.status_code, 200)
@@ -134,7 +134,7 @@ class ConceptWizardPage(utils.LoggedInViewPages):
         # must submit a description at this step. With the right workgroup
         step_2_data.update({
             'results-description':"Test Description",
-            'results-workgroup':self.wg1.pk
+            'results-workgroup':self.wg1.id
             })
         response = self.client.post(self.wizard_url, step_2_data)
         self.assertEqual(response.status_code, 302)
@@ -257,7 +257,7 @@ class DataElementConceptWizardPage(ConceptWizardPage,TestCase):
         # must submit a description at this step. But we are using a non-permitted workgroup.
         step_3_data.update({
             'make_oc-description':"A wizard who can change shape.",
-            'make_oc-workgroup':self.wg2.pk
+            'make_oc-workgroup':self.wg2.id
             })
         response = self.client.post(self.wizard_url, step_3_data)
         wizard = response.context['wizard']
@@ -266,7 +266,7 @@ class DataElementConceptWizardPage(ConceptWizardPage,TestCase):
 
         # must submit a description at this step. With the right workgroup
         step_3_data.update({
-            'make_oc-workgroup':self.wg1.pk
+            'make_oc-workgroup':self.wg1.id
             })
         response = self.client.post(self.wizard_url, step_3_data)
         self.assertEqual(response.status_code, 200)
@@ -518,7 +518,7 @@ class DataElementWizardPage(ConceptWizardPage,TestCase):
 
         # must submit a description at this step. With the right workgroup
         step_3_data.update({
-            'make_dec-workgroup':self.wg1.pk
+            'make_dec-workgroup':self.wg1.id
             })
         response = self.client.post(self.wizard_url, step_3_data)
         self.assertEqual(response.status_code, 200)
