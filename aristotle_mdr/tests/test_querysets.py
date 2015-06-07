@@ -88,6 +88,20 @@ class CustomConceptQuerySetTest_Slow(object):
                         ra.register(item,models.STATES.standard,cls.super_user)
         print("Created this many things to test against:", models.ObjectClass.objects.count())
 
+    @classmethod
+    def tearDownClass(cls):
+        #This stuff gets left in the DB, lets scrap it all.
+        super(CustomConceptQuerySetTest_Slow, cls).tearDownClass()
+
+        cls.super_user.delete()
+        for wg in cls.wgs:
+            for i in wg.items.all():
+                i.delete()
+            wg.delete()
+
+        for i in cls.wg_users+cls.ra_users+cls.ras.values():
+            i.delete()
+
     def test_is_public(self):
         invalid_items = []
         for user in self.wg_users + self.ra_users:
