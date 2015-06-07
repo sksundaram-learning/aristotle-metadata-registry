@@ -22,15 +22,15 @@ class BulkActionForm(forms.Form):
 class AddFavouriteForm(BulkActionForm):
     def make_changes(self):
         items = self.cleaned_data.get('items')
-        self.user.profile.favourites.remove(*items)
-        return '%d items removed from favourites'%(len(items))
+        items = [i for i in items if user_can_view(self.user,i)]
+        self.user.profile.favourites.add(*items)
+        return '%d items favourited'%(len(items))
 
 class RemoveFavouriteForm(BulkActionForm):
     def make_changes(self):
         items = self.cleaned_data.get('items')
-        items = [i for i in items if user_can_view(self.user,i)]
-        self.user.profile.favourites.add(*items)
-        return '%d items favourited'%(len(items))
+        self.user.profile.favourites.remove(*items)
+        return '%d items removed from favourites'%(len(items))
 
 class ChangeStateForm(ChangeStatusForm):
     confirm_page = "aristotle_mdr/actions/bulk_change_status.html"
