@@ -19,7 +19,13 @@ class BulkActionForm(forms.Form):
             self.user = kwargs.pop('user', None)
         super(BulkActionForm, self).__init__(*args, **kwargs)
 
-class FavouriteForm(BulkActionForm):
+class AddFavouriteForm(BulkActionForm):
+    def make_changes(self):
+        items = self.cleaned_data.get('items')
+        self.user.profile.favourites.remove(*items)
+        return '%d items removed from favourites'%(len(items))
+
+class RemoveFavouriteForm(BulkActionForm):
     def make_changes(self):
         items = self.cleaned_data.get('items')
         items = [i for i in items if user_can_view(self.user,i)]
