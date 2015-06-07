@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
+from django.forms import model_to_dict
 from django.test import TestCase
 from django.test.utils import setup_test_environment
 
@@ -260,7 +261,6 @@ class AdminPageForConcept(utils.LoggedInViewPages):
         self.assertEqual(self.wg2.items.count(),before_count)
 
     def test_editor_change_item(self):
-        from django.forms import model_to_dict
         self.login_editor()
         response = self.client.get(reverse("admin:%s_%s_change"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=[self.item1.pk]))
         self.assertResponseStatusCodeEqual(response,200)
@@ -277,8 +277,10 @@ class AdminPageForConcept(utils.LoggedInViewPages):
 
         self.assertEqual([self.wg1],list(response.context['adminform'].form.fields['workgroup'].queryset))
 
+        self.assertTrue(perms.user_can_edit(self.editor,self.item1))
+        self.assertTrue(self.item1.workgroup in self.editor.profile.editable_workgroups.all())
         response = self.client.post(
-                reverse("admin:%s_%s_change"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=[self.item1.pk]),
+                reverse("admin:%s_%s_change"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=[self.item1.id]),
                 updated_item
                 )
 
@@ -292,7 +294,6 @@ class AdminPageForConcept(utils.LoggedInViewPages):
         self.item2 = self.itemType.objects.create(name="admin_page_test_oc_2",description=" ",workgroup=self.wg1,**self.create_defaults)
         self.item3 = self.itemType.objects.create(name="admin_page_test_oc_2",description=" ",workgroup=self.wg1,**self.create_defaults)
 
-        from django.forms import model_to_dict
         self.login_editor()
         response = self.client.get(reverse("admin:%s_%s_change"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=[self.item1.pk]))
         self.assertResponseStatusCodeEqual(response,200)
@@ -318,7 +319,6 @@ class AdminPageForConcept(utils.LoggedInViewPages):
     def test_superseded_by_saves(self):
         self.item2 = self.itemType.objects.create(name="admin_page_test_oc_2",description=" ",workgroup=self.wg1,**self.create_defaults)
 
-        from django.forms import model_to_dict
         self.login_editor()
         response = self.client.get(reverse("admin:%s_%s_change"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=[self.item1.pk]))
         self.assertResponseStatusCodeEqual(response,200)
