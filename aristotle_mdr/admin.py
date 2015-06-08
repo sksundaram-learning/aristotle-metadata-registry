@@ -109,11 +109,11 @@ class ConceptAdmin(CompareVersionAdmin):
     name_suggest_fields = []
     actions_on_top = True; actions_on_bottom = False
 
-#    def formfield_for_foreignkey(self, db_field, request, **kwargs):
-#        if db_field.name == "workgroup":
-#            kwargs['queryset'] = request.user.profile.workgroups.all()
-#            kwargs['initial'] = request.user.profile.activeWorkgroup
-#        return super(ConceptAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "workgroup":
+            kwargs['queryset'] = request.user.profile.editable_workgroups.all()
+            kwargs['initial'] = request.user.profile.activeWorkgroup
+        return super(ConceptAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
     def get_form(self, request, obj=None, **kwargs):
         # Thanks: http://stackoverflow.com/questions/6321916
