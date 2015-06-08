@@ -389,6 +389,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
     def assertRedirects(self,*args,**kwargs):
         # There is an issue with these failing when we check a response very quickly after changing status
         # so if the redirect fails, wait and try again
+        self.assertResponseStatusCodeEqual(args[0],302)
         try:
             super(LoggedInViewConceptPages, self).assertRedirects(*args,**kwargs)
         except AssertionError: # pragma: no cover
