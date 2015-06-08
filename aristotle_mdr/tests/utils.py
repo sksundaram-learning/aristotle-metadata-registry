@@ -17,6 +17,7 @@ def wait_for_signal_to_fire(seconds=1):
 # Since all managed objects have the same rules, these can be used to cover everything
 # This isn't an actual TestCase, we'll just pretend it is
 class ManagedObjectVisibility(object):
+    @classmethod
     def setUpClass(cls):
         cls.ra = models.RegistrationAuthority.objects.create(name="Test RA",
                         public_state=models.STATES.qualified,
@@ -25,6 +26,7 @@ class ManagedObjectVisibility(object):
         cls.wg = models.Workgroup.objects.create(name="Test WG")
         cls.wg.registrationAuthorities.add(cls.ra)
 
+    @classmethod
     def tearDownClass(cls):
         cls.ra.delete()
         cls.wg.delete()
@@ -398,6 +400,7 @@ class LoggedInViewPages(object):
     """
     This helps us manage testing across different user types.
     """
+    @classmethod
     def setUpClass(cls):
         from django.test import Client
 
@@ -428,7 +431,7 @@ class LoggedInViewPages(object):
         cls.viewer = User.objects.get(pk=cls.viewer.pk)
         cls.registrar = User.objects.get(pk=cls.registrar.pk)
 
-
+    @classmethod
     def tearDownClass(cls):
         cls.ra.delete()
 
