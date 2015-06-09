@@ -1,5 +1,6 @@
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 
 import datetime
@@ -17,20 +18,16 @@ def wait_for_signal_to_fire(seconds=1):
 # Since all managed objects have the same rules, these can be used to cover everything
 # This isn't an actual TestCase, we'll just pretend it is
 class ManagedObjectVisibility(object):
-    @classmethod
-    def setUpClass(cls):
-        cls.ra = models.RegistrationAuthority.objects.create(name="Test RA",
+    def setUp(self):
+        self.ra = models.RegistrationAuthority.objects.create(name="Test RA",
                         public_state=models.STATES.qualified,
                         locked_state=models.STATES.candidate)
 
-        cls.wg = models.Workgroup.objects.create(name="Test WG")
-        cls.wg.registrationAuthorities.add(cls.ra)
+        self.wg = models.Workgroup.objects.create(name="Test WG")
+        self.wg.registrationAuthorities.add(self.ra)
 
-    @classmethod
-    def tearDownClass(cls):
-        cls.ra.delete()
-        cls.wg.delete()
-        super(ManagedObjectVisibility, cls).tearDownClass()
+    def tearDown(self):
+        ContentType.objects.clear_cache()
 
     def test_object_is_public(self):
         self.assertEqual(self.item.is_public(),False)
@@ -400,50 +397,38 @@ class LoggedInViewPages(object):
     """
     This helps us manage testing across different user types.
     """
-    @classmethod
-    def setUpClass(cls):
+    def setUp(self):
         from django.test import Client
 
-        cls.client = Client()
-        cls.wg1 = models.Workgroup.objects.create(name="Test WG 1") # Editor is member
-        cls.wg2 = models.Workgroup.objects.create(name="Test WG 2")
-        cls.ra = models.RegistrationAuthority.objects.create(name="Test RA")
-        cls.wg1.registrationAuthorities.add(cls.ra)
-        cls.wg1.save()
+        self.client = Client()
+        self.wg1 = models.Workgroup.objects.create(name="Test WG 1") # Editor is member
+        self.wg2 = models.Workgroup.objects.create(name="Test WG 2")
+        self.ra = models.RegistrationAuthority.objects.create(name="Test RA")
+        self.wg1.registrationAuthorities.add(self.ra)
+        self.wg1.save()
 
-        cls.su = User.objects.create_superuser('super','','user')
-        cls.manager = User.objects.create_user('mandy','','manager')
-        cls.manager.is_staff=True
-        cls.manager.save()
-        cls.editor = User.objects.create_user('eddie','','editor')
-        cls.editor.is_staff=True
-        cls.editor.save()
-        cls.viewer = User.objects.create_user('vicky','','viewer')
-        cls.registrar = User.objects.create_user('reggie','','registrar')
+        self.su = User.objects.create_superuser('super','','user')
+        self.manager = User.objects.create_user('mandy','','manager')
+        self.manager.is_staff=True
+        self.manager.save()
+        self.editor = User.objects.create_user('eddie','','editor')
+        self.editor.is_staff=True
+        self.editor.save()
+        self.viewer = User.objects.create_user('vicky','','viewer')
+        self.registrar = User.objects.create_user('reggie','','registrar')
 
-        cls.wg1.submitters.add(cls.editor)
-        cls.wg1.managers.add(cls.manager)
-        cls.wg1.viewers.add(cls.viewer)
-        cls.ra.registrars.add(cls.registrar)
+        self.wg1.submitters.add(self.editor)
+        self.wg1.managers.add(self.manager)
+        self.wg1.viewers.add(self.viewer)
+        self.ra.registrars.add(self.registrar)
 
-        cls.editor = User.objects.get(pk=cls.editor.pk)
-        cls.manager = User.objects.get(pk=cls.manager.pk)
-        cls.viewer = User.objects.get(pk=cls.viewer.pk)
-        cls.registrar = User.objects.get(pk=cls.registrar.pk)
+        self.editor = User.objects.get(pk=self.editor.pk)
+        self.manager = User.objects.get(pk=self.manager.pk)
+        self.viewer = User.objects.get(pk=self.viewer.pk)
+        self.registrar = User.objects.get(pk=self.registrar.pk)
 
-    @classmethod
-    def tearDownClass(cls):
-        cls.ra.delete()
-
-        cls.su.delete()
-        cls.manager.delete()
-        cls.editor.delete()
-        cls.viewer.delete()
-        cls.registrar.delete()
-
-        cls.wg1.delete()
-        cls.wg2.delete()
-        super(LoggedInViewPages, cls).tearDownClass()
+    def tearDown(self):
+        ContentType.objects.clear_cache()
 
     def get_page(self,item):
         return url_slugify_concept(item)
