@@ -20,6 +20,18 @@ DATABASES = {
    }
 }
 
+if 'TRAVIS' in os.environ:
+    if os.eviron.get('DB') == 'postgres':
+        DATABASES['default'] = {
+            'ENGINE':   'django.db.backends.postgresql_psycopg2',
+            'NAME':     'travisci',
+            'USER':     'postgres',
+            'PASSWORD': '',
+            'HOST':     'localhost',
+            'PORT':     '',
+        }
+    #elif os.eviron.get('DB') == 'mysql':
+
 class DisableMigrations(object):
 
     def __contains__(self, item):
