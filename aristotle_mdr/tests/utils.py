@@ -504,6 +504,6 @@ class LoggedInViewPages(object):
                 self.assertEqual(response.status_code, code)
             except AssertionError as e: #pragma: no cover
                 # Needs no coverage as the test should pass to be successful
-                print(response)
+                print(response.context['form']['errors'])
                 print(e)
                 raise
