@@ -22,6 +22,7 @@ DATABASES = {
 
 if 'TRAVIS' in os.environ:
     if os.environ.get('DB') == 'sqlite':
+        print("Running TRAVIS-CI test-suite with file-based SQLite")
         DATABASES['default'] = {
             'ENGINE':   'django.db.backends.sqlite3',
             'NAME':     'test_database',
@@ -31,6 +32,7 @@ if 'TRAVIS' in os.environ:
             'PORT':     '',
         }
     if os.environ.get('DB') == 'postgres':
+        print("Running TRAVIS-CI test-suite with POSTGRESQL")
         DATABASES['default'] = {
             'ENGINE':   'django.db.backends.postgresql_psycopg2',
             'NAME':     'travisci',
