@@ -21,7 +21,16 @@ DATABASES = {
 }
 
 if 'TRAVIS' in os.environ:
-    if os.eviron.get('DB') == 'postgres':
+    if os.environ.get('DB') == 'sqlite':
+        DATABASES['default'] = {
+            'ENGINE':   'django.db.backends.sqlite3',
+            'NAME':     'test_database',
+            'USER':     '',
+            'PASSWORD': '',
+            'HOST':     '',
+            'PORT':     '',
+        }
+    if os.environ.get('DB') == 'postgres':
         DATABASES['default'] = {
             'ENGINE':   'django.db.backends.postgresql_psycopg2',
             'NAME':     'travisci',
