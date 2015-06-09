@@ -1,5 +1,5 @@
 from django.core.urlresolvers import reverse
-from django.test import TestCase, TransactionTestCase
+from django.test import TestCase
 from django.test.utils import setup_test_environment
 from django.utils import timezone
 
