@@ -26,8 +26,6 @@ class ManagedObjectVisibility(object):
         self.wg = models.Workgroup.objects.create(name="Test WG")
         self.wg.registrationAuthorities.add(self.ra)
 
-    def tearDown(self):
-        ContentType.objects.clear_cache()
 
     def test_object_is_public(self):
         self.assertEqual(self.item.is_public(),False)
@@ -427,8 +425,6 @@ class LoggedInViewPages(object):
         self.viewer = User.objects.get(pk=self.viewer.pk)
         self.registrar = User.objects.get(pk=self.registrar.pk)
 
-    def tearDown(self):
-        ContentType.objects.clear_cache()
 
     def get_page(self,item):
         return url_slugify_concept(item)

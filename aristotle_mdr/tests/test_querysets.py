@@ -1,6 +1,6 @@
 from __future__ import print_function
 from django.contrib.auth.models import User
-from django.test import TestCase
+from django.test import TestCase, TransactionTestCase
 from django.test.utils import setup_test_environment
 from django.utils.translation import ugettext_lazy as _
 
@@ -157,7 +157,7 @@ class CustomConceptQuerySetTest_Slow(object):
         self.assertTrue(models.ObjectClass.objects.visible(user).count() == models.ObjectClass.objects.all().count())
         self.assertTrue(models.ObjectClass.objects.editable(user).count() == models.ObjectClass.objects.all().count())
 
-class CustomConceptQuerySetTest_RegistrationOwned_Slow(CustomConceptQuerySetTest_Slow,TestCase):
+class CustomConceptQuerySetTest_RegistrationOwned_Slow(CustomConceptQuerySetTest_Slow,TransactionTestCase):
     workgroup_owner_type = models.WORKGROUP_OWNERSHIP.registry
-class CustomConceptQuerySetTest_RegistryOwned_Slow(CustomConceptQuerySetTest_Slow,TestCase):
+class CustomConceptQuerySetTest_RegistryOwned_Slow(CustomConceptQuerySetTest_Slow,TransactionTestCase):
     workgroup_owner_type = models.WORKGROUP_OWNERSHIP.authority

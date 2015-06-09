@@ -1,5 +1,5 @@
 from django.core.urlresolvers import reverse
-from django.test import TransactionTestCase as TestCase
+from django.test import TestCase, TransactionTestCase
 from django.test.utils import setup_test_environment
 from django.utils import timezone
 
@@ -387,16 +387,8 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.assertRedirects(response,reverse('friendly_login')+"?next="+reverse('aristotle:changeStatus', args=[self.item1.id]))
 
     def assertRedirects(self,*args,**kwargs):
-        # There is an issue with these failing when we check a response very quickly after changing status
-        # so if the redirect fails, wait and try again
         self.assertResponseStatusCodeEqual(args[0],302)
-        try:
-            super(LoggedInViewConceptPages, self).assertRedirects(*args,**kwargs)
-        except AssertionError: # pragma: no cover
-            # This shouldn't fire, so no coverage is needed
-            print("Assertion error, waiting and retrying")
-            utils.wait_for_signal_to_fire(3)
-            super(LoggedInViewConceptPages, self).assertRedirects(*args,**kwargs)
+        super(LoggedInViewConceptPages, self).assertRedirects(*args,**kwargs)
 
 class ObjectClassViewPage(LoggedInViewConceptPages,TestCase):
     url_name='objectClass'

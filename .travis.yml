@@ -8,10 +8,12 @@ services:
  #- mysql
  - postgresql
 env:
-  - DJANGO=1.7 DB=sqlite
+  - DJANGO=1.7 DB=sqlitememory
+  - DJANGO=1.7 DB=sqlitefile
   - DJANGO=1.7 DB=postgres
 #  - DJANGO=1.7 DB=mysql
-  - DJANGO=1.8 DB=sqlite
+  - DJANGO=1.8 DB=sqlitememory
+  - DJANGO=1.8 DB=sqlitefile
   - DJANGO=1.8 DB=postgres
 #  - DJANGO=1.8 DB=mysql
 before_install:
