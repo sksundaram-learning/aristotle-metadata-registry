@@ -396,9 +396,6 @@ class LoggedInViewPages(object):
     This helps us manage testing across different user types.
     """
     def setUp(self):
-        from django.test import Client
-
-        self.client = Client()
         self.wg1 = models.Workgroup.objects.create(name="Test WG 1") # Editor is member
         self.wg2 = models.Workgroup.objects.create(name="Test WG 2")
         self.ra = models.RegistrationAuthority.objects.create(name="Test RA")

@@ -17,9 +17,8 @@ from extension_test.models import Question, Questionnaire
 
 class TestExtensionListVisibility(TestCase):
     def test_extension_list_page(self):
-        from django.test import Client
         from django.apps import apps
-        client = Client()
+
         response = client.get(reverse('aristotle_mdr:extensions'))
         self.assertEqual(response.status_code,200)
         ext = apps.get_app_config('extension_test')

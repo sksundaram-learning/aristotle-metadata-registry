@@ -218,9 +218,6 @@ class TestTokenSearch(TestCase):
         import haystack
         haystack.connections.reload('default')
 
-        from django.test import Client
-
-        self.client = Client()
         self.ra = models.RegistrationAuthority.objects.create(name="Kelly Act")
         self.registrar = User.objects.create_user('stryker','william.styker@weaponx.mil','mutantsMustDie')
         self.ra.giveRoleToUser('registrar',self.registrar)

@@ -12,9 +12,6 @@ from aristotle_mdr.tests import utils
 import datetime
 
 class AnonymousUserViewingThePages(TestCase):
-    def setUp(self):
-        from django.test import Client
-        self.client = Client()
     def test_homepage(self):
         home = self.client.get("/")
         self.assertEqual(home.status_code,200)
