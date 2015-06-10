@@ -8,15 +8,30 @@ services:
  #- mysql
  - postgresql
 env:
-  matrix:
-    - DJANGO=1.7
-    - DJANGO=1.8
-    - DB=sqlitememory
-    - DB=postgres
-#    - DB=mysql
-    - TEST_SUITE=main
-    - TEST_SUITE=extensions
-    - TEST_SUITE=querysets
+  - DJANGO=1.7 DB=sqlitememory TEST_SUITE=main
+  - DJANGO=1.7 DB=sqlitefile   TEST_SUITE=main
+  - DJANGO=1.7 DB=postgres     TEST_SUITE=main
+  - DJANGO=1.8 DB=sqlitememory TEST_SUITE=main
+  - DJANGO=1.8 DB=sqlitefile   TEST_SUITE=main
+  - DJANGO=1.8 DB=postgres     TEST_SUITE=main
+
+  - DJANGO=1.7 DB=sqlitememory TEST_SUITE=extensions
+  - DJANGO=1.7 DB=sqlitefile   TEST_SUITE=extensions
+  - DJANGO=1.7 DB=postgres     TEST_SUITE=extensions
+  - DJANGO=1.8 DB=sqlitememory TEST_SUITE=extensions
+  - DJANGO=1.8 DB=sqlitefile   TEST_SUITE=extensions
+  - DJANGO=1.8 DB=postgres     TEST_SUITE=extensions
+
+  - DJANGO=1.7 DB=sqlitememory TEST_SUITE=querysets
+  - DJANGO=1.7 DB=sqlitefile   TEST_SUITE=querysets
+  - DJANGO=1.7 DB=postgres     TEST_SUITE=querysets
+  - DJANGO=1.8 DB=sqlitememory TEST_SUITE=querysets
+  - DJANGO=1.8 DB=sqlitefile   TEST_SUITE=querysets
+  - DJANGO=1.8 DB=postgres     TEST_SUITE=querysets
+
+#  - DJANGO=1.7 DB=mysql
+#  - DJANGO=1.8 DB=mysql
+
 before_install:
   - npm install -g less@1.7.4 # Required for static-precompiler
   - sudo pip install codecov
