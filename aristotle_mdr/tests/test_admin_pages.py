@@ -314,6 +314,9 @@ class AdminPageForConcept(utils.LoggedInViewPages):
                 reverse("admin:%s_%s_change"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=[self.item1.pk]),
                 updated_item
                 )
+        # Make sure it saves
+        self.assertRedirects(response,reverse("admin:%s_%s_changelist"%(self.itemType._meta.app_label,self.itemType._meta.model_name)))
+
         self.item1 = self.itemType.objects.get(pk=self.item1.pk)
         self.assertTrue(self.item2 in self.item1.supersedes.all())
         self.assertTrue(self.item3 in self.item1.supersedes.all())
@@ -339,6 +342,10 @@ class AdminPageForConcept(utils.LoggedInViewPages):
                 reverse("admin:%s_%s_change"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=[self.item1.pk]),
                 updated_item
                 )
+
+        # Make sure it saves
+        self.assertRedirects(response,reverse("admin:%s_%s_changelist"%(self.itemType._meta.app_label,self.itemType._meta.model_name)))
+
         self.item1 = self.itemType.objects.get(pk=self.item1.pk)
         self.assertTrue(self.item2 == self.item1.superseded_by)
 

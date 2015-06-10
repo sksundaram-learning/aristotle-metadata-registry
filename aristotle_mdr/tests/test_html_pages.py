@@ -383,10 +383,6 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         response = self.client.get(reverse('aristotle:changeStatus',args=[self.item1.id]))
         self.assertRedirects(response,reverse('friendly_login')+"?next="+reverse('aristotle:changeStatus', args=[self.item1.id]))
 
-    def assertRedirects(self,*args,**kwargs):
-        self.assertResponseStatusCodeEqual(args[0],302)
-        super(LoggedInViewConceptPages, self).assertRedirects(*args,**kwargs)
-
 class ObjectClassViewPage(LoggedInViewConceptPages,TestCase):
     url_name='objectClass'
     itemType=models.ObjectClass

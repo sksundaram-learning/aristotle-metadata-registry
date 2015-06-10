@@ -422,6 +422,13 @@ class LoggedInViewPages(object):
         self.viewer = User.objects.get(pk=self.viewer.pk)
         self.registrar = User.objects.get(pk=self.registrar.pk)
 
+        self.assertEqual(self.viewer.profile.editable_workgroups.count(),0)
+        self.assertEqual(self.manager.profile.editable_workgroups.count(),0)
+        self.assertEqual(self.registrar.profile.editable_workgroups.count(),0)
+        self.assertEqual(self.editor.profile.editable_workgroups.count(),1)
+        self.assertTrue(self.wg1 in self.editor.profile.editable_workgroups.all())
+
+
 
     def get_page(self,item):
         return url_slugify_concept(item)
@@ -496,11 +503,18 @@ class LoggedInViewPages(object):
                 debug_response(response, msg="%s" % e) # from django-tools
                 raise
 
+    def assertRedirects(self,*args,**kwargs):
+        self.assertResponseStatusCodeEqual(args[0],302)
+        super(LoggedInViewPages, self).assertRedirects(*args,**kwargs)
+
     def assertResponseStatusCodeEqual(self,response,code):
             try:
                 self.assertEqual(response.status_code, code)
             except AssertionError as e: #pragma: no cover
                 # Needs no coverage as the test should pass to be successful
-                print(response.context['form']['errors'])
+                if 'adminform' in response.context:
+                    print(response.context['adminform'].form.errors.as_text())
+                elif 'errors' in response.context:
+                    print(response.context['errors'])
                 print(e)
                 raise
