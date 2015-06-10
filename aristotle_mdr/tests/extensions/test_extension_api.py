@@ -1,14 +1,11 @@
 from django.test import TestCase
 
-import aristotle_mdr.models as models
-import aristotle_mdr.perms as perms
 import aristotle_mdr.tests.utils as utils
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.template import TemplateDoesNotExist
-from aristotle_mdr.tests.utils import ManagedObjectVisibility
-from aristotle_mdr.tests.test_html_pages import LoggedInViewConceptPages
-from aristotle_mdr.tests.test_admin_pages import AdminPageForConcept
+from aristotle_mdr.tests.main.test_html_pages import LoggedInViewConceptPages
+from aristotle_mdr.tests.main.test_admin_pages import AdminPageForConcept
 
 from django.test.utils import setup_test_environment
 setup_test_environment()
