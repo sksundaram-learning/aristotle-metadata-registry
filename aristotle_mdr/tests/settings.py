@@ -35,8 +35,8 @@ if 'TRAVIS' in os.environ:
         print("Running TRAVIS-CI test-suite with POSTGRESQL")
         DATABASES['default'] = {
             'ENGINE':   'django.db.backends.postgresql_psycopg2',
-            'NAME':     'travisci',
-            'USER':     'postgres',
+            'NAME':     'aristotle_test_db',
+            'USER':     'possum',
             'PASSWORD': '',
             'HOST':     'localhost',
             'PORT':     '',
