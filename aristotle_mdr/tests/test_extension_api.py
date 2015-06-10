@@ -19,7 +19,7 @@ class TestExtensionListVisibility(TestCase):
     def test_extension_list_page(self):
         from django.apps import apps
 
-        response = client.get(reverse('aristotle_mdr:extensions'))
+        response = self.client.get(reverse('aristotle_mdr:extensions'))
         self.assertEqual(response.status_code,200)
         ext = apps.get_app_config('extension_test')
         download = apps.get_app_config('text_download_test')

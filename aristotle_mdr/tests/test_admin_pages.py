@@ -46,9 +46,11 @@ class AdminPage(utils.LoggedInViewPages,TestCase):
         self.logout()
         response = self.client.post(reverse('friendly_login'), {'username': 'new_eddie', 'password': 'editor'})
         self.assertEqual(response.status_code,302)
+        print response
 
         t = models.ObjectClass
         response = self.client.get(reverse("admin:%s_%s_add"%(t._meta.app_label,t._meta.model_name)))
+        print new_editor.profile.editable_workgroups.all()
         self.assertEqual(response.context['adminform'].form.fields['workgroup'].queryset.count(),2)
         self.assertTrue(wg_ns in response.context['adminform'].form.fields['workgroup'].queryset.all())
         self.assertTrue(wg_nw in response.context['adminform'].form.fields['workgroup'].queryset.all())
