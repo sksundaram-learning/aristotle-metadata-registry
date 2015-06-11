@@ -46,7 +46,7 @@ class WorkgroupFilter(RelatedFieldListFilter):
             wg_ids = [w.id for w in request.user.profile.workgroups.all()]
 
             #Limit the choices on the field
-            field.rel.limit_choices_to = {'id__in': wg_ids}
+            #field.rel.limit_choices_to = {'id__in': wg_ids}
         #Let the RelatedFieldListFilter do its magic
         super(WorkgroupFilter, self).__init__(field, request, *args, **kwargs)
 
