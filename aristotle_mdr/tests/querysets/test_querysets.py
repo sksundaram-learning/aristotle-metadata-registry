@@ -157,7 +157,7 @@ class CustomConceptQuerySetTest_Slow(object):
         self.assertTrue(models.ObjectClass.objects.visible(user).count() == models.ObjectClass.objects.all().count())
         self.assertTrue(models.ObjectClass.objects.editable(user).count() == models.ObjectClass.objects.all().count())
 
-#class CustomConceptQuerySetTest_RegistrationOwned_Slow(CustomConceptQuerySetTest_Slow,TransactionTestCase):
-#    workgroup_owner_type = models.WORKGROUP_OWNERSHIP.registry
-#class CustomConceptQuerySetTest_RegistryOwned_Slow(CustomConceptQuerySetTest_Slow,TransactionTestCase):
-#    workgroup_owner_type = models.WORKGROUP_OWNERSHIP.authority
+class CustomConceptQuerySetTest_RegistrationOwned_Slow(CustomConceptQuerySetTest_Slow,TransactionTestCase):
+    workgroup_owner_type = models.WORKGROUP_OWNERSHIP.registry
+class CustomConceptQuerySetTest_RegistryOwned_Slow(CustomConceptQuerySetTest_Slow,TransactionTestCase):
+    workgroup_owner_type = models.WORKGROUP_OWNERSHIP.authority
