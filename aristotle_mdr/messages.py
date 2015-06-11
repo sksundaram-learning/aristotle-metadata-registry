@@ -8,30 +8,19 @@ from notifications import notify
 from aristotle_mdr.utils import url_slugify_concept, url_slugify_workgroup
 
 def favourite_updated(recipient,obj):
-    notify.send(obj, recipient=recipient, verb="changed a favourited item",
-                description=_('A favourite item <a href="%(obj_url)s">(%(item)s)</a> has been changed.') %
-                    {'item': obj, 'obj_url':url_slugify_concept(obj)})
+    notify.send(obj, recipient=recipient, verb="A favourited item has been changed:", target=obj)
 
 def workgroup_item_updated(recipient,obj):
-    notify.send(obj, recipient=recipient, verb="modified item in workgroup", target=obj.workgroup,
-                description=_('An item <a href="%(obj_url)s">(%(item)s)</a> has been updated in the workgroup "%(workgroup)s"') %
-                    {'item':obj, 'obj_url':url_slugify_concept(obj), 'workgroup': obj.workgroup})
+    notify.send(obj, recipient=recipient, verb="was modified in the workgroup", target=obj.workgroup)
 
 def workgroup_item_new(recipient,obj):
-    notify.send(obj, recipient=recipient, verb="new item in workgroup", target=obj.workgroup,
-                description=_('An new item <a href="%(obj_url)s">(%(item)s)</a> is in the workgroup "%(workgroup)s"') %
-                    {'item':obj, 'obj_url':url_slugify_concept(obj), 'workgroup': obj.workgroup})
-
+    notify.send(obj, recipient=recipient, verb="was modified in the workgroup", target=obj.workgroup)
 
 def new_comment_created(comment):
     post = comment.post
     author_name = comment.author.get_full_name() or comment.author
-    notify.send(comment.author, recipient=post.author, verb="comment on post", target=post,
-                description=_('%(commenter)s commented on <a href="%(post_url)s">%(post)s</a>') %
-                    {'commenter':author_name, 'post':post.title, 'post_url':reverse("aristotle:discussionsPost",args=[post.id])})
+    notify.send(comment.author, recipient=post.author, verb="commented on your post", target=post)
 
 def new_post_created(post,recipient):
     op_name = post.author.get_full_name() or post.author
-    notify.send(post.author, recipient=recipient, verb="made a post", target=post.workgroup,
-                description=_('%(op)s made a new post <a href="%(post_url)s">"%(post)s"</a> in the workgroup "%(workgroup)s" ')
-                % {'op':op_name, 'post':post.title, 'workgroup':post.workgroup, 'post_url':reverse("aristotle:discussionsPost",args=[post.id])})
+    notify.send(post.author, recipient=recipient, verb="made a new post", target=post, action_object=post.workgroup)

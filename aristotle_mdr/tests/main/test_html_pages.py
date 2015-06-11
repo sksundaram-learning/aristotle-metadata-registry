@@ -12,9 +12,6 @@ from aristotle_mdr.tests import utils
 import datetime
 
 class AnonymousUserViewingThePages(TestCase):
-    def setUp(self):
-        from django.test import Client
-        self.client = Client()
     def test_homepage(self):
         home = self.client.get("/")
         self.assertEqual(home.status_code,200)
@@ -385,17 +382,6 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
 
         response = self.client.get(reverse('aristotle:changeStatus',args=[self.item1.id]))
         self.assertRedirects(response,reverse('friendly_login')+"?next="+reverse('aristotle:changeStatus', args=[self.item1.id]))
-
-    def assertRedirects(self,*args,**kwargs):
-        # There is an issue with these failing when we check a response very quickly after changing status
-        # so if the redirect fails, wait and try again
-        try:
-            super(LoggedInViewConceptPages, self).assertRedirects(*args,**kwargs)
-        except AssertionError: # pragma: no cover
-            # This shouldn't fire, so no coverage is needed
-            print("Assertion error, waiting and retrying")
-            utils.wait_for_signal_to_fire(3)
-            super(LoggedInViewConceptPages, self).assertRedirects(*args,**kwargs)
 
 class ObjectClassViewPage(LoggedInViewConceptPages,TestCase):
     url_name='objectClass'

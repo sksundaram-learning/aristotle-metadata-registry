@@ -1,14 +1,11 @@
 from django.test import TestCase
 
-import aristotle_mdr.models as models
-import aristotle_mdr.perms as perms
 import aristotle_mdr.tests.utils as utils
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.template import TemplateDoesNotExist
-from aristotle_mdr.tests.utils import ManagedObjectVisibility
-from aristotle_mdr.tests.test_html_pages import LoggedInViewConceptPages
-from aristotle_mdr.tests.test_admin_pages import AdminPageForConcept
+from aristotle_mdr.tests.main.test_html_pages import LoggedInViewConceptPages
+from aristotle_mdr.tests.main.test_admin_pages import AdminPageForConcept
 
 from django.test.utils import setup_test_environment
 setup_test_environment()
@@ -17,10 +14,9 @@ from extension_test.models import Question, Questionnaire
 
 class TestExtensionListVisibility(TestCase):
     def test_extension_list_page(self):
-        from django.test import Client
         from django.apps import apps
-        client = Client()
-        response = client.get(reverse('aristotle_mdr:extensions'))
+
+        response = self.client.get(reverse('aristotle_mdr:extensions'))
         self.assertEqual(response.status_code,200)
         ext = apps.get_app_config('extension_test')
         download = apps.get_app_config('text_download_test')
