@@ -7,7 +7,6 @@ from django.db import models, migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('aristotle_glossary', '0001_initial'),
         ('aristotle_mdr', '0004_auto_20150424_0059'),
     ]
 

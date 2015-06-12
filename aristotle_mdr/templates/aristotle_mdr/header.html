@@ -34,6 +34,7 @@
                     <button class="btn btn-primary" type="submit" title="{% trans 'Search' %}">
                         {% bootstrap_icon "search" %}&nbsp;
                     </button>
+                    </span>
                 </div>
             </form>
         {% endif %}
@@ -87,9 +88,9 @@
                         <li role="presentation" class="divider"></li>
                         <li><a href="{% url 'admin:index' %}">
                         <i class="fa fa-sliders fa-fw"></i> {% trans 'Management interface' %}
+                        </a></li>
                     {% endif %}
                     {% if request.user.is_superuser %}
-                        </a></li>
                         <li><a href="{% url 'aristotle:userAdminTools' %}">
                         <i class="fa fa-user-md fa-fw"></i> {% trans 'Admin tools' %}
                         </a></li>
