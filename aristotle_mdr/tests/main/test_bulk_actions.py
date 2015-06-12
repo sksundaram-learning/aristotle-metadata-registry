@@ -18,7 +18,7 @@ class BulkWorkgroupActionsPage(utils.LoggedInViewPages,TestCase):
         self.item3 = models.ObjectClass.objects.create(name="OC3",workgroup=self.wg1)
         self.item4 = models.Property.objects.create(name="Prop4",workgroup=self.wg2)
 
-    def test_bulk_favourite_on_permitted_items(self):
+    def test_bulk_add_favourite_on_permitted_items(self):
         self.login_editor()
 
         self.assertEqual(self.editor.profile.favourites.count(),0)
@@ -30,7 +30,7 @@ class BulkWorkgroupActionsPage(utils.LoggedInViewPages,TestCase):
         self.assertEqual(response.status_code,302)
         self.assertEqual(self.editor.profile.favourites.count(),2)
 
-    def test_bulk_favourite_on_forbidden_items(self):
+    def test_bulk_add_favourite_on_forbidden_items(self):
         self.login_editor()
 
         self.assertEqual(self.editor.profile.favourites.count(),0)
@@ -41,6 +41,27 @@ class BulkWorkgroupActionsPage(utils.LoggedInViewPages,TestCase):
             )
         self.assertEqual(response.status_code,302)
         self.assertEqual(self.editor.profile.favourites.count(),1)
+
+    def test_bulk_remove_favourite(self):
+        self.login_editor()
+
+        self.assertEqual(self.editor.profile.favourites.count(),0)
+        response = self.client.post(reverse('aristotle:bulk_action'),
+                {   'bulkaction': 'add_favourites',
+                    'items'     : [self.item1.id,self.item2.id],
+                }
+            )
+        self.assertEqual(response.status_code,302)
+        self.assertEqual(self.editor.profile.favourites.count(),2)
+
+        response = self.client.post(reverse('aristotle:bulk_action'),
+                {   'bulkaction': 'remove_favourites',
+                    'items'     : [self.item1.id,self.item2.id],
+                }
+            )
+        self.assertEqual(response.status_code,302)
+        self.assertEqual(self.editor.profile.favourites.count(),0)
+
 
     def test_bulk_status_change_on_permitted_items(self):
         self.login_registrar()

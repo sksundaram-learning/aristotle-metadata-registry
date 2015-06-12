@@ -20,6 +20,35 @@ DATABASES = {
    }
 }
 
+if 'TRAVIS' in os.environ:
+    if os.environ.get('DB') == 'sqlitefile':
+        print("Running TRAVIS-CI test-suite with file-based SQLite")
+        DATABASES['default'] = {
+            'ENGINE':   'django.db.backends.sqlite3',
+            'NAME':     'test_database',
+            'USER':     '',
+            'PASSWORD': '',
+            'HOST':     '',
+            'PORT':     '',
+        }
+    elif os.environ.get('DB') == 'postgres':
+        print("Running TRAVIS-CI test-suite with POSTGRESQL")
+        DATABASES['default'] = {
+            'ENGINE':   'django.db.backends.postgresql_psycopg2',
+            'NAME':     'aristotle_test_db',
+            'USER':     'postgres',
+            'PASSWORD': '',
+            'HOST':     'localhost',
+            'PORT':     '',
+        }
+    #elif os.eviron.get('DB') == 'mysql':
+    elif os.environ.get('DB') == 'sqlitememory':
+        print("Running TRAVIS-CI test-suite with memory-based SQLite")
+        DATABASES['default'] = {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': ':memory:',
+       }
+
 class DisableMigrations(object):
 
     def __contains__(self, item):

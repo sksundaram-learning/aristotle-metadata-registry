@@ -8,7 +8,7 @@
   600px for small is the bootstrap standard values.
   However, 760px as the lower point for a "medium" screen ensures the the site retains functionality
   on smaller desktop widths. It seemed pointless to drop functionality.
-  992px is the standard "medium" minimum, and between 760px and 992pxo this value
+  992px is the standard "medium" minimum, and between 760px and 992px this value
 
   an override for the main
 */
@@ -476,7 +476,8 @@ table.dssInclusions {
         font-size:90%;
     }
 }
-dl.status_definitions {
+.status_definitions {
+    clear:both;
     &>dt {
         clear:both;
         border-top:1px solid @colors_border;
@@ -486,12 +487,6 @@ dl.status_definitions {
         padding-top:7px;
         &:after {
             content:"";
-        }
-        .fa {
-            display:block;
-            padding-top:3px;
-
-            font-size:200%;
         }
     }
     &>dd {

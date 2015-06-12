@@ -111,4 +111,3 @@ urlpatterns = patterns('aristotle_mdr.views',
      form_class=forms.search.PermissionSearchForm
      ), name='search'),
 )
-

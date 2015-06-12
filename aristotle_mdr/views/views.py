@@ -583,7 +583,8 @@ def bulk_action(request):
     message = ""
     if request.method == 'POST': # If the form has been submitted...
         actions = {
-            "add_favourites":MDRForms.bulk_actions.FavouriteForm,
+            "add_favourites":MDRForms.bulk_actions.AddFavouriteForm,
+            "remove_favourites":MDRForms.bulk_actions.RemoveFavouriteForm,
             "change_state":MDRForms.bulk_actions.ChangeStateForm,
             }
         action = request.POST.get("bulkaction",None)
