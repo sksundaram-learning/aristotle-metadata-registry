@@ -37,8 +37,8 @@ before_install:
   - sudo pip install codecov
 before_script:
 #  - mysql -e 'create database aristotle_test_db;'
-  - psql -c 'create database aristotle_test_db;' -U postgresi
   - pep8
+  - psql -c 'create database aristotle_test_db;' -U postgres
 
 install:
   - if [[ $DB == postgres ]]; then pip install -q psycopg2 --quiet --use-mirrors; fi
