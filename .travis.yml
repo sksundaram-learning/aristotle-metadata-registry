@@ -37,7 +37,7 @@ before_install:
   - sudo pip install codecov
 before_script:
 #  - mysql -e 'create database aristotle_test_db;'
-  - pep8
+  - pep8 --exclude=migrations --ignore=E501,E225 aristotle_mdr
   - psql -c 'create database aristotle_test_db;' -U postgres
 
 install:
