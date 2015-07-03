@@ -273,7 +273,7 @@ class AdminPageForConcept(utils.LoggedInViewPages):
             'statuses-TOTAL_FORMS': 0, 'statuses-INITIAL_FORMS': 0 #no statuses
         })
         updated_item.update(self.form_defaults)
-        self.assertTrue(self.wg1 in self.editor.profile.myWorkgroups)
+        self.assertTrue(self.wg1 in self.editor.profile.editable_workgroups.all())
 
         self.assertEqual([self.wg1],list(response.context['adminform'].form.fields['workgroup'].queryset))
 
