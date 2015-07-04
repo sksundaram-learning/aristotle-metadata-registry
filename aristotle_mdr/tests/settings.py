@@ -62,7 +62,6 @@ MIGRATION_MODULES = DisableMigrations()
 INSTALLED_APPS = (
     #The good stuff
     'extension_test',
-    'aristotle_mdr',
     'text_download_test',
 ) + INSTALLED_APPS
 
