@@ -18,6 +18,10 @@
     {% endblock %}
     <style>
         header#grp-header { position:relative;} 
+        #user-icon { display:inline !important; }
+        header#grp-header #grp-navigation h1#grp-admin-title { margin:0px; padding:0px; }
+        #grp-content { top:0px; }
+        header#grp-header #grp-navigation a { color:rgb(208, 209, 213) ; }
     </style>
     <!-- EXTRASTYLES -->
     {% block extrastyle %}{% endblock %}
@@ -83,8 +87,6 @@
                                     <a href="{% url 'aristotle:home' %}" id="logo">
                                         <img height="48px" src="{{ config.SITE_BRAND }}" alt="{{ config.SITE_NAME }}" title="{{ config.SITE_NAME }}">
                                     </a>
-
-                                    Management tools
                                     {% if grappelli_admin_title %}
                                         {{ grappelli_admin_title }}
                                     {% else %}
@@ -97,13 +99,18 @@
                                     <ul id="grp-user-tools">
                                         <!-- Userlinks -->
                                         {% block userlinks %}
+                                            <!-- Documentation -->
+                                            {% url 'django-admindocs-docroot' as docsroot %}
+                                            {% if docsroot %}
+                                                <li><a href="{{ docsroot }}">{% trans 'Documentation' %}</a></li>
+                                            {% endif %}
                                             <!-- Username -->
                                             <li class="grp-user-options-container grp-collapse grp-closed {% if request.session.original_user %}grp-switch-user-is-target{% endif %}">
                                                 <a href="javascript://" class="user-options-handler grp-collapse-handler {% if request.session.original_user %}grp-switch-user-is-target{% else %}grp-switch-user-is-original{% endif %}">
                                                     {% if user.is_superuser %}
-                                                        <span class="fa fa-user-md fa-lg" style="display:inline !important"></span>
+                                                        <i id="user-icon" class="fa fa-user-md fa-lg"></i>
                                                     {% else %}
-                                                        <i class="fa fa-user fa-lg" style="display:inline !important"></i>
+                                                        <i id="user-icon" class="fa fa-user fa-lg"></i>
                                                     {% endif %}
                                                     {% firstof user.get_short_name user.get_username %}
                                                 </a>
@@ -122,18 +129,18 @@
                                             <li>
                                                 <a href="{% url 'notifications:all' %}">
                                                     {% if user.notifications.unread %}
-                                                    <span class="notify" title="{% trans 'New notifications' %}"></span>
+                                                    <span class="fa fa-envelope fa-lg" title="{% trans 'New notifications' %}"></span>
                                                     {% else %}
-                                                    <span class="no-notify" title="{% trans 'No unread notifications' %}"></span>
+                                                    <span class="fa fa-envelope-o fa-lg" title="{% trans 'No unread notifications' %}"></span>
                                                     {% endif %}
                                                 </a>
                                             </li>
-
-                                            <!-- Documentation -->
-                                            {% url 'django-admindocs-docroot' as docsroot %}
-                                            {% if docsroot %}
-                                                <li><a href="{{ docsroot }}">{% trans 'Documentation' %}</a></li>
-                                            {% endif %}
+                                            <li>
+                                                <a href="{% url 'django.contrib.auth.views.logout' %}?next={{request.path}}" title="{% trans 'Log out'%}">
+                                                    <i class="fa fa-sign-out fa-fw"></i>
+                                                    <span class="visible-xs-inline">{% trans 'Log out' %}</span>
+                                                </a>
+                                            </li>
                                         {% endblock %}
                                     </ul>
                                 {% endif %}
