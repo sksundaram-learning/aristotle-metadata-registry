@@ -309,14 +309,14 @@ class WorkgroupMembersCanMakePostsAndComments(utils.LoggedInViewPages,TestCase):
         post = models.DiscussionPost.objects.create(author=self.viewer,workgroup=self.wg1,title="test",body="test")
         comment = models.DiscussionComment.objects.create(author=self.viewer,post=post,body="test comment")
 
-        response = self.client.get(reverse('aristotle:discussionsEditComment',args=[post.id]))
+        response = self.client.get(reverse('aristotle:discussionsEditComment',args=[comment.id]))
         self.assertEqual(response.status_code,200)
 
         data = {
             'body': 'edit comment test',
         }
 
-        response = self.client.post(reverse('aristotle:discussionsEditComment',args=[post.id]),data)
+        response = self.client.post(reverse('aristotle:discussionsEditComment',args=[comment.id]),data)
         self.assertRedirects(response,reverse('aristotle:discussionsPost',args=[post.id])+"#comment_%s"%comment.id )
         self.assertEqual(response.status_code,302)
         comment = models.DiscussionComment.objects.get(id=comment.id) #decache
@@ -340,14 +340,14 @@ class WorkgroupMembersCanMakePostsAndComments(utils.LoggedInViewPages,TestCase):
         post = models.DiscussionPost.objects.create(author=self.viewer,workgroup=self.wg1,title="test",body="test")
         comment = models.DiscussionComment.objects.create(author=self.viewer,post=post,body="test comment")
 
-        response = self.client.get(reverse('aristotle:discussionsEditComment',args=[post.id]))
+        response = self.client.get(reverse('aristotle:discussionsEditComment',args=[comment.id]))
         self.assertEqual(response.status_code,403)
 
         data = {
             'body': 'edit comment test',
         }
 
-        response = self.client.post(reverse('aristotle:discussionsEditComment',args=[post.id]),data)
+        response = self.client.post(reverse('aristotle:discussionsEditComment',args=[comment.id]),data)
         self.assertEqual(response.status_code,403)
         comment = models.DiscussionComment.objects.get(id=comment.id) #decache
         self.assertEqual(comment.body,"test comment")

@@ -94,7 +94,7 @@ class AdminConceptForm(autocomplete_light.ModelForm):
         if name_suggest_fields:
             self.fields['name'].widget = widgets.NameSuggestInput(name_suggest_fields=name_suggest_fields,separator=separator)
         self.fields['workgroup'].queryset = self.request.user.profile.editable_workgroups.all()
-        self.fields['workgroup'].initial = self.request.user.profile.activeWorkgroup
+        #self.fields['workgroup'].initial = self.request.user.profile.activeWorkgroup
 
 
     def save(self, *args, **kwargs):

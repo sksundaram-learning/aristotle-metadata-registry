@@ -54,7 +54,6 @@ INSTALLED_APPS = (
     #!aristotle_glossary! 'aristotle_glossary', # Model for managing and inserting glossary content - https://github.com/aristotle-mdr/aristotle-glossary
     #!aristotle_mdr_api! 'aristotle_mdr_api', # JSON API for programmatic access to content
     #!aristotle_mdr_api! 'rest_framework', # Needed for the above
-    'aristotle_mdr', #The main App for the Metadata Registry - https://github.com/aristotle-mdr/aristotle-metadata-registry
 ) + INSTALLED_APPS # Installs the required apps to run aristotle.
 
 ROOT_URLCONF = 'example_mdr.urls'
