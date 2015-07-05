@@ -16,9 +16,8 @@
             <link href="{% static "grappelli/stylesheets/mueller/grid/output.css" %}" rel="stylesheet" type="text/css" media="screen" />
         {% endif %}
     {% endblock %}
-    {% include 'aristotle_mdr/scripts.html' %}
     <style>
-        body{ font-size: 12px }
+        header#grp-header { position:relative;} 
     </style>
     <!-- EXTRASTYLES -->
     {% block extrastyle %}{% endblock %}
@@ -68,40 +67,68 @@
     {% block extrahead %}{% endblock %}
 </head>
 <body class="{% if is_popup %}grp-popup {% endif %}{% block bodyclass %}{% endblock %}{% if LANGUAGE_BIDI %} rtl{% endif %}">
-    {% include 'aristotle_mdr/header.html' %}
-    <div id="grp-container" class="container">
+    <div id="grp-container" class="">
 
         {% block header %}
             <!-- HEADER -->
-            <header id="grp-header" class="{% block header-class %}{% endblock %} row">
+            <header id="grp-header" class="{% block header-class %}{% endblock %}">
                 {% if not is_popup %}
 
                     {% block navigation %}
                         <!-- NAVIGATION -->
                         <div id="grp-navigation" >
                             {% block branding %}{% endblock %}
-                            {% block admin_title %}<h1 id="grp-admin-title">Management tools {% if grappelli_admin_title %}{{ grappelli_admin_title }}{% else %}{% get_admin_title %}{% endif %}</h1>{% endblock %}
+                            {% block admin_title %}
+                                <h1 id="grp-admin-title">
+                                    <a href="{% url 'aristotle:home' %}" id="logo">
+                                        <img height="48px" src="{{ config.SITE_BRAND }}" alt="{{ config.SITE_NAME }}" title="{{ config.SITE_NAME }}">
+                                    </a>
+
+                                    Management tools
+                                    {% if grappelli_admin_title %}
+                                        {{ grappelli_admin_title }}
+                                    {% else %}
+                                        {% get_admin_title %}
+                                    {% endif %}
+                                </h1>
+                            {% endblock %}
                             {% block user-tools %}
                                 {% if user.is_authenticated and user.is_staff %}
                                     <ul id="grp-user-tools">
                                         <!-- Userlinks -->
                                         {% block userlinks %}
-                                            {% comment %}
                                             <!-- Username -->
                                             <li class="grp-user-options-container grp-collapse grp-closed {% if request.session.original_user %}grp-switch-user-is-target{% endif %}">
-                                                <a href="javascript://" class="user-options-handler grp-collapse-handler {% if request.session.original_user %}grp-switch-user-is-target{% else %}grp-switch-user-is-original{% endif %}">{% firstof user.get_short_name user.get_username %}</a>
+                                                <a href="javascript://" class="user-options-handler grp-collapse-handler {% if request.session.original_user %}grp-switch-user-is-target{% else %}grp-switch-user-is-original{% endif %}">
+                                                    {% if user.is_superuser %}
+                                                        <span class="fa fa-user-md fa-lg" style="display:inline !important"></span>
+                                                    {% else %}
+                                                        <i class="fa fa-user fa-lg" style="display:inline !important"></i>
+                                                    {% endif %}
+                                                    {% firstof user.get_short_name user.get_username %}
+                                                </a>
                                                 <ul class="grp-user-options">
                                                     <!-- Change Password -->
+                                                    <li><a href="{% url 'aristotle:userHome' %}"><i class="fa fa-home fa-fw"></i> {% trans 'My Dashboard'%}</a></li>
                                                     {% if user.has_usable_password %}
-                                                        <li><a href="{% url 'admin:password_change' %}" class="grp-change-password">{% trans 'Change password' %}</a></li>
+                                                        <li><a href="{% url 'admin:password_change' %}" class="grp-change-password"><i class="fa fa-cog fa-fw"></i> {% trans 'Change password' %}</a></li>
                                                     {% endif %}
                                                     <!-- Logout -->
-                                                    <li><a href="{% url 'admin:logout' %}" class="grp-logout">{% trans 'Log out' %}</a></li>
+                                                    <li><a href="{% url 'admin:logout' %}" class="grp-logout"><i class="fa fa-sign-out fa-fw"></i> {% trans 'Log out' %}</a></li>
                                                     <!-- Switch -->
                                                     {% switch_user_dropdown %}
                                                 </ul>
                                             </li>
-                                            {% endcomment %}
+                                            <li>
+                                                <a href="{% url 'notifications:all' %}">
+                                                    {% if user.notifications.unread %}
+                                                    <span class="notify" title="{% trans 'New notifications' %}"></span>
+                                                    {% else %}
+                                                    <span class="no-notify" title="{% trans 'No unread notifications' %}"></span>
+                                                    {% endif %}
+                                                </a>
+                                            </li>
+
                                             <!-- Documentation -->
                                             {% url 'django-admindocs-docroot' as docsroot %}
                                             {% if docsroot %}
