@@ -20,7 +20,7 @@
             <a href="{% url 'aristotle:browse' oc_id=i.id %}-{{ i.name|slugify }}">{{ i.name }}</a>
         </dt>
         <dd>
-            {{ i.description|truncatewords:20|striptags }}
+            {{ i.definition|truncatewords:20|striptags }}
         </dd>
     {% endfor %}
     </dl>

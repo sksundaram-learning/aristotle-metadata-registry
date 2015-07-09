@@ -886,7 +886,7 @@ msgid "No object class name found"
 msgstr ""
 
 #: views/wizards.py:262 views/wizards.py:265
-msgid "No object class description found"
+msgid "No object class definition found"
 msgstr ""
 
 #: views/wizards.py:276 views/wizards.py:279 views/wizards.py:696
@@ -896,7 +896,7 @@ msgstr ""
 
 #: views/wizards.py:277 views/wizards.py:280 views/wizards.py:697
 #: views/wizards.py:700
-msgid "No property description found"
+msgid "No property definition found"
 msgstr ""
 
 #: views/wizards.py:293
@@ -982,7 +982,7 @@ msgid "No value domain name found"
 msgstr ""
 
 #: views/wizards.py:682 views/wizards.py:685
-msgid "No value domain description found"
+msgid "No value domain definition found"
 msgstr ""
 
 #: views/wizards.py:711

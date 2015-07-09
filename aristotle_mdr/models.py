@@ -44,9 +44,7 @@ VERY_RECENTLY_SECONDS = 15
 
 class baseAristotleObject(TimeStampedModel):
     name = models.TextField(help_text=_("The primary name used for human identification purposes."))
-    #TODO: Below needs to be changed to 'definition' but that change will break a lot of stuff. See also value_description
-    # At the moment, this is just impacting the database and relations, as the UI uses the name of the field 'definition'
-    description = RichTextField(_('definition'),help_text=_("Representation of a concept by a descriptive statement which serves to differentiate it from related concepts"))
+    definition = RichTextField(_('definition'),help_text=_("Representation of a concept by a descriptive statement which serves to differentiate it from related concepts"))
     objects = InheritanceManager()
 
     class Meta:
@@ -65,7 +63,7 @@ class baseAristotleObject(TimeStampedModel):
 
     def description_stub(self):
        from django.utils.html import strip_tags
-       d = strip_tags(self.description)
+       d = strip_tags(self.definition)
        if len(d) > 150:
            d = d[0:150] + "..."
        return d
@@ -401,7 +399,7 @@ class DiscussionComment(discussionAbstract):
 
 #class ReferenceDocument(models.Model):
 #    url = models.URLField()
-#    description = models.TextField()
+#    definition = models.TextField()
 #    object = models.ForeignKey(managedObject)
 
 class ConceptQuerySet(InheritanceQuerySet):
@@ -970,7 +968,7 @@ post_save.connect(create_user_profile, sender=User)
 def defaultData():
     system = User.objects.get(username="aristotle")
     iso ,c = RegistrationAuthority.objects.get_or_create(
-                name="ISO/IEC",description="ISO/IEC")
+                name="ISO/IEC",definition="ISO/IEC")
     iso_wg,c = Workgroup.objects.get_or_create(name="ISO/IEC Workgroup")
     dataTypes = [
        ("Boolean","A binary value expressed using a string (e.g. true or false)."),
@@ -981,7 +979,7 @@ def defaultData():
        ]
     print("making datatypes:  ",end="")
     for name,desc in dataTypes:
-        dt,created = DataType.objects.get_or_create(name=name,description=desc,workgroup=iso_wg)
+        dt,created = DataType.objects.get_or_create(name=name,definition=desc,workgroup=iso_wg)
         iso.register(dt,STATES.standard,system,datetime.date(2000,1,1))
         print("{name} ".format(name=name),end="")
     print("")
@@ -1008,7 +1006,7 @@ def defaultData():
         ]),
     ]
     for measure,units in unitsOfMeasure:
-        m,created = Measure.objects.get_or_create(name=measure,description="")
+        m,created = Measure.objects.get_or_create(name=measure,definition="")
         print("making measure: {name}".format(name=measure),end="")
         print("  : units of measure:  ",end="")
         for name,symbol in units:
@@ -1088,7 +1086,7 @@ def exampleData(): # pragma: no cover
         ]),
     ]
     for measure,units in unitsOfMeasure:
-        m,created = Measure.objects.get_or_create(name=measure,description="")
+        m,created = Measure.objects.get_or_create(name=measure,definition="")
         print("making measure: {name}".format(name=measure),end="")
         print("  : units of measure:  ",end="")
         for name,symbol in units:
@@ -1121,56 +1119,56 @@ def exampleData(): # pragma: no cover
         user.save()
 
     oldoc,c  = ObjectClass.objects.get_or_create(name="Person",
-            workgroup=pw,description="A human being, whether man or woman.")
+            workgroup=pw,definition="A human being, whether man or woman.")
     oc,c  = ObjectClass.objects.get_or_create(name="Person",
-            workgroup=pw,description="A human being, whether man, woman or child.")
+            workgroup=pw,definition="A human being, whether man, woman or child.")
     oc.synonyms = "People"
     oc.readyToReview = True
     oc.save()
     oldoc.superseded_by = oc
     oldoc.save()
     p,c   = Property.objects.get_or_create(name="Age",
-            workgroup=pw,description="The length of life or existence.")
+            workgroup=pw,definition="The length of life or existence.")
     dec,c = DataElementConcept.objects.get_or_create(name="Person-Age",
-            workgroup=pw,description="The age of the person.",
+            workgroup=pw,definition="The age of the person.",
             objectClass=oc,property=p
             )
     dec,c = DataElementConcept.objects.get_or_create(name="Person-Age",
-            workgroup=pw,description="The age of the person.",
+            workgroup=pw,definition="The age of the person.",
             objectClass=oc,property=p
             )
     W,c   = Property.objects.get_or_create(name="Weight",
-            workgroup=pw,description="The weight of an object.")
+            workgroup=pw,definition="The weight of an object.")
     H,c   = Property.objects.get_or_create(name="Height",
-            workgroup=pw,description="The height of an object, usually measured from the ground to its highest point.")
+            workgroup=pw,definition="The height of an object, usually measured from the ground to its highest point.")
     WW,c = DataElementConcept.objects.get_or_create(name="Person-Weight",
-            workgroup=pw,description="The weight of the person.",
+            workgroup=pw,definition="The weight of the person.",
             objectClass=oc,property=W
             )
     HH,c = DataElementConcept.objects.get_or_create(name="Person-Height",
-            workgroup=pw,description="The height of the person.",
+            workgroup=pw,definition="The height of the person.",
             objectClass=oc,property=H
             )
 
     vd,c   = ValueDomain.objects.get_or_create(name="Total years N[NN]",
-            workgroup=pw,description="Total number of completed years.",
+            workgroup=pw,definition="Total number of completed years.",
             format = "X[XX]" ,
             maximum_length = 3,
             unit_of_measure = UnitOfMeasure.objects.filter(name__iexact='Week').first(),
             data_type = DataType.objects.filter(name__iexact='Number').first(),
             )
     de,c = DataElement.objects.get_or_create(name="Person-age, total years N[NN]",
-            workgroup=pw,description="The age of the person in (completed) years at a specific point in time.",
+            workgroup=pw,definition="The age of the person in (completed) years at a specific point in time.",
             dataElementConcept=dec,valueDomain=vd
             )
     p,c   = Property.objects.get_or_create(name="Sex",
-            workgroup=pw,description="A gender.")
+            workgroup=pw,definition="A gender.")
     dec,c = DataElementConcept.objects.get_or_create(name="Person-Sex",
-            workgroup=pw,description="The sex of the person.",
+            workgroup=pw,definition="The sex of the person.",
             objectClass=oc,property=p
             )
     vd,c   = ValueDomain.objects.get_or_create(name="Sex Code",
-            workgroup=pw,description="A code for sex.",
+            workgroup=pw,definition="A code for sex.",
             format = "X" ,
             maximum_length = 3,
             unit_of_measure = UnitOfMeasure.objects.filter(name__iexact='Week').first(),
@@ -1180,7 +1178,7 @@ def exampleData(): # pragma: no cover
         codeVal = PermissibleValue(value=val,meaning=mean,valueDomain=vd,order=1)
         codeVal.save()
     de,c = DataElement.objects.get_or_create(name="Person-sex, Code N",
-            workgroup=pw,description="The sex of the person with a code.",
+            workgroup=pw,definition="The sex of the person with a code.",
             )
     de.dataElementConcept=dec
     de.valueDomain=vd
@@ -1188,9 +1186,9 @@ def exampleData(): # pragma: no cover
 
     print("Configuring registration authority")
     ra,c = RegistrationAuthority.objects.get_or_create(
-                name="Welfare",description="Welfare Authority")
+                name="Welfare",definition="Welfare Authority")
     ra,c = RegistrationAuthority.objects.get_or_create(
-                name="Health",description="Health Authority")
+                name="Health",definition="Health Authority")
     users = [('reggie','Registrar'),
             ]
     pw.registrationAuthorities.add(ra)

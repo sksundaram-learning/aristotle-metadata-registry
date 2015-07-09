@@ -22,9 +22,9 @@
         {% endif %}
         <p>You are about going to create the following items:
             <ul>
-                {% if made_dec %}<li><strong>Data Element Concept - {{made_dec.name}}</strong><p>{{made_dec.description|safe}}</p></li>{% endif %}
-                {% if made_oc  %}<li><strong>Object Class - {{made_oc.name}}</strong><p>{{made_oc.description|safe}}</p></li>{% endif %}
-                {% if made_pr  %}<li><strong>Property - {{made_pr.name}}</strong><p>{{made_pr.description|safe}}</p></li>{% endif %}
+                {% if made_dec %}<li><strong>Data Element Concept - {{made_dec.name}}</strong><p>{{made_dec.definition|safe}}</p></li>{% endif %}
+                {% if made_oc  %}<li><strong>Object Class - {{made_oc.name}}</strong><p>{{made_oc.definition|safe}}</p></li>{% endif %}
+                {% if made_pr  %}<li><strong>Property - {{made_pr.name}}</strong><p>{{made_pr.definition|safe}}</p></li>{% endif %}
             </ul>
         </p>
     </div>

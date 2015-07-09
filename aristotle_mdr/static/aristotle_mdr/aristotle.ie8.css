@@ -6,9 +6,9 @@ h2, h2 * {font-size:115% !important;}
 h3, h3 * {font-size:110% !important;}
 h4, h4 * {font-size:105% !important;}
 
-.description { width:65% !important;    word-wrap: break-word;}
+.definition { width:65% !important;    word-wrap: break-word;}
 .textareainplaceedit { display:inline;}
-.description, .description p {
+.definition, .definition p {
 }
 
 .makeup .header,

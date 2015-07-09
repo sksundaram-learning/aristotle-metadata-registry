@@ -139,7 +139,7 @@ class AdminPageForConcept(utils.LoggedInViewPages):
             self.create_items()
 
     def create_items(self):
-        self.item1 = self.itemType.objects.create(name="admin_page_test_oc",description=" ",workgroup=self.wg1,**self.create_defaults)
+        self.item1 = self.itemType.objects.create(name="admin_page_test_oc",definition=" ",workgroup=self.wg1,**self.create_defaults)
 
     def test_registration_authority_inline_not_in_editor_admin_page(self):
         self.login_editor()
@@ -187,7 +187,7 @@ class AdminPageForConcept(utils.LoggedInViewPages):
         # make an item
         response = self.client.get(reverse("admin:%s_%s_add"%(self.itemType._meta.app_label,self.itemType._meta.model_name)))
 
-        data = {'name':"admin_page_test_oc",'description':"test","workgroup":self.wg1.id,
+        data = {'name':"admin_page_test_oc",'definition':"test","workgroup":self.wg1.id,
                     'statuses-TOTAL_FORMS': 0, 'statuses-INITIAL_FORMS': 0 #no substatuses
                 }
         data.update(self.form_defaults)
@@ -291,8 +291,8 @@ class AdminPageForConcept(utils.LoggedInViewPages):
 
 #deprecated
     def test_supersedes_saves(self):
-        self.item2 = self.itemType.objects.create(name="admin_page_test_oc_2",description=" ",workgroup=self.wg1,**self.create_defaults)
-        self.item3 = self.itemType.objects.create(name="admin_page_test_oc_2",description=" ",workgroup=self.wg1,**self.create_defaults)
+        self.item2 = self.itemType.objects.create(name="admin_page_test_oc_2",definition=" ",workgroup=self.wg1,**self.create_defaults)
+        self.item3 = self.itemType.objects.create(name="admin_page_test_oc_2",definition=" ",workgroup=self.wg1,**self.create_defaults)
 
         self.login_editor()
         response = self.client.get(reverse("admin:%s_%s_change"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=[self.item1.pk]))
@@ -320,7 +320,7 @@ class AdminPageForConcept(utils.LoggedInViewPages):
         self.assertTrue(self.item3 in self.item1.supersedes.all())
 
     def test_superseded_by_saves(self):
-        self.item2 = self.itemType.objects.create(name="admin_page_test_oc_2",description=" ",workgroup=self.wg1,**self.create_defaults)
+        self.item2 = self.itemType.objects.create(name="admin_page_test_oc_2",definition=" ",workgroup=self.wg1,**self.create_defaults)
 
         self.login_editor()
         response = self.client.get(reverse("admin:%s_%s_change"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=[self.item1.pk]))
@@ -376,7 +376,7 @@ class DataElementDerivationAdminPage(AdminPageForConcept,TestCase):
     def setUp(self):
         super(DataElementDerivationAdminPage, self).setUp(instant_create=False)
         self.ded_wg = models.Workgroup.objects.create(name="Derived WG")
-        self.derived_de = models.DataElement.objects.create(name='derivedDE',description="",workgroup=self.ded_wg)
+        self.derived_de = models.DataElement.objects.create(name='derivedDE',definition="",workgroup=self.ded_wg)
         self.ra.register(self.derived_de,models.STATES.standard,self.registrar)
         self.create_defaults = {'derives':self.derived_de}
         self.form_defaults = {'derives':self.derived_de.id}
