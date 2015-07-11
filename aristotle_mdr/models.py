@@ -757,8 +757,7 @@ class ConceptualDomain(concept):
     #no reason to model them separately.
 
     template = "aristotle_mdr/concepts/conceptualDomain.html"
-    #TODO: This needs to be changed to just 'description'
-    value_description = models.TextField(_('description'),blank=True,
+    description = models.TextField(_('description'),blank=True,
             help_text='Description or specification of a rule, reference, or range for a set of all value meanings for a Conceptual Domain')
 
 class ValueMeaning(aristotleComponent):
@@ -794,8 +793,7 @@ class ValueDomain(concept):
     unit_of_measure = models.ForeignKey(UnitOfMeasure,blank=True,null=True)
 
     conceptual_domain = models.ForeignKey(ConceptualDomain,blank=True,null=True)
-    #TODO: This needs to be changed to just 'description'
-    value_description = models.TextField(_('description'),blank=True,
+    description = models.TextField(_('description'),blank=True,
             help_text='Description or specification of a rule, reference, or range for a set of all values for a Value Domain')
     #Below is a dirty, dirty hack that came from re-designing permissible values
     # TODO: Fix references to permissible and supplementary values
