@@ -50,13 +50,13 @@ pre-populate any new items you create.
         </div>
     </div>
     <div class="wizard_field">
-        <span>{{ wizard.form.description.label_tag }} Add a brief definition of the item you'd like to create (optional)</span>
-        {% if wizard.form.shortName.errors %}
+        <span>{{ wizard.form.definition.label_tag }} Add a brief definition of the item you'd like to create (optional)</span>
+        {% if wizard.form.definition.errors %}
         <span class="alert alert-danger">
-            {{ wizard.form.description.errors }}
+            {{ wizard.form.definition.errors }}
         {% endif %}
-        {{ wizard.form.description }}
-        {% if wizard.form.description.errors %}
+        {{ wizard.form.definition }}
+        {% if wizard.form.definition.errors %}
             </span>
         {% endif %}
     </div>

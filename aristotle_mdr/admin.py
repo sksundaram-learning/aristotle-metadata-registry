@@ -48,7 +48,7 @@ class WorkgroupFilter(RelatedFieldListFilter):
 
 class WorkgroupAdmin(CompareVersionAdmin):
     fieldsets = [
-        (None,              {'fields': ['name','description','ownership','registrationAuthorities']}),
+        (None,              {'fields': ['name','definition','ownership','registrationAuthorities']}),
         ('Members',         {'fields': ['managers','stewards','submitters','viewers',]}),
     ]
     filter_horizontal = ['managers','stewards','submitters','viewers','registrationAuthorities']
@@ -91,7 +91,7 @@ class ConceptAdmin(CompareVersionAdmin):
     date_hierarchy='created'# ,'modified']
 
     fieldsets = [
-        (None,              {'fields': ['name','description','workgroup']}),
+        (None,              {'fields': ['name','definition','workgroup']}),
         ('Additional names',{
                 'classes':('grp-collapse grp-closed',),
                 'fields': ['synonyms','short_name','version',]
@@ -176,12 +176,12 @@ class SupplementaryValueInline(CodeValueInline):
     model = MDR.SupplementaryValue
 
 class RegistrationAuthorityAdmin(admin.ModelAdmin):
-    list_display = ['name', 'description','created','modified']
+    list_display = ['name', 'definition','created','modified']
     list_filter = ['created','modified',]
     filter_horizontal = ['managers','registrars',]
 
     fieldsets = [
-        (None,              {'fields': ['name','description']}),
+        (None,              {'fields': ['name','definition']}),
         ('Members',         {'fields': ['managers','registrars',]}),
         ('Visibility and control',              {'fields': ['locked_state','public_state',]}),
         ('Status descriptions',

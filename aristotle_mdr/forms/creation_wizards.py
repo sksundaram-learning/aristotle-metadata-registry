@@ -65,7 +65,7 @@ class Concept_1_Search(UserAwareForm):
     # Object class fields
     name = forms.CharField(max_length=256)
     version = forms.CharField(max_length=256,required=False)
-    description = forms.CharField(widget = forms.Textarea,required=False)
+    definition = forms.CharField(widget = forms.Textarea,required=False)
 
     def save(self, *args, **kwargs):
         pass
@@ -103,7 +103,7 @@ class Concept_2_Results(ConceptForm):
         self.fields['workgroup'].queryset = self.user.profile.editable_workgroups
         self.fields['workgroup'].initial = self.user.profile.activeWorkgroup
         self.fields['name'].widget = forms.widgets.TextInput()
-        #self.fields['description'].widget = forms.widgets.TextInput()
+        #self.fields['definition'].widget = forms.widgets.TextInput()
         if not self.check_similar:
             self.fields.pop('make_new_item')
 

@@ -9,10 +9,10 @@ So we've split this out into its own template.
 
 <div>
 <table class="table table-striped valueDomainRepresentation">
-{% if item.value_description %}
+{% if item.description %}
 <tr>
   <th>Description</th>
-  <td>{{ item.value_description }}</a></td>
+  <td>{{ item.description }}</a></td>
 </tr>
 {% endif %}
 {% if item.data_type %}

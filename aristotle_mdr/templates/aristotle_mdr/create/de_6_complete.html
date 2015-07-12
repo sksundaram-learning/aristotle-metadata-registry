@@ -22,11 +22,11 @@
         {% endif %}
         <p>You are about going to create the following items:
             <ul>
-                {% if made_de  %}<li><strong>Data Element - {{made_de.name}}</strong><p>{{made_de.description|safe}}</p></li>{% endif %}
-                {% if made_oc  %}<li><strong>Object Class - {{made_oc.name}}</strong><p>{{made_oc.description|safe}}</p></li>{% endif %}
-                {% if made_pr  %}<li><strong>Property - {{made_pr.name}}</strong><p>{{made_pr.description|safe}}</p></li>{% endif %}
-                {% if made_dec %}<li><strong>Data Element Concept - {{made_dec.name}}</strong><p>{{made_dec.description|safe}}</p></li>{% endif %}
-                {% if made_vd  %}<li><strong>Value Domain - {{made_vd.name}}</strong><p>{{made_vd.description|safe}}</p></li>{% endif %}
+                {% if made_de  %}<li><strong>Data Element - {{made_de.name}}</strong><p>{{made_de.definition|safe}}</p></li>{% endif %}
+                {% if made_oc  %}<li><strong>Object Class - {{made_oc.name}}</strong><p>{{made_oc.definition|safe}}</p></li>{% endif %}
+                {% if made_pr  %}<li><strong>Property - {{made_pr.name}}</strong><p>{{made_pr.definition|safe}}</p></li>{% endif %}
+                {% if made_dec %}<li><strong>Data Element Concept - {{made_dec.name}}</strong><p>{{made_dec.definition|safe}}</p></li>{% endif %}
+                {% if made_vd  %}<li><strong>Value Domain - {{made_vd.name}}</strong><p>{{made_vd.definition|safe}}</p></li>{% endif %}
             </ul>
         </p>
     </div>

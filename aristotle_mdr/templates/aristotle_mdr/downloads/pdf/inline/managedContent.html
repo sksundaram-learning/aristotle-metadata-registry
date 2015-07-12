@@ -8,8 +8,8 @@
         {% if item.version %}v {{item.version}}{% endif %}
         </small>
 </header>
-<div class="description">
-    {{ item.description | safe }}
+<div class="definition">
+    {{ item.definition | safe }}
 </div>
 <div class="status">
     {% include "aristotle_mdr/statuses.html" with statuses=item.current_statuses only %}

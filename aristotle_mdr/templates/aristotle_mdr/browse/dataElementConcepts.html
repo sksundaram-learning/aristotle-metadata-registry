@@ -9,8 +9,8 @@
         <a href="#">Browsing Data Element Concepts based on {{ objectClass.name }}</a>
     </h1>
 <strong>About <em>{{ objectClass.name }}</em></strong>
-<div id="description">
-    {{ objectClass.description | safe }}
+<div id="definition">
+    {{ objectClass.definition | safe }}
 </div>
 {% if items %}
 <p>
@@ -24,7 +24,7 @@
             <small>(<a href="{% url 'aristotle:browse' oc_id=objectClass.id dec_id=i.id %}">{{ i.name }}</a>)</small>
         </dt>
         <dd>
-            {{ i.description|truncatewords:20|striptags }}
+            {{ i.definition|truncatewords:20|striptags }}
         </dd>
     {% endfor %}
     </dl>

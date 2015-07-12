@@ -42,9 +42,9 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
     def setUp(self):
         super(LoggedInViewConceptPages, self).setUp()
 
-        self.item1 = self.itemType.objects.create(name="Test Item 1 (visible to tested viewers)",description=" ",workgroup=self.wg1,**self.defaults)
-        self.item2 = self.itemType.objects.create(name="Test Item 2 (NOT visible to tested viewers)",description=" ",workgroup=self.wg2,**self.defaults)
-        self.item3 = self.itemType.objects.create(name="Test Item 3 (visible to tested viewers)",description=" ",workgroup=self.wg1,**self.defaults)
+        self.item1 = self.itemType.objects.create(name="Test Item 1 (visible to tested viewers)",definition=" ",workgroup=self.wg1,**self.defaults)
+        self.item2 = self.itemType.objects.create(name="Test Item 2 (NOT visible to tested viewers)",definition=" ",workgroup=self.wg2,**self.defaults)
+        self.item3 = self.itemType.objects.create(name="Test Item 3 (visible to tested viewers)",definition=" ",workgroup=self.wg1,**self.defaults)
 
     def test_su_can_view(self):
         self.login_superuser()
@@ -527,7 +527,7 @@ class DataElementDerivationViewPage(LoggedInViewConceptPages,TestCase):
     url_name='dataelementderivation'
     @property
     def defaults(self):
-        return {'derives':models.DataElement.objects.create(name='derivedDE',description="",workgroup=self.wg1)}
+        return {'derives':models.DataElement.objects.create(name='derivedDE',definition="",workgroup=self.wg1)}
     itemType=models.DataElementDerivation
 
 class LoggedInViewUnmanagedPages(utils.LoggedInViewPages):

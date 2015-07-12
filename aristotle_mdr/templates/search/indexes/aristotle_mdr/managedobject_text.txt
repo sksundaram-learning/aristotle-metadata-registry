@@ -1,6 +1,6 @@
 {{ object.name }} {{ object.version }}
 {{ object.shortName }}
-{{ object.description }}
+{{ object.definition }}
 {{ object.synonyms }}
 {{ object.submitting_organisation }}
 {{ object.responsible_organisation }}

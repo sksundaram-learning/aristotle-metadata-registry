@@ -20,7 +20,7 @@
         <li>
         <a href="{% url 'aristotle:registrationAuthority' ra.id %}">{{ ra.name }}</a>
         <div>
-            {{ ra.description | striptags |truncatewords:50 }}
+            {{ ra.definition | striptags |truncatewords:50 }}
         </div>
         </li>
         {% endfor %}

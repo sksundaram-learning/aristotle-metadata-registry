@@ -85,7 +85,7 @@ class CustomConceptQuerySetTest_Slow(object):
                 # eg. the cartesian product of the States
                 for states in [s for s in itertools.product(used_choices,repeat=len(keys))]:
                     # we create an item registered with that set of states in a bunch of RAs
-                    item = models.ObjectClass.objects.create(name="Concept %s"%(prefix),description="",workgroup=wg)
+                    item = models.ObjectClass.objects.create(name="Concept %s"%(prefix),definition="",workgroup=wg)
                     print('+', end="")
                     # Then register it
                     for ra,state in zip(keys,states):

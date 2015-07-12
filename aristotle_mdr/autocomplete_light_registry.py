@@ -33,7 +33,7 @@ u['choice_template']='aristotle_mdr/actions/autocompleteUser.html'
 autocomplete_light.register(User,UserAutocomplete,**u)
 
 class PermissionsAutocomplete(autocomplete_light.AutocompleteModelTemplate):
-    search_fields=['name', 'description','id']
+    search_fields=['name', 'definition','id']
 
     def choices_for_request(self):
         self.choices = self.choices.visible(self.request.user)
