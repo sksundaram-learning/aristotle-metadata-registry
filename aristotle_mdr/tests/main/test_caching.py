@@ -25,10 +25,10 @@ class CachingForRawPermissions(TestCase):
 
     def test_can_edit_cache(self):
         self.assertTrue(perms.user_can_edit(self.submitter,self.item))
-        self.item.description = "edit name, then quickly check permission"
+        self.item.definition = "edit name, then quickly check permission"
         self.item.save()
         self.assertTrue(perms.user_can_edit(self.submitter,self.item))
-        self.item.description = "edit name, then wait 30 secs for 'recently edited to expire'"
+        self.item.definition = "edit name, then wait 30 secs for 'recently edited to expire'"
         self.item.save()
         sleep(models.VERY_RECENTLY_SECONDS+2)
         self.assertTrue(perms.user_can_edit(self.submitter,self.item))
@@ -47,11 +47,11 @@ class CachingForRawPermissions(TestCase):
 
         self.assertTrue(perms.user_can_view(self.submitter,self.item))
         self.assertFalse(perms.user_can_view(self.viewer,self.item))
-        self.item.description = "edit name, then quickly check permission"
+        self.item.definition = "edit name, then quickly check permission"
         self.item.save()
         self.assertTrue(perms.user_can_view(self.submitter,self.item))
         self.assertFalse(perms.user_can_view(self.viewer,self.item))
-        self.item.description = "edit name, then wait 30 secs for 'recently edited to expire'"
+        self.item.definition = "edit name, then wait 30 secs for 'recently edited to expire'"
         self.item.save()
         sleep(models.VERY_RECENTLY_SECONDS+2)
         self.assertTrue(perms.user_can_view(self.submitter,self.item))

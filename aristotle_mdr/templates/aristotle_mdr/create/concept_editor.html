@@ -76,13 +76,13 @@
                 {% endif %}
             </div>
             <div class="wizard_field">
-                <span>{{ form.description.label_tag }} {{ form.description.help_text }}</span>
-                {% if form.description.errors %}
+                <span>{{ form.definition.label_tag }} {{ form.definition.help_text }}</span>
+                {% if form.definition.errors %}
                     <span class="alert alert-danger">
-                    {{ form.description.errors }}
+                    {{ form.definition.errors }}
                 {% endif %}
-                {{ form.description }}
-                {% if form.description.errors %}
+                {{ form.definition }}
+                {% if form.definition.errors %}
                     </span>
                 {% endif %}
             </div>

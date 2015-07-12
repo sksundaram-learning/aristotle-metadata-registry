@@ -73,10 +73,10 @@ class UserHomePages(utils.LoggedInViewPages,TestCase):
 
     def test_registrar_has_valid_items_in_ready_to_review(self):
 
-        item1 = models.ObjectClass.objects.create(name="Test Item 1",description=" ",workgroup=self.wg1)
-        item2 = models.ObjectClass.objects.create(name="Test Item 2",description=" ",workgroup=self.wg2)
-        item3 = models.ObjectClass.objects.create(name="Test Item 3",description=" ",workgroup=self.wg1,readyToReview=True)
-        item4 = models.ObjectClass.objects.create(name="Test Item 4",description=" ",workgroup=self.wg2,readyToReview=True)
+        item1 = models.ObjectClass.objects.create(name="Test Item 1",definition=" ",workgroup=self.wg1)
+        item2 = models.ObjectClass.objects.create(name="Test Item 2",definition=" ",workgroup=self.wg2)
+        item3 = models.ObjectClass.objects.create(name="Test Item 3",definition=" ",workgroup=self.wg1,readyToReview=True)
+        item4 = models.ObjectClass.objects.create(name="Test Item 4",definition=" ",workgroup=self.wg2,readyToReview=True)
 
         self.login_registrar()
 
@@ -147,7 +147,7 @@ class UserDashRecentItems(utils.LoggedInViewPages,TestCase):
         step_2_data = {
             wizard_form_name+'-current_step': 'results',
             'results-name':"Test Item",
-            'results-description':"Test Description",
+            'results-definition':"Test Definition",
             'results-workgroup':self.wg1.pk
             }
         response = self.client.post(wizard_url, step_2_data)

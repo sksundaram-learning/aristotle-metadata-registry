@@ -7,8 +7,8 @@
         <a href="#">Browsing Data Elements based on {{ dataElementConcept.name }}</a>
     </h1>
 <strong>About <em>{{ dataElementConcept.name }}</em></strong>
-<div id="description">
-    {{ dataElementConcept.description | safe }}
+<div id="definition">
+    {{ dataElementConcept.definition | safe }}
 </div>
 {% if items %}
 <p>
@@ -22,7 +22,7 @@
             <!-- small>(<a href="{% url 'aristotle:dataElement' iid=i.id %}">{{ i.name }}</a>)</small -->
         </dt>
         <dd>
-            {{ i.description|truncatewords:20|striptags }}
+            {{ i.definition|truncatewords:20|striptags }}
         </dd>
     {% endfor %}
     </dl>

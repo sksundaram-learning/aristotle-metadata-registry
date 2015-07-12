@@ -15,7 +15,7 @@ class TextDownloader(utils.LoggedInViewPages,TestCase):
     def test_logged_in_user_text_downloads(self):
         self.login_editor()
         oc = models.ObjectClass.objects.create(name="OC1",workgroup=self.wg1)
-        de = models.DataElement.objects.create(name="DE1",description="A test data element",workgroup=self.wg1)
+        de = models.DataElement.objects.create(name="DE1",definition="A test data element",workgroup=self.wg1)
         dec = models.DataElementConcept.objects.create(name="DEC",workgroup=self.wg1)
         de2 = models.DataElement.objects.create(name="DE2",workgroup=self.wg2)
 
@@ -26,7 +26,7 @@ class TextDownloader(utils.LoggedInViewPages,TestCase):
         response = self.client.get(reverse('aristotle:download',args=['txt',de.id]))
         self.assertEqual(response.status_code,200)
         self.assertTrue(de.name in str(response))
-        self.assertTrue(de.description in str(response))
+        self.assertTrue(de.definition in str(response))
 
         response = self.client.get(reverse('aristotle:download',args=['txt',de2.id]))
         # This item is not visible to the logged in user and will throw an error
