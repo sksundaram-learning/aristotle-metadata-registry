@@ -1,18 +1,27 @@
+{% load i18n %}
 {% if wrap %}
 <div class="btn-group">
 {% endif %}
 
-    <!--span>Add selected</span -->
     {% if request.user.is_active %}
-    <button class="btn btn-primary" type="submit" name="bulkaction" value="add_favourites">
-        <i class="fa fa-bookmark"></i> Add to
-        <small>favourites</small>
-    </button>
-    {% endif %}
-    {% if request.user.profile.is_registrar %}
-    <button class="btn btn-primary" type="submit" name="bulkaction" value="change_state">
-        <i class="fa fa-university"></i> Change state
-    </button>
+        <!--span>Add selected</span -->
+        {% if not no_add_favourites %}
+        <button class="btn btn-primary" type="submit" name="bulkaction" value="add_favourites">
+            <i class="fa fa-bookmark"></i>
+            {% blocktrans %}Add to <small>favourites</small>{% endblocktrans %}
+        </button>
+        {% endif %}
+        {% if not no_remove_favourites %}
+        <button class="btn btn-primary" type="submit" name="bulkaction" value="remove_favourites">
+            <i class="fa fa-minus-square "></i>
+            {% blocktrans %}Remove from <small>favourites</small>{% endblocktrans %}
+        </button>
+        {% endif %}
+        {% if request.user.profile.is_registrar %}
+        <button class="btn btn-primary" type="submit" name="bulkaction" value="change_state">
+            <i class="fa fa-university"></i> {% trans "Change state" %}
+        </button>
+        {% endif %}
     {% endif %}
 
 {% if wrap %}

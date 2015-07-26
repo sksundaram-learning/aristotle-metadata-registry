@@ -116,25 +116,25 @@ class ConceptWizardPage(utils.LoggedInViewPages):
 
         response = self.client.post(self.wizard_url, step_2_data)
         wizard = response.context['wizard']
-        self.assertTrue('description' in wizard['form'].errors.keys())
+        self.assertTrue('definition' in wizard['form'].errors.keys())
         self.assertTrue('workgroup' in wizard['form'].errors.keys())
 
         # no "test item" yet.
         self.assertFalse(models._concept.objects.filter(name="Test Item").exists())
 
-        # must submit a description at this step. But we are using a non-permitted workgroup.
+        # must submit a definition at this step. But we are using a non-permitted workgroup.
         step_2_data.update({
-            'results-description':"Test Description",
-            'results-workgroup':self.wg2.pk
+            'results-definition':"Test Definition",
+            'results-workgroup':self.wg2.id
             })
         response = self.client.post(self.wizard_url, step_2_data)
         self.assertEqual(response.status_code, 200)
         self.assertTrue('workgroup' in wizard['form'].errors.keys())
 
-        # must submit a description at this step. With the right workgroup
+        # must submit a definition at this step. With the right workgroup
         step_2_data.update({
-            'results-description':"Test Description",
-            'results-workgroup':self.wg1.pk
+            'results-definition':"Test Definition",
+            'results-workgroup':self.wg1.id
             })
         response = self.client.post(self.wizard_url, step_2_data)
         self.assertEqual(response.status_code, 302)
@@ -162,8 +162,8 @@ class DataElementConceptWizardPage(ConceptWizardPage,TestCase):
         pass
     def test_editor_can_make_object__has_prior_components(self):
         self.login_editor()
-        ani = models.ObjectClass.objects.create(name="animagus",description="",workgroup=self.wg1)
-        at  = models.Property.objects.create(name="animal type",description="",workgroup=self.wg1)
+        ani = models.ObjectClass.objects.create(name="animagus",definition="",workgroup=self.wg1)
+        at  = models.Property.objects.create(name="animal type",definition="",workgroup=self.wg1)
 
         step_1_data = {
             self.wizard_form_name+'-current_step': 'component_search',
@@ -248,25 +248,25 @@ class DataElementConceptWizardPage(ConceptWizardPage,TestCase):
 
         response = self.client.post(self.wizard_url, step_3_data)
         wizard = response.context['wizard']
-        self.assertTrue('description' in wizard['form'].errors.keys())
+        self.assertTrue('definition' in wizard['form'].errors.keys())
         self.assertTrue('workgroup' in wizard['form'].errors.keys())
 
         # no "test item" yet.
         self.assertFalse(models._concept.objects.filter(name="Test Item").exists())
 
-        # must submit a description at this step. But we are using a non-permitted workgroup.
+        # must submit a definition at this step. But we are using a non-permitted workgroup.
         step_3_data.update({
-            'make_oc-description':"A wizard who can change shape.",
-            'make_oc-workgroup':self.wg2.pk
+            'make_oc-definition':"A wizard who can change shape.",
+            'make_oc-workgroup':self.wg2.id
             })
         response = self.client.post(self.wizard_url, step_3_data)
         wizard = response.context['wizard']
         self.assertEqual(response.status_code, 200)
         self.assertTrue('workgroup' in wizard['form'].errors.keys())
 
-        # must submit a description at this step. With the right workgroup
+        # must submit a definition at this step. With the right workgroup
         step_3_data.update({
-            'make_oc-workgroup':self.wg1.pk
+            'make_oc-workgroup':self.wg1.id
             })
         response = self.client.post(self.wizard_url, step_3_data)
         self.assertEqual(response.status_code, 200)
@@ -281,15 +281,15 @@ class DataElementConceptWizardPage(ConceptWizardPage,TestCase):
 
         response = self.client.post(self.wizard_url, step_4_data)
         wizard = response.context['wizard']
-        self.assertTrue('description' in wizard['form'].errors.keys())
+        self.assertTrue('definition' in wizard['form'].errors.keys())
         self.assertTrue('workgroup' in wizard['form'].errors.keys())
 
         # no "test item" yet.
         self.assertFalse(models._concept.objects.filter(name="Test Item").exists())
 
-        # must submit a description at this step. But we are using a non-permitted workgroup.
+        # must submit a definition at this step. But we are using a non-permitted workgroup.
         step_4_data.update({
-            'make_p-description':"A wizard who can change shape.",
+            'make_p-definition':"A wizard who can change shape.",
             'make_p-workgroup':self.wg2.pk
             })
         response = self.client.post(self.wizard_url, step_4_data)
@@ -297,7 +297,7 @@ class DataElementConceptWizardPage(ConceptWizardPage,TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue('workgroup' in wizard['form'].errors.keys())
 
-        # must submit a description at this step. With the right workgroup
+        # must submit a definition at this step. With the right workgroup
         step_4_data.update({
             'make_p-workgroup':self.wg1.pk
             })
@@ -319,13 +319,13 @@ class DataElementConceptWizardPage(ConceptWizardPage,TestCase):
         wizard = response.context['wizard']
         self.assertEqual(response.status_code, 200)
         self.assertTrue('name' in wizard['form'].errors.keys())
-        self.assertTrue('description' in wizard['form'].errors.keys())
+        self.assertTrue('definition' in wizard['form'].errors.keys())
         self.assertTrue('workgroup' in wizard['form'].errors.keys())
 
-        # must submit a name and description at this step. But we are using a non-permitted workgroup.
+        # must submit a name and definition at this step. But we are using a non-permitted workgroup.
         step_5_data.update({
             'find_dec_results-name':"Animagus--Animal type",
-            'find_dec_results-description':"The record of the shape a wizard can change into.",
+            'find_dec_results-definition':"The record of the shape a wizard can change into.",
             'find_dec_results-workgroup':self.wg2.pk
             })
         response = self.client.post(self.wizard_url, step_5_data)
@@ -333,7 +333,7 @@ class DataElementConceptWizardPage(ConceptWizardPage,TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue('workgroup' in wizard['form'].errors.keys())
 
-        # must submit a description at this step. With the right workgroup
+        # must submit a definition at this step. With the right workgroup
         step_5_data.update({
             'find_dec_results-workgroup':self.wg1.pk
             })
@@ -374,11 +374,11 @@ class DataElementWizardPage(ConceptWizardPage,TestCase):
         pass
     def test_editor_can_make_object__has_prior_components(self):
         self.login_editor()
-        ani   = models.ObjectClass.objects.create(name="animagus",description="",workgroup=self.wg1)
-        at    = models.Property.objects.create(name="animal type",description="",workgroup=self.wg1)
+        ani   = models.ObjectClass.objects.create(name="animagus",definition="",workgroup=self.wg1)
+        at    = models.Property.objects.create(name="animal type",definition="",workgroup=self.wg1)
         momat = models.ValueDomain.objects.create(name="MoM animal type classification",
-                description="Ministry of Magic standard classification of animagus animal types",workgroup=self.wg1)
-        ani_dec = models.DataElementConcept.objects.create(name="animagus--animal type",description="",workgroup=self.wg1,
+                definition="Ministry of Magic standard classification of animagus animal types",workgroup=self.wg1)
+        ani_dec = models.DataElementConcept.objects.create(name="animagus--animal type",definition="",workgroup=self.wg1,
                 objectClass=ani,property=at
                 )
 
@@ -438,10 +438,10 @@ class DataElementWizardPage(ConceptWizardPage,TestCase):
 
     def test_editor_can_make_object__has_prior_components_but_no_dec(self):
         self.login_editor()
-        ani   = models.ObjectClass.objects.create(name="animagus",description="",workgroup=self.wg1)
-        at    = models.Property.objects.create(name="animal type",description="",workgroup=self.wg1)
+        ani   = models.ObjectClass.objects.create(name="animagus",definition="",workgroup=self.wg1)
+        at    = models.Property.objects.create(name="animal type",definition="",workgroup=self.wg1)
         momat = models.ValueDomain.objects.create(name="MoM animal type classification",
-                description="Ministry of Magic standard classification of animagus animal types",workgroup=self.wg1)
+                definition="Ministry of Magic standard classification of animagus animal types",workgroup=self.wg1)
 
         step_1_data = {
             self.wizard_form_name+'-current_step': 'component_search',
@@ -500,15 +500,15 @@ class DataElementWizardPage(ConceptWizardPage,TestCase):
 
         response = self.client.post(self.wizard_url, step_3_data)
         wizard = response.context['wizard']
-        self.assertTrue('description' in wizard['form'].errors.keys())
+        self.assertTrue('definition' in wizard['form'].errors.keys())
         self.assertTrue('workgroup' in wizard['form'].errors.keys())
 
         # no "test item" yet.
         self.assertFalse(models.DataElementConcept.objects.filter(name="Animagus--Animal type").exists())
 
-        # must submit a description at this step. But we are using a non-permitted workgroup.
+        # must submit a definition at this step. But we are using a non-permitted workgroup.
         step_3_data.update({
-            'make_dec-description':"The record of the shape a wizard can change into.",
+            'make_dec-definition':"The record of the shape a wizard can change into.",
             'make_dec-workgroup':self.wg2.pk
             })
         response = self.client.post(self.wizard_url, step_3_data)
@@ -516,9 +516,9 @@ class DataElementWizardPage(ConceptWizardPage,TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue('workgroup' in wizard['form'].errors.keys())
 
-        # must submit a description at this step. With the right workgroup
+        # must submit a definition at this step. With the right workgroup
         step_3_data.update({
-            'make_dec-workgroup':self.wg1.pk
+            'make_dec-workgroup':self.wg1.id
             })
         response = self.client.post(self.wizard_url, step_3_data)
         self.assertEqual(response.status_code, 200)
@@ -535,15 +535,15 @@ class DataElementWizardPage(ConceptWizardPage,TestCase):
 
         response = self.client.post(self.wizard_url, step_4_data)
         wizard = response.context['wizard']
-        self.assertTrue('description' in wizard['form'].errors.keys())
+        self.assertTrue('definition' in wizard['form'].errors.keys())
         self.assertTrue('workgroup' in wizard['form'].errors.keys())
 
         # no "test item" yet.
         self.assertFalse(models.DataElement.objects.filter(name="Animagus--Animal type, MoM Code").exists())
 
-        # must submit a description at this step. But we are using a non-permitted workgroup.
+        # must submit a definition at this step. But we are using a non-permitted workgroup.
         step_4_data.update({
-            'find_de_results-description':"The record of the shape a wizard can change into.",
+            'find_de_results-definition':"The record of the shape a wizard can change into.",
             'find_de_results-workgroup':self.wg2.pk
             })
         response = self.client.post(self.wizard_url, step_4_data)
@@ -551,7 +551,7 @@ class DataElementWizardPage(ConceptWizardPage,TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue('workgroup' in wizard['form'].errors.keys())
 
-        # must submit a description at this step. With the right workgroup
+        # must submit a definition at this step. With the right workgroup
         step_4_data.update({
             'find_de_results-workgroup':self.wg1.pk
             })
@@ -623,15 +623,15 @@ class DataElementWizardPage(ConceptWizardPage,TestCase):
 
         response = self.client.post(self.wizard_url, step_3_data)
         wizard = response.context['wizard']
-        self.assertTrue('description' in wizard['form'].errors.keys())
+        self.assertTrue('definition' in wizard['form'].errors.keys())
         self.assertTrue('workgroup' in wizard['form'].errors.keys())
 
         # no "test item" yet.
         self.assertFalse(models._concept.objects.filter(name="Test Item").exists())
 
-        # must submit a description at this step. But we are using a non-permitted workgroup.
+        # must submit a definition at this step. But we are using a non-permitted workgroup.
         step_3_data.update({
-            'make_oc-description':"A wizard who can change shape.",
+            'make_oc-definition':"A wizard who can change shape.",
             'make_oc-workgroup':self.wg2.pk
             })
         response = self.client.post(self.wizard_url, step_3_data)
@@ -639,7 +639,7 @@ class DataElementWizardPage(ConceptWizardPage,TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue('workgroup' in wizard['form'].errors.keys())
 
-        # must submit a description at this step. With the right workgroup
+        # must submit a definition at this step. With the right workgroup
         step_3_data.update({
             'make_oc-workgroup':self.wg1.pk
             })
@@ -656,15 +656,15 @@ class DataElementWizardPage(ConceptWizardPage,TestCase):
 
         response = self.client.post(self.wizard_url, step_4_data)
         wizard = response.context['wizard']
-        self.assertTrue('description' in wizard['form'].errors.keys())
+        self.assertTrue('definition' in wizard['form'].errors.keys())
         self.assertTrue('workgroup' in wizard['form'].errors.keys())
 
         # no "test item" yet.
         self.assertFalse(models._concept.objects.filter(name="Test Item").exists())
 
-        # must submit a description at this step. But we are using a non-permitted workgroup.
+        # must submit a definition at this step. But we are using a non-permitted workgroup.
         step_4_data.update({
-            'make_p-description':"A wizard who can change shape.",
+            'make_p-definition':"A wizard who can change shape.",
             'make_p-workgroup':self.wg2.pk
             })
         response = self.client.post(self.wizard_url, step_4_data)
@@ -672,7 +672,7 @@ class DataElementWizardPage(ConceptWizardPage,TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue('workgroup' in wizard['form'].errors.keys())
 
-        # must submit a description at this step. With the right workgroup
+        # must submit a definition at this step. With the right workgroup
         step_4_data.update({
             'make_p-workgroup':self.wg1.pk
             })

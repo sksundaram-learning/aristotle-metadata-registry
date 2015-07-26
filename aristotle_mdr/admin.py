@@ -42,17 +42,13 @@ class StatusInline(admin.TabularInline):
 
 class WorkgroupFilter(RelatedFieldListFilter):
     def __init__(self, field, request, *args, **kwargs):
-        if not request.user.is_superuser:
-            wg_ids = [w.id for w in request.user.profile.workgroups.all()]
-
-            #Limit the choices on the field
-            field.rel.limit_choices_to = {'id__in': wg_ids}
-        #Let the RelatedFieldListFilter do its magic
         super(WorkgroupFilter, self).__init__(field, request, *args, **kwargs)
+        if not request.user.is_superuser:
+            self.lookup_choices = [(w.id,w) for w in request.user.profile.workgroups.all()]
 
 class WorkgroupAdmin(CompareVersionAdmin):
     fieldsets = [
-        (None,              {'fields': ['name','description','ownership','registrationAuthorities']}),
+        (None,              {'fields': ['name','definition','ownership','registrationAuthorities']}),
         ('Members',         {'fields': ['managers','stewards','submitters','viewers',]}),
     ]
     filter_horizontal = ['managers','stewards','submitters','viewers','registrationAuthorities']
@@ -95,7 +91,7 @@ class ConceptAdmin(CompareVersionAdmin):
     date_hierarchy='created'# ,'modified']
 
     fieldsets = [
-        (None,              {'fields': ['name','description','workgroup']}),
+        (None,              {'fields': ['name','definition','workgroup']}),
         ('Additional names',{
                 'classes':('grp-collapse grp-closed',),
                 'fields': ['synonyms','short_name','version',]
@@ -108,13 +104,13 @@ class ConceptAdmin(CompareVersionAdmin):
     ]
     name_suggest_fields = []
     actions_on_top = True; actions_on_bottom = False
-
-#    def formfield_for_foreignkey(self, db_field, request, **kwargs):
-#        if db_field.name == "workgroup":
-#            kwargs['queryset'] = request.user.profile.workgroups.all()
-#            kwargs['initial'] = request.user.profile.activeWorkgroup
-#        return super(ConceptAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
-
+    """
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "workgroup":
+            kwargs['queryset'] = request.user.profile.editable_workgroups.all()
+            kwargs['initial'] = request.user.profile.activeWorkgroup
+        return super(ConceptAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
+    """
     def get_form(self, request, obj=None, **kwargs):
         # Thanks: http://stackoverflow.com/questions/6321916
         # Thanks: http://stackoverflow.com/questions/2683689
@@ -180,12 +176,12 @@ class SupplementaryValueInline(CodeValueInline):
     model = MDR.SupplementaryValue
 
 class RegistrationAuthorityAdmin(admin.ModelAdmin):
-    list_display = ['name', 'description','created','modified']
+    list_display = ['name', 'definition','created','modified']
     list_filter = ['created','modified',]
     filter_horizontal = ['managers','registrars',]
 
     fieldsets = [
-        (None,              {'fields': ['name','description']}),
+        (None,              {'fields': ['name','definition']}),
         ('Members',         {'fields': ['managers','registrars',]}),
         ('Visibility and control',              {'fields': ['locked_state','public_state',]}),
         ('Status descriptions',

@@ -145,8 +145,8 @@
     {% bootstrap_modal "r2r_modals" %}
     {% endif %}
     <h2>{% trans 'Definition'%}</h2>
-    <div id="description" class="description">
-        {{ item.description | safe}}
+    <div id="definition" class="definition">
+        {{ item.definition | safe}}
     </div>
     {% if item.short_name or item.synonyms %}
     <h3>Alternate names:</h3>

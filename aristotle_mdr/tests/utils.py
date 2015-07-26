@@ -1,5 +1,6 @@
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 
 import datetime
@@ -24,6 +25,7 @@ class ManagedObjectVisibility(object):
 
         self.wg = models.Workgroup.objects.create(name="Test WG")
         self.wg.registrationAuthorities.add(self.ra)
+
 
     def test_object_is_public(self):
         self.assertEqual(self.item.is_public(),False)
@@ -394,9 +396,6 @@ class LoggedInViewPages(object):
     This helps us manage testing across different user types.
     """
     def setUp(self):
-        from django.test import Client
-
-        self.client = Client()
         self.wg1 = models.Workgroup.objects.create(name="Test WG 1") # Editor is member
         self.wg2 = models.Workgroup.objects.create(name="Test WG 2")
         self.ra = models.RegistrationAuthority.objects.create(name="Test RA")
@@ -423,6 +422,14 @@ class LoggedInViewPages(object):
         self.viewer = User.objects.get(pk=self.viewer.pk)
         self.registrar = User.objects.get(pk=self.registrar.pk)
 
+        self.assertEqual(self.viewer.profile.editable_workgroups.count(),0)
+        self.assertEqual(self.manager.profile.editable_workgroups.count(),0)
+        self.assertEqual(self.registrar.profile.editable_workgroups.count(),0)
+        self.assertEqual(self.editor.profile.editable_workgroups.count(),1)
+        self.assertTrue(self.wg1 in self.editor.profile.editable_workgroups.all())
+
+
+
     def get_page(self,item):
         return url_slugify_concept(item)
 
@@ -434,46 +441,46 @@ class LoggedInViewPages(object):
 
     def login_superuser(self):
         self.logout()
-        response = self.client.post(reverse('django.contrib.auth.views.login'), {'username': 'super', 'password': 'user'})
+        response = self.client.post(reverse('friendly_login'), {'username': 'super', 'password': 'user'})
         self.assertEqual(response.status_code,302)
         return response
     def login_viewer(self):
         self.logout()
-        response = self.client.post(reverse('django.contrib.auth.views.login'), {'username': 'vicky', 'password': 'viewer'})
+        response = self.client.post(reverse('friendly_login'), {'username': 'vicky', 'password': 'viewer'})
         self.assertEqual(response.status_code,302)
         return response
     def login_registrar(self):
         self.logout()
-        response = self.client.post(reverse('django.contrib.auth.views.login'), {'username': 'reggie', 'password': 'registrar'})
+        response = self.client.post(reverse('friendly_login'), {'username': 'reggie', 'password': 'registrar'})
         self.assertEqual(response.status_code,302)
         return response
     def login_editor(self):
         self.logout()
-        response = self.client.post(reverse('django.contrib.auth.views.login'), {'username': 'eddie', 'password': 'editor'})
+        response = self.client.post(reverse('friendly_login'), {'username': 'eddie', 'password': 'editor'})
         self.assertEqual(response.status_code,302)
         return response
     def login_manager(self):
         self.logout()
-        response = self.client.post(reverse('django.contrib.auth.views.login'), {'username': 'mandy', 'password': 'manager'})
+        response = self.client.post(reverse('friendly_login'), {'username': 'mandy', 'password': 'manager'})
         self.assertEqual(response.status_code,302)
         return response
 
     def test_logins(self):
         # Failed logins reutrn 200, not 401
         # See http://stackoverflow.com/questions/25839434/
-        response = self.client.post(reverse('django.contrib.auth.views.login'), {'username': 'super', 'password': 'the_wrong_password'})
+        response = self.client.post(reverse('friendly_login'), {'username': 'super', 'password': 'the_wrong_password'})
         self.assertEqual(response.status_code,200)
         # Success redirects to the homepage, so its 302 not 200
-        response = self.client.post(reverse('django.contrib.auth.views.login'), {'username': 'super', 'password': 'user'})
+        response = self.client.post(reverse('friendly_login'), {'username': 'super', 'password': 'user'})
         self.assertEqual(response.status_code,302)
         self.logout()
-        response = self.client.post(reverse('django.contrib.auth.views.login'), {'username': 'eddie', 'password': 'editor'})
+        response = self.client.post(reverse('friendly_login'), {'username': 'eddie', 'password': 'editor'})
         self.assertEqual(response.status_code,302)
         self.logout()
-        response = self.client.post(reverse('django.contrib.auth.views.login'), {'username': 'vicky', 'password': 'viewer'})
+        response = self.client.post(reverse('friendly_login'), {'username': 'vicky', 'password': 'viewer'})
         self.assertEqual(response.status_code,302)
         self.logout()
-        response = self.client.post(reverse('django.contrib.auth.views.login'), {'username': 'reggie', 'password': 'registrar'})
+        response = self.client.post(reverse('friendly_login'), {'username': 'reggie', 'password': 'registrar'})
         self.assertEqual(response.status_code,302)
         self.logout()
 
@@ -496,11 +503,20 @@ class LoggedInViewPages(object):
                 debug_response(response, msg="%s" % e) # from django-tools
                 raise
 
+    def assertRedirects(self,*args,**kwargs):
+        self.assertResponseStatusCodeEqual(args[0],302)
+        super(LoggedInViewPages, self).assertRedirects(*args,**kwargs)
+
     def assertResponseStatusCodeEqual(self,response,code):
             try:
                 self.assertEqual(response.status_code, code)
             except AssertionError as e: #pragma: no cover
                 # Needs no coverage as the test should pass to be successful
-                print(response)
+                if 'adminform' in response.context:
+                    print(response.context['adminform'].form.errors.as_text())
+                elif 'form' in response.context and 'errors' in response.context['form']:
+                    print(response.context['form'].form.errors.as_text())
+                elif 'errors' in response.context:
+                    print(response.context['errors'])
                 print(e)
                 raise

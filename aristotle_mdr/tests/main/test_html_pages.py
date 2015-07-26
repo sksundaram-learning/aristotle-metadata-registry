@@ -12,9 +12,6 @@ from aristotle_mdr.tests import utils
 import datetime
 
 class AnonymousUserViewingThePages(TestCase):
-    def setUp(self):
-        from django.test import Client
-        self.client = Client()
     def test_homepage(self):
         home = self.client.get("/")
         self.assertEqual(home.status_code,200)
@@ -45,9 +42,9 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
     def setUp(self):
         super(LoggedInViewConceptPages, self).setUp()
 
-        self.item1 = self.itemType.objects.create(name="Test Item 1 (visible to tested viewers)",description=" ",workgroup=self.wg1,**self.defaults)
-        self.item2 = self.itemType.objects.create(name="Test Item 2 (NOT visible to tested viewers)",description=" ",workgroup=self.wg2,**self.defaults)
-        self.item3 = self.itemType.objects.create(name="Test Item 3 (visible to tested viewers)",description=" ",workgroup=self.wg1,**self.defaults)
+        self.item1 = self.itemType.objects.create(name="Test Item 1 (visible to tested viewers)",definition=" ",workgroup=self.wg1,**self.defaults)
+        self.item2 = self.itemType.objects.create(name="Test Item 2 (NOT visible to tested viewers)",definition=" ",workgroup=self.wg2,**self.defaults)
+        self.item3 = self.itemType.objects.create(name="Test Item 3 (visible to tested viewers)",definition=" ",workgroup=self.wg1,**self.defaults)
 
     def test_su_can_view(self):
         self.login_superuser()
@@ -288,7 +285,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.login_viewer()
         self.assertTrue(perms.user_can_view(self.viewer,self.item1))
 
-        response = self.client.post(reverse('django.contrib.auth.views.login'), {'username': 'vicky', 'password': 'viewer'})
+        response = self.client.post(reverse('friendly_login'), {'username': 'vicky', 'password': 'viewer'})
         self.assertEqual(response.status_code,302)
         self.assertEqual(self.viewer.profile.favourites.count(),0)
 
@@ -309,7 +306,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.logout()
 
         response = self.client.get(reverse('aristotle:toggleFavourite', args=[self.item1.id]))
-        self.assertRedirects(response,reverse('django.contrib.auth.views.login')+"?next="+reverse('aristotle:toggleFavourite', args=[self.item1.id]))
+        self.assertRedirects(response,reverse('friendly_login')+"?next="+reverse('aristotle:toggleFavourite', args=[self.item1.id]))
 
     def test_registrar_can_change_status(self):
         self.login_registrar()
@@ -384,18 +381,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.logout()
 
         response = self.client.get(reverse('aristotle:changeStatus',args=[self.item1.id]))
-        self.assertRedirects(response,reverse('django.contrib.auth.views.login')+"?next="+reverse('aristotle:changeStatus', args=[self.item1.id]))
-
-    def assertRedirects(self,*args,**kwargs):
-        # There is an issue with these failing when we check a response very quickly after changing status
-        # so if the redirect fails, wait and try again
-        try:
-            super(LoggedInViewConceptPages, self).assertRedirects(*args,**kwargs)
-        except AssertionError: # pragma: no cover
-            # This shouldn't fire, so no coverage is needed
-            print("Assertion error, waiting and retrying")
-            utils.wait_for_signal_to_fire(3)
-            super(LoggedInViewConceptPages, self).assertRedirects(*args,**kwargs)
+        self.assertRedirects(response,reverse('friendly_login')+"?next="+reverse('aristotle:changeStatus', args=[self.item1.id]))
 
 class ObjectClassViewPage(LoggedInViewConceptPages,TestCase):
     url_name='objectClass'
@@ -432,9 +418,9 @@ class ValueDomainViewPage(LoggedInViewConceptPages,TestCase):
     def test_anon_cannot_use_value_page(self):
         self.logout()
         response = self.client.get(reverse('aristotle:valueDomain_edit_values',args=[self.item1.id,'permissible']))
-        self.assertRedirects(response,reverse('django.contrib.auth.views.login')+"?next="+reverse('aristotle:valueDomain_edit_values',args=[self.item1.id,'permissible']))
+        self.assertRedirects(response,reverse('friendly_login')+"?next="+reverse('aristotle:valueDomain_edit_values',args=[self.item1.id,'permissible']))
         response = self.client.get(reverse('aristotle:valueDomain_edit_values',args=[self.item1.id,'supplementary']))
-        self.assertRedirects(response,reverse('django.contrib.auth.views.login')+"?next="+reverse('aristotle:valueDomain_edit_values',args=[self.item1.id,'supplementary']))
+        self.assertRedirects(response,reverse('friendly_login')+"?next="+reverse('aristotle:valueDomain_edit_values',args=[self.item1.id,'supplementary']))
 
     def loggedin_user_can_use_value_page(self,value_type,current_item,http_code):
         response = self.client.get(reverse('aristotle:valueDomain_edit_values',args=[current_item.id,value_type]))
@@ -541,7 +527,7 @@ class DataElementDerivationViewPage(LoggedInViewConceptPages,TestCase):
     url_name='dataelementderivation'
     @property
     def defaults(self):
-        return {'derives':models.DataElement.objects.create(name='derivedDE',description="",workgroup=self.wg1)}
+        return {'derives':models.DataElement.objects.create(name='derivedDE',definition="",workgroup=self.wg1)}
     itemType=models.DataElementDerivation
 
 class LoggedInViewUnmanagedPages(utils.LoggedInViewPages):

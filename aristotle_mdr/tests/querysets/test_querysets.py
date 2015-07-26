@@ -1,6 +1,6 @@
 from __future__ import print_function
 from django.contrib.auth.models import User
-from django.test import TestCase
+from django.test import TestCase, TransactionTestCase
 from django.test.utils import setup_test_environment
 from django.utils.translation import ugettext_lazy as _
 
@@ -19,7 +19,9 @@ class CustomConceptQuerySetTest_Slow(object):
         cls.wg_users = []
         cls.ra_users = []
         cls.ras = {}
-        p = "permission_check %s "%str(cls.workgroup_owner_type)
+        user_count = 100
+        #p = "permission_check %s "%str(cls.workgroup_owner_type)
+        p = "perm_chk %s "%str(cls.workgroup_owner_type)
         # Default settings for locked/public
         cls.ras['default'] = models.RegistrationAuthority.objects.create(name=p+"Default RA")
 
@@ -34,7 +36,9 @@ class CustomConceptQuerySetTest_Slow(object):
 
         for key,ra in cls.ras.items():
             role = 'registrar'
-            u = User.objects.create_user(p+role+key,'','user')
+            #u = User.objects.create_user(p+role+key,'','user')
+            user_count +=1
+            u = User.objects.create_user(p+str(user_count),'','user')
             ra.giveRoleToUser(role,u)
             cls.ra_users.append(u)
 
@@ -66,7 +70,9 @@ class CustomConceptQuerySetTest_Slow(object):
                 wg = models.Workgroup.objects.create(name="WG "+prefix,ownership=cls.workgroup_owner_type)
 
                 for role in ['viewer','submitter','steward']:
-                    u = User.objects.create_user(role+prefix,'','user')
+                    #u = User.objects.create_user(role+prefix,'','user')
+                    user_count +=1
+                    u = User.objects.create_user(p+str(user_count),'','user')
                     wg.giveRoleToUser(role,u)
                     cls.wg_users.append(u)
 
@@ -79,7 +85,7 @@ class CustomConceptQuerySetTest_Slow(object):
                 # eg. the cartesian product of the States
                 for states in [s for s in itertools.product(used_choices,repeat=len(keys))]:
                     # we create an item registered with that set of states in a bunch of RAs
-                    item = models.ObjectClass.objects.create(name="Concept %s"%(prefix),description="",workgroup=wg)
+                    item = models.ObjectClass.objects.create(name="Concept %s"%(prefix),definition="",workgroup=wg)
                     print('+', end="")
                     # Then register it
                     for ra,state in zip(keys,states):
@@ -87,6 +93,20 @@ class CustomConceptQuerySetTest_Slow(object):
                         state = state[0]
                         ra.register(item,models.STATES.standard,cls.super_user)
         print("Created this many things to test against:", models.ObjectClass.objects.count())
+
+    @classmethod
+    def tearDownClass(cls):
+        #This stuff gets left in the DB, lets scrap it all.
+        super(CustomConceptQuerySetTest_Slow, cls).tearDownClass()
+
+        cls.super_user.delete()
+        for wg in cls.wgs:
+            for i in wg.items.all():
+                i.delete()
+            wg.delete()
+
+        for i in cls.wg_users+cls.ra_users+cls.ras.values():
+            i.delete()
 
     def test_is_public(self):
         invalid_items = []
@@ -143,7 +163,7 @@ class CustomConceptQuerySetTest_Slow(object):
         self.assertTrue(models.ObjectClass.objects.visible(user).count() == models.ObjectClass.objects.all().count())
         self.assertTrue(models.ObjectClass.objects.editable(user).count() == models.ObjectClass.objects.all().count())
 
-class CustomConceptQuerySetTest_RegistrationOwned_Slow(CustomConceptQuerySetTest_Slow,TestCase):
+class CustomConceptQuerySetTest_RegistrationOwned_Slow(CustomConceptQuerySetTest_Slow,TransactionTestCase):
     workgroup_owner_type = models.WORKGROUP_OWNERSHIP.registry
-class CustomConceptQuerySetTest_RegistryOwned_Slow(CustomConceptQuerySetTest_Slow,TestCase):
+class CustomConceptQuerySetTest_RegistryOwned_Slow(CustomConceptQuerySetTest_Slow,TransactionTestCase):
     workgroup_owner_type = models.WORKGROUP_OWNERSHIP.authority

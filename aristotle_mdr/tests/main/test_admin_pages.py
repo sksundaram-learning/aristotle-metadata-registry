@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
+from django.forms import model_to_dict
 from django.test import TestCase
 from django.test.utils import setup_test_environment
 
@@ -43,7 +44,7 @@ class AdminPage(utils.LoggedInViewPages,TestCase):
         self.assertTrue(wg_nw in new_editor.profile.editable_workgroups.all())
 
         self.logout()
-        response = self.client.post(reverse('django.contrib.auth.views.login'), {'username': 'new_eddie', 'password': 'editor'})
+        response = self.client.post(reverse('friendly_login'), {'username': 'new_eddie', 'password': 'editor'})
         self.assertEqual(response.status_code,302)
 
         t = models.ObjectClass
@@ -138,7 +139,7 @@ class AdminPageForConcept(utils.LoggedInViewPages):
             self.create_items()
 
     def create_items(self):
-        self.item1 = self.itemType.objects.create(name="admin_page_test_oc",description=" ",workgroup=self.wg1,**self.create_defaults)
+        self.item1 = self.itemType.objects.create(name="admin_page_test_oc",definition=" ",workgroup=self.wg1,**self.create_defaults)
 
     def test_registration_authority_inline_not_in_editor_admin_page(self):
         self.login_editor()
@@ -186,7 +187,7 @@ class AdminPageForConcept(utils.LoggedInViewPages):
         # make an item
         response = self.client.get(reverse("admin:%s_%s_add"%(self.itemType._meta.app_label,self.itemType._meta.model_name)))
 
-        data = {'name':"admin_page_test_oc",'description':"test","workgroup":self.wg1.id,
+        data = {'name':"admin_page_test_oc",'definition':"test","workgroup":self.wg1.id,
                     'statuses-TOTAL_FORMS': 0, 'statuses-INITIAL_FORMS': 0 #no substatuses
                 }
         data.update(self.form_defaults)
@@ -260,7 +261,6 @@ class AdminPageForConcept(utils.LoggedInViewPages):
         self.assertEqual(self.wg2.items.count(),before_count)
 
     def test_editor_change_item(self):
-        from django.forms import model_to_dict
         self.login_editor()
         response = self.client.get(reverse("admin:%s_%s_change"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=[self.item1.pk]))
         self.assertResponseStatusCodeEqual(response,200)
@@ -273,12 +273,14 @@ class AdminPageForConcept(utils.LoggedInViewPages):
             'statuses-TOTAL_FORMS': 0, 'statuses-INITIAL_FORMS': 0 #no statuses
         })
         updated_item.update(self.form_defaults)
-        self.assertTrue(self.wg1 in self.editor.profile.myWorkgroups)
+        self.assertTrue(self.wg1 in self.editor.profile.editable_workgroups.all())
 
         self.assertEqual([self.wg1],list(response.context['adminform'].form.fields['workgroup'].queryset))
 
+        self.assertTrue(perms.user_can_edit(self.editor,self.item1))
+        self.assertTrue(self.item1.workgroup in self.editor.profile.editable_workgroups.all())
         response = self.client.post(
-                reverse("admin:%s_%s_change"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=[self.item1.pk]),
+                reverse("admin:%s_%s_change"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=[self.item1.id]),
                 updated_item
                 )
 
@@ -289,10 +291,9 @@ class AdminPageForConcept(utils.LoggedInViewPages):
 
 #deprecated
     def test_supersedes_saves(self):
-        self.item2 = self.itemType.objects.create(name="admin_page_test_oc_2",description=" ",workgroup=self.wg1,**self.create_defaults)
-        self.item3 = self.itemType.objects.create(name="admin_page_test_oc_2",description=" ",workgroup=self.wg1,**self.create_defaults)
+        self.item2 = self.itemType.objects.create(name="admin_page_test_oc_2",definition=" ",workgroup=self.wg1,**self.create_defaults)
+        self.item3 = self.itemType.objects.create(name="admin_page_test_oc_2",definition=" ",workgroup=self.wg1,**self.create_defaults)
 
-        from django.forms import model_to_dict
         self.login_editor()
         response = self.client.get(reverse("admin:%s_%s_change"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=[self.item1.pk]))
         self.assertResponseStatusCodeEqual(response,200)
@@ -311,14 +312,16 @@ class AdminPageForConcept(utils.LoggedInViewPages):
                 reverse("admin:%s_%s_change"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=[self.item1.pk]),
                 updated_item
                 )
+        # Make sure it saves
+        self.assertRedirects(response,reverse("admin:%s_%s_changelist"%(self.itemType._meta.app_label,self.itemType._meta.model_name)))
+
         self.item1 = self.itemType.objects.get(pk=self.item1.pk)
         self.assertTrue(self.item2 in self.item1.supersedes.all())
         self.assertTrue(self.item3 in self.item1.supersedes.all())
 
     def test_superseded_by_saves(self):
-        self.item2 = self.itemType.objects.create(name="admin_page_test_oc_2",description=" ",workgroup=self.wg1,**self.create_defaults)
+        self.item2 = self.itemType.objects.create(name="admin_page_test_oc_2",definition=" ",workgroup=self.wg1,**self.create_defaults)
 
-        from django.forms import model_to_dict
         self.login_editor()
         response = self.client.get(reverse("admin:%s_%s_change"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=[self.item1.pk]))
         self.assertResponseStatusCodeEqual(response,200)
@@ -337,6 +340,10 @@ class AdminPageForConcept(utils.LoggedInViewPages):
                 reverse("admin:%s_%s_change"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=[self.item1.pk]),
                 updated_item
                 )
+
+        # Make sure it saves
+        self.assertRedirects(response,reverse("admin:%s_%s_changelist"%(self.itemType._meta.app_label,self.itemType._meta.model_name)))
+
         self.item1 = self.itemType.objects.get(pk=self.item1.pk)
         self.assertTrue(self.item2 == self.item1.superseded_by)
 
@@ -369,7 +376,7 @@ class DataElementDerivationAdminPage(AdminPageForConcept,TestCase):
     def setUp(self):
         super(DataElementDerivationAdminPage, self).setUp(instant_create=False)
         self.ded_wg = models.Workgroup.objects.create(name="Derived WG")
-        self.derived_de = models.DataElement.objects.create(name='derivedDE',description="",workgroup=self.ded_wg)
+        self.derived_de = models.DataElement.objects.create(name='derivedDE',definition="",workgroup=self.ded_wg)
         self.ra.register(self.derived_de,models.STATES.standard,self.registrar)
         self.create_defaults = {'derives':self.derived_de}
         self.form_defaults = {'derives':self.derived_de.id}

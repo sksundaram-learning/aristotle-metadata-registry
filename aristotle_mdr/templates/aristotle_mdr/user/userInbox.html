@@ -1,5 +1,5 @@
 {% extends "aristotle_mdr/user/userHome.html" %}
-{% load notifications_tags %}
+{% load notifications_tags i18n %}
 
 {% block collapse-link%}
     <i class="fa fa-envelope fa-fw"></i> Notifications</a>
@@ -9,15 +9,9 @@
 {% endblock %}
 
 {% block page %}
-<h1>{% block title %}Notifications{% endblock %}</h1>
-<aside>
-<section id="members">
-</section>
-</aside>
-
+<h1>{% block title %}Notifications {% if folder %}- {{ folder }}{% endif %}{% endblock %}</h1>
 <a class="btn btn-default" href="{% url 'notifications:mark_all_as_read' %}"><i class="fa fa-envelope-o"></i> Mark all as read</a>
 
-<h1>{{ folder }}</h1>
 <table class="notifications table">
   <thead>
       <tr>
@@ -44,23 +38,32 @@
             {% endif %}
         </td>
         <td>
-            {% if 'comment' in notice.verb %}
-                {{ notice.actor }}
+            {% if notice.actor == notice.target %}
+            {% elif notice.actor.get_absolute_url %}
+                <a href="{{notice.actor.get_absolute_url}}">{{ notice.actor }}</a>
             {% else %}
-                Someone
+                {{ notice.actor }}
             {% endif %}
+
             {{ notice.verb }}
-            {% if notice.target %} :
-                {% if 'item' in notice.verb %}
-                    <a href="{% url 'aristotle:item' notice.target.id %}">{{ notice.target.name }}</a>
-                {% elif 'comment' in notice.verb %}
-                    <a href="{% url 'aristotle:discussionsPost' notice.target.id %}">{{ notice.target.title }}</a>
+
+            {% if notice.target %}
+                {% if notice.target.get_absolute_url %}
+                    <a href="{{notice.target.get_absolute_url}}">{{ notice.target }}</a>
+                {% else %}
+                    {{ notice.target }}
                 {% endif %}
             {% endif %}
-            {% if notice.description %}
-            <p>{{ notice.description|linebreaksbr }}</p>
+
+            {% if notice.action_object %}
+                {% trans "in" %}
+                {% if notice.action_object.get_absolute_url %}
+                    <a href="{{notice.target.get_absolute_url}}">{{ notice.action_object }}</a>
+                {% else %}
+                    {{ notice.action_object }}
+                {% endif %}
             {% endif %}
-        </td>
+            </td>
         <td>{{ notice.timesince }} ago</td>
         <td>
             <a href="{% url 'notifications:delete' slug=notice.slug %}?next={{ request.path }}">

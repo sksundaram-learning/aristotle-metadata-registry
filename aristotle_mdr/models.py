@@ -14,13 +14,13 @@ from django.utils.translation import ugettext_lazy as _
 from model_utils.managers import InheritanceManager, InheritanceQuerySet
 from model_utils.models import TimeStampedModel
 from model_utils import Choices, FieldTracker
-from notifications import notify
 
 import reversion
 
 import datetime
 from ckeditor.fields import RichTextField
 from aristotle_mdr import perms
+from aristotle_mdr import messages
 from aristotle_mdr.utils import url_slugify_concept, url_slugify_workgroup
 from model_utils.fields import AutoLastModifiedField
 
@@ -44,9 +44,7 @@ VERY_RECENTLY_SECONDS = 15
 
 class baseAristotleObject(TimeStampedModel):
     name = models.TextField(help_text=_("The primary name used for human identification purposes."))
-    #TODO: Below needs to be changed to 'definition' but that change will break a lot of stuff. See also value_description
-    # At the moment, this is just impacting the database and relations, as the UI uses the name of the field 'definition'
-    description = RichTextField(_('definition'),help_text=_("Representation of a concept by a descriptive statement which serves to differentiate it from related concepts"))
+    definition = RichTextField(_('definition'),help_text=_("Representation of a concept by a descriptive statement which serves to differentiate it from related concepts"))
     objects = InheritanceManager()
 
     class Meta:
@@ -65,7 +63,7 @@ class baseAristotleObject(TimeStampedModel):
 
     def description_stub(self):
        from django.utils.html import strip_tags
-       d = strip_tags(self.description)
+       d = strip_tags(self.definition)
        if len(d) > 150:
            d = d[0:150] + "..."
        return d
@@ -401,7 +399,7 @@ class DiscussionComment(discussionAbstract):
 
 #class ReferenceDocument(models.Model):
 #    url = models.URLField()
-#    description = models.TextField()
+#    definition = models.TextField()
 #    object = models.ForeignKey(managedObject)
 
 class ConceptQuerySet(InheritanceQuerySet):
@@ -759,8 +757,7 @@ class ConceptualDomain(concept):
     #no reason to model them separately.
 
     template = "aristotle_mdr/concepts/conceptualDomain.html"
-    #TODO: This needs to be changed to just 'description'
-    value_description = models.TextField(_('description'),blank=True,
+    description = models.TextField(_('description'),blank=True,
             help_text='Description or specification of a rule, reference, or range for a set of all value meanings for a Conceptual Domain')
 
 class ValueMeaning(aristotleComponent):
@@ -796,8 +793,7 @@ class ValueDomain(concept):
     unit_of_measure = models.ForeignKey(UnitOfMeasure,blank=True,null=True)
 
     conceptual_domain = models.ForeignKey(ConceptualDomain,blank=True,null=True)
-    #TODO: This needs to be changed to just 'description'
-    value_description = models.TextField(_('description'),blank=True,
+    description = models.TextField(_('description'),blank=True,
             help_text='Description or specification of a rule, reference, or range for a set of all values for a Value Domain')
     #Below is a dirty, dirty hack that came from re-designing permissible values
     # TODO: Fix references to permissible and supplementary values
@@ -918,8 +914,8 @@ class PossumProfile(models.Model):
         if self.user.is_superuser:
             return Workgroup.objects.all()
         else:
-            return (self.user.submitter_in.all() | self.user.steward_in.all()).distinct().filter(archived=False)
-
+            #return (self.user.submitter_in.all() | self.user.steward_in.all()).distinct().filter(archived=False)
+            return Workgroup.objects.filter(archived=False).filter(Q(submitters__pk=self.user.pk) | Q(stewards__pk=self.user.pk))
 
     @property
     def is_registrar(self):
@@ -970,7 +966,7 @@ post_save.connect(create_user_profile, sender=User)
 def defaultData():
     system = User.objects.get(username="aristotle")
     iso ,c = RegistrationAuthority.objects.get_or_create(
-                name="ISO/IEC",description="ISO/IEC")
+                name="ISO/IEC",definition="ISO/IEC")
     iso_wg,c = Workgroup.objects.get_or_create(name="ISO/IEC Workgroup")
     dataTypes = [
        ("Boolean","A binary value expressed using a string (e.g. true or false)."),
@@ -981,7 +977,7 @@ def defaultData():
        ]
     print("making datatypes:  ",end="")
     for name,desc in dataTypes:
-        dt,created = DataType.objects.get_or_create(name=name,description=desc,workgroup=iso_wg)
+        dt,created = DataType.objects.get_or_create(name=name,definition=desc,workgroup=iso_wg)
         iso.register(dt,STATES.standard,system,datetime.date(2000,1,1))
         print("{name} ".format(name=name),end="")
     print("")
@@ -1008,23 +1004,13 @@ def defaultData():
         ]),
     ]
     for measure,units in unitsOfMeasure:
-        m,created = Measure.objects.get_or_create(name=measure,description="")
+        m,created = Measure.objects.get_or_create(name=measure,definition="")
         print("making measure: {name}".format(name=measure),end="")
         print("  : units of measure:  ",end="")
         for name,symbol in units:
             u,created = UnitOfMeasure.objects.get_or_create(name=name,symbol=symbol,measure=m,workgroup=sys_wg)
             print("{name}".format(name=name),end="")
         print("")
-
-def favourite_updated(recipient,obj):
-    notify.send(obj, recipient=recipient, verb="changed a favourited item",
-                comment=_('A favourite item (%(item)s) has been changed.') % {'item': obj})
-def workgroup_item_updated(recipient,obj):
-    notify.send(obj, recipient=recipient, verb="motified item in workgroup", target=obj.workgroup,
-                comment=_('An item (%(item)s) has been updated in the workgroup "%(workgroup)s"') % {'item':obj, 'workgroup': obj.workgroup})
-def workgroup_item_new(recipient,obj):
-    notify.send(obj, recipient=recipient, verb="new item in workgroup", target=obj.workgroup,
-                comment=_('An new item (%(item)s) is in the workgroup "%(workgroup)s"') % {'item':obj, 'workgroup': obj.workgroup})
 
 @receiver(post_save)
 def concept_saved(sender, instance, created, **kwargs):
@@ -1037,12 +1023,12 @@ def concept_saved(sender, instance, created, **kwargs):
         # Don't run during loaddata
         return
     for p in instance.favourited_by.all():
-        favourite_updated(recipient=p.user,obj=instance)
+        messages.favourite_updated(recipient=p.user,obj=instance)
     for user in instance.workgroup.viewers.all():
         if created:
-            workgroup_item_new(recipient=user,obj=instance)
+            messages.workgroup_item_new(recipient=user,obj=instance)
         else:
-            workgroup_item_updated(recipient=user,obj=instance)
+            messages.workgroup_item_updated(recipient=user,obj=instance)
     try:
         # This will fail during first load, and if admins delete aristotle.
         system = User.objects.get(username="aristotle")
@@ -1070,8 +1056,7 @@ def new_comment_created(sender, **kwargs):
         return # We don't need to notify a topic poster of an edit.
     if comment.author == post.author:
         return # We don't need to tell someone they replied to themselves
-    notify.send(comment.author, recipient=post.author, verb="comment on post", target=post,
-                comment=_('%(commenter)s) commented on the post "%(post)s"') % {'commenter':comment.author, 'post':post.title})
+    messages.new_comment_created(comment)
 
 @receiver(post_save,sender=DiscussionPost)
 def new_post_created(sender, **kwargs):
@@ -1081,12 +1066,9 @@ def new_post_created(sender, **kwargs):
         return
     if not kwargs['created']:
         return # We don't need to notify a topic poster of an edit.
-    for user in post.workgroup.viewers.all():
-        if user == post.author:
-            return # We don't need to tell someone they made a post
-        notify.send(post.author, recipient=post.author, verb="made a post", target=post.workgroup,
-                    comment=_('%(op)s made a new post "%(post)s" in the workgroup "%(workgroup)s" ')
-                    % {'op':post.author, 'post':post.title, 'workgroup':post.workgroup})
+    for user in post.workgroup.members.all():
+        if user != post.author:
+            messages.new_post_created(post,user)
 
 # Loads example data, this is never used in formal testing.
 def exampleData(): # pragma: no cover
@@ -1102,7 +1084,7 @@ def exampleData(): # pragma: no cover
         ]),
     ]
     for measure,units in unitsOfMeasure:
-        m,created = Measure.objects.get_or_create(name=measure,description="")
+        m,created = Measure.objects.get_or_create(name=measure,definition="")
         print("making measure: {name}".format(name=measure),end="")
         print("  : units of measure:  ",end="")
         for name,symbol in units:
@@ -1135,56 +1117,56 @@ def exampleData(): # pragma: no cover
         user.save()
 
     oldoc,c  = ObjectClass.objects.get_or_create(name="Person",
-            workgroup=pw,description="A human being, whether man or woman.")
+            workgroup=pw,definition="A human being, whether man or woman.")
     oc,c  = ObjectClass.objects.get_or_create(name="Person",
-            workgroup=pw,description="A human being, whether man, woman or child.")
+            workgroup=pw,definition="A human being, whether man, woman or child.")
     oc.synonyms = "People"
     oc.readyToReview = True
     oc.save()
     oldoc.superseded_by = oc
     oldoc.save()
     p,c   = Property.objects.get_or_create(name="Age",
-            workgroup=pw,description="The length of life or existence.")
+            workgroup=pw,definition="The length of life or existence.")
     dec,c = DataElementConcept.objects.get_or_create(name="Person-Age",
-            workgroup=pw,description="The age of the person.",
+            workgroup=pw,definition="The age of the person.",
             objectClass=oc,property=p
             )
     dec,c = DataElementConcept.objects.get_or_create(name="Person-Age",
-            workgroup=pw,description="The age of the person.",
+            workgroup=pw,definition="The age of the person.",
             objectClass=oc,property=p
             )
     W,c   = Property.objects.get_or_create(name="Weight",
-            workgroup=pw,description="The weight of an object.")
+            workgroup=pw,definition="The weight of an object.")
     H,c   = Property.objects.get_or_create(name="Height",
-            workgroup=pw,description="The height of an object, usually measured from the ground to its highest point.")
+            workgroup=pw,definition="The height of an object, usually measured from the ground to its highest point.")
     WW,c = DataElementConcept.objects.get_or_create(name="Person-Weight",
-            workgroup=pw,description="The weight of the person.",
+            workgroup=pw,definition="The weight of the person.",
             objectClass=oc,property=W
             )
     HH,c = DataElementConcept.objects.get_or_create(name="Person-Height",
-            workgroup=pw,description="The height of the person.",
+            workgroup=pw,definition="The height of the person.",
             objectClass=oc,property=H
             )
 
     vd,c   = ValueDomain.objects.get_or_create(name="Total years N[NN]",
-            workgroup=pw,description="Total number of completed years.",
+            workgroup=pw,definition="Total number of completed years.",
             format = "X[XX]" ,
             maximum_length = 3,
             unit_of_measure = UnitOfMeasure.objects.filter(name__iexact='Week').first(),
             data_type = DataType.objects.filter(name__iexact='Number').first(),
             )
     de,c = DataElement.objects.get_or_create(name="Person-age, total years N[NN]",
-            workgroup=pw,description="The age of the person in (completed) years at a specific point in time.",
+            workgroup=pw,definition="The age of the person in (completed) years at a specific point in time.",
             dataElementConcept=dec,valueDomain=vd
             )
     p,c   = Property.objects.get_or_create(name="Sex",
-            workgroup=pw,description="A gender.")
+            workgroup=pw,definition="A gender.")
     dec,c = DataElementConcept.objects.get_or_create(name="Person-Sex",
-            workgroup=pw,description="The sex of the person.",
+            workgroup=pw,definition="The sex of the person.",
             objectClass=oc,property=p
             )
     vd,c   = ValueDomain.objects.get_or_create(name="Sex Code",
-            workgroup=pw,description="A code for sex.",
+            workgroup=pw,definition="A code for sex.",
             format = "X" ,
             maximum_length = 3,
             unit_of_measure = UnitOfMeasure.objects.filter(name__iexact='Week').first(),
@@ -1194,7 +1176,7 @@ def exampleData(): # pragma: no cover
         codeVal = PermissibleValue(value=val,meaning=mean,valueDomain=vd,order=1)
         codeVal.save()
     de,c = DataElement.objects.get_or_create(name="Person-sex, Code N",
-            workgroup=pw,description="The sex of the person with a code.",
+            workgroup=pw,definition="The sex of the person with a code.",
             )
     de.dataElementConcept=dec
     de.valueDomain=vd
@@ -1202,9 +1184,9 @@ def exampleData(): # pragma: no cover
 
     print("Configuring registration authority")
     ra,c = RegistrationAuthority.objects.get_or_create(
-                name="Welfare",description="Welfare Authority")
+                name="Welfare",definition="Welfare Authority")
     ra,c = RegistrationAuthority.objects.get_or_create(
-                name="Health",description="Health Authority")
+                name="Health",definition="Health Authority")
     users = [('reggie','Registrar'),
             ]
     pw.registrationAuthorities.add(ra)

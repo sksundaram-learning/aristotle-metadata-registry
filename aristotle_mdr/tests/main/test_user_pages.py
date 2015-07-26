@@ -73,10 +73,10 @@ class UserHomePages(utils.LoggedInViewPages,TestCase):
 
     def test_registrar_has_valid_items_in_ready_to_review(self):
 
-        item1 = models.ObjectClass.objects.create(name="Test Item 1",description=" ",workgroup=self.wg1)
-        item2 = models.ObjectClass.objects.create(name="Test Item 2",description=" ",workgroup=self.wg2)
-        item3 = models.ObjectClass.objects.create(name="Test Item 3",description=" ",workgroup=self.wg1,readyToReview=True)
-        item4 = models.ObjectClass.objects.create(name="Test Item 4",description=" ",workgroup=self.wg2,readyToReview=True)
+        item1 = models.ObjectClass.objects.create(name="Test Item 1",definition=" ",workgroup=self.wg1)
+        item2 = models.ObjectClass.objects.create(name="Test Item 2",definition=" ",workgroup=self.wg2)
+        item3 = models.ObjectClass.objects.create(name="Test Item 3",definition=" ",workgroup=self.wg1,readyToReview=True)
+        item4 = models.ObjectClass.objects.create(name="Test Item 4",definition=" ",workgroup=self.wg2,readyToReview=True)
 
         self.login_registrar()
 
@@ -105,6 +105,17 @@ class UserHomePages(utils.LoggedInViewPages,TestCase):
         response = self.client.get(reverse('aristotle:userAdminStats',))
         self.assertEqual(response.status_code,200)
         self.logout()
+
+    def test_login_redirects(self):
+        response = self.client.get("/login")
+        self.assertEqual(response.status_code,200)
+
+        self.login_superuser()
+        response = self.client.get("/login")
+        self.assertRedirects(response,reverse('aristotle:userHome'))
+
+        response = self.client.get("/login?next="+reverse('aristotle:userFavourites'))
+        self.assertRedirects(response,reverse('aristotle:userFavourites'))
 
 class UserDashRecentItems(utils.LoggedInViewPages,TestCase):
     def setUp(self):
@@ -136,7 +147,7 @@ class UserDashRecentItems(utils.LoggedInViewPages,TestCase):
         step_2_data = {
             wizard_form_name+'-current_step': 'results',
             'results-name':"Test Item",
-            'results-description':"Test Description",
+            'results-definition':"Test Definition",
             'results-workgroup':self.wg1.pk
             }
         response = self.client.post(wizard_url, step_2_data)

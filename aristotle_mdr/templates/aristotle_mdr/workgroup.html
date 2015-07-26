@@ -61,7 +61,7 @@
 
 <div class="col-sm-8">
     <div>
-        {{ item.description | safe }}
+        {{ workgroup.definition | safe }}
     </div>
     <h2>Details</h2>
     <dl>
@@ -109,7 +109,7 @@
 
     <h2>Recent conversations</h2>
     <a href="{% url 'aristotle:discussionsWorkgroup' item.id %}">View all posts.</a>
-    {% include 'aristotle_mdr/discussions/discussion_list.html' with discussions=item.discussionpost_set.all|slice:":5" %}
+    {% include 'aristotle_mdr/discussions/discussion_list.html' with discussions=item.discussions.all|slice:":5" %}
 
     </div>
 </div>

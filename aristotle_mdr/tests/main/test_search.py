@@ -32,7 +32,7 @@ class TestSearch(utils.LoggedInViewPages,TestCase):
         self.xmen_wg.save()
 
         self.item_xmen = [
-            models.ObjectClass.objects.create(name=t,description="known xman",workgroup=self.xmen_wg,readyToReview=True)\
+            models.ObjectClass.objects.create(name=t,definition="known xman",workgroup=self.xmen_wg,readyToReview=True)\
             for t in xmen.split() ]
         for item in self.item_xmen:
             registered = self.ra.register(item,models.STATES.standard,self.registrar)
@@ -57,7 +57,7 @@ class TestSearch(utils.LoggedInViewPages,TestCase):
 
     def test_search_delete_signal(self):
         self.login_superuser()
-        cable = models.ObjectClass.objects.create(name="cable",description="known xman",workgroup=self.xmen_wg,readyToReview=True)
+        cable = models.ObjectClass.objects.create(name="cable",definition="known xman",workgroup=self.xmen_wg,readyToReview=True)
         self.ra.register(cable,models.STATES.standard,self.registrar)
         cable.save()
         self.assertTrue(cable.is_public())
@@ -79,14 +79,14 @@ class TestSearch(utils.LoggedInViewPages,TestCase):
 
     def test_registrar_search(self):
         self.logout()
-        response = self.client.post(reverse('django.contrib.auth.views.login'),
+        response = self.client.post(reverse('friendly_login'),
                     {'username': 'stryker', 'password': 'mutantsMustDie'})
 
         self.assertEqual(response.status_code,302) # logged in
         self.assertTrue(perms.user_is_registrar(self.registrar,self.ra))
 
         dp = models.ObjectClass.objects.create(name="deadpool",
-                    description="not really an xman, no matter how much he tries",
+                    definition="not really an xman, no matter how much he tries",
                     workgroup=self.xmen_wg,readyToReview=False)
         dp = models.ObjectClass.objects.get(pk=dp.pk) # Un-cache
         self.assertFalse(perms.user_can_view(self.registrar,dp))
@@ -114,7 +114,7 @@ class TestSearch(utils.LoggedInViewPages,TestCase):
 
     def test_registrar_search_after_adding_new_ra_to_workgroup(self):
         self.logout()
-        response = self.client.post(reverse('django.contrib.auth.views.login'),
+        response = self.client.post(reverse('friendly_login'),
                     {'username': 'stryker', 'password': 'mutantsMustDie'})
 
         steve_rogers = models.ObjectClass.objects.get(name="captainAmerica")
@@ -149,7 +149,7 @@ class TestSearch(utils.LoggedInViewPages,TestCase):
         self.viewer = User.objects.create_user('charles.xavier','charles@schoolforgiftedyoungsters.edu','equalRightsForAll')
         self.weaponx_wg = models.Workgroup.objects.create(name="WeaponX")
 
-        response = self.client.post(reverse('django.contrib.auth.views.login'),
+        response = self.client.post(reverse('friendly_login'),
                     {'username': 'charles.xavier', 'password': 'equalRightsForAll'})
 
         self.assertEqual(response.status_code,302) # logged in
@@ -160,7 +160,7 @@ class TestSearch(utils.LoggedInViewPages,TestCase):
 
         #Create Deadpool in Weapon X workgroup
         dp = models.ObjectClass.objects.create(name="deadpool",
-                    description="not really an xman, no matter how much he tries",
+                    definition="not really an xman, no matter how much he tries",
                     workgroup=self.weaponx_wg,readyToReview=False)
         dp = models.ObjectClass.objects.get(pk=dp.pk) # Un-cache
         self.assertFalse(perms.user_can_view(self.viewer,dp))
@@ -218,9 +218,6 @@ class TestTokenSearch(TestCase):
         import haystack
         haystack.connections.reload('default')
 
-        from django.test import Client
-
-        self.client = Client()
         self.ra = models.RegistrationAuthority.objects.create(name="Kelly Act")
         self.registrar = User.objects.create_user('stryker','william.styker@weaponx.mil','mutantsMustDie')
         self.ra.giveRoleToUser('registrar',self.registrar)
@@ -230,10 +227,10 @@ class TestTokenSearch(TestCase):
         self.xmen_wg.save()
 
         self.item_xmen = [
-            models.ObjectClass.objects.create(name=t,version="0.%d.0"%(v+1),description="known x-man",workgroup=self.xmen_wg,readyToReview=True)
+            models.ObjectClass.objects.create(name=t,version="0.%d.0"%(v+1),definition="known x-man",workgroup=self.xmen_wg,readyToReview=True)
             for v,t in enumerate(xmen.split()) ]
         self.item_xmen.append(
-            models.Property.objects.create(name="Power",description="What power a mutant has?",workgroup=self.xmen_wg,readyToReview=True)
+            models.Property.objects.create(name="Power",definition="What power a mutant has?",workgroup=self.xmen_wg,readyToReview=True)
             )
 
         for item in self.item_xmen:

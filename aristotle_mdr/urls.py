@@ -6,11 +6,13 @@ autocomplete_light.autodiscover()
 from django.conf.urls import patterns, include, url
 from django.contrib.auth.views import password_reset
 from django.contrib import admin
+from django.views.generic.base import RedirectView
+from aristotle_mdr.views.user_pages import friendly_redirect_login
 admin.autodiscover()
 
 urlpatterns = patterns('',
     # Examples:
-    url(r'^login/?$', 'django.contrib.auth.views.login'),
+    url(r'^login/?$', friendly_redirect_login,name='friendly_login'),
     url(r'^logout/?$', 'django.contrib.auth.views.logout',
         {'next_page': '/'}),
     url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
@@ -37,6 +39,8 @@ urlpatterns = patterns('',
     (r'^user/password/done/$',
         'django.contrib.auth.views.password_reset_complete'),
 
-    )
-
+    url(r'^account/password/?$', RedirectView.as_view(url='account/home/', permanent=True)),
+    url(r'^account/password/change/?$', 'django.contrib.auth.views.password_change', name='password_change'),
+    url(r'^account/password/change/done/?$', 'django.contrib.auth.views.password_change_done', name='password_change_done'),
+)
 handler403 = 'aristotle_mdr.views.unauthorised'
