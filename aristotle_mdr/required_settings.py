@@ -43,9 +43,9 @@ ALLOWED_HOSTS = []
 SOUTH_TESTS_MIGRATE = False
 
 INSTALLED_APPS = (
+    'aristotle_mdr', #Comes before grappelli for overloads
     'grappelli',
     'haystack',
-    'aristotle_mdr',
     'django.contrib.admin',
     'django.contrib.admindocs',
     'django.contrib.auth',
