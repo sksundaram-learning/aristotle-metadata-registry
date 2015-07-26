@@ -1,7 +1,7 @@
 {% load i18n %}
 {% load bootstrap3 %}
+{% load notifications_tags %}
 {% load firstof from future %}{# Only required for Django<=1.8 #}
-
 <a class="sr-only" accesskey="j" href="#content">Skip to content</a>
 <a class="sr-only" accesskey="l" href="{% url 'aristotle:accessibility' %}#accesskeys">Learn about the access keys available for {{ config.SITE_NAME }}</a>
 <nav class="main navbar navbar-inverse">
@@ -133,8 +133,9 @@
                     </li>
                 </ul>
             </li>
-            <li>
-                <a href="{% url 'notifications:all' %}">
+            <li class="dropdown">
+                <a href="{% url 'notifications:all' %}"
+                    class="dropdown-toggle" data-toggle="dropdown" title="{% trans 'Show recent notifications' %}">
                     {% if user.notifications.unread %}
                     <span class="notify" title="{% trans 'New notifications' %}"></span>
                     <span class="visible-xs-inline">{% trans 'New notifications' %}</span>
@@ -142,7 +143,9 @@
                     <span class="no-notify" title="{% trans 'No unread notifications' %}"></span>
                     <span class="visible-xs-inline">{% trans 'No unread notifications' %}</span>
                     {% endif %}
+                    {% live_notify_badge classes="badge" %}
                 </a>
+                {% live_notify_list classes="dropdown-menu" %}
             </li>
             <li>
                 <a href="{% url 'django.contrib.auth.views.logout' %}?next={{request.path}}" title="{% trans 'Log out'%}">
