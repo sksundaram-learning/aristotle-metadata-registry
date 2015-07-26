@@ -27,8 +27,8 @@
     {% block extrastyle %}{% endblock %}
     <!-- JAVASCRIPTS -->
     {% block javascripts %}
-        <script type="text/javascript">window.__admin_media_prefix__ = "{% filter escapejs %}{% static "grappelli/" %}{% endfilter %}";</script>
-        <script type="text/javascript">window.__admin_utc_offset__ = "{% filter escapejs %}{% now "Z" %}{% endfilter %}";</script>
+        <script type="text/javascript">window.__admin_media_prefix__ = "{% filter escapejs %}{% static 'grappelli/' %}{% endfilter %}";</script>
+        <script type="text/javascript">window.__admin_utc_offset__ = "{% filter escapejs %}{% now 'Z' %}{% endfilter %}";</script>
         <script type="text/javascript" charset="utf-8">
             // GLOBALS
             var grappelli = {},
@@ -85,7 +85,7 @@
                             {% block admin_title %}
                                 <h1 id="grp-admin-title">
                                     <a href="{% url 'aristotle:home' %}" id="logo">
-                                        <img height="48px" src="{{ config.SITE_BRAND }}" alt="{{ config.SITE_NAME }}" title="{{ config.SITE_NAME }}">
+                                        <img height="48px" src="{{ config.SITE_BRAND }}" alt="{{ config.SITE_NAME }}" title="{% trans 'Return to the main site' %} - {{ config.SITE_NAME }}">
                                     </a>
                                     {% if grappelli_admin_title %}
                                         {{ grappelli_admin_title }}
@@ -102,11 +102,12 @@
                                             <!-- Documentation -->
                                             {% url 'django-admindocs-docroot' as docsroot %}
                                             {% if docsroot %}
-                                                <li><a href="{{ docsroot }}">{% trans 'Documentation' %}</a></li>
+                                                <li><a href="{{ docsroot }}" title={% trans 'Browse live documentation' %}>{% trans 'Documentation' %}</a></li>
                                             {% endif %}
                                             <!-- Username -->
                                             <li class="grp-user-options-container grp-collapse grp-closed {% if request.session.original_user %}grp-switch-user-is-target{% endif %}">
-                                                <a href="javascript://" class="user-options-handler grp-collapse-handler {% if request.session.original_user %}grp-switch-user-is-target{% else %}grp-switch-user-is-original{% endif %}">
+                                                <a href="javascript://" class="user-options-handler grp-collapse-handler {% if request.session.original_user %}grp-switch-user-is-target{% else %}grp-switch-user-is-original{% endif %}"
+                                                    title="{% trans 'Open user menu' %}">
                                                     {% if user.is_superuser %}
                                                         <i id="user-icon" class="fa fa-user-md fa-lg"></i>
                                                     {% else %}
