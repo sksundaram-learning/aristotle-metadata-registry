@@ -34,7 +34,7 @@ env:
 
 before_install:
   - npm install -g less@1.7.4 # Required for static-precompiler
-  - sudo pip install codecov
+  - pip install codecov
 before_script:
 #  - mysql -e 'create database aristotle_test_db;'
   - psql -c 'create database aristotle_test_db;' -U postgres
@@ -55,3 +55,10 @@ script:
 after_success:
   - coveralls
   - codecov
+
+# Lets run on the new infrastructure
+sudo: false
+
+addons:
+    code_climate:
+        repo_token: ac63d774ebdd641ef502acf1588b36248726a28a50e4e1f4ba4295a157477f54
