@@ -56,6 +56,8 @@ after_success:
   - coveralls
   - codecov
 
+# Lets run on the new infrastructure
+sudo: false
 addons:
     code_climate:
         repo_token: ac63d774ebdd641ef502acf1588b36248726a28a50e4e1f4ba4295a157477f54
