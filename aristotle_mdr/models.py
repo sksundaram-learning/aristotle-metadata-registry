@@ -730,7 +730,7 @@ class Property(concept):
         verbose_name_plural = "Properties"
 
 class Measure(unmanagedObject):
-    pass
+    template="aristotle_mdr/unmanaged/measure.html"
 
 class UnitOfMeasure(concept):
     """actual units in which the associated values are measured

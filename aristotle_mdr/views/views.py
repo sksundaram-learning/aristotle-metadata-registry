@@ -130,6 +130,20 @@ def download(request,downloadType,iid=None):
 def concept(*args,**kwargs):
     return render_if_user_can_view(MDR._concept,*args,**kwargs)
 
+def measure(request,iid,model_slug,name_slug):
+    item = get_object_or_404(MDR.Measure,pk=iid).item
+    template = select_template([item.template])
+    context = RequestContext(request,
+        {'item':item,
+         #'view':request.GET.get('view','').lower(),
+         #'last_edit': last_edit
+            }
+        )
+
+    return HttpResponse(template.render(context))
+
+    #return render_if_user_can_view(MDR.Measure,*args,**kwargs)
+
 @cache_per_item_user(ttl=300, cache_post=False)
 def render_if_condition_met(request,condition,objtype,iid,model_slug=None,name_slug=None,subpage=None):
     item = get_object_or_404(objtype,pk=iid).item
