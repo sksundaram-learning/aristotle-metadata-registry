@@ -247,5 +247,7 @@ register_concept(MDR.DataElementDerivation,
 
 register_concept(MDR.ConceptualDomain)
 register_concept(MDR.DataType)
-register_concept(MDR.UnitOfMeasure)
 
+register_concept(MDR.UnitOfMeasure,
+    extra_fieldsets = [('Measures', {'fields': ['measure']}),]
+    )
