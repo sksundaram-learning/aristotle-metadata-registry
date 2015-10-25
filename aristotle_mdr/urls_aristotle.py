@@ -58,6 +58,8 @@ urlpatterns = patterns('aristotle_mdr.views',
     url(r'^item/(?P<iid>\d+)/registrationHistory/?$', views.registrationHistory, name='registrationHistory'),
     url(r'^item/(?P<iid>\d+)(?:\/.*)?$', views.concept, name='item'), # Catch every other 'item' URL and throw it for a redirect
 
+    url(r'^unmanaged/measure/(?P<iid>\d+)(?:\/(?P<model_slug>\w+)\/(?P<name_slug>.+))?/?$', views.measure, name='measure'),
+
     #url(r'^create/?$', views.item, name='item'),
     url(r'^create/?$', views.create_list, name='createList'),
     url(r'^create/(aristotle_mdr/)?dataelementconcept$', views.wizards.DataElementConceptWizard.as_view(), name='createDataElementConcept'),

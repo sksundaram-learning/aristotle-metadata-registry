@@ -551,6 +551,15 @@ class LoggedInViewUnmanagedPages(utils.LoggedInViewPages):
         response = self.client.get(self.get_page(self.item1))
         self.assertEqual(response.status_code,200)
 
+class MeasureViewPage(LoggedInViewUnmanagedPages,TestCase):
+    url_name='measure'
+    itemType=models.Measure
+
+    def setUp(self):
+        super(MeasureViewPage, self).setUp()
+
+        self.item2 = models.UnitOfMeasure.objects.create(name="OC1",workgroup=self.wg1,measure=self.item1,**self.defaults)
+
 class RegistrationAuthorityViewPage(LoggedInViewUnmanagedPages,TestCase):
     url_name='registrationAuthority'
     itemType=models.RegistrationAuthority

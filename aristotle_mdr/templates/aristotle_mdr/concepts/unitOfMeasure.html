@@ -5,7 +5,11 @@
 {% block asideContent %}
 <dt>Measures</dt>
 <dd>
+    {% if item.measure %}
     {{ item.measure.name }}
+    {% else %}
+    <em>None</em>
+    {% endif %}
 </dd>
 {% if item.symbol %}
 <dt>Symbol</dt>
@@ -15,11 +19,12 @@
 {% endif %}
 {% endblock %}
 {% block objSpecific %}
-
-    <h3>Measure information - {{ item.measure.name }}</h3>
+    {% if item.measure %}
+    <h3>Measure information - <a href="{% url 'aristotle:measure' item.measure.pk %} ">{{ item.measure.name }}</a></h3>
     <div>
         {{ item.measure.definition|safe }}
     </div>
+    {% endif %}
 
 
     {% if item.valuedomain_set.all %}
