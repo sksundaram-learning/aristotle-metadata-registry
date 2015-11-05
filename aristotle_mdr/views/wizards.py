@@ -1,4 +1,4 @@
-from aristotle_mdr import models as MDR
+﻿from aristotle_mdr import models as MDR
 from aristotle_mdr import forms as MDRForms
 from aristotle_mdr.utils import url_slugify_concept
 
@@ -114,6 +114,9 @@ class ConceptWizard(PermissionWizard):
     def get_context_data(self, form, **kwargs):
         context = super(ConceptWizard, self).get_context_data(form=form, **kwargs)
 
+        if self.steps.current == 'initial':
+            context['step_title'] = _('Search for existing content')
+
         if self.steps.current == 'results':
             self.search_terms = self.get_cleaned_data_for_step('initial')
             context.update({'search_name':self.search_terms['name'],})
@@ -122,10 +125,11 @@ class ConceptWizard(PermissionWizard):
                 context.update({'duplicate_items': duplicates})
             else:
                 context.update({'similar_items': self.find_similar()})
+            context['step_title'] = _('Select or create')
         context.update({'model_name': self.model._meta.verbose_name,
                         'template_name': self.template_name,
-                        'help_guide':self.help_guide(),
-                        'current_step':self.steps.current
+                        'help_guide': self.help_guide(),
+                        'current_step': self.steps.current,
                         })
         return context
 
