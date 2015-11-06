@@ -1,4 +1,5 @@
-from django import forms
+﻿from django import forms
+from django.conf import settings
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
@@ -10,14 +11,10 @@ class UserAwareForm(forms.Form):
     def __init__(self,*args,**kwargs):
         self.user = kwargs.pop('user')
         super(UserAwareForm, self).__init__(*args, **kwargs)
-class UserAwareModelForm(autocomplete_light.ModelForm):
+class UserAwareModelForm(UserAwareForm,autocomplete_light.ModelForm):
     class Meta:
         model = MDR._concept
         exclude = ['readyToReview','superseded_by','_is_public','_is_locked','originURI']
-
-    def __init__(self,*args,**kwargs):
-        self.user = kwargs.pop('user')
-        super(UserAwareModelForm, self).__init__(*args, **kwargs)
 
     def _media(self):
         js = ('aristotle_mdr/aristotle.wizard.js',) #,'/static/tiny_mce/tiny_mce.js','/static/aristotle_mdr/aristotle.tinymce.js')
@@ -27,8 +24,28 @@ class UserAwareModelForm(autocomplete_light.ModelForm):
         return media
     media = property(_media)
 
+class WorkgroupVerificationMixin(forms.Form):
+    def clean(self):
+        cleaned_data = super(WorkgroupVerificationMixin,self).clean()
+        if self.instance.pk is not None:
+            if self.instance.workgroup != cleaned_data['workgroup']:
+                workgroup_change_access = getattr(settings, 'ARISTOTLE_SETTINGS', {}).get('WORKGROUP_CHANGES',[])
+                if not(
+                    ('staff' in workgroup_change_access and request.user.is_staff) or
+                    ('manager' in workgroup_change_access and
+                        request.user in item.workgroup.managers and request.user in new_wg.managers
+                       ) or
+                    ('submitter' in workgroup_change_access)
+                   ):
+                    self.data = self.data.copy() # need to make a mutable version of the POST querydict.
+                    self.data['workgroup'] = self.instance.workgroup.pk
+                    raise forms.ValidationError(_("You do not have permission to move an item between workgroups."))
 
-class ConceptForm(UserAwareModelForm):
+
+
+        return cleaned_data 
+
+class ConceptForm(WorkgroupVerificationMixin,UserAwareModelForm):
     """
     Add this in when we look at reintroducing the fancy templates.
     required_css_class = 'required'

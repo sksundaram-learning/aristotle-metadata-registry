@@ -125,6 +125,7 @@ ARISTOTLE_SETTINGS = {
     'SITE_DESCRIPTION': 'About this site', # 'The main title for the site.'
     'CONTENT_EXTENSIONS' : [],
     'PDF_PAGE_SIZE': 'A4',
+    'WORKGROUP_CHANGES':[] #['staff'] #or manager or submitter,
     }
 ARISTOTLE_DOWNLOADS = [
     #(fileType,menu,font-awesome-icon,module)
