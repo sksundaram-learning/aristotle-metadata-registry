@@ -1,4 +1,4 @@
-import autocomplete_light
+﻿import autocomplete_light
 
 from django import forms
 from django.contrib.admin.widgets import FilteredSelectMultiple
@@ -8,6 +8,7 @@ import aristotle_mdr.models as MDR
 import aristotle_mdr.widgets as widgets
 from aristotle_mdr.perms import user_can_edit
 from aristotle_mdr.utils import concept_to_clone_dict
+from aristotle_mdr.forms.creation_wizards import WorkgroupVerificationMixin
 
 def MembershipField(model,name):
     return forms.ModelMultipleChoiceField(
@@ -58,7 +59,7 @@ class AristotleProfileForm(forms.ModelForm):
         if "registrar_in" in self.cleaned_data.keys():
             user.registrar_in = self.cleaned_data['registrar_in']
 
-class AdminConceptForm(autocomplete_light.ModelForm):
+class AdminConceptForm(WorkgroupVerificationMixin,autocomplete_light.ModelForm):
     # Thanks: http://stackoverflow.com/questions/6034047/one-to-many-inline-select-with-django-admin
     # Although concept is an abstract class, we still need this to have a reverse one-to-many edit field.
     class Meta:
