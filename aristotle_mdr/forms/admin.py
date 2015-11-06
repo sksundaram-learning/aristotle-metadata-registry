@@ -59,7 +59,7 @@ class AristotleProfileForm(forms.ModelForm):
         if "registrar_in" in self.cleaned_data.keys():
             user.registrar_in = self.cleaned_data['registrar_in']
 
-class AdminConceptForm(WorkgroupVerificationMixin,autocomplete_light.ModelForm):
+class AdminConceptForm(autocomplete_light.ModelForm,WorkgroupVerificationMixin):
     # Thanks: http://stackoverflow.com/questions/6034047/one-to-many-inline-select-with-django-admin
     # Although concept is an abstract class, we still need this to have a reverse one-to-many edit field.
     class Meta:
