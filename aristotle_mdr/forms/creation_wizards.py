@@ -24,7 +24,7 @@ class UserAwareModelForm(UserAwareForm,autocomplete_light.ModelForm):
         return media
     media = property(_media)
 
-class WorkgroupVerificationMixin(forms.Form):
+class WorkgroupVerificationMixin(forms.ModelForm):
     def clean(self):
         cleaned_data = super(WorkgroupVerificationMixin,self).clean()
         if self.instance.pk is not None:
