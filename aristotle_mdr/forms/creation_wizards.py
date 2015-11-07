@@ -1,4 +1,4 @@
-﻿from django import forms
+from django import forms
 from django.conf import settings
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.utils.safestring import mark_safe
@@ -25,21 +25,24 @@ class UserAwareModelForm(UserAwareForm,autocomplete_light.ModelForm):
     media = property(_media)
 
 class WorkgroupVerificationMixin(forms.ModelForm):
+    permission_error = _("You do not have permission to move an item between workgroups.")
     def clean(self):
         cleaned_data = super(WorkgroupVerificationMixin,self).clean()
         if self.instance.pk is not None:
-            if self.instance.workgroup != cleaned_data['workgroup']:
+            if 'workgroup' in cleaned_data.keys() and self.instance.workgroup != cleaned_data['workgroup']:
                 workgroup_change_access = getattr(settings, 'ARISTOTLE_SETTINGS', {}).get('WORKGROUP_CHANGES',[])
                 if not(
-                    ('staff' in workgroup_change_access and request.user.is_staff) or
+                    ('admin' in workgroup_change_access and self.user.is_staff) or
                     ('manager' in workgroup_change_access and
-                        request.user in item.workgroup.managers and request.user in new_wg.managers
+                        self.user in self.instance.workgroup.managers.all() and self.user in cleaned_data['workgroup'].managers.all()
                        ) or
-                    ('submitter' in workgroup_change_access)
+                    ('submitter' in workgroup_change_access  and
+                        self.user in self.instance.workgroup.submitters.all() and self.user in cleaned_data['workgroup'].submitters.all()
+                       )
                    ):
                     self.data = self.data.copy() # need to make a mutable version of the POST querydict.
                     self.data['workgroup'] = self.instance.workgroup.pk
-                    raise forms.ValidationError(_("You do not have permission to move an item between workgroups."))
+                    raise forms.ValidationError(WorkgroupVerificationMixin.permission_error)
 
 
 
