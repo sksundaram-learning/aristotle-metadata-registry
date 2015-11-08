@@ -28,14 +28,17 @@ class WorkgroupVerificationMixin(forms.ModelForm):
     permission_error = _("You do not have permission to move an item between workgroups.")
     def clean(self):
         workgroup_change_access = getattr(settings, 'ARISTOTLE_SETTINGS', {}).get('WORKGROUP_CHANGES',[])
-        if 'workgroup' in self.data.keys() and str(self.data['workgroup']) is not None and str(self.data['workgroup']) != str(self.instance.workgroup.pk):
-            if not(
-                ('admin' in workgroup_change_access and self.user.is_staff) or
-                ('manager' in workgroup_change_access and self.user.profile.is_workgroup_manager()) or
-                ('submitter' in workgroup_change_access  and self.user.submitter_in.exists())
-               ):
-                # raise a permission denied before cleaning if possible.
-                raise forms.ValidationError(WorkgroupVerificationMixin.permission_error)
+        # raise a permission denied before cleaning if possible.
+        # This gives us a 'clearer' error
+        # cleaning before checking gives a "invalid selection" even if a user isn't allowed to change workgroups.
+        if self.instance.pk is not None:
+            if 'workgroup' in self.data.keys() and str(self.data['workgroup']) is not None and str(self.data['workgroup']) != str(self.instance.workgroup.pk):
+                if not(
+                    ('admin' in workgroup_change_access and self.user.is_staff) or
+                    ('manager' in workgroup_change_access and self.user.profile.is_workgroup_manager()) or
+                    ('submitter' in workgroup_change_access  and self.user.submitter_in.exists())
+                   ):
+                    raise forms.ValidationError(WorkgroupVerificationMixin.permission_error)
         cleaned_data = super(WorkgroupVerificationMixin,self).clean()
         if self.instance.pk is not None:
             if 'workgroup' in cleaned_data.keys() and self.instance.workgroup != cleaned_data['workgroup']:
