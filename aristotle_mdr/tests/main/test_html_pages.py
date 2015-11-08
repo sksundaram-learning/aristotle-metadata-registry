@@ -131,7 +131,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
     #Test if workgroup-moving settings work
 
     @override_settings(ARISTOTLE_SETTINGS=dict(settings.ARISTOTLE_SETTINGS, WORKGROUP_CHANGES=[]))
-    def test_submitter_cannot_change_workgroup(self):
+    def test_submitter_cannot_change_workgroup_via_edit_screen(self):
         # based on the idea that 'submitter' is not set in ARISTOTLE_SETTINGS.WORKGROUP
         self.wg_other = models.Workgroup.objects.create(name="Test WG to move to")
         self.wg_other.submitters.add(self.editor)
@@ -165,7 +165,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.assertTrue('Select a valid choice.' in form.errors['workgroup'][0])
 
     @override_settings(ARISTOTLE_SETTINGS=dict(settings.ARISTOTLE_SETTINGS, WORKGROUP_CHANGES=['submitter']))
-    def test_submitter_can_change_workgroup(self):
+    def test_submitter_can_change_workgroup_via_edit_screen(self):
         # based on the idea that 'submitter' is set in ARISTOTLE_SETTINGS.WORKGROUP
         self.wg_other = models.Workgroup.objects.create(name="Test WG to move to")
 
@@ -196,7 +196,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
 
 
     @override_settings(ARISTOTLE_SETTINGS=dict(settings.ARISTOTLE_SETTINGS, WORKGROUP_CHANGES=['admin']))
-    def test_admin_can_change_workgroup(self):
+    def test_admin_can_change_workgroup_via_edit_screen(self):
         # based on the idea that 'admin' is set in ARISTOTLE_SETTINGS.WORKGROUP
         self.wg_other = models.Workgroup.objects.create(name="Test WG to move to")
 
@@ -217,16 +217,57 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.assertEqual(response.status_code,302)
 
 
-    def test_manager_of_two_workgroups_can_change_workgroup(self):
+    @override_settings(ARISTOTLE_SETTINGS=dict(settings.ARISTOTLE_SETTINGS, WORKGROUP_CHANGES=['manager']))
+    def test_manager_of_two_workgroups_can_change_workgroup_via_edit_screen(self):
         # based on the idea that 'manager' is set in ARISTOTLE_SETTINGS.WORKGROUP
-        pass
-    def test_manager_of_two_workgroups_cannot_change_workgroup(self):
-        # based on the idea that 'manager' is not set in ARISTOTLE_SETTINGS.WORKGROUP
-        pass
+        self.wg_other = models.Workgroup.objects.create(name="Test WG to move to")
 
-    def test_manager_of_one_workgroup_cannot_change_workgroup(self):
-        # based on the idea that 'manager' is set in ARISTOTLE_SETTINGS.WORKGROUP
-        pass
+        from django.forms import model_to_dict
+        self.login_editor()
+        response = self.client.get(reverse('aristotle:edit_item',args=[self.item1.id]))
+        self.assertEqual(response.status_code,200)
+        updated_item = dict((k,v) for (k,v) in model_to_dict(response.context['item']).items() if v is not None)
+        updated_item['workgroup'] = str(self.wg_other.pk)
+        response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
+        self.assertEqual(response.status_code,200)
+
+        form = response.context['form']
+        self.assertTrue(form.errors['__all__'][0] == WorkgroupVerificationMixin.permission_error)
+
+        response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
+        self.assertEqual(response.status_code,200)
+
+        form = response.context['form']
+        self.assertTrue(form.errors['__all__'][0] == WorkgroupVerificationMixin.permission_error)
+
+
+        self.login_manager()
+
+        response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
+        self.assertEqual(response.status_code,403)
+
+        self.wg1.submitters.add(self.manager) #Need to give manager edit permission to allow them to actually edit things
+        response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
+        self.assertEqual(response.status_code,200)
+        form = response.context['form']
+
+        self.assertTrue('Select a valid choice.' in form.errors['workgroup'][0])
+
+        self.wg_other.managers.add(self.manager)
+
+        response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
+        self.assertEqual(response.status_code,200)
+        self.assertTrue('Select a valid choice.' in form.errors['workgroup'][0])
+
+        self.wg_other.submitters.add(self.manager) #Need to give manager edit permission to allow them to actually edit things
+        response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
+        self.assertEqual(response.status_code,302)
+
+        updated_item['workgroup'] = str(self.wg2.pk)
+        response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
+        self.assertEqual(response.status_code,200)
+
+        self.assertTrue('Select a valid choice.' in form.errors['workgroup'][0])
 
     def test_anon_cannot_view_clone_page(self):
         self.logout()
