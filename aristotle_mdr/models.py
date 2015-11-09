@@ -1,4 +1,4 @@
-from __future__ import unicode_literals
+﻿from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import absolute_import
 
@@ -933,7 +933,7 @@ class PossumProfile(models.Model):
         else:
             return self.user.registrar_in.all()
 
-    def is_workgroup_manager(self,wg):
+    def is_workgroup_manager(self,wg=None):
         return perms.user_is_workgroup_manager(self.user,wg)
 
     def is_favourite(self,item):

@@ -3,7 +3,7 @@
 {% load i18n %}
 
 {% block title %}
-Create new {{ model_name }} - Step {{ wizard.steps.step1 }} of {{ wizard.steps.count }}
+Create new {{ model_name }} - Step {{ wizard.steps.step1 }} of {{ wizard.steps.count }} - {{ step_title }}
 {% endblock %}
 
 {% block extra_head_scripts %}
@@ -13,7 +13,7 @@ Create new {{ model_name }} - Step {{ wizard.steps.step1 }} of {{ wizard.steps.c
 {% endblock %}
 
 {% block content %}
-<h1>Create {{ model_name }} - <em>Step {{ wizard.steps.step1 }} of {{ wizard.steps.count }} -- {{ current_step }}</em></h1>
+<h1>Create {{ model_name }} - <em>Step {{ wizard.steps.step1 }} of {{ wizard.steps.count }} - {{ step_title }}</em></h1>
 <div class="row">
     <form class="" action="" method="post">{% csrf_token %}
        {{ wizard.management_form }}

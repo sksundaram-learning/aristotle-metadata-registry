@@ -1,6 +1,40 @@
+@screen-sm-min:600px;
+@screen-sm-max:760px;
 @screen-md-regular:992px;
 
 #user_sidebar {
     padding-left:0px;
     padding-right:0px;
 }
+
+#registrarcontrols {
+    >dt {
+        font-size:110%;
+    }
+    >dt, >dd {
+        border-top:1px solid lightgray;
+    }
+    dt:after {
+        content:'';
+    }
+    > dd > dl {
+        margin-bottom:0px;
+    }
+}
+
+@media (max-width:@screen-sm-min)  {
+    #registrarcontrols {
+        >dt {
+            border-top:1px solid lightgray;
+            border-bottom:1px solid lightblue;
+            font-size:110%;
+        }
+        >dd {
+            padding-left:30px;
+            > dl > dt {
+                clear:both;
+            }
+        }
+    }
+}
+

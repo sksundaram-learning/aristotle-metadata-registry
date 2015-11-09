@@ -1,4 +1,4 @@
-from django.apps import apps
+﻿from django.apps import apps
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.conf import settings
@@ -225,8 +225,12 @@ def edit_item(request,iid,*args,**kwargs):
     base_form = MDRForms.wizards.subclassed_edit_modelform(item.__class__)
     if request.method == 'POST': # If the form has been submitted...
         form = base_form(request.POST,instance=item,user=request.user)
+        new_wg = request.POST.get('workgroup',None)
+        workgroup_changed = not(str(item.workgroup.pk) == (new_wg))
 
         if form.is_valid():
+            workgroup_changed = item.workgroup.pk != form.cleaned_data['workgroup'].pk
+
             with transaction.atomic(), reversion.create_revision():
                 change_comments = form.data.get('change_comments',None)
                 item = form.save()

@@ -27,6 +27,9 @@ The following are required within a dictionary in the settings for the configure
 ``SITE_INTRO``
     The introductory text use on the home page as a prompt for users -
     required format ``string`` or ``unicode``.
+``WORKGROUP_CHANGES``
+    An array that specified which classes of user can move items between workgroups.
+    Possible options include ``'admin'``, ``'manager'`` or ``'submitter'``.
 
 ``ARISTOTLE_DOWNLOADS``
 -----------------------
