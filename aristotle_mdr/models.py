@@ -1,4 +1,4 @@
-from __future__ import unicode_literals
+﻿from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import absolute_import
 
@@ -656,8 +656,8 @@ class concept(_concept):
     version = models.CharField(max_length=20,blank=True)
     synonyms = models.CharField(max_length=200, blank=True)
     references = RichTextField(blank=True)
-    origin_URI = models.URLField(blank=True,help_text="If imported, the original location of the item")
-    comments = RichTextField(help_text="Descriptive comments about the metadata item.", blank=True)
+    origin_URI = models.URLField(blank=True,help_text=_("If imported, the original location of the item"))
+    comments = RichTextField(help_text=_("Descriptive comments about the metadata item"), blank=True)
     submitting_organisation = models.CharField(max_length=256, blank=True)
     responsible_organisation = models.CharField(max_length=256, blank=True)
 
@@ -758,7 +758,7 @@ class ConceptualDomain(concept):
 
     template = "aristotle_mdr/concepts/conceptualDomain.html"
     description = models.TextField(_('description'),blank=True,
-            help_text='Description or specification of a rule, reference, or range for a set of all value meanings for a Conceptual Domain')
+            help_text=_('Description or specification of a rule, reference, or range for a set of all value meanings for a Conceptual Domain'))
 
 class ValueMeaning(aristotleComponent):
     class Meta:
@@ -767,9 +767,9 @@ class ValueMeaning(aristotleComponent):
     conceptual_domain = models.ForeignKey(ConceptualDomain)
     order = models.PositiveSmallIntegerField("Position")
     start_date = models.DateField(blank=True,null=True,
-            help_text='Date at which the value meaning became valid')
+            help_text=_('Date at which the value meaning became valid'))
     end_date = models.DateField(blank=True,null=True,
-            help_text='Date at which the value meaning ceased to be valid')
+            help_text=_('Date at which the value meaning ceased to be valid'))
     def __unicode__(self):
         return "%s: %s - %s"%(self.conceptual_domain.name,self.value,self.meaning)
 
@@ -794,7 +794,7 @@ class ValueDomain(concept):
 
     conceptual_domain = models.ForeignKey(ConceptualDomain,blank=True,null=True)
     description = models.TextField(_('description'),blank=True,
-            help_text='Description or specification of a rule, reference, or range for a set of all values for a Value Domain')
+            help_text=_('Description or specification of a rule, reference, or range for a set of all values for a Value Domain'))
     #Below is a dirty, dirty hack that came from re-designing permissible values
     # TODO: Fix references to permissible and supplementary values
     @property
@@ -819,9 +819,9 @@ class AbstractValue(aristotleComponent):
     valueDomain = models.ForeignKey(ValueDomain)
     order = models.PositiveSmallIntegerField("Position")
     start_date = models.DateField(blank=True,null=True,
-            help_text='Date at which the value became valid')
+            help_text=_('Date at which the value became valid'))
     end_date = models.DateField(blank=True,null=True,
-            help_text='Date at which the value ceased to be valid')
+            help_text=_('Date at which the value ceased to be valid'))
     def __unicode__(self):
         return "%s: %s - %s"%(self.valueDomain.name,self.value,self.meaning)
 
