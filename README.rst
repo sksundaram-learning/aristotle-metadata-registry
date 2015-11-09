@@ -73,10 +73,10 @@ Screenshots for users
 
 `More screenshots available in the Aristotle-MDR Wiki <https://github.com/aristotle-mdr/aristotle-metadata-registry/wiki/Screenshots>`_.
 
-A data element on shown desktop and mobile
+A data element shown on desktop and mobile
 |newitemsample|
 
-An item being editted without changing screens
+An item being edited without changing screens
 |itemeditsample|
 
 Information for developers
