@@ -1,4 +1,4 @@
-from django.apps import apps
+﻿from django.apps import apps
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.conf import settings
@@ -130,6 +130,20 @@ def download(request,downloadType,iid=None):
 def concept(*args,**kwargs):
     return render_if_user_can_view(MDR._concept,*args,**kwargs)
 
+def measure(request,iid,model_slug,name_slug):
+    item = get_object_or_404(MDR.Measure,pk=iid).item
+    template = select_template([item.template])
+    context = RequestContext(request,
+        {'item':item,
+         #'view':request.GET.get('view','').lower(),
+         #'last_edit': last_edit
+            }
+        )
+
+    return HttpResponse(template.render(context))
+
+    #return render_if_user_can_view(MDR.Measure,*args,**kwargs)
+
 @cache_per_item_user(ttl=300, cache_post=False)
 def render_if_condition_met(request,condition,objtype,iid,model_slug=None,name_slug=None,subpage=None):
     item = get_object_or_404(objtype,pk=iid).item
@@ -211,8 +225,12 @@ def edit_item(request,iid,*args,**kwargs):
     base_form = MDRForms.wizards.subclassed_edit_modelform(item.__class__)
     if request.method == 'POST': # If the form has been submitted...
         form = base_form(request.POST,instance=item,user=request.user)
+        new_wg = request.POST.get('workgroup',None)
+        workgroup_changed = not(str(item.workgroup.pk) == (new_wg))
 
         if form.is_valid():
+            workgroup_changed = item.workgroup.pk != form.cleaned_data['workgroup'].pk
+
             with transaction.atomic(), reversion.create_revision():
                 change_comments = form.data.get('change_comments',None)
                 item = form.save()

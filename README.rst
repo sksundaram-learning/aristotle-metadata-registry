@@ -2,7 +2,7 @@
 Aristotle MetaData Registry (Aristotle-MDR)
 =====
 
-|build-status| |docs| |coveralls| |demoserver|
+|build-status| |docs| |coveralls| |demoserver| |codeclimate|
 
 Introduction and mission statement
 ----------------------------------
@@ -73,10 +73,10 @@ Screenshots for users
 
 `More screenshots available in the Aristotle-MDR Wiki <https://github.com/aristotle-mdr/aristotle-metadata-registry/wiki/Screenshots>`_.
 
-A data element on shown desktop and mobile
+A data element shown on desktop and mobile
 |newitemsample|
 
-An item being editted without changing screens
+An item being edited without changing screens
 |itemeditsample|
 
 Information for developers
@@ -98,6 +98,7 @@ About the badges (plus some extras):
 * |demoserver| - A link to a live demo and development server
 * |gitter| - Gitter, a git-powered chat room for developers
 * |waffleio| - Waffle.io bugs ready to be actioned.
+* |codeclimate| - Code Climate - additional code metrics
 
 .. |build-status| image:: https://travis-ci.org/aristotle-mdr/aristotle-metadata-registry.svg?branch=master
     :alt: build status
@@ -132,6 +133,10 @@ About the badges (plus some extras):
 .. |waffleio| image:: https://badge.waffle.io/aristotle-mdr/aristotle-metadata-registry.png?label=ready&title=Ready 
     :target: https://waffle.io/aristotle-mdr/aristotle-metadata-registry 
     :alt: 'Stories in Ready'
+
+.. |codeclimate| image:: https://codeclimate.com/github/aristotle-mdr/aristotle-metadata-registry/badges/gpa.svg
+   :target: https://codeclimate.com/github/aristotle-mdr/aristotle-metadata-registry
+   :alt: Code Climate
 
 .. |newitemsample| image:: https://cloud.githubusercontent.com/assets/2173174/7829993/4de09a2a-048b-11e5-8b25-c1935da42a2d.png
     :alt:  Data Element on desktop and mobile
