@@ -1,4 +1,4 @@
-﻿from __future__ import unicode_literals
+from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import absolute_import
 
@@ -69,7 +69,7 @@ class baseAristotleObject(TimeStampedModel):
        return d
 
     def __str__(self):
-        return "{name}".format(name = self.name)
+        return "{name}".format(name = self.name).encode('utf-8')
     def __unicode__(self):
         return "{name}".format(name = self.name)
 
