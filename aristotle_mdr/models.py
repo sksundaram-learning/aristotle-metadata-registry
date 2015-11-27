@@ -1,4 +1,4 @@
-﻿from __future__ import unicode_literals
+from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import absolute_import
 
@@ -394,7 +394,7 @@ class DiscussionPost(discussionAbstract):
 class DiscussionComment(discussionAbstract):
     post = models.ForeignKey(DiscussionPost, related_name='comments')
     class Meta:
-        ordering = ['-created']
+        ordering = ['created']
 
 
 #class ReferenceDocument(models.Model):
