@@ -37,7 +37,7 @@ setup(
         "Django>=1.7",
         'pytz',
 
-        'django-model-utils',
+        'django-model-utils==2.3.1',
         'django-notifications-hq',
         'django-grappelli',
         'docutils',
