@@ -114,7 +114,9 @@ class PermissionSearchQuerySet(SearchQuerySet):
             sqs = sqs.filter(q)
             return sqs
 
-        if not user.is_superuser:
+        if user.is_superuser:
+              q = SQ() # Super-users can see everything
+        else:
             # Non-registrars can only see public things or things in their workgroup
             # if they have no workgroups they won't see anything extra
             if user.profile.workgroups.count() > 0:

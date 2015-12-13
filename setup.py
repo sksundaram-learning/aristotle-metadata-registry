@@ -37,7 +37,7 @@ setup(
         "Django>=1.7",
         'pytz',
 
-        'django-model-utils',
+        'django-model-utils==2.3.1',
         'django-notifications-hq',
         'django-grappelli',
         'docutils',
@@ -50,7 +50,7 @@ setup(
         'django-ckeditor==4.5.1',
 
         # Revision control
-        "django-reversion>=1.8",
+        "django-reversion==1.9.3",
         'django-reversion-compare>=0.5.2',
         'diff-match-patch',
 
