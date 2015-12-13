@@ -108,14 +108,15 @@ class PermissionSearchQuerySet(SearchQuerySet):
 
     def apply_permission_checks(self,user=None,public_only=False,user_workgroups_only=False):
         sqs = self
-        q=SQ()
+        q = SQ(is_public=True)
         if user is None or user.is_anonymous():
             # Regular users can only see public items, so boot them off now.
-            q = SQ(is_public=True)
             sqs = sqs.filter(q)
             return sqs
 
-        if not user.is_superuser:
+        if user.is_superuser:
+              q = SQ() # Super-users can see everything
+        else:
             # Non-registrars can only see public things or things in their workgroup
             # if they have no workgroups they won't see anything extra
             if user.profile.workgroups.count() > 0:
