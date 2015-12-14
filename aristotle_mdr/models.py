@@ -69,7 +69,7 @@ class baseAristotleObject(TimeStampedModel):
        return d
 
     def __str__(self):
-        return "{name}".format(name = self.name)
+        return "{name}".format(name = self.name).encode('utf-8')
     def __unicode__(self):
         return "{name}".format(name = self.name)
 
