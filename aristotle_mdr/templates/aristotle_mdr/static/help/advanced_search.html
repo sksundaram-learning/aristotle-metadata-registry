@@ -84,9 +84,9 @@
 
 <h3><i class="fa fa-puzzle-piece fa-fw"></i> Restrict item types using the <tt>type</tt> keyword</h3>
 <p>
-    When searching, you can enter a type along with the name of the object type you wish to restrict your
-    search to, the type must not have spaces, but can include underscores or hyphens,
-    or even be abbreviated to the first lett of each word in the item name.
+    When searching, you can enter a type along with the name of the object type to further restrict your
+    search. The type must not include spaces, which should be removed, or replaced with underscores or hyphens.
+    For an even shorter query, type names can be abbreviated to the first letter of each word in the type name.
 </p>
 <p>
     This is the same as selecting options in the <span class="well well-sm"><i class="fa fa-puzzle-piece fa-fw"></i> Item Type</span> dropdown on the search page.
@@ -133,7 +133,7 @@
     </tbody>
 </table>
 <div class="alert alert-info" role="alert">
-    <i class="fa fa-exclamation-circle fa-fw fa-2x pull-left"></i> <header><strong>Keyword queres can be used
+    <i class="fa fa-exclamation-circle fa-fw fa-2x pull-left"></i> <header><strong>Keyword queries can be used
     together to create complex queries.</strong></header>
     For example, this query - <code>Person Age name:Person type:dec version:1.2.3</code> -
     searches for items that meet the following criteria:
@@ -142,9 +142,11 @@
         <li><code>name:Person</code> - "Person" appearing in the name</li>
         <li><code>type:dec</code> - Are of the type Data Element Concept</li>
         <li><code>version:1.2.3</code> - Have a version of "1.2.3"</li>
+{% comment %}
         <!-- li><code></code></li -->
         <!-- li><code>is:public</code></li -->
         <!-- li><code>when:today</code></li -->
+{% endcomment %}
     </ul>
 
 </div>
