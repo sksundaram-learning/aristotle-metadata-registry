@@ -1,8 +1,10 @@
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, get_object_or_404
 from django.core.exceptions import PermissionDenied
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
+from django.shortcuts import render, get_object_or_404
+from django.utils.translation import ugettext_lazy as _
 
 from aristotle_mdr import models as MDR
 from aristotle_mdr import forms as MDRForms
@@ -84,6 +86,9 @@ def new_comment(request,pid):
     post = get_object_or_404(MDR.DiscussionPost,pk=pid)
     if not perms.user_in_workgroup(request.user,post.workgroup):
         raise PermissionDenied
+    if post.closed:
+        messages.error(request, _('This post is closed. Your comment was not added.'))
+        return HttpResponseRedirect(reverse("aristotle:discussionsPost",args=[post.pk]))
     if request.method == 'POST':
         form = MDRForms.discussions.CommentForm(request.POST)
         if form.is_valid():
@@ -94,10 +99,11 @@ def new_comment(request,pid):
             )
             new.save()
             return HttpResponseRedirect(reverse("aristotle:discussionsPost",args=[new.post.pk])+"#comment_%s"%new.id)
+        else:
+            return render(request,"aristotle_mdr/discussions/new.html",{"form":form,})
     else:
         # It makes no sense to "GET" this comment, so push them back to the discussion
         return HttpResponseRedirect(reverse("aristotle:discussionsPost",args=[post.pk]))
-    return render(request,"aristotle_mdr/discussions/new.html",{"form":form,})
 
 @login_required
 def delete_comment(request,cid):

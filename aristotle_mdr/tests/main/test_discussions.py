@@ -351,6 +351,50 @@ class WorkgroupMembersCanMakePostsAndComments(utils.LoggedInViewPages,TestCase):
         comment = models.DiscussionComment.objects.get(id=comment.id) #decache
         self.assertEqual(comment.body,"test comment")
 
+    def test_post_to_workgroup_from_URL(self):
+        # If a user posts clicks a link to go to their workgroup's post page let them.
+        self.login_viewer()
+        response = self.client.get(reverse('aristotle:discussionsNew')+"?workgroup={}".format(self.wg1.id))
+        self.assertEqual(response.status_code,200)
+
+        response = self.client.get(reverse('aristotle:discussionsNew')+"?workgroup={}".format(self.wg2.id))
+        self.assertRedirects(response,reverse('aristotle:discussionsNew'))
+
+    def test_post_to_closed_discussion(self):
+        self.login_viewer()
+
+        p1 = models.DiscussionPost.objects.create(author=self.su,workgroup=self.wg1,title="test",body="test")
+
+        response = self.client.get(reverse('aristotle:discussionsPost',args=[p1.id]))
+        self.assertEqual(response.status_code,200)
+        self.assertEqual(p1.comments.count(),0)
+
+        response = self.client.get(reverse('aristotle:discussionsPostNewComment',args=[p1.id]))
+        self.assertRedirects(response,reverse('aristotle:discussionsPost',args=[p1.id]))
+
+        response = self.client.post(reverse('aristotle:discussionsPostNewComment',args=[p1.id]),
+            {'body':"Post is open, so I can comment."}
+        )
+        self.assertEqual(p1.comments.count(),1)
+        c = p1.comments.first().id
+        
+        self.assertRedirects(response,reverse('aristotle:discussionsPost',args=[p1.id])+"#comment_%s"%c )
+
+        p1.closed = True
+        p1.save()
+        response = self.client.post(reverse('aristotle:discussionsPostNewComment',args=[p1.id]),
+            {'body':"Post is closed, so I can NOT comment."}, follow=True
+        )
+
+        self.assertEqual(p1.comments.count(),1)
+        # self.assertRedirects(response,reverse('aristotle:discussionsPost',args=[p1.id]))
+        # We can't use assertRedirect as we are forcing a follow, instead...
+        self.assertEqual(response.redirect_chain,[('http://testserver'+reverse('aristotle:discussionsPost',args=[p1.id]),302)])
+
+        _messages = list(response.context['messages'])
+        self.assertEqual(len(_messages),1)
+        self.assertEqual( "This post is closed. Your comment was not added." , _messages[0].message)
+
 class ViewDiscussionPostPage(utils.LoggedInViewPages,TestCase):
     def setUp(self):
         super(ViewDiscussionPostPage, self).setUp()
@@ -398,13 +442,3 @@ class ViewDiscussionPostPage(utils.LoggedInViewPages,TestCase):
         self.wg1.removeRoleFromUser('viewer',self.viewer)
         response = self.client.get(reverse('aristotle:discussionsPost',args=[post.id]))
         self.assertEqual(response.status_code,403)
-
-    def test_post_to_workgroup_from_URL(self):
-        # If a user posts clicks a link to go to their workgroup's post page let them.
-        self.login_viewer()
-        response = self.client.get(reverse('aristotle:discussionsNew')+"?workgroup={}".format(self.wg1.id))
-        self.assertEqual(response.status_code,200)
-
-        response = self.client.get(reverse('aristotle:discussionsNew')+"?workgroup={}".format(self.wg2.id))
-        self.assertRedirects(response,reverse('aristotle:discussionsNew'))
-
