@@ -43,7 +43,6 @@ ALLOWED_HOSTS = []
 SOUTH_TESTS_MIGRATE = False
 
 INSTALLED_APPS = (
-    'comet',
     'aristotle_mdr', #Comes before grappelli for overloads
     'grappelli',
     'haystack',
@@ -124,7 +123,7 @@ ARISTOTLE_SETTINGS = {
     'SITE_BRAND': '/static/aristotle_mdr/images/aristotle_small.png', # URL for the Site-wide logo
     'SITE_INTRO': 'Use Default Site Name to search for metadata...', # 'Intro text use on the home page as a prompt for users.'
     'SITE_DESCRIPTION': 'About this site', # 'The main title for the site.'
-    'CONTENT_EXTENSIONS' : ['comet'],
+    'CONTENT_EXTENSIONS' : [],
     'PDF_PAGE_SIZE': 'A4',
     'WORKGROUP_CHANGES':[] #['admin'] #or manager or submitter,
     }
