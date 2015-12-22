@@ -52,7 +52,6 @@ class PostingAndCommentingAtObjectLevel(TestCase):
         post = models.DiscussionPost.objects.get(id=post.id) #decache
         self.assertTrue(post.comments.all()[0:3],[comment1,comment2,comment3])
 
-
     def test_post_ordering(self):
         # Check posts ordered by modified
         post1 = models.DiscussionPost.objects.create(author=self.viewer1,workgroup=self.wg1,title="test1",body="test")
@@ -399,3 +398,13 @@ class ViewDiscussionPostPage(utils.LoggedInViewPages,TestCase):
         self.wg1.removeRoleFromUser('viewer',self.viewer)
         response = self.client.get(reverse('aristotle:discussionsPost',args=[post.id]))
         self.assertEqual(response.status_code,403)
+
+    def test_post_to_workgroup_from_URL(self):
+        # If a user posts clicks a link to go to their workgroup's post page let them.
+        self.login_viewer()
+        response = self.client.get(reverse('aristotle:discussionsNew')+"?workgroup={}".format(self.wg1.id))
+        self.assertEqual(response.status_code,200)
+
+        response = self.client.get(reverse('aristotle:discussionsNew')+"?workgroup={}".format(self.wg2.id))
+        self.assertRedirects(response,reverse('aristotle:discussionsNew'))
+
