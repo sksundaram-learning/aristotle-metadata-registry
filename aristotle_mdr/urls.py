@@ -24,7 +24,6 @@ urlpatterns = patterns('',
     url(r'^account/password/reset/$', password_reset), #, {'template_name': 'my_templates/password_reset.html'}
     url(r'^account/password/reset_done/$', password_reset), #, {'template_name': 'my_templates/password_reset.html'}
     url(r'^', include('aristotle_mdr.urls_aristotle',app_name="aristotle_mdr",namespace="aristotle")),
-    url(r'^comet/', include('comet.urls',app_name="comet",namespace="comet")),
 
     url(r'^user/password/reset/$',
         'django.contrib.auth.views.password_reset',
