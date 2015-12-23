@@ -76,6 +76,11 @@ def new(request):
             else:
                 # If a user tries to navigate to a page to post to a workgroup they aren't in, redirect them to the regular post page.
                 return HttpResponseRedirect(reverse("aristotle:discussionsNew"))
+            if request.GET.getlist('item'):
+                workgroup = request.user.profile.myWorkgroups.get(id=request.GET.get('workgroup'))
+                items = request.GET.getlist('item')
+                initial.update({'relatedItems':workgroup.items.filter(id__in=items)})
+            
         form = MDRForms.discussions.NewPostForm(user=request.user,initial=initial)
     return render(request,"aristotle_mdr/discussions/new.html",
             {"form":form}

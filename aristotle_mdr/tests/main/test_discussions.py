@@ -356,10 +356,43 @@ class WorkgroupMembersCanMakePostsAndComments(utils.LoggedInViewPages,TestCase):
         self.login_viewer()
         response = self.client.get(reverse('aristotle:discussionsNew')+"?workgroup={}".format(self.wg1.id))
         self.assertEqual(response.status_code,200)
+        self.assertEqual(response.context['form'].initial['workgroup'],[self.wg1])
 
         response = self.client.get(reverse('aristotle:discussionsNew')+"?workgroup={}".format(self.wg2.id))
         self.assertRedirects(response,reverse('aristotle:discussionsNew'))
 
+    def test_post_to_workgroup_from_URL_for_item(self):
+        # If a user posts clicks a link to go to their workgroup's post page let them.
+        self.login_viewer()
+        allowed_item = models.ObjectClass.objects.create(name="OC1",workgroup=self.wg1)
+        other_allowed_item = models.ObjectClass.objects.create(name="OC2",workgroup=self.wg1)
+        forbidden_item = models.ObjectClass.objects.create(name="OC3",workgroup=self.wg2)
+        response = self.client.get(reverse('aristotle:discussionsNew')+"?workgroup={0}&item={1}".format(self.wg1.id,allowed_item.id))
+        self.assertEqual(response.status_code,200)
+        self.assertEqual(int(response.context['form'].initial['workgroup']),int(self.wg1.id))
+        related = set([i.id for i in response.context['form'].initial['relatedItems']])
+        expected = set([allowed_item.id])
+        self.assertEqual(related,expected)
+        self.assertTrue(response.status_code,200)
+
+        response = self.client.get(reverse('aristotle:discussionsNew')+"?workgroup={0}&item={1}&item={2}".format(self.wg1.id,allowed_item.id,other_allowed_item.id))
+        related = set([i.id for i in response.context['form'].initial['relatedItems']])
+        expected = set([allowed_item.id,other_allowed_item.id])
+        self.assertEqual(related,expected)
+        self.assertTrue(response.status_code,200)
+
+        response = self.client.get(reverse('aristotle:discussionsNew')+"?workgroup={0}&item={1}".format(self.wg1.id,forbidden_item.id))
+        related = set([i.pk for i in response.context['form'].initial['relatedItems']])
+        expected = set([])
+        self.assertEqual(related,expected)
+        self.assertTrue(response.status_code,200)
+
+        response = self.client.get(reverse('aristotle:discussionsNew')+"?workgroup={0}&item={1}&item={2}".format(self.wg1.id,forbidden_item.id,other_allowed_item.id))
+        related = set([i.pk for i in response.context['form'].initial['relatedItems']])
+        expected = set([other_allowed_item.id])
+        self.assertEqual(related,expected)
+        self.assertEqual(response.status_code,200)
+        
     def test_post_to_closed_discussion(self):
         self.login_viewer()
 
