@@ -27,14 +27,14 @@ register = template.Library()
 def can_alter_comment(user,comment):
     try:
         return perms.user_can_alter_comment(user,comment)
-    except: #pragma: no cover
+    except:
         return False
 
 @register.filter
 def can_alter_post(user,post):
     try:
         return perms.user_can_alter_post(user,post)
-    except: #pragma: no cover
+    except:
         return False
 
 @register.filter
@@ -56,7 +56,7 @@ def in_workgroup(user,workgroup):
     """
     try:
         return perms.user_in_workgroup(user,workgroup)
-    except: #pragma: no cover
+    except:
         return False
 
 @register.filter

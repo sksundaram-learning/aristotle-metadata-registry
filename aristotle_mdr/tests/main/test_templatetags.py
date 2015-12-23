@@ -12,6 +12,10 @@ from django.test.utils import setup_test_environment
 setup_test_environment()
 
 from django.core.exceptions import FieldDoesNotExist
+try:
+    from django.template import TemplateSyntaxError #Django1.8 only
+except:
+    from django.template.exceptions import TemplateSyntaxError #Django1.9 only
 
 preamble = "{% load aristotle_tags %}"
 
@@ -37,6 +41,26 @@ class TestTemplateTags_aristotle_tags_py(TestCase):
             template = Template(preamble+"{% doc item 'not_an_attribute' %}")
             template.render(context)
         
+
+    def use_safe_filter(self, safefilter):
+        context = Context({"item": self.item})
+
+        template = Template(preamble+"{{ 'comment'|%s:'user' }}"%(safefilter))
+        page = template.render(context).replace('\n','').strip()
+        self.assertEqual(page,'False')
+
+        with self.assertRaises(TemplateSyntaxError):
+            template = Template(preamble+"{{ 'comment'|%s }}"%(safefilter))
+            template.render(context)
+
+    def test_can_alter_comment(self):
+        self.use_safe_filter('can_alter_comment')
+        
+    def test_can_alter_post(self):
+        self.use_safe_filter('can_alter_post')
+        
+    def test_in_workgroup(self):
+        self.use_safe_filter('in_workgroup')
 
         
         
