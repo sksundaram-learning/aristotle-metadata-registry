@@ -356,7 +356,7 @@ class WorkgroupMembersCanMakePostsAndComments(utils.LoggedInViewPages,TestCase):
         self.login_viewer()
         response = self.client.get(reverse('aristotle:discussionsNew')+"?workgroup={}".format(self.wg1.id))
         self.assertEqual(response.status_code,200)
-        self.assertEqual(response.context['form'].initial['workgroup'],[self.wg1])
+        self.assertEqual(int(response.context['form'].initial['workgroup']),int(self.wg1.id))
 
         response = self.client.get(reverse('aristotle:discussionsNew')+"?workgroup={}".format(self.wg2.id))
         self.assertRedirects(response,reverse('aristotle:discussionsNew'))
