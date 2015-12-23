@@ -144,7 +144,7 @@
     </div>
     {% bootstrap_modal "r2r_modals" %}
     {% endif %}
-    <h2>{% trans 'Definition'%}</h2>
+    <h2 title="{% doc item 'definition' %}">{% trans 'Definition'%}</h2>
     <div id="definition" class="definition">
         {{ item.definition | safe}}
     </div>
