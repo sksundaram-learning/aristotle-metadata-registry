@@ -30,10 +30,17 @@ class TestTemplateTags_aristotle_tags_py(TestCase):
 
     def test_doc(self):
         context = Context({"item": self.item})
-
+        
+        # Definition has helptext
         template = Template(preamble+"{% doc item 'definition' %}")
-        template.render(context)
+        template = template.render(context)
+        self.assertTrue('Representation of a concept by a descriptive statement' in template)
 
+        # Modified does not (it comes from django-model-utils
+        template = Template(preamble+"{% doc item 'modified' %}")
+        template = template.render(context)
+        self.assertTrue('No help text for the field' in template)
+        
         template = Template(preamble+"{% doc item %}")
         template.render(context)
         
