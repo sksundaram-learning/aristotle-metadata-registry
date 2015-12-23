@@ -14,26 +14,27 @@ Available tags and filters
 --------------------------
 """
 from django import template
-from aristotle_mdr import perms
-import aristotle_mdr.models as MDR
 from django.core.urlresolvers import reverse, resolve
 from django.template.defaultfilters import slugify
+from django.utils.translation import ugettext_lazy as _
+
+from aristotle_mdr import perms
+import aristotle_mdr.models as MDR
 
 register = template.Library()
-
 
 @register.filter
 def can_alter_comment(user,comment):
     try:
         return perms.user_can_alter_comment(user,comment)
-    except: #pragma: no cover
+    except:
         return False
 
 @register.filter
 def can_alter_post(user,post):
     try:
         return perms.user_can_alter_post(user,post)
-    except: #pragma: no cover
+    except:
         return False
 
 @register.filter
@@ -55,7 +56,7 @@ def in_workgroup(user,workgroup):
     """
     try:
         return perms.user_in_workgroup(user,workgroup)
-    except: #pragma: no cover
+    except:
         return False
 
 @register.filter
@@ -324,3 +325,25 @@ def bootstrap_modal(_id,size=None):
 
     modal = '<div id="%s" class="modal fade"><div class="modal-dialog %s"><div class="modal-content"></div></div></div>'
     return modal%(_id,size_class)
+
+@register.simple_tag
+def doc(item,field=None):
+    """Gets the appropriate help text or doctring for a model or field.
+    Accepts 2 or 3 string arguments:
+    If 2, returns the docstring for the given model in the specified app.
+    If 3, returns the help_text for the field on the given model in the specified app.
+    """
+
+    from django.contrib.contenttypes.models import ContentType
+
+    #ct =  ContentType.objects.get(app_label=app_label,model=model_name).model_class()
+    ct = item
+    if field is None:
+        return _(ct.__doc__)
+    else:
+        if ct._meta.get_field(field).help_text:
+            return _(ct._meta.get_field(field).help_text)
+        else:
+            #return _("No help text for the field '%(field)s' found on the model '%(model)s' in the app '%(app)s'") % {'app':app_label,'model':model_name,'field':field}
+            return _("No help text for the field '%(field)s' found for the model '%(model)s'") % {'model':item.get_verbose_name(),'field':field}
+
