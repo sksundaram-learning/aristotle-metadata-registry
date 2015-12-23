@@ -394,7 +394,7 @@ class DiscussionPost(discussionAbstract):
 class DiscussionComment(discussionAbstract):
     post = models.ForeignKey(DiscussionPost, related_name='comments')
     class Meta:
-        ordering = ['-created']
+        ordering = ['created']
 
 
 #class ReferenceDocument(models.Model):

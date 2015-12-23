@@ -117,17 +117,18 @@
             <dd><a href="{% url 'aristotle:workgroup' iid=item.workgroup.id %}">{{ item.workgroup.name }}</a></dd>
             <dt>{% trans 'History' %}</dt>
             <dd><a href="{% url 'aristotle:item_history' iid=item.id %}">{% trans "View history" %}</a></dd>
-            {% if item.relatedDiscussions.exists %}
             <dt>{% trans 'Discussions' %}</dt>
-            <dd><ul>
+            <dd>{% if item.relatedDiscussions.exists %}
+                <ul>
                     {% for discussion in item.relatedDiscussions.all %}
                     <li>
                         <a href="{% url 'aristotle:discussionsPost' pid=discussion.id %}">{{ discussion.title }}</a>
                     </li>
                     {% endfor %}
                 </ul>
+                {% endif %}
+                <a href="{% url 'aristotle:discussionsNew' %}?workgroup={{item.workgroup.id}}&item={{item.id}}">{% trans "Start a new discussion about this item" %}</a>
             </dd>
-            {% endif %}
         {% endif %}
         </dl>
         {% bootstrap_modal "infobox_modal" size='lg' %}

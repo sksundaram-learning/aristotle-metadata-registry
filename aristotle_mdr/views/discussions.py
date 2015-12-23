@@ -1,8 +1,10 @@
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, get_object_or_404
 from django.core.exceptions import PermissionDenied
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
+from django.shortcuts import render, get_object_or_404
+from django.utils.translation import ugettext_lazy as _
 
 from aristotle_mdr import models as MDR
 from aristotle_mdr import forms as MDRForms
@@ -68,8 +70,17 @@ def new(request):
             return HttpResponseRedirect(reverse("aristotle:discussionsPost",args=[new.pk]))
     else:
         initial = {}
-        if request.GET.get('workgroup') and request.user.profile.myWorkgroups.filter(id=request.GET.get('workgroup')).exists():
-            initial={'workgroup':request.GET.get('workgroup')}
+        if request.GET.get('workgroup'):
+            if request.user.profile.myWorkgroups.filter(id=request.GET.get('workgroup')).exists():
+                initial={'workgroup':request.GET.get('workgroup')}
+            else:
+                # If a user tries to navigate to a page to post to a workgroup they aren't in, redirect them to the regular post page.
+                return HttpResponseRedirect(reverse("aristotle:discussionsNew"))
+            if request.GET.getlist('item'):
+                workgroup = request.user.profile.myWorkgroups.get(id=request.GET.get('workgroup'))
+                items = request.GET.getlist('item')
+                initial.update({'relatedItems':workgroup.items.filter(id__in=items)})
+            
         form = MDRForms.discussions.NewPostForm(user=request.user,initial=initial)
     return render(request,"aristotle_mdr/discussions/new.html",
             {"form":form}
@@ -80,6 +91,9 @@ def new_comment(request,pid):
     post = get_object_or_404(MDR.DiscussionPost,pk=pid)
     if not perms.user_in_workgroup(request.user,post.workgroup):
         raise PermissionDenied
+    if post.closed:
+        messages.error(request, _('This post is closed. Your comment was not added.'))
+        return HttpResponseRedirect(reverse("aristotle:discussionsPost",args=[post.pk]))
     if request.method == 'POST':
         form = MDRForms.discussions.CommentForm(request.POST)
         if form.is_valid():
@@ -90,10 +104,11 @@ def new_comment(request,pid):
             )
             new.save()
             return HttpResponseRedirect(reverse("aristotle:discussionsPost",args=[new.post.pk])+"#comment_%s"%new.id)
+        else:
+            return render(request,"aristotle_mdr/discussions/new.html",{"form":form,})
     else:
         # It makes no sense to "GET" this comment, so push them back to the discussion
         return HttpResponseRedirect(reverse("aristotle:discussionsPost",args=[post.pk]))
-    return render(request,"aristotle_mdr/discussions/new.html",{"form":form,})
 
 @login_required
 def delete_comment(request,cid):

@@ -38,7 +38,7 @@ setup(
         'pytz',
 
         'django-model-utils==2.3.1',
-        'django-notifications-hq',
+        'django-notifications-hq>=0.8.0', #At least 0.8 for live notifications.
         'django-grappelli',
         'docutils',
 
