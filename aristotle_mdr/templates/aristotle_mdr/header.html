@@ -86,12 +86,12 @@
                     {% endif %}
                     {% if user.is_staff %}
                         <li role="presentation" class="divider"></li>
-                        <li><a href="{% url 'admin:index' %}">
+                        <li><a class="staff_action" href="{% url 'admin:index' %}">
                         <i class="fa fa-sliders fa-fw"></i> {% trans 'Management interface' %}
                         </a></li>
                     {% endif %}
                     {% if request.user.is_superuser %}
-                        <li><a href="{% url 'aristotle:userAdminTools' %}">
+                        <li><a class="su_action" href="{% url 'aristotle:userAdminTools' %}">
                         <i class="fa fa-user-md fa-fw"></i> {% trans 'Admin tools' %}
                         </a></li>
                     {% endif %}
@@ -118,11 +118,11 @@
                             <i class="fa fa-user-md fa-2x"></i> {% trans 'Admin only' %}
                         </li>
                         <li>
-                            <a href="{% url 'admin:aristotle_mdr_workgroup_add'%}">
+                            <a class="su_action" href="{% url 'admin:aristotle_mdr_workgroup_add'%}">
                                 <i class="fa fa-users fa-fw"></i> {% trans 'Workgroup' %}</a>
                         </li>
                         <li>
-                            <a href="{% url 'admin:auth_user_add'%}">
+                            <a class="su_action" href="{% url 'admin:auth_user_add'%}">
                                 <i class="fa fa-user-plus fa-fw"></i> {% trans 'User' %}
                             </a>
                         </li>
