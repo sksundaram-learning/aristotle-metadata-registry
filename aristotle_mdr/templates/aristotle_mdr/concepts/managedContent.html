@@ -32,7 +32,7 @@
         {% if item|can_edit:request.user and request.user.is_staff %}
             <a class="sr-only" accesskey="p" href="{% adminEdit item %}">{% trans 'Edit in admin'%}</a>
         {% elif item|can_edit:request.user %}
-            <a class="sr-only" accesskey="p" href="{% url 'aristotle:edit_item' item.id %}">{% trans 'Advanced editor'%}</a>
+            <a class="sr-only" accesskey="e" href="{% url 'aristotle:edit_item' item.id %}">{% trans 'Open item editor'%}</a>
         {% endif %}
     </h1>
     <div class="btn-group pull-right">
@@ -53,13 +53,12 @@
                     <i class="fa fa-pencil-square-o"></i> {% trans 'Edit'%} <span class="caret"></span>
                   </button>
                   <ul class="dropdown-menu dropdown-menu-right" role="menu">
-                    <!-- li><a id="ActivateInplaceEdit" class=""></a></li -->
                     <li><a class="" href="{% url 'aristotle:edit_item' item.id %}"
                                     data-toggle="modal" data-target="#infobox_adv_edit">
-                        <i class="fa fa-pencil-square"></i> {% trans 'Advanced editor'%}
+                        <i class="fa fa-pencil-square-o"></i> {% trans 'Open item editor'%}
                     </a></li>
-                    <li><a class="" href="{% adminEdit item %}">
-                        <i class="fa fa-sliders"></i> {% trans 'Edit in admin'%}
+                    <li><a class="staff_action" href="{% adminEdit item %}">
+                        <i class="fa fa-pencil-square"></i> {% trans 'Edit in admin'%}
                     </a></li>
                     {# % endif % #}
                     <li class="divider"></li>
@@ -67,7 +66,7 @@
                         <i class="fa fa-code-fork"></i> {% trans 'Clone this item'%}
                     </a></li>
                     {% if request.user.is_staff %}
-                    <li><a class="" href="{% clone item %}">
+                    <li><a class="staff_action" href="{% clone item %}">
                         <i class="fa fa-code-fork"></i> {% trans 'Clone this item via admin'%}
                     </a></li>
                     {% endif %}
