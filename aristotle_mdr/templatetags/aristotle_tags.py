@@ -149,8 +149,10 @@ def public_standards(regAuth,itemType="aristotle_mdr._concept"):
 
 #http://stackoverflow.com/questions/2047622/how-to-paginate-django-with-other-get-variables
 @register.simple_tag
-def paginator_get(request, pageNumber):
+def paginator_get(request, pageNumber, pop=''):
     dict_ = request.GET.copy()
+    for p in pop.split(','):
+        dict_.pop(p,None)
     dict_['page'] = pageNumber
     return dict_.urlencode()
 

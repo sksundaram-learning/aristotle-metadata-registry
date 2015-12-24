@@ -13,7 +13,7 @@ from reversion.models import Revision
 
 from aristotle_mdr import forms as MDRForms
 from aristotle_mdr import models as MDR
-from aristotle_mdr.views.utils import paginated_list, paginated_reversion_list
+from aristotle_mdr.views.utils import paginated_list, paginated_reversion_list, paginated_workgroup_list
 
 def friendly_redirect_login(request):
     if request.user.is_authenticated():
@@ -202,8 +202,10 @@ def review_list(request):
 
 @login_required
 def workgroups(request):
-    page = render(request,"aristotle_mdr/user/userWorkgroups.html")
-    return page
+    #page = render(request,"aristotle_mdr/user/userWorkgroups.html")
+    #return page
+    context = {}
+    return paginated_workgroup_list(request,request.user.profile.myWorkgroups,"aristotle_mdr/user/userWorkgroups.html",context)
 
 @login_required
 def workgroup_archives(request):
