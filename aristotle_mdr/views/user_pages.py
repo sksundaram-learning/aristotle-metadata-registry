@@ -6,6 +6,7 @@ from django.contrib.auth.views import login
 from django.core.cache import cache
 from django.core.exceptions import PermissionDenied
 from django.core.urlresolvers import reverse
+from django.db.models import Q
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 
@@ -202,10 +203,12 @@ def review_list(request):
 
 @login_required
 def workgroups(request):
-    #page = render(request,"aristotle_mdr/user/userWorkgroups.html")
-    #return page
-    context = {}
-    return paginated_workgroup_list(request,request.user.profile.myWorkgroups,"aristotle_mdr/user/userWorkgroups.html",context)
+    text_filter = request.GET.get('filter',None)
+    workgroups = request.user.profile.myWorkgroups
+    if text_filter:
+        workgroups = workgroups.filter(Q(name__icontains=text_filter)|Q(definition__icontains=text_filter))
+    context = {'filter':text_filter}
+    return paginated_workgroup_list(request,workgroups,"aristotle_mdr/user/userWorkgroups.html",context)
 
 @login_required
 def workgroup_archives(request):

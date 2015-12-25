@@ -14,7 +14,6 @@
     <section id="workgroups">
         <p>This is a list of active workgroups of which you are a member. To see a list of inactive workgroups,
         go to <a href="{% url 'aristotle:user_workgroups_archives'%}">Archived Workgroups.</a></p>
-        <header>Workgroups</header>
 
         {% include "aristotle_mdr/helpers/paginated_workgroup_list.html" with page=page %}
 </section>

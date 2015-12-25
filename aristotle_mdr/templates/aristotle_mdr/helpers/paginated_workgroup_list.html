@@ -1,11 +1,15 @@
 {% load i18n aristotle_tags %}
+<form action="#" method="get">
+    <label for="filter">{% trans 'Filter workgroups by name and description' %}</label>
+    <input name="filter" value="{{filter}}">
+    <input name="sort" type="hidden" value="{{sort}}">
+</form>
 
 {% if page.has_other_pages %}
 Showing {{ page.start_index }} - {{ page.end_index }} of {{ page.paginator.count }} results.
 {% else %}
 Showing {{ page.paginator.count }} results.
 {% endif %}
-
 <table class="table">
 <thead>
     <tr>

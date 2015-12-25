@@ -86,8 +86,7 @@ def paginated_workgroup_list(request,workgroups,template,extra_context={}):
         qs = extra(qs)
     except:
         sort_field = opts
-    print sort_field
-        
+
     qs = qs.order_by(direction+sort_field)
     paginator = Paginator(
         qs,
