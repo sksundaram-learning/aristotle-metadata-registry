@@ -22,6 +22,10 @@ Showing {{ page.paginator.count }} results.
             <a href="?{% paginator_get request page.number pop='sort' %}&sort=name_desc"><i class="fa fa-sort"></i></a>
             {% endif %}
         </th>
+        <th>{% trans 'Ownership' %}
+        </th>
+        <th>{% trans 'Registration Authorities' %}
+        </th>
         <th>
         {% if sort == "users_asc" %}
         <a href="?{% paginator_get request page.number pop='sort' %}&sort=users_desc"><i class="fa fa-sort-asc"></i></a>
@@ -52,7 +56,14 @@ Showing {{ page.paginator.count }} results.
             <a href="{% url 'aristotle:workgroup' item.id %}">{{ item.name }}</a>
             <span>{{ item.definition|striptags|safe|truncatewords:15 }}</span>
         </td>
-        {#<td>{{ item.modified }}</td>#}
+        <td>{{ item.get_ownership_display }}</td>
+        <td>{% if item.registrationAuthorities %}
+            <ul>{% for ra in item.registrationAuthorities.all %}
+            <li>{{ ra.name }}</li>
+            {% endfor %}</ul>
+            {% else %}
+            <em>{% trans 'None' %}</em>
+            {% endif %}</td>
         <td>{{ item.members.count }}</td>
         <td>{{ item.items.count }}</td>
     </tr>

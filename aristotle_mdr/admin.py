@@ -52,6 +52,9 @@ class WorkgroupAdmin(CompareVersionAdmin):
         ('Members',         {'fields': ['managers','stewards','submitters','viewers',]}),
     ]
     filter_horizontal = ['managers','stewards','submitters','viewers','registrationAuthorities']
+    list_display = ('name', 'definition','ownership','archived' )
+    list_filter = ( 'ownership','archived', 'registrationAuthorities' )
+    search_fields = ('name','definition')
     def get_queryset(self, request):
         qs = super(WorkgroupAdmin, self).get_queryset(request)
         if request.user.is_superuser:
