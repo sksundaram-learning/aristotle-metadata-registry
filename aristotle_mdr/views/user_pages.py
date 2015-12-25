@@ -6,6 +6,7 @@ from django.contrib.auth.views import login
 from django.core.cache import cache
 from django.core.exceptions import PermissionDenied
 from django.core.urlresolvers import reverse
+from django.db.models import Q
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 
@@ -13,7 +14,7 @@ from reversion.models import Revision
 
 from aristotle_mdr import forms as MDRForms
 from aristotle_mdr import models as MDR
-from aristotle_mdr.views.utils import paginated_list, paginated_reversion_list
+from aristotle_mdr.views.utils import paginated_list, paginated_reversion_list, paginated_workgroup_list
 
 def friendly_redirect_login(request):
     if request.user.is_authenticated():
@@ -202,10 +203,18 @@ def review_list(request):
 
 @login_required
 def workgroups(request):
-    page = render(request,"aristotle_mdr/user/userWorkgroups.html")
-    return page
+    text_filter = request.GET.get('filter',"")
+    workgroups = request.user.profile.myWorkgroups
+    if text_filter:
+        workgroups = workgroups.filter(Q(name__icontains=text_filter)|Q(definition__icontains=text_filter))
+    context = {'filter':text_filter}
+    return paginated_workgroup_list(request,workgroups,"aristotle_mdr/user/userWorkgroups.html",context)
 
 @login_required
 def workgroup_archives(request):
-    page = render(request,"aristotle_mdr/user/userWorkgroupArchives.html")
-    return page
+    text_filter = request.GET.get('filter',None)
+    workgroups = request.user.profile.workgroups.filter(archived=True)
+    if text_filter:
+        workgroups = workgroups.filter(Q(name__icontains=text_filter)|Q(definition__icontains=text_filter))
+    context = {'filter':text_filter}
+    return paginated_workgroup_list(request,workgroups,"aristotle_mdr/user/userWorkgroupArchives.html",context)

@@ -33,7 +33,9 @@
         <span class="badge pull-right">{{ user.profile.myWorkgroups.count }}</span></a>
         {% if subWorkgroups %}
         <ul class="nav nav-pills nav-stacked nav-collapse dashSubMenu">
-            <li><a href="{% url 'aristotle:user_workgroups_archives' %}">{% trans "Archived Workgroups" %}</a></li>
+            <li><a href="{% url 'aristotle:user_workgroups_archives' %}">
+                <i class="fa fa-archive"></i>
+                {% trans "Archived Workgroups" %}</a></li>
             {% for item in subWorkgroups %}
             <li>
                 <a href="{% url 'aristotle:workgroup' item.id %}">{{ item }}</a>
@@ -50,6 +52,7 @@
         {% ifequal activeTab "workgroupArchives" %}
         <ul class="nav nav-pills nav-stacked nav-collapse dashSubMenu">
             <li class="active">
+                <i class="fa fa-archive"></i>
                 <a href="{% url 'aristotle:user_workgroups_archives' %}">{% trans "Archived Workgroups" %}</a>
             </li>
         </ul>

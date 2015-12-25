@@ -17,11 +17,11 @@ Showing {{ page.paginator.count }} results.
         {% comment %}
         {% if sort == "mod_asc" %}
         <th>
-        <a href="?{% paginator_get request page.number %}&sort=mod_desc"><i class="fa fa-sort-asc"></i></a>
+        <a href="?{% paginator_get request page.number pop='sort' %}&sort=mod_desc"><i class="fa fa-sort-asc"></i></a>
         {% elif sort == "mod_desc" %}
-        <a href="?{% paginator_get request page.number %}&sort=mod_asc"><i class="fa fa-sort-desc"></i></a>
+        <a href="?{% paginator_get request page.number pop='sort' %}&sort=mod_asc"><i class="fa fa-sort-desc"></i></a>
         {% else %}
-        <a href="?{% paginator_get request page.number %}&sort=mod_desc"><i class="fa fa-sort"></i></a>
+        <a href="?{% paginator_get request page.number pop='sort' %}&sort=mod_desc"><i class="fa fa-sort"></i></a>
         {% endif %}
         Last modified</th>
         {% endcomment %}
