@@ -49,8 +49,8 @@ Showing {{ page.paginator.count }} results.
     {% for item in page %}
     <tr>
         <td>
-        {% include "aristotle_mdr/helpers/itemLink.html" with item=item %}
-            <span>{{ wg.definition|striptags|safe|truncatewords:15 }}</span>
+            <a href="{% url 'aristotle:workgroup' item.id %}">{{ item.name }}</a>
+            <span>{{ item.definition|striptags|safe|truncatewords:15 }}</span>
         </td>
         {#<td>{{ item.modified }}</td>#}
         <td>{{ item.members.count }}</td>

@@ -61,7 +61,7 @@ class UserHomePages(utils.LoggedInViewPages,TestCase):
         self.assertEqual(response.status_code,403)
         self.logout()
 
-    def test_user_can_filter_and_sortworkgroups(self):
+    def test_user_can_filter_and_sort_workgroups(self):
         self.login_viewer()
         
         # make some workgroups
@@ -70,7 +70,7 @@ class UserHomePages(utils.LoggedInViewPages,TestCase):
             wg1.giveRoleToUser('viewer',self.viewer)
             for j in range(i):
                 models.ObjectClass.objects.create(name="Test item",workgroup=wg1)
-        for i in range(5,7):
+        for i in range(4,7):
             wg1 = models.Workgroup.objects.create(name="Test WG %s"%i,definition="match_this_definition")
             wg1.giveRoleToUser('viewer',self.viewer)
             for j in range(i):
@@ -89,19 +89,45 @@ class UserHomePages(utils.LoggedInViewPages,TestCase):
         
         response = self.client.get(reverse('aristotle:userWorkgroups'))
         
-        self.assertTrue(len(response.context['page']),self.viewer.profile.myWorkgroups)
+        self.assertTrue(len(response.context['page']),self.viewer.profile.myWorkgroups.count())
         
         response = self.client.get(reverse('aristotle:userWorkgroups')+"?filter=match_this_name")
-        self.assertTrue(len(response.context['page']),3)
+        self.assertEqual(len(response.context['page']),3)
         for wg in response.context['page']:
             self.assertTrue('match_this_name' in wg.name)
         
         response = self.client.get(reverse('aristotle:userWorkgroups')+"?sort=items_desc")
         wgs = list(response.context['page'])
+        # When sorting by number off items assert that each workgroup has more items than the next.
         for a,b in zip(wgs[:-1],wgs[1:]):
             self.assertTrue(a.items.count() >= b.items.count())
         
+
+    def test_user_can_filter_and_sort_archived_workgroups(self):
+        self.login_viewer()
         
+        # make some workgroups
+        for i in range(1,4):
+            wg1 = models.Workgroup.objects.create(name="Test WG match_this_name %s"%i)
+            wg1.giveRoleToUser('viewer',self.viewer)
+            for j in range(i):
+                models.ObjectClass.objects.create(name="Test item",workgroup=wg1)
+        for i in range(4,7):
+            wg1 = models.Workgroup.objects.create(name="Test WG %s"%i,definition="match_this_definition")
+            wg1.giveRoleToUser('viewer',self.viewer)
+            for j in range(i):
+                models.ObjectClass.objects.create(name="Test item",workgroup=wg1)
+            wg1.archived=True
+            wg1.save()
+            
+        #should have 7 workgroups now with 3 archived
+
+        response = self.client.get(reverse('aristotle:user_workgroups_archives'))
+        self.assertEqual(response.status_code,200)
+        self.assertEqual(len(response.context['page']),3)
+        for wg in response.context['page']:
+            self.assertTrue(wg.archived)
+
     def test_registrar_can_access_tools(self):
         self.login_registrar()
         self.check_generic_pages()

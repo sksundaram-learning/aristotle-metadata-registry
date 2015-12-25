@@ -203,7 +203,7 @@ def review_list(request):
 
 @login_required
 def workgroups(request):
-    text_filter = request.GET.get('filter',None)
+    text_filter = request.GET.get('filter',"")
     workgroups = request.user.profile.myWorkgroups
     if text_filter:
         workgroups = workgroups.filter(Q(name__icontains=text_filter)|Q(definition__icontains=text_filter))
@@ -212,5 +212,9 @@ def workgroups(request):
 
 @login_required
 def workgroup_archives(request):
-    page = render(request,"aristotle_mdr/user/userWorkgroupArchives.html")
-    return page
+    text_filter = request.GET.get('filter',None)
+    workgroups = request.user.profile.workgroups.filter(archived=True)
+    if text_filter:
+        workgroups = workgroups.filter(Q(name__icontains=text_filter)|Q(definition__icontains=text_filter))
+    context = {'filter':text_filter}
+    return paginated_workgroup_list(request,workgroups,"aristotle_mdr/user/userWorkgroupArchives.html",context)
