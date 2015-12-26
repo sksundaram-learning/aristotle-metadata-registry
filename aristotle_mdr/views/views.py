@@ -453,7 +453,7 @@ def compare_concepts(request,obj_type=None):
 
         from django.contrib.contenttypes.models import ContentType
         revs=[]
-        for item in [item_a,item_b]:
+        for item in [item_a,item_a]:
             versions = default_revision_manager.get_for_object(item)
             ct = ContentType.objects.get_for_model(item)
             version = MMMM.Version.objects.filter(content_type=ct,object_id=item.pk).order_by('-revision__date_created').first()
@@ -467,7 +467,9 @@ def compare_concepts(request,obj_type=None):
             comparator = Comparator(*revs,obj=obj)
             version1 = revs[0]
             version2 = revs[1]
-    
+            version1 = MMMM.Version.objects.filter(content_type=ct,object_id=item_a.pk).order_by('-revision__date_created').first()
+            version2 = MMMM.Version.objects.filter(content_type=ct,object_id=item_a.pk).order_by('-revision__date_created').last()
+
             compare_data_a, has_unfollowed_fields_a = comparator.compare(obj, version1, version2)
             compare_data_b, has_unfollowed_fields_b = comparator.compare(obj, version2, version1)
     

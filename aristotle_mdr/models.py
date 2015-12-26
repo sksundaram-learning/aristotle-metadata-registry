@@ -816,7 +816,7 @@ class AbstractValue(aristotleComponent):
     value = models.CharField(max_length=32)
     meaning = models.CharField(max_length=255)
     value_meaning = models.ForeignKey(ValueMeaning, blank=True, null=True)
-    valueDomain = models.ForeignKey(ValueDomain)
+    #valueDomain = models.ForeignKey(ValueDomain)
     order = models.PositiveSmallIntegerField("Position")
     start_date = models.DateField(blank=True,null=True,
             help_text='Date at which the value became valid')
@@ -830,9 +830,9 @@ class AbstractValue(aristotleComponent):
         return self.value_domain
 
 class PermissibleValue(AbstractValue):
-    pass
+    valueDomain = models.ForeignKey(ValueDomain,related_name='permissiblevalue_set')
 class SupplementaryValue(AbstractValue):
-    pass
+    valueDomain = models.ForeignKey(ValueDomain,related_name='supplementaryvalue_set')
 
 
 class DataElementConcept(concept):

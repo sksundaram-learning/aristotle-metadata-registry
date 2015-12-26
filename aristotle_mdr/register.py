@@ -47,6 +47,22 @@ def register_concept(concept_class, *args, **kwargs):
     register_concept_autocomplete(concept_class, *args, **kwargs)
     register_concept_admin(concept_class, *args, **kwargs)
     register_concept_search_index(concept_class, *args, **kwargs)
+    register_concept_reversion_extras(concept_class, *args, **kwargs)
+
+def register_concept_reversion_extras(concept_class, *args, **kwargs):
+    follows = kwargs.get('reversion',{}).get('follow',None)
+    import reversion
+    if follows:
+        print "I'm here"
+        print follows
+        print "before"
+        reversion.revisions.unregister(concept_class)
+        reversion.revisions.register(concept_class, follow=follows)
+        for cls in kwargs.get('reversion',{}).get('follow_classes',[]):
+            reversion.revisions.unregister(cls)
+            reversion.revisions.register(cls)
+        print "sdfklisdfhj'kjsdfh'sdkfhsd"
+        
 
 def register_concept_autocomplete(concept_class, *args, **kwargs):
     """ Registers the given ``concept`` with ``autocomplete_light`` based on the
