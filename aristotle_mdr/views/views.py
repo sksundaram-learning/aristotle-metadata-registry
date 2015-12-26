@@ -1,4 +1,4 @@
-﻿from django.apps import apps
+from django.apps import apps
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.conf import settings
@@ -16,7 +16,8 @@ from django.utils.translation import ugettext_lazy as _
 from django.views.generic import TemplateView
 from django.utils import timezone
 import datetime
-import reversion
+from reversion import revisions
+from reversion import models as MMMM
 from reversion.revisions import default_revision_manager
 
 from aristotle_mdr.perms import user_can_view, user_can_edit, user_can_change_status
@@ -186,7 +187,7 @@ def item_history(request,iid):
     versions = default_revision_manager.get_for_object(item)
     from django.contrib.contenttypes.models import ContentType
     ct = ContentType.objects.get_for_model(item)
-    versions = reversion.models.Version.objects.filter(content_type=ct,object_id=item.pk).order_by('-revision__date_created')
+    versions = revisions.models.Version.objects.filter(content_type=ct,object_id=item.pk).order_by('-revision__date_created')
 
     page = render(request,"aristotle_mdr/actions/concept_history.html",{"item":item,'versions':versions})
     return page
@@ -231,7 +232,7 @@ def edit_item(request,iid,*args,**kwargs):
         if form.is_valid():
             workgroup_changed = item.workgroup.pk != form.cleaned_data['workgroup'].pk
 
-            with transaction.atomic(), reversion.create_revision():
+            with transaction.atomic(), revisions.create_revision():
                 change_comments = form.data.get('change_comments',None)
                 item = form.save()
                 reversion.set_user(request.user)
@@ -259,7 +260,7 @@ def clone_item(request,iid,*args,**kwargs):
         form = base_form(request.POST,user=request.user)
 
         if form.is_valid():
-            with transaction.atomic(), reversion.create_revision():
+            with transaction.atomic(), revisions.create_revision():
                 new_clone = form.save()
                 reversion.set_user(request.user)
                 reversion.set_comment("Cloned from %s (id: %s)"%(item_to_clone.name,str(item_to_clone.pk)))
@@ -424,6 +425,50 @@ def changeStatus(request, iid):
     return render(request,"aristotle_mdr/actions/changeStatus.html",
             {"item":item,
              "form":form,
+                }
+            )
+from reversion_compare.mixins import CompareMixin, CompareMethodsMixin
+class Comparator(CompareMixin):
+    def __init__(self,item_a,item_b,obj):
+        self.item_a=item_a
+        self.item_b=item_b
+        self.obj=obj
+
+def compare_concepts(request,obj_type=None):
+    qs = MDR._concept.objects.visible(request.user)
+    form = MDRForms.CompareConceptsForm(request.GET,user=request.user,qs=qs) # A form bound to the POST data
+    comparison = {}
+    item_a = request.GET.get('item_a',None)
+    item_b = request.GET.get('item_b',None)
+    item_a = get_object_or_404(MDR._concept,pk=item_a).item
+    item_b = get_object_or_404(MDR._concept,pk=item_b).item
+    
+    if form.is_valid():
+        from django.contrib.contenttypes.models import ContentType
+        revs=[]
+        for item in [item_a,item_b]:
+            print item
+            versions = default_revision_manager.get_for_object(item)
+            print versions
+            print "--------------------"
+            ct = ContentType.objects.get_for_model(item)
+            version = MMMM.Version.objects.filter(content_type=ct,object_id=item.pk).order_by('-revision__date_created').first()
+            revs.append(version)
+            print revs
+
+        obj = item_a
+        comparator = Comparator(*revs,obj=obj)
+        version1 = revs[0]
+        version2 = revs[1]
+
+        compare_data, has_unfollowed_fields = comparator.compare(obj, version1, version2)
+
+        comparison = (compare_data, has_unfollowed_fields)
+    return render(request,"aristotle_mdr/actions/compare_items.html",
+            {"item_a":item_a,
+             "item_b":item_b,
+             "form":form,
+             "comparison":comparison,
                 }
             )
 

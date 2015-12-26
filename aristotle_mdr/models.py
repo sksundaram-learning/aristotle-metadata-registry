@@ -15,7 +15,7 @@ from model_utils.managers import InheritanceManager, InheritanceQuerySet
 from model_utils.models import TimeStampedModel
 from model_utils import Choices, FieldTracker
 
-import reversion
+from reversion import revisions as reversion
 
 import datetime
 from ckeditor.fields import RichTextField
