@@ -16,6 +16,8 @@ from django.utils.translation import ugettext_lazy as _
 from django.views.generic import TemplateView
 from django.utils import timezone
 import datetime
+
+import reversion
 from reversion import revisions
 from reversion import models as MMMM
 from reversion.revisions import default_revision_manager
@@ -187,7 +189,7 @@ def item_history(request,iid):
     versions = default_revision_manager.get_for_object(item)
     from django.contrib.contenttypes.models import ContentType
     ct = ContentType.objects.get_for_model(item)
-    versions = revisions.models.Version.objects.filter(content_type=ct,object_id=item.pk).order_by('-revision__date_created')
+    versions = reversion.models.Version.objects.filter(content_type=ct,object_id=item.pk).order_by('-revision__date_created')
 
     page = render(request,"aristotle_mdr/actions/concept_history.html",{"item":item,'versions':versions})
     return page
@@ -235,10 +237,10 @@ def edit_item(request,iid,*args,**kwargs):
             with transaction.atomic(), revisions.create_revision():
                 change_comments = form.data.get('change_comments',None)
                 item = form.save()
-                reversion.set_user(request.user)
+                reversion.revisions.set_user(request.user)
                 if not change_comments:
                     change_comments = construct_change_message(request,form,None)
-                reversion.set_comment(change_comments)
+                reversion.revisions.set_comment(change_comments)
                 return HttpResponseRedirect(url_slugify_concept(item))
     else:
         form = base_form(instance=item,user=request.user)
@@ -262,8 +264,8 @@ def clone_item(request,iid,*args,**kwargs):
         if form.is_valid():
             with transaction.atomic(), revisions.create_revision():
                 new_clone = form.save()
-                reversion.set_user(request.user)
-                reversion.set_comment("Cloned from %s (id: %s)"%(item_to_clone.name,str(item_to_clone.pk)))
+                reversion.revisions.set_user(request.user)
+                reversion.revisions.set_comment("Cloned from %s (id: %s)"%(item_to_clone.name,str(item_to_clone.pk)))
                 return HttpResponseRedirect(url_slugify_concept(new_clone))
     else:
         form = base_form(initial=concept_to_clone_dict(item_to_clone),user=request.user)
@@ -440,37 +442,87 @@ def compare_concepts(request,obj_type=None):
     comparison = {}
     item_a = request.GET.get('item_a',None)
     item_b = request.GET.get('item_b',None)
-    item_a = get_object_or_404(MDR._concept,pk=item_a).item
-    item_b = get_object_or_404(MDR._concept,pk=item_b).item
-    
+
+    context = {"item_a":item_a,
+         "item_b":item_b,
+            }
+
     if form.is_valid():
+        item_a = get_object_or_404(MDR._concept,pk=item_a).item
+        item_b = get_object_or_404(MDR._concept,pk=item_b).item
+
         from django.contrib.contenttypes.models import ContentType
         revs=[]
         for item in [item_a,item_b]:
-            print item
             versions = default_revision_manager.get_for_object(item)
-            print versions
-            print "--------------------"
             ct = ContentType.objects.get_for_model(item)
             version = MMMM.Version.objects.filter(content_type=ct,object_id=item.pk).order_by('-revision__date_created').first()
             revs.append(version)
-            print revs
+        if revs[0] is None:
+            form.add_error('item_a','This field has no revisions. A comparison cannot be made')
+        if revs[1] is None:
+            form.add_error('item_b','This field has no revisions. A comparison cannot be made')
+        if revs[0] is not None and revs[1] is not None:
+            obj = item_a
+            comparator = Comparator(*revs,obj=obj)
+            version1 = revs[0]
+            version2 = revs[1]
+    
+            compare_data_a, has_unfollowed_fields_a = comparator.compare(obj, version1, version2)
+            compare_data_b, has_unfollowed_fields_b = comparator.compare(obj, version2, version1)
+    
+            has_unfollowed = has_unfollowed_fields_a or has_unfollowed_fields_b
+            
+            comparison = {}
+            for field_diff_a in compare_data_a:
+                name = field_diff_a['field'].name
+                x = comparison.get(name,{})
+                x['field'] = field_diff_a['field']
+                x['a'] = field_diff_a['diff']
+                comparison[name] = x
+            for field_diff_b in compare_data_b:
+                name = field_diff_b['field'].name
+                comparison.get(name,{})['b'] = field_diff_b['diff']
+    
+            same = {}
+            for f in item_a._meta.fields:
+                if f.name not in comparison.keys():
+                    same[f.name] = {'field':f,'value':getattr(item_a, f.name)}
+                if f.name.startswith('_'):
+                    #hidden field
+                    comparison.pop(f.name,None)
+                    same.pop(f.name,None)
+    
+            hidden_fields = ['readyToReview','workgroup','created','modified','id']
+            for h in hidden_fields:
+                comparison.pop(h,None)
+                same.pop(h,None)
 
-        obj = item_a
-        comparator = Comparator(*revs,obj=obj)
-        version1 = revs[0]
-        version2 = revs[1]
+            only_a = {}
+            for f in item_a._meta.fields:
+                if f not in item_b._meta.fields and\
+                    f not in comparison.keys() and\
+                    f not in same.keys()\
+                    and f.name not in hidden_fields:
+                    only_a[f.name] = {'field':f,'value':getattr(item_a, f.name)}
 
-        compare_data, has_unfollowed_fields = comparator.compare(obj, version1, version2)
-
-        comparison = (compare_data, has_unfollowed_fields)
-    return render(request,"aristotle_mdr/actions/compare_items.html",
-            {"item_a":item_a,
-             "item_b":item_b,
-             "form":form,
-             "comparison":comparison,
-                }
-            )
+            only_b = {}
+            for f in item_b._meta.fields:
+                if f not in item_a._meta.fields and\
+                    f not in comparison.keys() and\
+                    f not in same.keys()\
+                    and f.name not in hidden_fields:
+                    only_b[f.name] = {'field':f,'value':getattr(item_b, f.name)}
+                    
+            context.update({
+                "comparison":comparison,
+                "same":same,
+                "only_a":only_a,
+                "only_b":only_b,
+            })
+    context.update({"form":form,})
+            #comparison = {'a':compare_data_a, 'b':compare_data_b}
+    return render(request,"aristotle_mdr/actions/compare_items.html",context)
 
 def supersede(request, iid):
     item = get_object_or_404(MDR._concept,pk=iid).item
@@ -565,8 +617,8 @@ def valuedomain_value_edit(request,iid,value_type):
                     for obj in formset.deleted_objects:
                         obj.delete()
                     #formset.save(commit=True)
-                    reversion.set_user(request.user)
-                    reversion.set_comment(construct_change_message(request,None,[formset,]))
+                    reversion.revisions.set_user(request.user)
+                    reversion.revisions.set_comment(construct_change_message(request,None,[formset,]))
 
                 return redirect(reverse("aristotle_mdr:item",args=[item.id]))
     else:
