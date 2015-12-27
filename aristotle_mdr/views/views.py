@@ -25,6 +25,7 @@ from aristotle_mdr.utils import cache_per_item_user, concept_to_dict, construct_
 from aristotle_mdr import forms as MDRForms
 from aristotle_mdr import models as MDR
 from aristotle_mdr.utils import concept_to_clone_dict
+from aristotle_mdr import exceptions as registry_exceptions
 
 from haystack.views import SearchView
 
@@ -112,10 +113,10 @@ def download(request,downloadType,iid=None):
         import re
         if not re.search('^[a-zA-Z0-9\-\.]+$',downloadType): # pragma: no cover
             # Invalid downloadType
-            raise ImproperlyConfigured
+            raise registry_exceptions.BadDownloadTypeAbbreviation("Download type can only be composed of letters, numbers, hyphens or periods.")
         elif not re.search('^[a-zA-Z0-9\_]+$',module_name): # pragma: no cover
             # bad module_name
-            raise ImproperlyConfigured
+            raise registry_exceptions.BadDownloadModuleName("Download name isn't a valid Python module name.")
         try:
             downloader = None
             # dangerous - we are really trusting the settings creators here.
