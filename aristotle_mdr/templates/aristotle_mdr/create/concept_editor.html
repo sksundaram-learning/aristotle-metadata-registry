@@ -143,11 +143,13 @@
         <div role="tabpanel" class="tab-pane" id="changeComments">
             <div class="alert alert-info">
                 <p><strong>Leaving a change message is optional.</strong>
-                If it is left an automatic messages stating which fields
+                {% trans %}
+                If it is left blank an automatic messages stating which fields
                 have been changed will be generated on your behalf.
                 </p>
                 <p>However, stating <em>why</em> values in fields have changed
                 can be much more useful than knowing that a field has changed.
+                {% endtrans %}
                 </p>
             </div>
             <div class="wizard_field">
