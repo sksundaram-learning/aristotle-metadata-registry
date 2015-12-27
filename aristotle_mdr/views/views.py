@@ -19,7 +19,6 @@ import datetime
 
 import reversion
 from reversion import revisions
-from reversion import models as MMMM
 from reversion.revisions import default_revision_manager
 
 from aristotle_mdr.perms import user_can_view, user_can_edit, user_can_change_status
@@ -429,102 +428,6 @@ def changeStatus(request, iid):
              "form":form,
                 }
             )
-from reversion_compare.mixins import CompareMixin, CompareMethodsMixin
-class Comparator(CompareMixin):
-    def __init__(self,item_a,item_b,obj):
-        self.item_a=item_a
-        self.item_b=item_b
-        self.obj=obj
-
-def compare_concepts(request,obj_type=None):
-    qs = MDR._concept.objects.visible(request.user)
-    form = MDRForms.CompareConceptsForm(request.GET,user=request.user,qs=qs) # A form bound to the POST data
-    comparison = {}
-    item_a = request.GET.get('item_a',None)
-    item_b = request.GET.get('item_b',None)
-
-    context = {"item_a":item_a,
-         "item_b":item_b,
-            }
-
-    if form.is_valid():
-        item_a = get_object_or_404(MDR._concept,pk=item_a).item
-        item_b = get_object_or_404(MDR._concept,pk=item_b).item
-
-        from django.contrib.contenttypes.models import ContentType
-        revs=[]
-        for item in [item_a,item_a]:
-            versions = default_revision_manager.get_for_object(item)
-            ct = ContentType.objects.get_for_model(item)
-            version = MMMM.Version.objects.filter(content_type=ct,object_id=item.pk).order_by('-revision__date_created').first()
-            revs.append(version)
-        if revs[0] is None:
-            form.add_error('item_a','This field has no revisions. A comparison cannot be made')
-        if revs[1] is None:
-            form.add_error('item_b','This field has no revisions. A comparison cannot be made')
-        if revs[0] is not None and revs[1] is not None:
-            obj = item_a
-            comparator = Comparator(*revs,obj=obj)
-            version1 = revs[0]
-            version2 = revs[1]
-            version1 = MMMM.Version.objects.filter(content_type=ct,object_id=item_a.pk).order_by('-revision__date_created').first()
-            version2 = MMMM.Version.objects.filter(content_type=ct,object_id=item_a.pk).order_by('-revision__date_created').last()
-
-            compare_data_a, has_unfollowed_fields_a = comparator.compare(obj, version1, version2)
-            compare_data_b, has_unfollowed_fields_b = comparator.compare(obj, version2, version1)
-    
-            has_unfollowed = has_unfollowed_fields_a or has_unfollowed_fields_b
-            
-            comparison = {}
-            for field_diff_a in compare_data_a:
-                name = field_diff_a['field'].name
-                x = comparison.get(name,{})
-                x['field'] = field_diff_a['field']
-                x['a'] = field_diff_a['diff']
-                comparison[name] = x
-            for field_diff_b in compare_data_b:
-                name = field_diff_b['field'].name
-                comparison.get(name,{})['b'] = field_diff_b['diff']
-    
-            same = {}
-            for f in item_a._meta.fields:
-                if f.name not in comparison.keys():
-                    same[f.name] = {'field':f,'value':getattr(item_a, f.name)}
-                if f.name.startswith('_'):
-                    #hidden field
-                    comparison.pop(f.name,None)
-                    same.pop(f.name,None)
-    
-            hidden_fields = ['readyToReview','workgroup','created','modified','id']
-            for h in hidden_fields:
-                comparison.pop(h,None)
-                same.pop(h,None)
-
-            only_a = {}
-            for f in item_a._meta.fields:
-                if f not in item_b._meta.fields and\
-                    f not in comparison.keys() and\
-                    f not in same.keys()\
-                    and f.name not in hidden_fields:
-                    only_a[f.name] = {'field':f,'value':getattr(item_a, f.name)}
-
-            only_b = {}
-            for f in item_b._meta.fields:
-                if f not in item_a._meta.fields and\
-                    f not in comparison.keys() and\
-                    f not in same.keys()\
-                    and f.name not in hidden_fields:
-                    only_b[f.name] = {'field':f,'value':getattr(item_b, f.name)}
-                    
-            context.update({
-                "comparison":comparison,
-                "same":same,
-                "only_a":only_a,
-                "only_b":only_b,
-            })
-    context.update({"form":form,})
-            #comparison = {'a':compare_data_a, 'b':compare_data_b}
-    return render(request,"aristotle_mdr/actions/compare_items.html",context)
 
 def supersede(request, iid):
     item = get_object_or_404(MDR._concept,pk=iid).item
@@ -606,7 +509,7 @@ def valuedomain_value_edit(request,iid,value_type):
     if request.method == 'POST':
         formset = ValuesFormSet(request.POST, request.FILES)
         if formset.is_valid():
-                with transaction.atomic(), reversion.create_revision():
+                with transaction.atomic(), reversion.revisions.create_revision():
                     item.save() # do this to ensure we are saving reversion records for the value domain, not just the values
                     formset.save(commit=False)
                     for form in formset.forms:
