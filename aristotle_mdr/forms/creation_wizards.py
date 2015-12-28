@@ -1,6 +1,7 @@
 from django import forms
 from django.conf import settings
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
+from django.utils import timezone
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
@@ -60,6 +61,27 @@ class WorkgroupVerificationMixin(forms.ModelForm):
 
         return cleaned_data 
 
+class CheckIfModifiedMixin(forms.ModelForm):
+    modified_since_form_fetched_error = _(
+        "The object you are editing has been changed, review the changes before continuing then if you wish to save your changes click the 'save' button below."
+        )
+    modified_since_field_missing = _(
+        "Unable to determine if this save will over-right an existing save. Please try again. "
+        )
+    last_fetched = forms.DateTimeField(widget=forms.widgets.HiddenInput(),
+                        initial=timezone.now(),required=True,
+                        error_messages={'required': modified_since_field_missing})
+
+
+    def clean_last_fetched(self):
+        if self.cleaned_data['last_fetched'] is None or self.cleaned_data['last_fetched'] == "":
+            self.cleaned_data['last_fetched'] = timezone.now()
+            raise forms.ValidationError(CheckIfModifiedMixin.modified_since_field_missing)
+        if self.instance.modified > self.cleaned_data['last_fetched']:
+            self.cleaned_data['last_fetched'= timezone.now()
+            raise forms.ValidationError(CheckIfModifiedMixin.modified_since_form_fetched_error)
+
+
 class ConceptForm(WorkgroupVerificationMixin,UserAwareModelForm):
     """
     Add this in when we look at reintroducing the fancy templates.
@@ -85,11 +107,12 @@ class ConceptForm(WorkgroupVerificationMixin,UserAwareModelForm):
                 yield self[name]
     def object_specific_fields(self):
         # returns every field that isn't in a concept
-        field_names = [field.name for field in MDR.concept._meta.fields]
+        obj_field_names = [
+            field.name for field in self._meta.model._meta.fields
+            if field not in MDR.concept._meta.fields
+            ]
         for name in self.fields:
-            # Exclude fields in the based concept class
-            # Excldue fields that are used for editing
-            if name not in field_names and name not in ['make_new_item','change_comments']:
+            if name in obj_field_names:
                 yield self[name]
 
 class Concept_1_Search(UserAwareForm):
@@ -110,7 +133,7 @@ def subclassed_modelform(set_model):
     return MyForm
 
 def subclassed_edit_modelform(set_model):
-    class MyForm(ConceptForm):
+    class MyForm(CheckIfModifiedMixin,ConceptForm):
         change_comments = forms.CharField(widget = forms.Textarea,required=False)
         class Meta(ConceptForm.Meta):
             model = set_model

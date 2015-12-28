@@ -13,7 +13,7 @@
 
 {% block content %}
 
-<form method="post" action="{% url 'aristotle:edit_item' item.id %}">{% csrf_token %}
+<form method="post" action="{% url 'aristotle:edit_item' item.id %}">{% csrf_token %}{{form.last_fetched}}
     <div class="modal-body">
         <ol class="breadcrumb">
           <li><a href="{% url 'aristotle:item' item.id %}">{{ item.name }}</a></li>
