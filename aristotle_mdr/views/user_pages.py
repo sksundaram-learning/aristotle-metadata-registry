@@ -26,6 +26,7 @@ def friendly_redirect_login(request):
 
 @login_required
 def home(request):
+    from reversion.models import Revision
     #recent = Revision.objects.filter(user=request.user)
 
     #recent = Version.objects.filter(revision__user=request.user).order_by('-revision__date_created')[0:10]

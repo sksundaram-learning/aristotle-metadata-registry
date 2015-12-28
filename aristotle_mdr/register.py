@@ -52,7 +52,6 @@ def register_concept(concept_class, *args, **kwargs):
 def register_concept_reversion_extras(concept_class, *args, **kwargs):
     follows = kwargs.get('reversion',{}).get('follow',[])
     follows.append('_concept_ptr')
-    print follows
     follow_classes = kwargs.get('reversion',{}).get('follow_classes',[])
     import reversion
     
