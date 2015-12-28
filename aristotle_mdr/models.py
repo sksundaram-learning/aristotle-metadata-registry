@@ -15,7 +15,7 @@ from model_utils.managers import InheritanceManager, InheritanceQuerySet
 from model_utils.models import TimeStampedModel
 from model_utils import Choices, FieldTracker
 
-import reversion
+import reversion# import revisions 
 
 import datetime
 from ckeditor.fields import RichTextField
@@ -194,9 +194,9 @@ class RegistrationAuthority(registryGroup):
         revision_message = revision_message + kwargs.get('changeDetails',"")
         seen_items = {'success':[],'failed':[]}
 
-        with transaction.atomic(), reversion.create_revision():
-            reversion.set_user(user)
-            reversion.set_comment(revision_message)
+        with transaction.atomic(), reversion.revisions.create_revision():
+            reversion.revisions.set_user(user)
+            reversion.revisions.set_comment(revision_message)
 
             for child_item in [item]+item.registry_cascade_items:
                 registered = self._register(child_item,state,user,*args,**kwargs)
@@ -208,9 +208,9 @@ class RegistrationAuthority(registryGroup):
 
     def register(self,item,state,user,*args,**kwargs):
         revision_message = kwargs.get('changeDetails',"")
-        with transaction.atomic(), reversion.create_revision():
-            reversion.set_user(user)
-            reversion.set_comment(revision_message)
+        with transaction.atomic(), reversion.revisions.create_revision():
+            reversion.revisions.set_user(user)
+            reversion.revisions.set_comment(revision_message)
             registered = self._register(item,state,user,*args,**kwargs)
         if registered:
             return {'success':[item],'failed':[]}
@@ -816,7 +816,7 @@ class AbstractValue(aristotleComponent):
     value = models.CharField(max_length=32)
     meaning = models.CharField(max_length=255)
     value_meaning = models.ForeignKey(ValueMeaning, blank=True, null=True)
-    valueDomain = models.ForeignKey(ValueDomain)
+    #valueDomain = models.ForeignKey(ValueDomain)
     order = models.PositiveSmallIntegerField("Position")
     start_date = models.DateField(blank=True,null=True,
             help_text='Date at which the value became valid')
@@ -830,9 +830,9 @@ class AbstractValue(aristotleComponent):
         return self.value_domain
 
 class PermissibleValue(AbstractValue):
-    pass
+    valueDomain = models.ForeignKey(ValueDomain,related_name='permissiblevalue_set')
 class SupplementaryValue(AbstractValue):
-    pass
+    valueDomain = models.ForeignKey(ValueDomain,related_name='supplementaryvalue_set')
 
 
 class DataElementConcept(concept):

@@ -7,7 +7,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.utils import timezone
 
 import aristotle_mdr.models as MDR
-from aristotle_mdr.perms import user_can_edit
+from aristotle_mdr.perms import user_can_edit, user_can_view
 from bootstrap3_datetime.widgets import DateTimePicker
 
 class UserSelfEditForm(forms.Form):
@@ -139,3 +139,52 @@ class PermissibleValueForm(forms.ModelForm):
     class Meta:
         model = MDR.PermissibleValue
         fields = "__all__"
+
+class CompareConceptsForm(forms.Form):
+    item_a = forms.ModelChoiceField(
+                queryset=MDR._concept.objects.all(),
+                empty_label="None",
+                label=_("First item"),
+                required=True,
+                widget=autocomplete_light.ChoiceWidget('Autocomplete_concept'))
+    item_b = forms.ModelChoiceField(
+                queryset=MDR._concept.objects.all(),
+                empty_label="None",
+                label=_("Second item"),
+                required=True,
+                widget=autocomplete_light.ChoiceWidget('Autocomplete_concept'))
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user')
+        self.qs = kwargs.pop('qs').visible(self.user)
+        super(CompareConceptsForm, self).__init__(*args, **kwargs)
+        #if self.item.get_autocomplete_name() in autocomplete_light.registry.keys():
+        #    form_widget = autocomplete_light.ChoiceWidget(self.item.get_autocomplete_name())
+        #else:
+        #    # if there is no autocomplete for this item, then just give a select
+        #    # TODO: when autocomplete respects queryset these can be done automatically
+        #    form_widget = forms.Select
+
+        self.fields['item_a']=forms.ModelChoiceField(
+                queryset=self.qs,
+                empty_label="None",
+                label=_("First item"),
+                required=True,
+                widget=autocomplete_light.ChoiceWidget('Autocomplete_concept'))
+        self.fields['item_b']=forms.ModelChoiceField(
+                queryset=self.qs,
+                empty_label="None",
+                label=_("Second item"),
+                required=True,
+                widget=autocomplete_light.ChoiceWidget('Autocomplete_concept'))
+
+    BAD_COMPARE_MSG = "You can not compare with an item that you do not have permission to view. Please pick a different item."
+    def clean_item_a(self):
+        item  = self.cleaned_data['item_a']
+        if not user_can_view(self.user,item):
+            raise forms.ValidationError(_(self.BAD_COMPARE_MSG))
+        return item
+    def clean_item_b(self):
+        item  = self.cleaned_data['item_b']
+        if not user_can_view(self.user,item):
+            raise forms.ValidationError(_(self.BAD_COMPARE_MSG))
+        return item

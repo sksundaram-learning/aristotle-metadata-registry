@@ -10,11 +10,10 @@ from django.db.models import Q
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 
-from reversion.models import Revision
 
 from aristotle_mdr import forms as MDRForms
 from aristotle_mdr import models as MDR
-from aristotle_mdr.views.utils import paginated_list, paginated_reversion_list, paginated_workgroup_list
+from aristotle_mdr.views.utils import paginated_list, paginated_workgroup_list
 
 def friendly_redirect_login(request):
     if request.user.is_authenticated():
@@ -36,6 +35,8 @@ def home(request):
 
 @login_required
 def recent(request):
+    from reversion.models import Revision
+    from aristotle_mdr.views.utils import paginated_reversion_list
     items = Revision.objects.filter(user=request.user).order_by('-date_created')
     context = { }
     return paginated_reversion_list(request,items,"aristotle_mdr/user/recent.html",context)
