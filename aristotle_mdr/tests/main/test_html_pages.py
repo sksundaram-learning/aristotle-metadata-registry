@@ -151,7 +151,8 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.assertTrue('__all__' in form.errors.keys())
         self.assertTrue(len(form.errors['__all__'])==1)
         
-        self.assertTrue(form.errors['__all__'][0] == WorkgroupVerificationMixin.cant_move_to_permission_error)
+        # Submitter is logged in, tries to move item - fails because 
+        self.assertTrue(form.errors['__all__'][0] == WorkgroupVerificationMixin.cant_move_from_permission_error)
 
         updated_item['workgroup'] = str(self.wg2.pk)
         response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
