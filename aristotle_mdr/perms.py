@@ -116,11 +116,11 @@ def user_can_move_any_workgroup(user):
 
     if user.is_superuser:
         return True
-    if 'admin' in workgroup_change_access and self.user.is_staff:
+    if 'admin' in workgroup_change_access and user.is_staff:
         return True
-    if 'manager' in workgroup_change_access and self.user.profile.is_workgroup_manager():
+    if 'manager' in workgroup_change_access and user.profile.is_workgroup_manager():
         return True
-    if 'submitter' in workgroup_change_access  and self.user.submitter_in.exists():
+    if 'submitter' in workgroup_change_access  and user.submitter_in.exists():
         return True
 
     return False
@@ -129,7 +129,7 @@ def user_can_add_or_remove_workgroup(user,workgroup):
     workgroup_change_access = getattr(settings, 'ARISTOTLE_SETTINGS', {}).get('WORKGROUP_CHANGES',[])
     if user.is_superuser:
         return True
-    if 'admin' in workgroup_change_access and self.user.is_staff:
+    if 'admin' in workgroup_change_access and user.is_staff:
         return True
     if 'manager' in workgroup_change_access and user in workgroup.managers.all():
         return True
