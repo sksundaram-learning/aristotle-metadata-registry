@@ -232,13 +232,15 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.assertEqual(response.status_code,200)
 
         form = response.context['form']
-        self.assertTrue(form.errors['__all__'][0] == WorkgroupVerificationMixin.permission_error)
+        self.assertTrue(form.errors['__all__'][0] == WorkgroupVerificationMixin.cant_move_any_permission_error)
+
+        self.wg_other.managers.add(self.editor)
 
         response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
         self.assertEqual(response.status_code,200)
 
         form = response.context['form']
-        self.assertTrue(form.errors['__all__'][0] == WorkgroupVerificationMixin.permission_error)
+        self.assertTrue(form.errors['__all__'][0] == WorkgroupVerificationMixin.cant_move_from_permission_error)
 
 
         self.login_manager()
