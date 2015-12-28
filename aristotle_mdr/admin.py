@@ -228,6 +228,11 @@ admin.site.register(User, AristotleUserAdmin)
 
 
 from aristotle_mdr.register import register_concept
+import reversion
+reversion.revisions.register(MDR._concept)
+reversion.revisions.unregister(MDR.Workgroup)
+reversion.revisions.register(MDR.Workgroup)
+
 register_concept(MDR.ObjectClass)
 register_concept(MDR.Property)
 register_concept(MDR.ValueDomain,
