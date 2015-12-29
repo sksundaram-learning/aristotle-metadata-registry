@@ -223,6 +223,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
     def test_manager_of_two_workgroups_can_change_workgroup_via_edit_screen(self):
         # based on the idea that 'manager' is set in ARISTOTLE_SETTINGS.WORKGROUP
         self.wg_other = models.Workgroup.objects.create(name="Test WG to move to")
+        self.wg_other.submitters.add(self.editor)
 
         from django.forms import model_to_dict
         self.login_editor()
@@ -234,6 +235,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.assertEqual(response.status_code,200)
 
         form = response.context['form']
+        # Submitter can't move because they aren't a manager of any workgroups.
         self.assertTrue(form.errors['workgroup'][0] == WorkgroupVerificationMixin.cant_move_any_permission_error)
 
         self.wg_other.managers.add(self.editor)
@@ -242,6 +244,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.assertEqual(response.status_code,200)
 
         form = response.context['form']
+        # Submitter can't move because they aren't a manager of the workgroup the item is in.
         self.assertTrue(form.errors['workgroup'][0] == WorkgroupVerificationMixin.cant_move_from_permission_error)
 
 
