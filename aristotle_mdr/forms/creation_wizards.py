@@ -1,6 +1,7 @@
 from django import forms
 from django.conf import settings
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
+from django.utils import timezone, dateparse
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
@@ -37,7 +38,7 @@ class WorkgroupVerificationMixin(forms.ModelForm):
     cant_move_any_permission_error = _("You do not have permission to move an item between workgroups.")
     cant_move_from_permission_error = _("You do not have permission to remove an item from this workgroup.")
     cant_move_to_permission_error = _("You do not have permission to move an item to that workgroup.")
-    def clean(self):
+    def clean_workgroup(self):
         # raise a permission denied before cleaning if possible.
         # This gives us a 'clearer' error
         # cleaning before checking gives a "invalid selection" even if a user isn't allowed to change workgroups.
@@ -48,17 +49,45 @@ class WorkgroupVerificationMixin(forms.ModelForm):
                         raise forms.ValidationError(WorkgroupVerificationMixin.cant_move_any_permission_error)
                     if not user_can_remove_from_workgroup(self.user,self.instance.workgroup):
                         raise forms.ValidationError(WorkgroupVerificationMixin.cant_move_from_permission_error)
-        cleaned_data = super(WorkgroupVerificationMixin,self).clean()
+        new_workgroup = self.cleaned_data['workgroup']
         if self.instance.pk is not None:
-            if 'workgroup' in cleaned_data.keys() and self.instance.workgroup != cleaned_data['workgroup']:
-                if not user_can_move_between_workgroups(self.user,self.instance.workgroup, cleaned_data['workgroup']):
+            if 'workgroup' in self.cleaned_data.keys() and self.instance.workgroup != new_workgroup:
+                if not user_can_move_between_workgroups(self.user,self.instance.workgroup, new_workgroup):
                     self.data = self.data.copy() # need to make a mutable version of the POST querydict.
                     self.data['workgroup'] = self.instance.workgroup.pk
                     raise forms.ValidationError(WorkgroupVerificationMixin.cant_move_to_permission_error)
+        return new_workgroup 
 
+class CheckIfModifiedMixin(forms.ModelForm):
+    modified_since_form_fetched_error = _(
+        "The object you are editing has been changed, review the changes before continuing then if you wish to save your changes click the Save button below."
+        )
+    modified_since_field_missing = _(
+        "Unable to determine if this save will overwrite an existing save. Please try again. "
+        )
+    last_fetched = forms.CharField(widget=forms.widgets.HiddenInput(),
+                        initial=timezone.now(),required=True,
+                        error_messages={'required': modified_since_field_missing})
+    def __init__(self,*args,**kwargs):
+        # Tricky... http://www.avilpage.com/2015/03/django-form-gotchas-dynamic-initial.html
+        super(CheckIfModifiedMixin,self).__init__(*args, **kwargs)
+        self.initial['last_fetched'] = timezone.now()
+        self.fields['last_fetched'].initial = timezone.now()
+        
+    def clean_last_fetched(self):
+        # We need a UTC version of the modified time
+        modified_time = timezone.localtime(self.instance.modified,timezone.utc)
+        # And need to parse the submitted time back which is in UTC.
+        last_fetched = self.cleaned_data['last_fetched']
+        last_fetched = dateparse.parse_datetime(last_fetched)
+        self.cleaned_data['last_fetched'] = last_fetched
+        if self.cleaned_data['last_fetched'] is None or self.cleaned_data['last_fetched'] == "":
+            self.initial['last_fetched'] = timezone.now()
+            raise forms.ValidationError(CheckIfModifiedMixin.modified_since_field_missing)
+        if modified_time > self.cleaned_data['last_fetched']:
+            self.initial['last_fetched']= timezone.now()
+            raise forms.ValidationError(CheckIfModifiedMixin.modified_since_form_fetched_error)
 
-
-        return cleaned_data 
 
 class ConceptForm(WorkgroupVerificationMixin,UserAwareModelForm):
     """
@@ -85,11 +114,12 @@ class ConceptForm(WorkgroupVerificationMixin,UserAwareModelForm):
                 yield self[name]
     def object_specific_fields(self):
         # returns every field that isn't in a concept
-        field_names = [field.name for field in MDR.concept._meta.fields]
+        obj_field_names = [
+            field.name for field in self._meta.model._meta.fields
+            if field not in MDR.concept._meta.fields
+            ]
         for name in self.fields:
-            # Exclude fields in the based concept class
-            # Excldue fields that are used for editing
-            if name not in field_names and name not in ['make_new_item','change_comments']:
+            if name in obj_field_names:
                 yield self[name]
 
 class Concept_1_Search(UserAwareForm):
@@ -110,7 +140,7 @@ def subclassed_modelform(set_model):
     return MyForm
 
 def subclassed_edit_modelform(set_model):
-    class MyForm(ConceptForm):
+    class MyForm(CheckIfModifiedMixin,ConceptForm):
         change_comments = forms.CharField(widget = forms.Textarea,required=False)
         class Meta(ConceptForm.Meta):
             model = set_model
