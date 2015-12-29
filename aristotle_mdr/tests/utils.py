@@ -15,6 +15,19 @@ from time import sleep
 def wait_for_signal_to_fire(seconds=1):
     sleep(seconds)
 
+def model_to_dict(item):
+    from django.forms import model_to_dict as mtd
+    return dict((k,v) for (k,v) in mtd(response.context['item']).items() if v is not None)
+
+def modeL_to_dict_with_change_time(item,fetch_time=timezone.now()):
+    """
+    This constructs a dictionary from a model, with a last_fetched value as well
+    that is needed for checking in edit forms to prevent overrides of other saves.
+    """
+    d = model_to_dict(item)
+    d['last_fetched']=str(fetch_time)
+    return d
+
 # Since all managed objects have the same rules, these can be used to cover everything
 # This isn't an actual TestCase, we'll just pretend it is
 class ManagedObjectVisibility(object):

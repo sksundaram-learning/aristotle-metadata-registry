@@ -1,7 +1,7 @@
 from django import forms
 from django.conf import settings
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
-from django.utils import timezone
+from django.utils import timezone, dateparse
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
@@ -63,22 +63,32 @@ class WorkgroupVerificationMixin(forms.ModelForm):
 
 class CheckIfModifiedMixin(forms.ModelForm):
     modified_since_form_fetched_error = _(
-        "The object you are editing has been changed, review the changes before continuing then if you wish to save your changes click the 'save' button below."
+        "The object you are editing has been changed, review the changes before continuing then if you wish to save your changes click the Save button below."
         )
     modified_since_field_missing = _(
-        "Unable to determine if this save will over-right an existing save. Please try again. "
+        "Unable to determine if this save will overwrite an existing save. Please try again. "
         )
-    last_fetched = forms.DateTimeField(widget=forms.widgets.HiddenInput(),
+    last_fetched = forms.CharField(widget=forms.widgets.HiddenInput(),
                         initial=timezone.now(),required=True,
                         error_messages={'required': modified_since_field_missing})
-
-
+    def __init__(self,*args,**kwargs):
+        # Tricky... http://www.avilpage.com/2015/03/django-form-gotchas-dynamic-initial.html
+        super(CheckIfModifiedMixin,self).__init__(*args, **kwargs)
+        self.initial['last_fetched'] = timezone.now()
+        self.fields['last_fetched'].initial = timezone.now()
+        
     def clean_last_fetched(self):
+        # We need a UTC version of the modified time
+        modified_time = timezone.localtime(self.instance.modified,timezone.utc)
+        # And need to parse the submitted time back which is in UTC.
+        last_fetched = self.cleaned_data['last_fetched']
+        last_fetched = dateparse.parse_datetime(last_fetched)
+        self.cleaned_data['last_fetched'] = last_fetched
         if self.cleaned_data['last_fetched'] is None or self.cleaned_data['last_fetched'] == "":
-            self.cleaned_data['last_fetched'] = timezone.now()
+            self.initial['last_fetched'] = timezone.now()
             raise forms.ValidationError(CheckIfModifiedMixin.modified_since_field_missing)
-        if self.instance.modified > self.cleaned_data['last_fetched']:
-            self.cleaned_data['last_fetched'= timezone.now()
+        if modified_time > self.cleaned_data['last_fetched']:
+            self.initial['last_fetched']= timezone.now()
             raise forms.ValidationError(CheckIfModifiedMixin.modified_since_form_fetched_error)
 
 
