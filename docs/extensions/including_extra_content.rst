@@ -2,8 +2,8 @@ Including extra content on pages
 ================================
 
 Often when adding new content types there will be references to pre-existing items
-which may need to be shown on an existing page. While its possible to completely override
-a template it can be easier to simply declare any "extra content" ina special template
+which may need to be shown on an existing page. While it's possible to completely override
+a template it can be easier to simply declare any "extra content" in a special template
 that Aristotle will then include when rendering the main template. This can be very advantageous when an extension is designed to be included on a
 site alongside other extensions.
 
