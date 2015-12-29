@@ -38,7 +38,7 @@ class WorkgroupVerificationMixin(forms.ModelForm):
     cant_move_any_permission_error = _("You do not have permission to move an item between workgroups.")
     cant_move_from_permission_error = _("You do not have permission to remove an item from this workgroup.")
     cant_move_to_permission_error = _("You do not have permission to move an item to that workgroup.")
-    def clean(self):
+    def clean_workgroup(self):
         # raise a permission denied before cleaning if possible.
         # This gives us a 'clearer' error
         # cleaning before checking gives a "invalid selection" even if a user isn't allowed to change workgroups.
@@ -49,17 +49,14 @@ class WorkgroupVerificationMixin(forms.ModelForm):
                         raise forms.ValidationError(WorkgroupVerificationMixin.cant_move_any_permission_error)
                     if not user_can_remove_from_workgroup(self.user,self.instance.workgroup):
                         raise forms.ValidationError(WorkgroupVerificationMixin.cant_move_from_permission_error)
-        cleaned_data = super(WorkgroupVerificationMixin,self).clean()
+        new_workgroup = self.cleaned_data['workgroup']
         if self.instance.pk is not None:
-            if 'workgroup' in cleaned_data.keys() and self.instance.workgroup != cleaned_data['workgroup']:
-                if not user_can_move_between_workgroups(self.user,self.instance.workgroup, cleaned_data['workgroup']):
+            if 'workgroup' in self.cleaned_data.keys() and self.instance.workgroup != new_workgroup:
+                if not user_can_move_between_workgroups(self.user,self.instance.workgroup, new_workgroup):
                     self.data = self.data.copy() # need to make a mutable version of the POST querydict.
                     self.data['workgroup'] = self.instance.workgroup.pk
                     raise forms.ValidationError(WorkgroupVerificationMixin.cant_move_to_permission_error)
-
-
-
-        return cleaned_data 
+        return new_workgroup 
 
 class CheckIfModifiedMixin(forms.ModelForm):
     modified_since_form_fetched_error = _(
