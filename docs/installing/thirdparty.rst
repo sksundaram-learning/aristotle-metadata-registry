@@ -27,7 +27,7 @@ Every django setting can be overridden, but the ones that will be most important
 Haystack
 --------
 
-For search to work Haystack is required to be installed, there are no options to disable this,
+For search to work, Haystack is required to be installed. There are no options to disable this,
 as without search a registry is quite useless. However you can change some settings.
 
 * ``HAYSTACK_SEARCH_RESULTS_PER_PAGE`` - Self explanatory,  this defaults to 10 items per page.
