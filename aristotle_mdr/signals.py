@@ -19,6 +19,7 @@ class AristotleSignalProcessor(signals.BaseSignalProcessor):
     def teardown(self): # pragma: no cover
         from aristotle_mdr.models import _concept
         #post_save.disconnect(self.handle_concept_save, sender=_concept)
+        post_revision_commit.disconnect(self.handle_concept_revision)
         pre_delete.disconnect(self.handle_concept_delete, sender=_concept)
         super(AristotleSignalProcessor,self).teardown()
 
