@@ -152,7 +152,6 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.assertTrue(len(form.errors['workgroup'])==1)
         
         # Submitter is logged in, tries to move item - fails because 
-        print form.errors
         self.assertFalse(perms.user_can_remove_from_workgroup(self.editor,self.item1.workgroup))
         self.assertTrue(form.errors['workgroup'][0] == WorkgroupVerificationMixin.cant_move_any_permission_error)
 
