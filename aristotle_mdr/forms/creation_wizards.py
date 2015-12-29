@@ -37,7 +37,7 @@ class WorkgroupVerificationMixin(forms.ModelForm):
     cant_move_any_permission_error = _("You do not have permission to move an item between workgroups.")
     cant_move_from_permission_error = _("You do not have permission to remove an item from this workgroup.")
     cant_move_to_permission_error = _("You do not have permission to move an item to that workgroup.")
-    def clean(self):
+    def clean_workgroup(self):
         # raise a permission denied before cleaning if possible.
         # This gives us a 'clearer' error
         # cleaning before checking gives a "invalid selection" even if a user isn't allowed to change workgroups.
