@@ -6,7 +6,7 @@ Tags and filters available in aristotle templates
 A number of convenience tags are available for performing common actions in custom
 templates.
 
-To use these make use you include the aristotle template tags ain every template that uses them, like so::
+Include the aristotle template tags in every template that uses them, like so::
 
     {% load aristotle_tags %}
 
@@ -330,7 +330,7 @@ def bootstrap_modal(_id,size=None):
 
 @register.simple_tag
 def doc(item,field=None):
-    """Gets the appropriate help text or doctring for a model or field.
+    """Gets the appropriate help text or docstring for a model or field.
     Accepts 2 or 3 string arguments:
     If 2, returns the docstring for the given model in the specified app.
     If 3, returns the help_text for the field on the given model in the specified app.
