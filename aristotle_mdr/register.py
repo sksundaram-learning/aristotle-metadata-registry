@@ -26,6 +26,7 @@ import aristotle_mdr.search_indexes as search_index
 from haystack import connections
 from haystack.constants import DEFAULT_ALIAS
 from haystack import indexes
+import reversion
 
 import logging
 logger = logging.getLogger(__name__)
@@ -50,7 +51,6 @@ def register_concept(concept_class, *args, **kwargs):
     register_concept_search_index(concept_class, *args, **kwargs)
 
 def register_concept_reversions(concept_class, *args, **kwargs):
-    import reversion
     follows = kwargs.get('reversion',{}).get('follow',[])
     follows.append('_concept_ptr')
     follow_classes = kwargs.get('reversion',{}).get('follow_classes',[])
