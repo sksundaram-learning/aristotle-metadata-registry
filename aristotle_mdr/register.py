@@ -54,11 +54,13 @@ def register_concept_reversions(concept_class, *args, **kwargs):
     follows = kwargs.get('reversion',{}).get('follow',[])
     follows.append('_concept_ptr')
     follow_classes = kwargs.get('reversion',{}).get('follow_classes',[])
-
-    reversion.revisions.register(concept_class, follow=follows)
-
+    try:
+        reg = reversion.revisions.register
+    except:
+        reg = reversion.register
+    reg(concept_class, follow=follows)
     for cls in follow_classes:
-        reversion.revisions.register(cls)
+        reg(cls)
         
 
 def register_concept_autocomplete(concept_class, *args, **kwargs):
