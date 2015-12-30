@@ -36,7 +36,8 @@ def register_concept(concept_class, *args, **kwargs):
     """ A handler for third-party apps to make registering
     extension models based on ``aristotle_mdr.models.concept`` easier.
 
-    Sets up the search index, django administrator page and autocomplete handlers.
+    Sets up the version controls, search indexes, django administrator page
+    and autocomplete handlers.
     All ``args`` and ``kwargs`` are passed to the called methods. For examples of
     what can be passed into this method review the other methods in
     ``aristotle_mdr.register``.
@@ -54,13 +55,11 @@ def register_concept_reversions(concept_class, *args, **kwargs):
     follows = kwargs.get('reversion',{}).get('follow',[])
     follows.append('_concept_ptr')
     follow_classes = kwargs.get('reversion',{}).get('follow_classes',[])
-    try:
-        reg = reversion.revisions.register
-    except:
-        reg = reversion.register
-    reg(concept_class, follow=follows)
+
+    reversion.revisions.register(concept_class, follow=follows)
+
     for cls in follow_classes:
-        reg(cls)
+        reversion.revisions.register(cls)
         
 
 def register_concept_autocomplete(concept_class, *args, **kwargs):
