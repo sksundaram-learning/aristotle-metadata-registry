@@ -10,8 +10,9 @@ from aristotle_mdr import perms
 from django.core.urlresolvers import reverse
 from reversion_compare.admin import CompareVersionAdmin
 
-from aristotle_mdr.register import register_concept
 import reversion
+
+from aristotle_mdr.register import register_concept
 reversion.revisions.register(MDR._concept)
 reversion.revisions.register(MDR.Workgroup)
 
