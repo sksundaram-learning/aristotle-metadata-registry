@@ -620,11 +620,19 @@ class _concept(baseAristotleObject):
 
     is_locked.boolean = True
     is_locked.short_description = 'Locked'
-
+    
     def recache_states(self):
+        old_public = self._is_public
+        old_locked = self._is_locked
         self._is_public = self.check_is_public()
         self._is_locked = self.check_is_locked()
         self.save()
+        
+        if old_public != self._is_public or old_locked != self._is_locked:
+            cls = self.item.__class__
+            if cls != _concept:
+                from haystack import connections
+                connections['default'].get_unified_index().get_index(cls).update_object(self.item)
 
     def current_statuses(self,qs=None,when=timezone.now()):
         if qs is None:
