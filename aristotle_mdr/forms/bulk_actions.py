@@ -55,9 +55,14 @@ class ChangeStateForm(ChangeStatusForm):
         regDate = self.cleaned_data['registrationDate']
         cascade = self.cleaned_data['cascadeRegistration']
         changeDetails = self.cleaned_data['changeDetails']
-        if regDate is None:
-            regDate = timezone.now().date()
-        for item in items:
-            for ra in ras:
-                ra.register(item,state,self.user,regDate,cascade,changeDetails)
-        return '%d items registered in %d registration authorities'%(len(items),len(ras))
+        with transaction.atomic(), reversion.revisions.create_revision():
+            reversion.revisions.set_user(request.user)
+
+            if regDate is None:
+                regDate = timezone.now().date()
+            for item in items:
+                for ra in ras:
+                    ra.register(item,state,self.user,regDate,cascade,changeDetails)
+            message = '%d items registered in %d registration authorities'%(len(items),len(ras))
+            reversion.revisions.set_comment(message)
+            return message

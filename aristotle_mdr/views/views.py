@@ -383,8 +383,10 @@ def mark_ready_to_review(request,iid):
         if item.is_registered:
             raise PermissionDenied
         else:
-            item.readyToReview = not item.readyToReview
-            item.save()
+            with transaction.atomic(), reversion.revisions.create_revision():
+                reversion.revisions.set_user(request.user)
+                item.readyToReview = not item.readyToReview
+                item.save()
         return HttpResponseRedirect(url_slugify_concept(item))
     else:
         return render(request,"aristotle_mdr/actions/mark_ready_to_review.html",
@@ -409,17 +411,19 @@ def changeStatus(request, iid):
             regDate = form.cleaned_data['registrationDate']
             cascade = form.cleaned_data['cascadeRegistration']
             changeDetails = form.cleaned_data['changeDetails']
-            for ra in ras:
-                if cascade:
-                    register_method = ra.cascaded_register
-                else:
-                    register_method = ra.register
-
-                register_method(item,state,request.user,
-                        changeDetails=changeDetails,
-                        registrationDate=regDate,
-                    )
-                # TODO: notification and message on success/failure
+            with transaction.atomic(), reversion.revisions.create_revision():
+                reversion.revisions.set_user(request.user)
+                for ra in ras:
+                    if cascade:
+                        register_method = ra.cascaded_register
+                    else:
+                        register_method = ra.register
+    
+                    register_method(item,state,request.user,
+                            changeDetails=changeDetails,
+                            registrationDate=regDate,
+                        )
+                    # TODO: notification and message on success/failure
             return HttpResponseRedirect(url_slugify_concept(item))
     else:
         form = MDRForms.ChangeStatusForm(user=request.user)
@@ -440,8 +444,10 @@ def supersede(request, iid):
     if request.method == 'POST': # If the form has been submitted...
         form = MDRForms.SupersedeForm(request.POST,user=request.user,item=item,qs=qs) # A form bound to the POST data
         if form.is_valid():
-            item.superseded_by = form.cleaned_data['newerItem']
-            item.save()
+            with transaction.atomic(), reversion.revisions.create_revision():
+                reversion.revisions.set_user(request.user)
+                item.superseded_by = form.cleaned_data['newerItem']
+                item.save()
             return HttpResponseRedirect(url_slugify_concept(item))
     else:
         form = MDRForms.SupersedeForm(item=item,user=request.user,qs=qs)
@@ -467,12 +473,14 @@ def deprecate(request, iid):
             #  Everything that was in the returned set, but isn't already superseded
             #  Everything left over can stay the same, as its already superseded
             #    or wasn't superseded and is staying that way.
-            for i in item.supersedes.all():
-                if i not in form.cleaned_data['olderItems'] and user_can_edit(request.user,i):
-                    item.supersedes.remove(i)
-            for i in form.cleaned_data['olderItems']:
-                if user_can_edit(request.user,i): #Would check item.supersedes but its a set
-                    item.supersedes.add(i)
+            with transaction.atomic(), reversion.revisions.create_revision():
+                reversion.revisions.set_user(request.user)
+                for i in item.supersedes.all():
+                    if i not in form.cleaned_data['olderItems'] and user_can_edit(request.user,i):
+                        item.supersedes.remove(i)
+                for i in form.cleaned_data['olderItems']:
+                    if user_can_edit(request.user,i): #Would check item.supersedes but its a set
+                        item.supersedes.add(i)
             return HttpResponseRedirect(url_slugify_concept(item))
     else:
         form = MDRForms.DeprecateForm(user=request.user,item=item,qs=qs)

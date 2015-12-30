@@ -15,11 +15,12 @@
 {% block content %}
 <h1>Concept comparator</h1>
 <form method="get" action="{% url 'aristotle:compare_concepts' %}">
-    <header>This form allows you to compare items
-    </header>
-    <!-- a class="btn btn-default" href="{#% url 'aristotle:item' item.id %#}">Cancel</a -->
     <input type="submit" class="btn btn-primary" value="Compare" />
-    
+    <p>
+        This form allows you to compare items.
+        Text in green below is present only in the item in that column, text in red is
+        present only in the opposite column and text in white is similar across both items.
+    </p>
     <table class="table table-bordered compare">
         <thead>
             <tr>

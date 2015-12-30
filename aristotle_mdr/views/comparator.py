@@ -23,7 +23,7 @@ class Comparator(CompareMixin, CompareMethodsMixin):
         self.item_b=item_b
     
     #def compare_permissiblevalue_set(self,obj_compare):
-        #return "pooooooooooooooooooooop"
+    #    return "pooooooooooooooooooooop"
         
     def compare_ManyToOneRel(self, obj_compare):
         change_info = obj_compare.get_m2o_change_info()
@@ -37,17 +37,16 @@ def compare_concepts(request,obj_type=None):
     item_a = request.GET.get('item_a',None)
     item_b = request.GET.get('item_b',None)
 
-    context = {"item_a":item_a,
-         "item_b":item_b,
-            }
+    context = {"item_a":item_a,"item_b":item_b,}
 
     if form.is_valid():
         item_a = get_object_or_404(MDR._concept,pk=item_a).item
         item_b = get_object_or_404(MDR._concept,pk=item_b).item
+        context = {"item_a":item_a,"item_b":item_b,}
 
         from django.contrib.contenttypes.models import ContentType
         revs=[]
-        for item in [item_a,item_a]:
+        for item in [item_a,item_b]:
             versions = default_revision_manager.get_for_object(item)
             ct = ContentType.objects.get_for_model(item)
             version = reversion.models.Version.objects.filter(content_type=ct,object_id=item.pk).order_by('-revision__date_created').first()
@@ -61,11 +60,9 @@ def compare_concepts(request,obj_type=None):
             comparator = Comparator(*revs,obj=obj)
             version1 = revs[0]
             version2 = revs[1]
-            version1 = reversion.models.Version.objects.filter(content_type=ct,object_id=item_a.pk).order_by('-revision__date_created').first()
-            version2 = reversion.models.Version.objects.filter(content_type=ct,object_id=item_a.pk).order_by('-revision__date_created').last()
 
-            compare_data_a, has_unfollowed_fields_a = Comparator(*revs,obj=obj).compare(item_a, version1, version2)
-            compare_data_b, has_unfollowed_fields_b = Comparator(*revs,obj=obj).compare(item_a, version2, version1)
+            compare_data_a, has_unfollowed_fields_a = Comparator(*revs,obj=obj).compare(item_a, version2, version1)
+            compare_data_b, has_unfollowed_fields_b = Comparator(*revs,obj=obj).compare(item_a, version1, version2)
     
             has_unfollowed = has_unfollowed_fields_a or has_unfollowed_fields_b
             
