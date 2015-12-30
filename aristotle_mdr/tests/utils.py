@@ -17,7 +17,7 @@ def wait_for_signal_to_fire(seconds=1):
 
 def model_to_dict(item):
     from django.forms import model_to_dict as mtd
-    return dict((k,v) for (k,v) in mtd(response.context['item']).items() if v is not None)
+    return dict((k,v) for (k,v) in mtd(item).items() if v is not None)
 
 def modeL_to_dict_with_change_time(item,fetch_time=timezone.now()):
     """
