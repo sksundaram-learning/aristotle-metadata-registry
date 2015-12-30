@@ -16,6 +16,6 @@ class Command(BaseCommand):
 
             for item in _concept.objects.filter(statuses__registrationAuthority=ra):
                 item.recache_states()
-                connections['default'].get_unified_index().get_index(item.__class__).update_object(item)
+                connections['default'].get_unified_index().get_index(item.item.__class__).update_object(item.item)
 
             self.stdout.write('Successfully updated items in Registration Authority "%s" (id:%s)' % (ra.name,ra_id,))

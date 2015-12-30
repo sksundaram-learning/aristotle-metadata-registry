@@ -19,11 +19,13 @@ def model_to_dict(item):
     from django.forms import model_to_dict as mtd
     return dict((k,v) for (k,v) in mtd(item).items() if v is not None)
 
-def modeL_to_dict_with_change_time(item,fetch_time=timezone.now()):
+def modeL_to_dict_with_change_time(item,fetch_time=None):
     """
     This constructs a dictionary from a model, with a last_fetched value as well
     that is needed for checking in edit forms to prevent overrides of other saves.
     """
+    if fetch_time is None:
+        fetch_time = timezone.now()
     d = model_to_dict(item)
     d['last_fetched']=str(fetch_time)
     return d
