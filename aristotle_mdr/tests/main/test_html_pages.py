@@ -251,13 +251,13 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.login_superuser()
         response = self.client.get(reverse('aristotle:edit_item',args=[self.item1.id]))
         self.assertEqual(response.status_code,200)
-        updated_item = utils.modeL_to_dict_with_change_time(response.context['item'])
+        updated_item = utils.modeL_to_dict_with_change_time(self.item1)
         updated_item['workgroup'] = str(self.wg_other.pk)
         
         response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
-        
         self.assertEqual(response.status_code,302)
         
+        updated_item = utils.modeL_to_dict_with_change_time(self.item1)
         updated_item['workgroup'] = str(self.wg2.pk)
         response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
         self.assertEqual(response.status_code,302)
