@@ -18,7 +18,6 @@ from django.utils import timezone
 import datetime
 
 import reversion
-from reversion import revisions
 from reversion.revisions import default_revision_manager
 
 from aristotle_mdr.perms import user_can_view, user_can_edit, user_can_change_status
@@ -234,7 +233,7 @@ def edit_item(request,iid,*args,**kwargs):
         if form.is_valid():
             workgroup_changed = item.workgroup.pk != form.cleaned_data['workgroup'].pk
 
-            with transaction.atomic(), revisions.create_revision():
+            with transaction.atomic(), reversion.revisions.create_revision():
                 change_comments = form.data.get('change_comments',None)
                 item = form.save()
                 reversion.revisions.set_user(request.user)
@@ -262,7 +261,7 @@ def clone_item(request,iid,*args,**kwargs):
         form = base_form(request.POST,user=request.user)
 
         if form.is_valid():
-            with transaction.atomic(), revisions.create_revision():
+            with transaction.atomic(), reversion.revisions.create_revision():
                 new_clone = form.save()
                 reversion.revisions.set_user(request.user)
                 reversion.revisions.set_comment("Cloned from %s (id: %s)"%(item_to_clone.name,str(item_to_clone.pk)))
