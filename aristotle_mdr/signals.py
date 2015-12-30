@@ -11,7 +11,7 @@ import haystack.signals as signals #.RealtimeSignalProcessor as RealtimeSignalPr
 class AristotleSignalProcessor(signals.BaseSignalProcessor):
     def setup(self):
         from aristotle_mdr.models import _concept,Workgroup
-        #post_save.connect(self.handle_concept_save, sender=_concept)
+        post_save.connect(self.handle_concept_save, sender=_concept)
         post_revision_commit.connect(self.handle_concept_revision)
         pre_delete.connect(self.handle_concept_delete, sender=_concept)
         super(AristotleSignalProcessor,self).setup()
