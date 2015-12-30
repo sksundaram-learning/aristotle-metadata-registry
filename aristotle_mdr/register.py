@@ -56,6 +56,7 @@ def register_concept_reversions(concept_class, *args, **kwargs):
     follows.append('_concept_ptr')
     follow_classes = kwargs.get('reversion',{}).get('follow_classes',[])
 
+    print dir(reversion)
     reversion.revisions.register(concept_class, follow=follows)
 
     for cls in follow_classes:
