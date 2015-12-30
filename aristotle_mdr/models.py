@@ -620,19 +620,11 @@ class _concept(baseAristotleObject):
 
     is_locked.boolean = True
     is_locked.short_description = 'Locked'
-    
+
     def recache_states(self):
-        old_public = self._is_public
-        old_locked = self._is_locked
         self._is_public = self.check_is_public()
         self._is_locked = self.check_is_locked()
         self.save()
-        
-        if old_public != self._is_public or old_locked != self._is_locked:
-            cls = self.item.__class__
-            if cls != _concept:
-                from haystack import connections
-                connections['default'].get_unified_index().get_index(cls).update_object(self.item)
 
     def current_statuses(self,qs=None,when=timezone.now()):
         if qs is None:
@@ -824,7 +816,9 @@ class AbstractValue(aristotleComponent):
     value = models.CharField(max_length=32)
     meaning = models.CharField(max_length=255)
     value_meaning = models.ForeignKey(ValueMeaning, blank=True, null=True)
-    #valueDomain = models.ForeignKey(ValueDomain)
+    # Below will generate exactly the same related name as django, but reversion-compare
+    # needs an explicit related_name for some actions.
+    valueDomain = models.ForeignKey(ValueDomain,related_name="%(class)s_set")
     order = models.PositiveSmallIntegerField("Position")
     start_date = models.DateField(blank=True,null=True,
             help_text='Date at which the value became valid')
@@ -838,9 +832,9 @@ class AbstractValue(aristotleComponent):
         return self.value_domain
 
 class PermissibleValue(AbstractValue):
-    valueDomain = models.ForeignKey(ValueDomain,related_name='permissiblevalue_set')
+    pass
 class SupplementaryValue(AbstractValue):
-    valueDomain = models.ForeignKey(ValueDomain,related_name='supplementaryvalue_set')
+    pass
 
 
 class DataElementConcept(concept):
