@@ -44,20 +44,19 @@ def register_concept(concept_class, *args, **kwargs):
 
         register_concept(Question, extra_fieldsets=[('Question','question_text'),]
     """
-    register_concept_reversion_extras(concept_class, *args, **kwargs) # must come before admin
+    register_concept_reversions(concept_class, *args, **kwargs) # must come before admin
     register_concept_admin(concept_class, *args, **kwargs)
     register_concept_autocomplete(concept_class, *args, **kwargs)
     register_concept_search_index(concept_class, *args, **kwargs)
 
-def register_concept_reversion_extras(concept_class, *args, **kwargs):
+def register_concept_reversions(concept_class, *args, **kwargs):
     import reversion
     follows = kwargs.get('reversion',{}).get('follow',[])
     follows.append('_concept_ptr')
     follow_classes = kwargs.get('reversion',{}).get('follow_classes',[])
-    if follows:
-        reversion.revisions.register(concept_class, follow=follows)
-    else:
-        reversion.revisions.register(concept_class)
+
+    reversion.revisions.register(concept_class, follow=follows)
+
     for cls in follow_classes:
         reversion.revisions.register(cls)
         
