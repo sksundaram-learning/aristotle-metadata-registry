@@ -49,7 +49,7 @@ class ChangeStateForm(ChangeStatusForm):
         self.add_registration_authority_field()
 
     def make_changes(self):
-        import reversions
+        import reversion
         if not self.user.profile.is_registrar:
             raise PermissionDenied
         ras = self.cleaned_data['registrationAuthorities']
