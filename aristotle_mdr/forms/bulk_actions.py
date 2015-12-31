@@ -59,7 +59,7 @@ class ChangeStateForm(ChangeStatusForm):
         cascade = self.cleaned_data['cascadeRegistration']
         changeDetails = self.cleaned_data['changeDetails']
         with transaction.atomic(), reversion.revisions.create_revision():
-            reversion.revisions.set_user(request.user)
+            reversion.revisions.set_user(self.user)
 
             if regDate is None:
                 regDate = timezone.now().date()

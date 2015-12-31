@@ -832,7 +832,7 @@ class AbstractValue(aristotleComponent):
     end_date = models.DateField(blank=True,null=True,
             help_text='Date at which the value ceased to be valid')
     def __unicode__(self):
-        return "%s - %s"%(self.valueDomain.name,self.value,self.meaning)
+        return "%s: %s - %s"%(self.valueDomain.name,self.value,self.meaning)
 
     @property
     def parentItem(self):
