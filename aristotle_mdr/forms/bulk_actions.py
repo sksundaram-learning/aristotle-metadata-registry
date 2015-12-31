@@ -9,6 +9,8 @@ import aristotle_mdr.models as MDR
 from aristotle_mdr.forms import ChangeStatusForm
 from aristotle_mdr.perms import user_can_view
 
+import reversions
+
 class BulkActionForm(forms.Form):
     confirm_page = None
     items = forms.ModelMultipleChoiceField(
