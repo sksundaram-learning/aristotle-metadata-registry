@@ -15,22 +15,35 @@ from reversion.revisions import default_revision_manager
 from aristotle_mdr.utils import cache_per_item_user, concept_to_dict, construct_change_message, url_slugify_concept
 from aristotle_mdr import forms as MDRForms
 from aristotle_mdr import models as MDR
+from aristotle_mdr import perms
 
 def compare_concepts(request,obj_type=None):
-    qs = MDR._concept.objects.visible(request.user)
-    form = MDRForms.CompareConceptsForm(request.GET,user=request.user,qs=qs) # A form bound to the POST data
     comparison = {}
     item_a = request.GET.get('item_a',None)
     item_b = request.GET.get('item_b',None)
 
     context = {"item_a":item_a,"item_b":item_b,}
 
-    if form.is_valid():
-        item_a = get_object_or_404(MDR._concept,pk=item_a).item
-        item_b = get_object_or_404(MDR._concept,pk=item_b).item
-        context = {"item_a":item_a,"item_b":item_b,}
+    item_a = MDR._concept.objects.visible(request.user).filter(pk=item_a).first() #.item
+    item_b = MDR._concept.objects.visible(request.user).filter(pk=item_b).first() #.item
+    context = {"item_a":item_a,"item_b":item_b,}
+    
+    request.GET = request.GET.copy()
+    print item_a,item_b
+    if item_a:
+        item_a = item_a.item
+    else:
+        request.GET['item_a']="0"
+    if item_b:
+        item_b = item_b.item
+    else:
+        request.GET['item_b']="0"
 
+    qs = MDR._concept.objects.visible(request.user)
+    form = MDRForms.CompareConceptsForm(request.GET,user=request.user,qs=qs) # A form bound to the POST data
+    if form.is_valid():
         from django.contrib.contenttypes.models import ContentType
+
         revs=[]
         for item in [item_a,item_b]:
             versions = default_revision_manager.get_for_object(item)
