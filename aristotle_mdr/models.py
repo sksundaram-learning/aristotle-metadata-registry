@@ -22,6 +22,8 @@ from ckeditor.fields import RichTextField
 from aristotle_mdr import perms
 from aristotle_mdr import messages
 from aristotle_mdr.utils import url_slugify_concept, url_slugify_workgroup
+from aristotle_mdr import comparators
+
 from model_utils.fields import AutoLastModifiedField
 
 import logging
@@ -503,6 +505,8 @@ class _concept(baseAristotleObject):
 
     tracker=FieldTracker()
 
+    comparator = comparators.Comparator
+
     class Meta:
         verbose_name = "item" # So the url_name works for items we can't determine
 
@@ -795,6 +799,9 @@ class ValueDomain(concept):
     conceptual_domain = models.ForeignKey(ConceptualDomain,blank=True,null=True)
     description = models.TextField(_('description'),blank=True,
             help_text='Description or specification of a rule, reference, or range for a set of all values for a Value Domain')
+
+    comparator = comparators.ValueDomainComparator
+    
     #Below is a dirty, dirty hack that came from re-designing permissible values
     # TODO: Fix references to permissible and supplementary values
     @property
@@ -825,7 +832,7 @@ class AbstractValue(aristotleComponent):
     end_date = models.DateField(blank=True,null=True,
             help_text='Date at which the value ceased to be valid')
     def __unicode__(self):
-        return "%s: %s - %s"%(self.valueDomain.name,self.value,self.meaning)
+        return "%s - %s"%(self.valueDomain.name,self.value,self.meaning)
 
     @property
     def parentItem(self):

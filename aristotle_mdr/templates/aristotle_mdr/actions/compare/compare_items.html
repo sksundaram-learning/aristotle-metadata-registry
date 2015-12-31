@@ -43,7 +43,7 @@
                 <td>{{form.item_b.errors}}</td>
             </tr>
             {% endif %}
-            {% for name,diffs in comparison.items %}
+            {% for name,diffs in comparison %}
                 <tr>
                     {% with field=diffs.field %}
                     <th>{% firstof field.verbose_name field.related_name %}{% if field_diff.is_related and not field_diff.follow %}<sup class="follow">*</sup>{% endif %}

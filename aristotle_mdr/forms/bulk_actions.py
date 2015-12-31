@@ -9,7 +9,6 @@ import aristotle_mdr.models as MDR
 from aristotle_mdr.forms import ChangeStatusForm
 from aristotle_mdr.perms import user_can_view
 
-import reversions
 
 class BulkActionForm(forms.Form):
     confirm_page = None
@@ -50,6 +49,7 @@ class ChangeStateForm(ChangeStatusForm):
         self.add_registration_authority_field()
 
     def make_changes(self):
+        import reversions
         if not self.user.profile.is_registrar:
             raise PermissionDenied
         ras = self.cleaned_data['registrationAuthorities']

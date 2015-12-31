@@ -11,24 +11,10 @@ from django.views.generic import TemplateView
 
 import reversion
 from reversion.revisions import default_revision_manager
-from reversion_compare.mixins import CompareMixin, CompareMethodsMixin
 
 from aristotle_mdr.utils import cache_per_item_user, concept_to_dict, construct_change_message, url_slugify_concept
 from aristotle_mdr import forms as MDRForms
 from aristotle_mdr import models as MDR
-
-class Comparator(CompareMixin, CompareMethodsMixin):
-    def __init__(self,item_a,item_b,obj):
-        self.item_a=item_a
-        self.item_b=item_b
-    
-    #def compare_permissiblevalue_set(self,obj_compare):
-    #    return something
-        
-    def compare_ManyToOneRel(self, obj_compare):
-        change_info = obj_compare.get_m2o_change_info()
-        context = {"change_info": change_info}
-        return render_to_string("reversion-compare/compare_generic_many_to_many.html", context)
 
 def compare_concepts(request,obj_type=None):
     qs = MDR._concept.objects.visible(request.user)
@@ -56,13 +42,13 @@ def compare_concepts(request,obj_type=None):
         if revs[1] is None:
             form.add_error('item_b',_('This item has no revisions. A comparison cannot be made'))
         if revs[0] is not None and revs[1] is not None:
-            obj = item_a
-            comparator = Comparator(*revs,obj=obj)
+            comparator_a_to_b = item_a.comparator()
+            comparator_b_to_a = item_b.comparator()
             version1 = revs[0]
             version2 = revs[1]
 
-            compare_data_a, has_unfollowed_fields_a = Comparator(*revs,obj=obj).compare(item_a, version2, version1)
-            compare_data_b, has_unfollowed_fields_b = Comparator(*revs,obj=obj).compare(item_a, version1, version2)
+            compare_data_a, has_unfollowed_fields_a = comparator_a_to_b.compare(item_a, version2, version1)
+            compare_data_b, has_unfollowed_fields_b = comparator_b_to_a.compare(item_a, version1, version2)
     
             has_unfollowed = has_unfollowed_fields_a or has_unfollowed_fields_b
             
@@ -108,6 +94,7 @@ def compare_concepts(request,obj_type=None):
                     and f.name not in hidden_fields:
                     only_b[f.name] = {'field':f,'value':getattr(item_b, f.name)}
                     
+            comparison = sorted(comparison.items())
             context.update({
                 "comparison":comparison,
                 "same":same,
@@ -116,4 +103,4 @@ def compare_concepts(request,obj_type=None):
             })
     context.update({"form":form,})
             #comparison = {'a':compare_data_a, 'b':compare_data_b}
-    return render(request,"aristotle_mdr/actions/compare_items.html",context)
+    return render(request,"aristotle_mdr/actions/compare/compare_items.html",context)
