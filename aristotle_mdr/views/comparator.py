@@ -23,7 +23,7 @@ class Comparator(CompareMixin, CompareMethodsMixin):
         self.item_b=item_b
     
     #def compare_permissiblevalue_set(self,obj_compare):
-    #    return "pooooooooooooooooooooop"
+    #    return something
         
     def compare_ManyToOneRel(self, obj_compare):
         change_info = obj_compare.get_m2o_change_info()
