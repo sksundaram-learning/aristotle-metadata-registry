@@ -99,7 +99,7 @@ class ObjectClassComparatorTester(ComparatorTester,TestCase):
 class ValueDomainComparatorTester(ComparatorTester,TestCase):
     itemType=models.ValueDomain
     def setUp(self):
-        super(ValueDomainViewPage, self).setUp()
+        super(ValueDomainComparatorTester, self).setUp()
 
         for i in range(4):
             models.PermissibleValue.objects.create(
