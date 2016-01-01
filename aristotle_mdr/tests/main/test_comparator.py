@@ -20,12 +20,14 @@ class ComparatorTester(utils.LoggedInViewPages):
         self.ra = models.RegistrationAuthority.objects.create(name="Test RA")
         self.wg = models.Workgroup.objects.create(name="Setup WG")
         self.wg.registrationAuthorities.add(self.ra)
+        self.item1 = self.itemType.objects.create(name="Item with a name",workgroup=self.wg)
+        self.item2 = self.itemType.objects.create(name="Item wit a different name",workgroup=self.wg)
+
 
     def test_compare_page_loads(self):
         self.logout()
-        
-        item1 = self.itemType.objects.create(name="Item with a name",workgroup=self.wg)
-        item2 = self.itemType.objects.create(name="Item wit a different name",workgroup=self.wg)
+        item1 = self.item1
+        item2 = self.item2
         response = self.client.get(
             reverse('aristotle:compare_concepts')+"?item_a=%s&item_b=%s"%(item1.id,item2.id)
             )
@@ -82,11 +84,11 @@ class ComparatorTester(utils.LoggedInViewPages):
         self.assertEqual(response.status_code,200)
         form = response.context['form']
 
-        print response
+
         self.assertTrue('item_a' not in form.errors.keys())
         self.assertTrue('item_b' not in form.errors.keys())
         self.assertTrue('>different </ins' in response.content) #check that we have made a diff
-        print response.context['same']
+
         same = response.context['same']
         self.assertTrue('definition' in same.keys()) #check that we have made a diff
         self.assertTrue('bump to make a reversion' in same['definition']['value']) #check that we have made a diff
@@ -96,3 +98,19 @@ class ObjectClassComparatorTester(ComparatorTester,TestCase):
     
 class ValueDomainComparatorTester(ComparatorTester,TestCase):
     itemType=models.ValueDomain
+    def setUp(self):
+        super(ValueDomainViewPage, self).setUp()
+
+        for i in range(4):
+            models.PermissibleValue.objects.create(
+                value=i,meaning="test permissible meaning %d"%i,order=i,valueDomain=self.item1
+                )
+        for i,j in zip(range(3),range(3)):
+            # give the item 2 object classes an offset
+            models.PermissibleValue.objects.create(
+                value=i+j,meaning="test permissible meaning %d"%i,order=i,valueDomain=self.item2
+                )
+        for i in range(2):
+            models.SupplementaryValue.objects.create(
+                value=i,meaning="test supplementary meaning %d"%i,order=i,valueDomain=self.item1
+                )

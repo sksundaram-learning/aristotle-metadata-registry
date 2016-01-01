@@ -29,7 +29,7 @@ def compare_concepts(request,obj_type=None):
     context = {"item_a":item_a,"item_b":item_b,}
     
     request.GET = request.GET.copy()
-    print item_a,item_b
+
     if item_a:
         item_a = item_a.item
     else:

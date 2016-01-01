@@ -28,11 +28,14 @@ class AristotleSignalProcessor(signals.BaseSignalProcessor):
         for instance in instances:
             if isinstance(instance, _concept) and type(instance) is not _concept:
                 self.handle_save(instance.__class__,instance)
-
+    """
+    # Keeping this just in case, but its unlikely to be used again after the
+    transition to post_revision_commit signals.
+    Safe to delete after 2016-07-01
     def handle_concept_save(self, sender, instance, **kwargs):
         obj = instance.item
         self.handle_save(obj.__class__,obj, **kwargs)
-
+    """
     def handle_concept_delete(self, sender, instance, **kwargs):
         # Delete index *before* the object, as we need to query it to check the actual subclass.
         obj = instance.item
