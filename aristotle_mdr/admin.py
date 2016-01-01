@@ -36,52 +36,56 @@ class StatusInline(admin.TabularInline):
             qs = qs.filter(registrationAuthority__in=request.user.registrar_in.all())
         return qs
 
-    def has_change_permission(self, request,obj=None):
+    def has_change_permission(self, request, obj=None):
         if obj is not None:
-            return perms.user_can_change_status(request.user,obj)
-        return super(StatusInline, self).has_change_permission(request,obj=None)
+            return perms.user_can_change_status(request.user, obj)
+        return super(StatusInline, self).has_change_permission(request, obj=None)
 
     def has_add_permission(self, request):
         if perms.user_is_registrar(request.user):
             return True
         return super(StatusInline, self).has_add_permission(request)
 
+
 class WorkgroupFilter(RelatedFieldListFilter):
     def __init__(self, field, request, *args, **kwargs):
         super(WorkgroupFilter, self).__init__(field, request, *args, **kwargs)
         if not request.user.is_superuser:
-            self.lookup_choices = [(w.id,w) for w in request.user.profile.workgroups.all()]
+            self.lookup_choices = [(w.id, w) for w in request.user.profile.workgroups.all()]
+
 
 class WorkgroupAdmin(CompareVersionAdmin):
     fieldsets = [
         (None,              {'fields': ['name','definition','ownership','registrationAuthorities']}),
         ('Members',         {'fields': ['managers','stewards','submitters','viewers',]}),
     ]
-    filter_horizontal = ['managers','stewards','submitters','viewers','registrationAuthorities']
+    filter_horizontal = ['managers', 'stewards', 'submitters', 'viewers', 'registrationAuthorities']
     list_display = ('name', 'definition','ownership','archived' )
     list_filter = ( 'ownership','archived', 'registrationAuthorities' )
     search_fields = ('name','definition')
+
     def get_queryset(self, request):
         qs = super(WorkgroupAdmin, self).get_queryset(request)
         if request.user.is_superuser:
             return qs
         else:
             return request.user.profile.workgroups.all()
+
     def has_add_permission(self, request):
         return request.user.is_superuser
 
-    def has_change_permission(self, request,obj=None):
+    def has_change_permission(self, request, obj=None):
         if obj is None:
-            if request.GET.get('t',None) == "registrygroup_ptr":
+            if request.GET.get('t', None) == "registrygroup_ptr":
                 return True
             else:
                 return True in (request.user.has_perm('aristotle_mdr.admin_in_{name}'.format(name=w.name))
                             for w in request.user.profile.workgroups.all()
                          )
-        elif perms.user_can_edit(request.user,obj):
+        elif perms.user_can_edit(request.user, obj):
             return True
         else:
-            return super(WorkgroupAdmin, self).has_change_permission(request,obj=None)
+            return super(WorkgroupAdmin, self).has_change_permission(request, obj=None)
 
 class ConceptAdmin(CompareVersionAdmin,admin.ModelAdmin):
     class Media:
@@ -90,9 +94,9 @@ class ConceptAdmin(CompareVersionAdmin,admin.ModelAdmin):
             ]
 
     form = MDRForms.admin.AdminConceptForm
-    list_display = ['name', 'description_stub','created','modified', 'workgroup','is_public','is_locked','readyToReview']#,'status']
-    list_filter = ['created','modified',('workgroup',WorkgroupFilter)] #,'statuses']
-    search_fields = ['name','synonyms']
+    list_display = ['name', 'description_stub','created','modified', 'workgroup', 'is_public', 'is_locked', 'readyToReview'] #,'status']
+    list_filter = ['created', 'modified', ('workgroup', WorkgroupFilter)] #,'statuses']
+    search_fields = ['name', 'synonyms']
     inlines = [StatusInline, ]
 
     change_list_template = "admin/change_list_filter_sidebar.html"
@@ -103,16 +107,17 @@ class ConceptAdmin(CompareVersionAdmin,admin.ModelAdmin):
         (None,              {'fields': ['name','definition','workgroup']}),
         ('Additional names',{
                 'classes':('grp-collapse grp-closed',),
-                'fields': ['synonyms','short_name','version',]
+                'fields': ['synonyms', 'short_name', 'version', ]
             }),
         #('Registry',        {'fields': ['workgroup']}),
         ('Relationships',   {
                 'classes':('grp-collapse grp-closed',),
-                'fields': ['origin_URI','superseded_by','deprecated'],
+                'fields': ['origin_URI','superseded_by', 'deprecated'],
             })
     ]
     name_suggest_fields = []
     actions_on_top = True; actions_on_bottom = False
+
     """
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "workgroup":
@@ -120,6 +125,7 @@ class ConceptAdmin(CompareVersionAdmin,admin.ModelAdmin):
             kwargs['initial'] = request.user.profile.activeWorkgroup
         return super(ConceptAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
     """
+
     def get_form(self, request, obj=None, **kwargs):
         # Thanks: http://stackoverflow.com/questions/6321916
         # Thanks: http://stackoverflow.com/questions/2683689
@@ -134,11 +140,11 @@ class ConceptAdmin(CompareVersionAdmin,admin.ModelAdmin):
                 return conceptForm(*args, **kwargs)
         return ModelFormMetaClass
 
-    def has_change_permission(self, request,obj=None):
+    def has_change_permission(self, request, obj=None):
         if obj is None:
             return True
         else:
-            return perms.user_can_edit(request.user,obj)
+            return perms.user_can_edit(request.user, obj)
 
     def has_add_permission(self, request):
         return perms.user_is_editor(request.user)
@@ -147,7 +153,7 @@ class ConceptAdmin(CompareVersionAdmin,admin.ModelAdmin):
         if obj is None:
             return perms.user_is_editor(request.user)
         else:
-            return request.user.has_perm("aristotle_mdr.delete_concept_from_admin",obj)
+            return request.user.has_perm("aristotle_mdr.delete_concept_from_admin", obj)
 
     def get_queryset(self, request):
         queryset = super(ConceptAdmin, self).get_queryset(request)
@@ -173,16 +179,22 @@ class ConceptAdmin(CompareVersionAdmin,admin.ModelAdmin):
             response['location'] = reverse("aristotle:item",args=(obj.id,))
         return response
 
+
 #For ValueDomains
 class CodeValueInline(admin.TabularInline):
     form = MDRForms.PermissibleValueForm
     #fields = ("value","meaning")
     sortable_field_name = "order"
     extra = 1
+
+
 class PermissibleValueInline(CodeValueInline):
     model = MDR.PermissibleValue
+
+
 class SupplementaryValueInline(CodeValueInline):
     model = MDR.SupplementaryValue
+
 
 class RegistrationAuthorityAdmin(admin.ModelAdmin):
     list_display = ['name', 'definition','created','modified']
@@ -194,21 +206,22 @@ class RegistrationAuthorityAdmin(admin.ModelAdmin):
         ('Members',         {'fields': ['managers','registrars',]}),
         ('Visibility and control',              {'fields': ['locked_state','public_state',]}),
         ('Status descriptions',
-            {'fields': ['notprogressed','incomplete','candidate','recorded','qualified','standard','preferred','superseded','retired',]}),
+            {'fields': ['notprogressed', 'incomplete', 'candidate', 'recorded', 'qualified', 'standard', 'preferred', 'superseded', 'retired',]}),
     ]
 
-admin.site.register(MDR.RegistrationAuthority,RegistrationAuthorityAdmin)
-admin.site.register(MDR.Workgroup,WorkgroupAdmin)
+admin.site.register(MDR.RegistrationAuthority, RegistrationAuthorityAdmin)
+admin.site.register(MDR.Workgroup, WorkgroupAdmin)
 
 admin.site.register(MDR.Measure)
 #admin.site.register(MDR.)
+
 
 # Define an inline admin descriptor for Employee model
 # which acts a bit like a singleton
 class AristotleProfileInline(admin.StackedInline):
     model = MDR.PossumProfile
     form = MDRForms.admin.AristotleProfileForm
-    exclude = ('savedActiveWorkgroup','favourites')
+    exclude = ('savedActiveWorkgroup', 'favourites')
     can_delete = False
     verbose_name_plural = 'Membership details'
 
@@ -223,7 +236,6 @@ class AristotleUserAdmin(UserAdmin):
            f.save_memberships(user = form.instance)
 
 
-
 # Re-register UserAdmin
 if User in admin.site._registry:
     admin.site.unregister(User)
@@ -233,27 +245,25 @@ admin.site.register(User, AristotleUserAdmin)
 register_concept(MDR.ObjectClass)
 register_concept(MDR.Property)
 register_concept(MDR.ValueDomain,
-    extra_fieldsets = [('Representation',
-        {'fields': ['format','maximum_length','unit_of_measure','data_type','description']}),
-        ],
-    extra_inlines = [PermissibleValueInline,SupplementaryValueInline],
+    extra_fieldsets = [('Representation', {'fields': ['format', 'maximum_length', 'unit_of_measure', 'data_type','description']}),],
+    extra_inlines = [PermissibleValueInline, SupplementaryValueInline]
     reversion = {
         'follow': ['permissiblevalue_set','supplementaryvalue_set'],
         'follow_classes':[MDR.PermissibleValue,MDR.SupplementaryValue]
         },
     )
 register_concept(MDR.DataElementConcept,
-    name_suggest_fields = ['objectClass','property'],
-    extra_fieldsets = [('Components', {'fields': ['objectClass','property']}),]
+    name_suggest_fields = ['objectClass', 'property'],
+    extra_fieldsets = [('Components', {'fields': ['objectClass', 'property']}),]
     )
 
 register_concept(MDR.DataElement,
-    name_suggest_fields = ['dataElementConcept','valueDomain'],
-    extra_fieldsets = [('Components', {'fields': ['dataElementConcept','valueDomain']}),]
+    name_suggest_fields = ['dataElementConcept', 'valueDomain'],
+    extra_fieldsets = [('Components', {'fields': ['dataElementConcept', 'valueDomain']}),]
     )
 
 register_concept(MDR.DataElementDerivation,
-    extra_fieldsets = [('Derivation', {'fields': ['derivation_rule','derives','inputs']}),]
+    extra_fieldsets = [('Derivation', {'fields': ['derivation_rule', 'derives', 'inputs']}),]
     )
 
 register_concept(MDR.ConceptualDomain)
