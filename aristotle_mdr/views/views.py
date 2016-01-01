@@ -1,4 +1,4 @@
-﻿from django.apps import apps
+from django.apps import apps
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.conf import settings
@@ -16,6 +16,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.views.generic import TemplateView
 from django.utils import timezone
 import datetime
+
 import reversion
 from reversion.revisions import default_revision_manager
 
@@ -25,6 +26,7 @@ from aristotle_mdr.utils import cache_per_item_user, concept_to_dict, construct_
 from aristotle_mdr import forms as MDRForms
 from aristotle_mdr import models as MDR
 from aristotle_mdr.utils import concept_to_clone_dict
+from aristotle_mdr import exceptions as registry_exceptions
 
 from haystack.views import SearchView
 
@@ -112,10 +114,10 @@ def download(request,downloadType,iid=None):
         import re
         if not re.search('^[a-zA-Z0-9\-\.]+$',downloadType): # pragma: no cover
             # Invalid downloadType
-            raise ImproperlyConfigured
+            raise registry_exceptions.BadDownloadTypeAbbreviation("Download type can only be composed of letters, numbers, hyphens or periods.")
         elif not re.search('^[a-zA-Z0-9\_]+$',module_name): # pragma: no cover
             # bad module_name
-            raise ImproperlyConfigured
+            raise registry_exceptions.BadDownloadModuleName("Download name isn't a valid Python module name.")
         try:
             downloader = None
             # dangerous - we are really trusting the settings creators here.
@@ -231,13 +233,13 @@ def edit_item(request,iid,*args,**kwargs):
         if form.is_valid():
             workgroup_changed = item.workgroup.pk != form.cleaned_data['workgroup'].pk
 
-            with transaction.atomic(), reversion.create_revision():
+            with transaction.atomic(), reversion.revisions.create_revision():
                 change_comments = form.data.get('change_comments',None)
                 item = form.save()
-                reversion.set_user(request.user)
+                reversion.revisions.set_user(request.user)
                 if not change_comments:
                     change_comments = construct_change_message(request,form,None)
-                reversion.set_comment(change_comments)
+                reversion.revisions.set_comment(change_comments)
                 return HttpResponseRedirect(url_slugify_concept(item))
     else:
         form = base_form(instance=item,user=request.user)
@@ -259,10 +261,10 @@ def clone_item(request,iid,*args,**kwargs):
         form = base_form(request.POST,user=request.user)
 
         if form.is_valid():
-            with transaction.atomic(), reversion.create_revision():
+            with transaction.atomic(), reversion.revisions.create_revision():
                 new_clone = form.save()
-                reversion.set_user(request.user)
-                reversion.set_comment("Cloned from %s (id: %s)"%(item_to_clone.name,str(item_to_clone.pk)))
+                reversion.revisions.set_user(request.user)
+                reversion.revisions.set_comment("Cloned from %s (id: %s)"%(item_to_clone.name,str(item_to_clone.pk)))
                 return HttpResponseRedirect(url_slugify_concept(new_clone))
     else:
         form = base_form(initial=concept_to_clone_dict(item_to_clone),user=request.user)
@@ -381,8 +383,10 @@ def mark_ready_to_review(request,iid):
         if item.is_registered:
             raise PermissionDenied
         else:
-            item.readyToReview = not item.readyToReview
-            item.save()
+            with transaction.atomic(), reversion.revisions.create_revision():
+                reversion.revisions.set_user(request.user)
+                item.readyToReview = not item.readyToReview
+                item.save()
         return HttpResponseRedirect(url_slugify_concept(item))
     else:
         return render(request,"aristotle_mdr/actions/mark_ready_to_review.html",
@@ -407,17 +411,19 @@ def changeStatus(request, iid):
             regDate = form.cleaned_data['registrationDate']
             cascade = form.cleaned_data['cascadeRegistration']
             changeDetails = form.cleaned_data['changeDetails']
-            for ra in ras:
-                if cascade:
-                    register_method = ra.cascaded_register
-                else:
-                    register_method = ra.register
-
-                register_method(item,state,request.user,
-                        changeDetails=changeDetails,
-                        registrationDate=regDate,
-                    )
-                # TODO: notification and message on success/failure
+            with transaction.atomic(), reversion.revisions.create_revision():
+                reversion.revisions.set_user(request.user)
+                for ra in ras:
+                    if cascade:
+                        register_method = ra.cascaded_register
+                    else:
+                        register_method = ra.register
+    
+                    register_method(item,state,request.user,
+                            changeDetails=changeDetails,
+                            registrationDate=regDate,
+                        )
+                    # TODO: notification and message on success/failure
             return HttpResponseRedirect(url_slugify_concept(item))
     else:
         form = MDRForms.ChangeStatusForm(user=request.user)
@@ -438,8 +444,10 @@ def supersede(request, iid):
     if request.method == 'POST': # If the form has been submitted...
         form = MDRForms.SupersedeForm(request.POST,user=request.user,item=item,qs=qs) # A form bound to the POST data
         if form.is_valid():
-            item.superseded_by = form.cleaned_data['newerItem']
-            item.save()
+            with transaction.atomic(), reversion.revisions.create_revision():
+                reversion.revisions.set_user(request.user)
+                item.superseded_by = form.cleaned_data['newerItem']
+                item.save()
             return HttpResponseRedirect(url_slugify_concept(item))
     else:
         form = MDRForms.SupersedeForm(item=item,user=request.user,qs=qs)
@@ -465,12 +473,14 @@ def deprecate(request, iid):
             #  Everything that was in the returned set, but isn't already superseded
             #  Everything left over can stay the same, as its already superseded
             #    or wasn't superseded and is staying that way.
-            for i in item.supersedes.all():
-                if i not in form.cleaned_data['olderItems'] and user_can_edit(request.user,i):
-                    item.supersedes.remove(i)
-            for i in form.cleaned_data['olderItems']:
-                if user_can_edit(request.user,i): #Would check item.supersedes but its a set
-                    item.supersedes.add(i)
+            with transaction.atomic(), reversion.revisions.create_revision():
+                reversion.revisions.set_user(request.user)
+                for i in item.supersedes.all():
+                    if i not in form.cleaned_data['olderItems'] and user_can_edit(request.user,i):
+                        item.supersedes.remove(i)
+                for i in form.cleaned_data['olderItems']:
+                    if user_can_edit(request.user,i): #Would check item.supersedes but its a set
+                        item.supersedes.add(i)
             return HttpResponseRedirect(url_slugify_concept(item))
     else:
         form = MDRForms.DeprecateForm(user=request.user,item=item,qs=qs)
@@ -507,7 +517,7 @@ def valuedomain_value_edit(request,iid,value_type):
     if request.method == 'POST':
         formset = ValuesFormSet(request.POST, request.FILES)
         if formset.is_valid():
-                with transaction.atomic(), reversion.create_revision():
+                with transaction.atomic(), reversion.revisions.create_revision():
                     item.save() # do this to ensure we are saving reversion records for the value domain, not just the values
                     formset.save(commit=False)
                     for form in formset.forms:
@@ -520,8 +530,8 @@ def valuedomain_value_edit(request,iid,value_type):
                     for obj in formset.deleted_objects:
                         obj.delete()
                     #formset.save(commit=True)
-                    reversion.set_user(request.user)
-                    reversion.set_comment(construct_change_message(request,None,[formset,]))
+                    reversion.revisions.set_user(request.user)
+                    reversion.revisions.set_comment(construct_change_message(request,None,[formset,]))
 
                 return redirect(reverse("aristotle_mdr:item",args=[item.id]))
     else:

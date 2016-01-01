@@ -10,6 +10,12 @@ from aristotle_mdr import perms
 from django.core.urlresolvers import reverse
 from reversion_compare.admin import CompareVersionAdmin
 
+import reversion
+
+from aristotle_mdr.register import register_concept
+reversion.revisions.register(MDR._concept)
+reversion.revisions.register(MDR.Workgroup)
+
 """
 Inline editor for registration status records
 """
@@ -77,7 +83,7 @@ class WorkgroupAdmin(CompareVersionAdmin):
         else:
             return super(WorkgroupAdmin, self).has_change_permission(request,obj=None)
 
-class ConceptAdmin(CompareVersionAdmin):
+class ConceptAdmin(CompareVersionAdmin,admin.ModelAdmin):
     class Media:
         js = [
                 '/static/grappelli/tinymce/jscripts/tiny_mce/tiny_mce.js',
@@ -223,16 +229,18 @@ if User in admin.site._registry:
     admin.site.unregister(User)
 admin.site.register(User, AristotleUserAdmin)
 
-#reversion.unregister(MDR.ValueDomain)
-#reversion.register(MDR.ValueDomain) #, follow=["permissibleValues","supplementaryValues"])
 
-
-from aristotle_mdr.register import register_concept
 register_concept(MDR.ObjectClass)
 register_concept(MDR.Property)
 register_concept(MDR.ValueDomain,
-    extra_fieldsets = [('Representation', {'fields': ['format','maximum_length','unit_of_measure','data_type']}),],
-    extra_inlines = [PermissibleValueInline,SupplementaryValueInline]
+    extra_fieldsets = [('Representation',
+        {'fields': ['format','maximum_length','unit_of_measure','data_type','description']}),
+        ],
+    extra_inlines = [PermissibleValueInline,SupplementaryValueInline],
+    reversion = {
+        'follow': ['permissiblevalue_set','supplementaryvalue_set'],
+        'follow_classes':[MDR.PermissibleValue,MDR.SupplementaryValue]
+        },
     )
 register_concept(MDR.DataElementConcept,
     name_suggest_fields = ['objectClass','property'],

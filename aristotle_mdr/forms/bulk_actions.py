@@ -2,11 +2,13 @@ import autocomplete_light
 
 from django import forms
 from django.core.exceptions import PermissionDenied
+from django.db import transaction
 from django.utils import timezone
 
 import aristotle_mdr.models as MDR
 from aristotle_mdr.forms import ChangeStatusForm
 from aristotle_mdr.perms import user_can_view
+
 
 class BulkActionForm(forms.Form):
     confirm_page = None
@@ -47,6 +49,7 @@ class ChangeStateForm(ChangeStatusForm):
         self.add_registration_authority_field()
 
     def make_changes(self):
+        import reversion
         if not self.user.profile.is_registrar:
             raise PermissionDenied
         ras = self.cleaned_data['registrationAuthorities']
@@ -55,9 +58,14 @@ class ChangeStateForm(ChangeStatusForm):
         regDate = self.cleaned_data['registrationDate']
         cascade = self.cleaned_data['cascadeRegistration']
         changeDetails = self.cleaned_data['changeDetails']
-        if regDate is None:
-            regDate = timezone.now().date()
-        for item in items:
-            for ra in ras:
-                ra.register(item,state,self.user,regDate,cascade,changeDetails)
-        return '%d items registered in %d registration authorities'%(len(items),len(ras))
+        with transaction.atomic(), reversion.revisions.create_revision():
+            reversion.revisions.set_user(self.user)
+
+            if regDate is None:
+                regDate = timezone.now().date()
+            for item in items:
+                for ra in ras:
+                    ra.register(item,state,self.user,regDate,cascade,changeDetails)
+            message = '%d items registered in %d registration authorities'%(len(items),len(ras))
+            reversion.revisions.set_comment(message)
+            return message

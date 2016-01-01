@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.cache import cache
 
@@ -109,4 +110,38 @@ def user_in_workgroup(user,wg):
         return True
     return user in wg.members
 
+def user_can_move_any_workgroup(user):
+    """Checks if a user can move an item from any of their workgroups"""
+    workgroup_change_access = getattr(settings, 'ARISTOTLE_SETTINGS', {}).get('WORKGROUP_CHANGES',[])
 
+    if user.is_superuser:
+        return True
+    if 'admin' in workgroup_change_access and user.is_staff:
+        return True
+    if 'manager' in workgroup_change_access and user.profile.is_workgroup_manager():
+        return True
+    if 'submitter' in workgroup_change_access  and user.submitter_in.exists():
+        return True
+
+    return False
+
+def user_can_add_or_remove_workgroup(user,workgroup):
+    workgroup_change_access = getattr(settings, 'ARISTOTLE_SETTINGS', {}).get('WORKGROUP_CHANGES',[])
+    if user.is_superuser:
+        return True
+    if 'admin' in workgroup_change_access and user.is_staff:
+        return True
+    if 'manager' in workgroup_change_access and user in workgroup.managers.all():
+        return True
+    if 'submitter' in workgroup_change_access and user in workgroup.submitters.all():
+        return True
+    return False
+
+def user_can_remove_from_workgroup(user,workgroup):
+    return user_can_add_or_remove_workgroup(user,workgroup)
+def user_can_move_to_workgroup(user,workgroup):
+    return user_can_add_or_remove_workgroup(user,workgroup)
+
+def user_can_move_between_workgroups(user,workgroup_a,workgroup_b):
+    """checks if a user can move an item from A to B"""
+    return user_can_remove_from_workgroup(user,workgroup_a) and user_can_move_to_workgroup(user,workgroup_b)
