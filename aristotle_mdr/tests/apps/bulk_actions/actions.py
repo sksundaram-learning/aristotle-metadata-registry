@@ -20,3 +20,9 @@ class StaffDeleteActionForm(BulkActionForm):
         else:
             self.cleaned_data['items'].delete()
         return "Items deleted"
+        
+# Incomplete test bulk actions
+
+class IncompleteActionForm(BulkActionForm):
+    def make_changes(self):
+        pass

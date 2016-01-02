@@ -2,7 +2,7 @@
 import os
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
-TEMPLATE_DIRS = [os.path.join(BASE_DIR, 'templates'),os.path.join(BASE_DIR, 'aristotle_mdr/tests/apps/bulk_actions/templates')]
+TEMPLATE_DIRS = [os.path.join(BASE_DIR, 'templates')]
 FIXTURES_DIRS = [os.path.join(BASE_DIR, 'fixtures')]
 STATIC_ROOT =os.path.join(BASE_DIR, "static")
 
@@ -131,7 +131,6 @@ ARISTOTLE_SETTINGS = {
         'add_favourites':'aristotle_mdr.forms.bulk_actions.AddFavouriteForm',
         'remove_favourites':'aristotle_mdr.forms.bulk_actions.RemoveFavouriteForm',
         'change_state':'aristotle_mdr.forms.bulk_actions.ChangeStateForm',
-        'delete':'aristotle_mdr.tests.apps.bulk_actions.actions.StaffDeleteActionForm',
         }
     }
 ARISTOTLE_DOWNLOADS = [

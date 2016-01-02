@@ -60,6 +60,7 @@ deletes the items requested by a user.:
     
 .. literalinclude:: /../aristotle_mdr/tests/apps/bulk_actions/actions.py
     :caption: mymodule.forms.StaffDeleteActionForm
+    :end-before: # Incomplete test bulk actions
 
 .. literalinclude:: /../aristotle_mdr/tests/apps/bulk_actions/templates/confirm_delete.html
     :caption: confirm_delete.html

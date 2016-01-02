@@ -47,7 +47,6 @@ class BulkActionForm(forms.Form):
             return cls.action_text
         from django.utils.text import camel_case_to_spaces
         txt = cls.__name__
-        print txt
         txt = txt.replace('Form','')
         txt = camel_case_to_spaces(txt)
         return txt

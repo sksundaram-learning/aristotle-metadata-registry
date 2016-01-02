@@ -5,6 +5,7 @@ BASE = os.path.dirname(os.path.dirname(__file__))
 sys.path.insert(1,BASE)
 sys.path.insert(1,os.path.join(BASE, "tests"))
 sys.path.insert(1,os.path.join(BASE, "tests/apps"))
+TEMPLATE_DIRS = [os.path.join(BASE_DIR, 'tests/apps/bulk_actions/templates')]
 
 SECRET_KEY = 'inara+vtkprm7@0(fsc$+grbz9-s+tmo9d)e#k(9uf8m281&$7xhdkjr'
 SOUTH_TESTS_MIGRATE = True
@@ -85,4 +86,8 @@ ARISTOTLE_SETTINGS['CONTENT_EXTENSIONS'] = ARISTOTLE_SETTINGS['CONTENT_EXTENSION
 ARISTOTLE_DOWNLOADS = ARISTOTLE_DOWNLOADS +[
     ('txt','Text','fa-file-pdf-o','text_download_test'),
     ]
+ARISTOTLE_SETTINGS['BULK_ACTIONS'].update({
+        'delete':'aristotle_mdr.tests.apps.bulk_actions.actions.StaffDeleteActionForm',
+        'incomplete':'aristotle_mdr.tests.apps.bulk_actions.actions.IncompleteActionForm',
+})
 ROOT_URLCONF = 'extension_test.urls'
