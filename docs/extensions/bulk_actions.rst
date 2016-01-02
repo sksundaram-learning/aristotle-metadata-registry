@@ -58,11 +58,11 @@ An example bulk action form
 Below is an example bulk action that is only visible for staff users, and
 deletes the items requested by a user.:
     
-.. literalinclude:: /../aristotle_mdr/tests/apps/bulk_actions/actions.py
+.. literalinclude:: /../aristotle_mdr/tests/apps/bulk_actions_test/actions.py
     :caption: mymodule.forms.StaffDeleteActionForm
     :end-before: # Incomplete test bulk actions
 
-.. literalinclude:: /../aristotle_mdr/tests/apps/bulk_actions/templates/confirm_delete.html
+.. literalinclude:: /../aristotle_mdr/tests/apps/bulk_actions_test/templates/confirm_delete.html
     :caption: confirm_delete.html
     :language: html
 
