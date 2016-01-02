@@ -35,6 +35,7 @@ def bulk_action(request):
         actions = get_bulk_actions()
         action = request.POST.get("bulkaction",None)
         
+        print action
         if action is None:
             # no action, messed up, redirect
             return HttpResponseRedirect(url)
@@ -49,10 +50,11 @@ def bulk_action(request):
                 messages.add_message(request, messages.ERROR, form.errors)
             return HttpResponseRedirect(url)
         else:
-            form = MDRForms.bulk_actions.BulkActionForm(request.POST,user=request.user)
+            form = action_form(request.POST,user=request.user)
             items = []
             if form.is_valid():
                 items = form.cleaned_data['items']
+
             confirmed = request.POST.get("confirmed",None)
 
             if confirmed:
