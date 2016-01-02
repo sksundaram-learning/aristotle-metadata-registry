@@ -1,28 +1,21 @@
 {% load i18n %}
+{% load aristotle_tags %}
+
 {% if wrap %}
 <div class="btn-group">
 {% endif %}
 
-    {% if request.user.is_active %}
-        <!--span>Add selected</span -->
-        {% if not no_add_favourites %}
-        <button class="btn btn-primary" type="submit" name="bulkaction" value="add_favourites">
-            <i class="fa fa-bookmark"></i>
-            {% blocktrans %}Add to <small>favourites</small>{% endblocktrans %}
-        </button>
+{% if request.user.is_active %}
+    {% for name,action in bulk_actions.items %}
+        {% if name in hidden_actions %}
+        {% elif request.user|can_use_action:name %}
+            <button class="btn btn-primary" type="submit" name="bulkaction" value="{{name}}">
+                <i class="fa {{ action.classes }}"></i>
+                {{ action.text }}
+            </button>
         {% endif %}
-        {% if not no_remove_favourites %}
-        <button class="btn btn-primary" type="submit" name="bulkaction" value="remove_favourites">
-            <i class="fa fa-minus-square "></i>
-            {% blocktrans %}Remove from <small>favourites</small>{% endblocktrans %}
-        </button>
-        {% endif %}
-        {% if request.user.profile.is_registrar %}
-        <button class="btn btn-primary" type="submit" name="bulkaction" value="change_state">
-            <i class="fa fa-university"></i> {% trans "Change state" %}
-        </button>
-        {% endif %}
-    {% endif %}
+    {% endfor %}
+{% endif %}
 
 {% if wrap %}
 </div>

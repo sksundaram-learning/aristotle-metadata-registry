@@ -349,3 +349,10 @@ def doc(item,field=None):
             #return _("No help text for the field '%(field)s' found on the model '%(model)s' in the app '%(app)s'") % {'app':app_label,'model':model_name,'field':field}
             return _("No help text for the field '%(field)s' found for the model '%(model)s'") % {'model':item.get_verbose_name(),'field':field}
 
+@register.filter
+def can_use_action(user,bulk_action,*args):
+    from aristotle_mdr.views.bulk_actions import get_bulk_actions
+    bulk_action = get_bulk_actions().get(bulk_action)
+    print type(bulk_action)
+    #print type(bulk_action.can_use_perm)
+    return bulk_action['can_use'](user)

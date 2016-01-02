@@ -2,7 +2,7 @@
 import os
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
-TEMPLATE_DIRS = [os.path.join(BASE_DIR, 'templates')]
+TEMPLATE_DIRS = [os.path.join(BASE_DIR, 'templates'),os.path.join(BASE_DIR, 'aristotle_mdr/tests/apps/bulk_actions/templates')]
 FIXTURES_DIRS = [os.path.join(BASE_DIR, 'fixtures')]
 STATIC_ROOT =os.path.join(BASE_DIR, "static")
 
@@ -126,7 +126,13 @@ ARISTOTLE_SETTINGS = {
     'SITE_DESCRIPTION': 'About this site', # 'The main title for the site.'
     'CONTENT_EXTENSIONS' : [],
     'PDF_PAGE_SIZE': 'A4',
-    'WORKGROUP_CHANGES':[] #['admin'] #or manager or submitter,
+    'WORKGROUP_CHANGES':[], #['admin'] #or manager or submitter,
+    'BULK_ACTIONS': {
+        'add_favourites':'aristotle_mdr.forms.bulk_actions.AddFavouriteForm',
+        'remove_favourites':'aristotle_mdr.forms.bulk_actions.RemoveFavouriteForm',
+        'change_state':'aristotle_mdr.forms.bulk_actions.ChangeStateForm',
+        'delete':'aristotle_mdr.tests.apps.bulk_actions.actions.StaffDeleteActionForm',
+        }
     }
 ARISTOTLE_DOWNLOADS = [
     #(fileType,menu,font-awesome-icon,module)

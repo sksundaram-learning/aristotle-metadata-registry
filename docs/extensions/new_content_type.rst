@@ -24,18 +24,12 @@ associated with all of these actions.
 
 Likewise, creating relationships to pre-existing items only requires the correct
 application of `Django relationships <https://docs.djangoproject.com/en/stable/topics/db/examples/>`_
-such as a ``ForeignKey`` or ``ManyToManyField``, like so::
+such as a ``ForeignKey`` or ``ManyToManyField``, like so:
 
-    import aristotle_mdr
-    from django.db import models
-
-    class Question(aristotle_mdr.models.concept):
-        questionText = models.TextField()
-        responseLength = models.PositiveIntegerField()
-        collectedDataElement = models.ForeignKey(
-                aristotle_mdr.models.DataElement,
-                related_name="questions",
-                null=True,blank=True)
+.. literalinclude:: /../aristotle_mdr/tests/apps/extension_test/models.py
+    :caption: mymodule.models.Question
+    :start-after: # Start of the question model
+    :end-before: # End of the question model
 
 This code, extends our Question model from the previous example and adds an optional
 link to the ISO 11179 Data Element model managed by Aristotle-MDR and even adds a new property
@@ -102,13 +96,12 @@ the best case an very cheap Python property is called and the item is returned s
 
 
 Setting up search, admin pages and autocompletes for new items types
-----------------------------------------
+--------------------------------------------------------------------
 
 The easiest way to configure an item for searching and editing within the
 django-admin app is using the ``aristotle_mdr.register.register_concept``
 method, described in :doc:`/extensions/registering_new_content_types`.
 
-However,
 
 Creating admin pages
 ++++++++++++++++++++
