@@ -353,6 +353,4 @@ def doc(item,field=None):
 def can_use_action(user,bulk_action,*args):
     from aristotle_mdr.views.bulk_actions import get_bulk_actions
     bulk_action = get_bulk_actions().get(bulk_action)
-    print type(bulk_action)
-    #print type(bulk_action.can_use_perm)
     return bulk_action['can_use'](user)
