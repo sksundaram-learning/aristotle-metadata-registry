@@ -87,7 +87,7 @@ ARISTOTLE_DOWNLOADS = ARISTOTLE_DOWNLOADS +[
     ('txt','Text','fa-file-pdf-o','text_download_test'),
     ]
 ARISTOTLE_SETTINGS['BULK_ACTIONS'].update({
-        'delete':'aristotle_mdr.tests.apps.bulk_actions.actions.StaffDeleteActionForm',
-        'incomplete':'aristotle_mdr.tests.apps.bulk_actions.actions.IncompleteActionForm',
+    'delete':    'tests.apps.bulk_actions.actions.StaffDeleteActionForm',
+    'incomplete':'tests.apps.bulk_actions.actions.IncompleteActionForm',
 })
 ROOT_URLCONF = 'extension_test.urls'

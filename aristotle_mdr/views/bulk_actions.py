@@ -90,6 +90,7 @@ def get_bulk_actions():
 
             module, form = form.rsplit('.',1)
             exec('from %s import %s as f'%(module,form))
+            
             # We need to make this a dictionary, not a class as otherwise
             # the template engire tries to instantiate it.
             frm = {'form':f}
