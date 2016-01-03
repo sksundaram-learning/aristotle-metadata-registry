@@ -29,7 +29,7 @@ class ValueDomainComparator(Comparator):
         added_items = change_info['added_items']
         for removed in removed_items:
             for added in added_items:
-                print added,removed
+                
                 if (removed.object.meaning == added.object.meaning and
                     removed.object.value == added.object.value
                     ):
@@ -45,7 +45,7 @@ class ValueDomainComparator(Comparator):
                 removed_items.remove(same)
         for same in same_meanings_added+same_items_added:
             added_items.remove(same)
-        print change_info['same_items']
+        
         change_info.update({
             'removed_items':removed_items,
             'added_items':added_items,
