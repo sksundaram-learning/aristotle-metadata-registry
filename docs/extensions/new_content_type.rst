@@ -39,6 +39,25 @@ that are used to collect information for that Data Element. Its also possible to
 without having to alter the templates of other content types. For example, this would allow
 pertinant information about questions to appear on data elements, and vice versa.
 
+Customising the edit page for a new type
+----------------------------------------
+
+To maintain consistancy edit pages have a similar look and feel across all
+concept types, but some customisation is possible. If one or more fields should
+be hidden on an edit page, they can be specified in the ``edit_page_excludes``
+property of the new concept class.
+
+An example of this is when an item specifies a ManyToManyField that has special
+attributes. This can be hidden on the default edit page like so::
+
+    class Questionnaire(aristotle_mdr.models.concept):
+        edit_page_excludes = ['questions']
+        questions = models.ManyToManyField(
+                Question,
+                related_name="questionnaires",
+                null=True,blank=True)
+
+
 Caveats: ``concept`` versus ``_concept``
 ----------------------------------------
 
