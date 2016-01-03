@@ -118,7 +118,7 @@ class BulkWorkgroupActionsPage(utils.LoggedInViewPages,TestCase):
 
         from django.utils.html import escape
         err1 = "Some items failed"
-        err2 = "s: %s"%','.join([str(self.item2.id),str(self.item4.id)])
+        err2 = "s: %s"%','.join(sorted([str(self.item2.id),str(self.item4.id)]))
         
         self.assertTrue(err1 in response.content)
         self.assertTrue(err2 in response.content)

@@ -106,9 +106,9 @@ class ChangeStateForm(ChangeStatusForm,BulkActionForm):
                         failed.append(f)
                     for s in r['success']:
                         success.append(s)
-            failed = sorted(list(set(failed)))
+            failed = list(set(failed))
             success = list(set(success))
-            bad_items = [str(i.id) for i in failed]
+            bad_items = sorted([str(i.id) for i in failed])
             message = _("%(num_items)s items registered in %(num_ra)s registration authorities. \n"
                         "Some items failed, they had the id's: %(bad_ids)s"
                         )%{ 'num_items':len(items),
