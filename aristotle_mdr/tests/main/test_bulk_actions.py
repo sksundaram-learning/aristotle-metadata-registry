@@ -116,8 +116,12 @@ class BulkWorkgroupActionsPage(utils.LoggedInViewPages,TestCase):
         self.assertFalse(self.item2.is_registered)
         self.assertFalse(self.item4.is_registered)
 
-        err = "Some items failed, they had the id&#39;s: %s"%','.join([str(self.item2.id),str(self.item4.id)])
-        self.assertTrue(err in response.content)
+        from django.utils.html import escape
+        err1 = "Some items failed"
+        err2 = "s: %s"%','.join([str(self.item2.id),str(self.item4.id)])
+        
+        self.assertTrue(err1 in response.content)
+        self.assertTrue(err2 in response.content)
         self.assertEqual(len(response.redirect_chain),1)
         self.assertEqual(response.redirect_chain[0][1],302)
 
