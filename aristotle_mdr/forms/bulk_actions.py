@@ -70,7 +70,7 @@ class RemoveFavouriteForm(BulkActionForm):
     def make_changes(self):
         items = self.cleaned_data.get('items')
         self.user.profile.favourites.remove(*items)
-        return _('%(num_items)s items removed from favourites')%{num_items:len(items)}
+        return _('%(num_items)s items removed from favourites')%{'num_items':len(items)}
 
 class ChangeStateForm(ChangeStatusForm,BulkActionForm):
     confirm_page = "aristotle_mdr/actions/bulk_change_status.html"

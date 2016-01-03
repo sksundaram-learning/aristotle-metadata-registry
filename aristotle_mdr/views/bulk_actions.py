@@ -35,7 +35,6 @@ def bulk_action(request):
         actions = get_bulk_actions()
         action = request.POST.get("bulkaction",None)
         
-        print action
         if action is None:
             # no action, messed up, redirect
             return HttpResponseRedirect(url)
