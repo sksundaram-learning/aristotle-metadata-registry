@@ -15,13 +15,15 @@ from model_utils.managers import InheritanceManager, InheritanceQuerySet
 from model_utils.models import TimeStampedModel
 from model_utils import Choices, FieldTracker
 
-import reversion
+import reversion# import revisions 
 
 import datetime
 from ckeditor.fields import RichTextField
 from aristotle_mdr import perms
 from aristotle_mdr import messages
 from aristotle_mdr.utils import url_slugify_concept, url_slugify_workgroup
+from aristotle_mdr import comparators
+
 from model_utils.fields import AutoLastModifiedField
 
 import logging
@@ -262,9 +264,9 @@ class RegistrationAuthority(registryGroup):
         revision_message = revision_message + kwargs.get('changeDetails', "")
         seen_items = {'success': [], 'failed': []}
 
-        with transaction.atomic(), reversion.create_revision():
-            reversion.set_user(user)
-            reversion.set_comment(revision_message)
+        with transaction.atomic(), reversion.revisions.create_revision():
+            reversion.revisions.set_user(user)
+            reversion.revisions.set_comment(revision_message)
 
             for child_item in [item] + item.registry_cascade_items:
                 registered = self._register(
@@ -278,10 +280,11 @@ class RegistrationAuthority(registryGroup):
 
     def register(self, item, state, user, *args, **kwargs):
         revision_message = kwargs.get('changeDetails', "")
-        with transaction.atomic(), reversion.create_revision():
-            reversion.set_user(user)
-            reversion.set_comment(revision_message)
+        with transaction.atomic(), reversion.revisions.create_revision():
+            reversion.revisions.set_user(user)
+            reversion.revisions.set_comment(revision_message)
             registered = self._register(item, state, user, *args, **kwargs)
+
         if registered:
             return {'success': [item], 'failed': []}
         else:
@@ -647,6 +650,8 @@ class _concept(baseAristotleObject):
     _is_locked = models.BooleanField(default=False)
 
     tracker = FieldTracker()
+
+    comparator = comparators.Comparator
 
     class Meta:
         # So the url_name works for items we can't determine.
@@ -1025,6 +1030,7 @@ class ValueDomain(concept):
 
     # Below is a dirty, dirty hack that came from re-designing permissible
     # values
+
     # TODO: Fix references to permissible and supplementary values
     @property
     def permissibleValues(self):
@@ -1047,7 +1053,9 @@ class AbstractValue(aristotleComponent):
     value = models.CharField(max_length=32)
     meaning = models.CharField(max_length=255)
     value_meaning = models.ForeignKey(ValueMeaning, blank=True, null=True)
-    valueDomain = models.ForeignKey(ValueDomain)
+    # Below will generate exactly the same related name as django, but reversion-compare
+    # needs an explicit related_name for some actions.
+    valueDomain = models.ForeignKey(ValueDomain,related_name="%(class)s_set")
     order = models.PositiveSmallIntegerField("Position")
     start_date = models.DateField(
         blank=True,

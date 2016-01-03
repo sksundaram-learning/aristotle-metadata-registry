@@ -15,12 +15,8 @@ from django.utils.html import strip_tags
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
-from django import VERSION as DJANGO_VERSION
-if DJANGO_VERSION >= (1, 8):
-    from formtools.wizard.views import SessionWizardView
-else:
-    from django.contrib.formtools.wizard.views import SessionWizardView
-
+from formtools.wizard.views import SessionWizardView
+from reversion import revisions as reversion
 
 def make_it_clean(string):
     return str(strip_tags(string)).replace("&nbsp;"," ").strip() # Clean it up
@@ -133,9 +129,10 @@ class ConceptWizard(PermissionWizard):
                         })
         return context
 
-
+    @reversion.create_revision()
     def done(self, form_list, **kwargs):
         item = None
+        
         for form in form_list:
             item = form.save()
         return HttpResponseRedirect(url_slugify_concept(item))
@@ -405,7 +402,8 @@ class DataElementConceptWizard(MultiStepAristotleWizard):
             'template_name':'aristotle_mdr/create/dec_template_wrapper.html',
             })
         return context
-
+        
+    @reversion.create_revision()
     def done(self, form_list, **kwargs):
         oc = self.get_object_class()
         pr = self.get_property()
@@ -717,7 +715,8 @@ class DataElementWizard(MultiStepAristotleWizard):
                     )
                 })
         return initial
-
+    
+    @reversion.create_revision()
     def done(self, form_list, **kwargs):
         oc = self.get_object_class()
         pr = self.get_property()

@@ -9,12 +9,14 @@ from django.core.management import call_command
 from django.test.utils import override_settings
 
 from django.test.utils import setup_test_environment
+from reversion import revisions as reversion
 setup_test_environment()
 
 class TestSearch(utils.LoggedInViewPages,TestCase):
     def tearDown(self):
         call_command('clear_index', interactive=False, verbosity=0)
-
+    
+    @reversion.create_revision()
     def setUp(self):
         super(TestSearch, self).setUp()
         import haystack
@@ -57,14 +59,16 @@ class TestSearch(utils.LoggedInViewPages,TestCase):
 
     def test_search_delete_signal(self):
         self.login_superuser()
-        cable = models.ObjectClass.objects.create(name="cable",definition="known xman",workgroup=self.xmen_wg,readyToReview=True)
-        self.ra.register(cable,models.STATES.standard,self.registrar)
-        cable.save()
+        with reversion.create_revision():
+            cable = models.ObjectClass.objects.create(name="cable",definition="known xman",workgroup=self.xmen_wg,readyToReview=True)
+            self.ra.register(cable,models.STATES.standard,self.registrar)
+            cable.save()
         self.assertTrue(cable.is_public())
         response = self.client.get(reverse('aristotle:search')+"?q=cable")
         self.assertEqual(response.status_code,200)
         self.assertEqual(len(response.context['page'].object_list),1)
-        cable.delete()
+        with reversion.create_revision():
+            cable.delete()
         response = self.client.get(reverse('aristotle:search')+"?q=cable")
         self.assertEqual(response.status_code,200)
         self.assertEqual(len(response.context['page'].object_list),0)
@@ -85,7 +89,8 @@ class TestSearch(utils.LoggedInViewPages,TestCase):
         self.assertEqual(response.status_code,302) # logged in
         self.assertTrue(perms.user_is_registrar(self.registrar,self.ra))
 
-        dp = models.ObjectClass.objects.create(name="deadpool",
+        with reversion.create_revision():
+            dp = models.ObjectClass.objects.create(name="deadpool",
                     definition="not really an xman, no matter how much he tries",
                     workgroup=self.xmen_wg,readyToReview=False)
         dp = models.ObjectClass.objects.get(pk=dp.pk) # Un-cache
@@ -100,9 +105,10 @@ class TestSearch(utils.LoggedInViewPages,TestCase):
 
         response = self.client.get(reverse('aristotle:search')+"?q=deadpool")
         self.assertEqual(len(response.context['page'].object_list),0)
-
-        dp.readyToReview = True
-        dp.save()
+        
+        with reversion.create_revision():
+            dp.readyToReview = True
+            dp.save()
         dp = models.ObjectClass.objects.get(pk=dp.pk) # Un-cache
         self.assertTrue(perms.user_can_view(self.registrar,dp))
 
@@ -119,8 +125,9 @@ class TestSearch(utils.LoggedInViewPages,TestCase):
 
         steve_rogers = models.ObjectClass.objects.get(name="captainAmerica")
         self.assertFalse(perms.user_can_view(self.registrar,steve_rogers))
-        steve_rogers.readyToReview = True
-        steve_rogers.save()
+        with reversion.create_revision():
+            steve_rogers.readyToReview = True
+            steve_rogers.save()
         self.assertFalse(perms.user_can_view(self.registrar,steve_rogers))
 
         response = self.client.get(reverse('aristotle:search')+"?q=captainAmerica")
@@ -135,9 +142,13 @@ class TestSearch(utils.LoggedInViewPages,TestCase):
 
         response = self.client.get(reverse('aristotle:search')+"?q=captainAmerica")
         self.assertEqual(len(response.context['page'].object_list),0) # indexes are stale, so no results
-
+        #self.assertFalse(steve_rogers._is_public)
+        
         from django.core import management # Lets recache this workgroup
         management.call_command('recache_workgroup_item_visibility', wg=[self.avengers_wg.pk], verbosity=0)
+
+        steve_rogers = models.ObjectClass.objects.get(pk=steve_rogers.pk)
+        #self.assertTrue(steve_rogers._is_public)
 
         response = self.client.get(reverse('aristotle:search')+"?q=captainAmerica")
         self.assertEqual(len(response.context['page'].object_list),1)
@@ -159,7 +170,8 @@ class TestSearch(utils.LoggedInViewPages,TestCase):
         self.assertFalse(perms.user_in_workgroup(self.viewer,self.weaponx_wg))
 
         #Create Deadpool in Weapon X workgroup
-        dp = models.ObjectClass.objects.create(name="deadpool",
+        with reversion.create_revision():
+            dp = models.ObjectClass.objects.create(name="deadpool",
                     definition="not really an xman, no matter how much he tries",
                     workgroup=self.weaponx_wg,readyToReview=False)
         dp = models.ObjectClass.objects.get(pk=dp.pk) # Un-cache
@@ -183,8 +195,9 @@ class TestSearch(utils.LoggedInViewPages,TestCase):
         psqs = psqs.auto_query('deadpool').apply_permission_checks(self.viewer)
         self.assertEqual(len(psqs),0)
 
-        dp.workgroup = self.xmen_wg
-        dp.save()
+        with reversion.create_revision():
+            dp.workgroup = self.xmen_wg
+            dp.save()
         dp = models.ObjectClass.objects.get(pk=dp.pk) # Un-cache
 
         # Charles is a viewer, Deadpool is in X-men, should have results now.
@@ -210,7 +223,8 @@ class TestSearch(utils.LoggedInViewPages,TestCase):
 class TestTokenSearch(TestCase):
     def tearDown(self):
         call_command('clear_index', interactive=False, verbosity=0)
-
+    
+    @reversion.create_revision()
     def setUp(self):
         # These are really terrible Object Classes, but I was bored and needed to spice things up.
         # Technically, the Object Class would be "Mutant"

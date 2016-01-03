@@ -347,6 +347,30 @@ class AdminPageForConcept(utils.LoggedInViewPages):
         self.item1 = self.itemType.objects.get(pk=self.item1.pk)
         self.assertTrue(self.item2 == self.item1.superseded_by)
 
+    def test_history_page_loads(self):
+        self.login_editor()
+        response = self.client.get(
+            reverse("admin:%s_%s_history"%(self.itemType._meta.app_label,self.itemType._meta.model_name),
+            args=[self.item1.pk])
+            )
+        self.assertResponseStatusCodeEqual(response,200)
+
+    def test_prior_version_page_loads(self):
+        # Not going to let this issue crop up again!
+        from reversion import revisions as reversion
+        new_name = "A different name"
+        with reversion.create_revision():
+            self.item1.name = new_name
+            self.item1.save()
+        version_list = reversion.get_for_object(self.item1)
+
+        self.login_editor()
+        response = self.client.get(
+            reverse("admin:%s_%s_revision"%(self.itemType._meta.app_label,self.itemType._meta.model_name),
+            args=[self.item1.pk,version_list.last().id])
+            )
+        self.assertResponseStatusCodeEqual(response,200)
+        self.assertTrue(response.context['adminform'].form.initial['name'],new_name)
 
 
 class ObjectClassAdminPage(AdminPageForConcept,TestCase):

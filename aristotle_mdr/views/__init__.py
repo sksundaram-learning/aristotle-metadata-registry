@@ -5,3 +5,4 @@ from . import wizards
 from . import user_pages
 from . import workgroups
 from . import discussions
+from . import comparator

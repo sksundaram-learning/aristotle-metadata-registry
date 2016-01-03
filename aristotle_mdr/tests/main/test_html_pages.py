@@ -7,7 +7,7 @@ from django.utils import timezone
 import aristotle_mdr.models as models
 import aristotle_mdr.perms as perms
 from aristotle_mdr.utils import url_slugify_concept
-from aristotle_mdr.forms.creation_wizards import WorkgroupVerificationMixin
+from aristotle_mdr.forms.creation_wizards import WorkgroupVerificationMixin,CheckIfModifiedMixin
 
 setup_test_environment()
 from aristotle_mdr.tests import utils
@@ -98,29 +98,31 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.assertEqual(response.status_code,403)
 
     def test_submitter_can_save_via_edit_page(self):
-        from django.forms import model_to_dict
         self.login_editor()
         response = self.client.get(reverse('aristotle:edit_item',args=[self.item1.id]))
         self.assertEqual(response.status_code,200)
-        updated_item = dict((k,v) for (k,v) in model_to_dict(response.context['item']).items() if v is not None)
+        
+        updated_item = utils.modeL_to_dict_with_change_time(response.context['item'])
         updated_name = updated_item['name'] + " updated!"
         updated_item['name'] = updated_name
         response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
         self.item1 = self.itemType.objects.get(pk=self.item1.pk)
         self.assertRedirects(response,url_slugify_concept(self.item1))
         self.assertEqual(self.item1.name,updated_name)
+
     def test_submitter_can_save_via_edit_page_with_change_comment(self):
-        from django.forms import model_to_dict
         self.login_editor()
         response = self.client.get(reverse('aristotle:edit_item',args=[self.item1.id]))
         self.assertEqual(response.status_code,200)
-        updated_item = dict((k,v) for (k,v) in model_to_dict(response.context['item']).items() if v is not None)
+        
+        updated_item = utils.modeL_to_dict_with_change_time(response.context['item'])
         updated_name = updated_item['name'] + " updated!"
         updated_item['name'] = updated_name
         change_comment = "I changed this because I can"
         updated_item['change_comments'] = change_comment
         response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
         self.item1 = self.itemType.objects.get(pk=self.item1.pk)
+        
         self.assertRedirects(response,url_slugify_concept(self.item1))
         self.assertEqual(self.item1.name,updated_name)
 
@@ -128,19 +130,64 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.assertEqual(response.status_code,200)
         self.assertTrue(change_comment in response.content)
 
+    def test_submitter_cannot_save_via_edit_page_if_other_saves_made(self):
+        from datetime import timedelta
+        self.login_editor()
+        modified = self.item1.modified
+        response = self.client.get(reverse('aristotle:edit_item',args=[self.item1.id]))
+        self.assertEqual(response.status_code,200)
+        
+        #fake that we fetched the page seconds before modification
+        updated_item = utils.modeL_to_dict_with_change_time(response.context['item'],fetch_time=modified-timedelta(seconds=5))
+        updated_name = updated_item['name'] + " updated!"
+        updated_item['name'] = updated_name
+        change_comment = "I changed this because I can"
+        updated_item['change_comments'] = change_comment
+        time_before_response = timezone.now()
+        response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
+
+        self.assertEqual(response.status_code,200)
+        form = response.context['form']
+        self.assertTrue(form.errors['last_fetched'][0] == CheckIfModifiedMixin.modified_since_form_fetched_error)
+
+        #When sending a response with a bad last_fetch, the new one should come back right
+        self.assertTrue(time_before_response < form.fields['last_fetched'].initial)
+        
+        # With the new last_fetched we can submit ok!
+        updated_item['last_fetched'] = form.fields['last_fetched'].initial
+        response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
+        self.assertEqual(response.status_code,302)
+
+
+        updated_item.pop('last_fetched')
+        time_before_response = timezone.now()
+        response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
+
+        self.assertEqual(response.status_code,200)
+        form = response.context['form']
+        self.assertTrue(form.errors['last_fetched'][0] == CheckIfModifiedMixin.modified_since_field_missing)
+        #When sending a response with no last_fetch, the new one should come back right
+        self.assertTrue(time_before_response < form.fields['last_fetched'].initial)
+        
+        # With the new last_fetched we can submit ok!
+        updated_item['last_fetched'] = form.fields['last_fetched'].initial
+        response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
+        self.assertEqual(response.status_code,302)
+
     #Test if workgroup-moving settings work
 
     @override_settings(ARISTOTLE_SETTINGS=dict(settings.ARISTOTLE_SETTINGS, WORKGROUP_CHANGES=[]))
-    def test_submitter_cannot_change_workgroup_via_edit_screen(self):
+    def test_submitter_cannot_change_workgroup_via_edit_page(self):
         # based on the idea that 'submitter' is not set in ARISTOTLE_SETTINGS.WORKGROUP
         self.wg_other = models.Workgroup.objects.create(name="Test WG to move to")
         self.wg_other.submitters.add(self.editor)
 
-        from django.forms import model_to_dict
         self.login_editor()
         response = self.client.get(reverse('aristotle:edit_item',args=[self.item1.id]))
         self.assertEqual(response.status_code,200)
-        updated_item = dict((k,v) for (k,v) in model_to_dict(response.context['item']).items() if v is not None)
+
+        updated_item = utils.modeL_to_dict_with_change_time(response.context['item'])
+
         updated_item['workgroup'] = str(self.wg_other.pk)
         
         response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
@@ -148,10 +195,12 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
 
         form = response.context['form']
         
-        self.assertTrue('__all__' in form.errors.keys())
-        self.assertTrue(len(form.errors['__all__'])==1)
+        self.assertTrue('workgroup' in form.errors.keys())
+        self.assertTrue(len(form.errors['workgroup'])==1)
         
-        self.assertTrue(form.errors['__all__'][0] == WorkgroupVerificationMixin.permission_error)
+        # Submitter is logged in, tries to move item - fails because 
+        self.assertFalse(perms.user_can_remove_from_workgroup(self.editor,self.item1.workgroup))
+        self.assertTrue(form.errors['workgroup'][0] == WorkgroupVerificationMixin.cant_move_any_permission_error)
 
         updated_item['workgroup'] = str(self.wg2.pk)
         response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
@@ -165,15 +214,14 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.assertTrue('Select a valid choice.' in form.errors['workgroup'][0])
 
     @override_settings(ARISTOTLE_SETTINGS=dict(settings.ARISTOTLE_SETTINGS, WORKGROUP_CHANGES=['submitter']))
-    def test_submitter_can_change_workgroup_via_edit_screen(self):
+    def test_submitter_can_change_workgroup_via_edit_page(self):
         # based on the idea that 'submitter' is set in ARISTOTLE_SETTINGS.WORKGROUP
         self.wg_other = models.Workgroup.objects.create(name="Test WG to move to")
 
-        from django.forms import model_to_dict
         self.login_editor()
         response = self.client.get(reverse('aristotle:edit_item',args=[self.item1.id]))
         self.assertEqual(response.status_code,200)
-        updated_item = dict((k,v) for (k,v) in model_to_dict(response.context['item']).items() if v is not None)
+        updated_item = utils.modeL_to_dict_with_change_time(response.context['item'])
         updated_item['workgroup'] = str(self.wg_other.pk)
         
         response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
@@ -196,49 +244,51 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
 
 
     @override_settings(ARISTOTLE_SETTINGS=dict(settings.ARISTOTLE_SETTINGS, WORKGROUP_CHANGES=['admin']))
-    def test_admin_can_change_workgroup_via_edit_screen(self):
+    def test_admin_can_change_workgroup_via_edit_page(self):
         # based on the idea that 'admin' is set in ARISTOTLE_SETTINGS.WORKGROUP
         self.wg_other = models.Workgroup.objects.create(name="Test WG to move to")
 
-        from django.forms import model_to_dict
         self.login_superuser()
         response = self.client.get(reverse('aristotle:edit_item',args=[self.item1.id]))
         self.assertEqual(response.status_code,200)
-        updated_item = dict((k,v) for (k,v) in model_to_dict(response.context['item']).items() if v is not None)
+        updated_item = utils.modeL_to_dict_with_change_time(self.item1)
         updated_item['workgroup'] = str(self.wg_other.pk)
         
         response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
-        
         self.assertEqual(response.status_code,302)
         
-
+        updated_item = utils.modeL_to_dict_with_change_time(self.item1)
         updated_item['workgroup'] = str(self.wg2.pk)
         response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
         self.assertEqual(response.status_code,302)
 
 
     @override_settings(ARISTOTLE_SETTINGS=dict(settings.ARISTOTLE_SETTINGS, WORKGROUP_CHANGES=['manager']))
-    def test_manager_of_two_workgroups_can_change_workgroup_via_edit_screen(self):
+    def test_manager_of_two_workgroups_can_change_workgroup_via_edit_page(self):
         # based on the idea that 'manager' is set in ARISTOTLE_SETTINGS.WORKGROUP
         self.wg_other = models.Workgroup.objects.create(name="Test WG to move to")
+        self.wg_other.submitters.add(self.editor)
 
-        from django.forms import model_to_dict
         self.login_editor()
         response = self.client.get(reverse('aristotle:edit_item',args=[self.item1.id]))
         self.assertEqual(response.status_code,200)
-        updated_item = dict((k,v) for (k,v) in model_to_dict(response.context['item']).items() if v is not None)
+        updated_item = utils.modeL_to_dict_with_change_time(response.context['item'])
         updated_item['workgroup'] = str(self.wg_other.pk)
         response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
         self.assertEqual(response.status_code,200)
 
         form = response.context['form']
-        self.assertTrue(form.errors['__all__'][0] == WorkgroupVerificationMixin.permission_error)
+        # Submitter can't move because they aren't a manager of any workgroups.
+        self.assertTrue(form.errors['workgroup'][0] == WorkgroupVerificationMixin.cant_move_any_permission_error)
+
+        self.wg_other.managers.add(self.editor)
 
         response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
         self.assertEqual(response.status_code,200)
 
         form = response.context['form']
-        self.assertTrue(form.errors['__all__'][0] == WorkgroupVerificationMixin.permission_error)
+        # Submitter can't move because they aren't a manager of the workgroup the item is in.
+        self.assertTrue(form.errors['workgroup'][0] == WorkgroupVerificationMixin.cant_move_from_permission_error)
 
 
         self.login_manager()
@@ -288,11 +338,10 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         response = self.client.get(reverse('aristotle:clone_item',args=[self.item2.id]))
         self.assertEqual(response.status_code,403)
     def test_submitter_can_save_via_clone_page(self):
-        from django.forms import model_to_dict
         self.login_editor()
         response = self.client.get(reverse('aristotle:clone_item',args=[self.item1.id]))
         self.assertEqual(response.status_code,200)
-        updated_item = dict((k,v) for (k,v) in model_to_dict(response.context['item']).items() if v is not None)
+        updated_item = utils.model_to_dict(response.context['item'])
         updated_name = updated_item['name'] + " cloned!"
         updated_item['name'] = updated_name
         response = self.client.post(reverse('aristotle:clone_item',args=[self.item1.id]), updated_item)

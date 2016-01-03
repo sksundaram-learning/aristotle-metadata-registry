@@ -210,7 +210,7 @@ class UserDashRecentItems(utils.LoggedInViewPages,TestCase):
         }
 
         response = self.client.post(wizard_url, step_1_data)
-
+        self.assertFalse(models._concept.objects.filter(name="Test Item").exists())
         step_2_data = {
             wizard_form_name+'-current_step': 'results',
             'results-name':"Test Item",
@@ -222,19 +222,21 @@ class UserDashRecentItems(utils.LoggedInViewPages,TestCase):
         self.assertEqual(models._concept.objects.filter(name="Test Item").count(),1)
         item = models._concept.objects.filter(name="Test Item").first()
 
-        response = self.client.get(reverse('aristotle:userHome',))
+        from reversion.models import Revision
+        
+        response = self.client.get(reverse('aristotle:userHome'))
         self.assertEqual(response.status_code,200)
-        self.assertEqual(len(response.context['recent']),1)
+        self.assertEqual(len(response.context['recent']),Revision.objects.filter(user=self.editor).count())
 
         # Lets update an item so there is some recent history
-        from django.forms import model_to_dict
-        updated_item = dict((k,v) for (k,v) in model_to_dict(item).items() if v is not None)
+        updated_item = utils.modeL_to_dict_with_change_time(item)
         updated_name = updated_item['name'] + " updated!"
         updated_item['name'] = updated_name
         response = self.client.post(reverse('aristotle:edit_item',args=[item.id]), updated_item)
+        self.assertEqual(response.status_code,302)
 
         response = self.client.get(reverse('aristotle:userHome',))
         self.assertEqual(response.status_code,200)
-        self.assertEqual(len(response.context['recent']),2)
+        self.assertEqual(len(response.context['recent']),Revision.objects.filter(user=self.editor).count())
 
         self.assertContains(response,"Changed name")

@@ -7,7 +7,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.utils import timezone
 
 import aristotle_mdr.models as MDR
-from aristotle_mdr.perms import user_can_edit
+from aristotle_mdr.perms import user_can_edit, user_can_view
 from bootstrap3_datetime.widgets import DateTimePicker
 
 class UserSelfEditForm(forms.Form):
@@ -139,3 +139,35 @@ class PermissibleValueForm(forms.ModelForm):
     class Meta:
         model = MDR.PermissibleValue
         fields = "__all__"
+
+class CompareConceptsForm(forms.Form):
+    item_a = forms.ModelChoiceField(
+                queryset=MDR._concept.objects.none(),
+                empty_label="None",
+                label=_("First item"),
+                required=True,
+                widget=autocomplete_light.ChoiceWidget('Autocomplete_concept'))
+    item_b = forms.ModelChoiceField(
+                queryset=MDR._concept.objects.none(),
+                empty_label="None",
+                label=_("Second item"),
+                required=True,
+                widget=autocomplete_light.ChoiceWidget('Autocomplete_concept'))
+
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user')
+        self.qs = kwargs.pop('qs').visible(self.user)
+        super(CompareConceptsForm, self).__init__(*args, **kwargs)
+
+        self.fields['item_a']=forms.ModelChoiceField(
+                queryset=self.qs,
+                empty_label="None",
+                label=_("First item"),
+                required=True,
+                widget=autocomplete_light.ChoiceWidget('Autocomplete_concept'))
+        self.fields['item_b']=forms.ModelChoiceField(
+                queryset=self.qs,
+                empty_label="None",
+                label=_("Second item"),
+                required=True,
+                widget=autocomplete_light.ChoiceWidget('Autocomplete_concept'))
