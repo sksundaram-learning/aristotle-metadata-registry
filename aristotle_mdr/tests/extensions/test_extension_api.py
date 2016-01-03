@@ -55,6 +55,12 @@ class QuestionnaireVisibility(utils.ManagedObjectVisibility,TestCase):
         self.item = Questionnaire.objects.create(name="Test Question",
             workgroup=self.wg,
             )
+    def test_questions_not_on_edit_screen(self):
+        self.login_editor()
+        response = self.client.get(reverse('aristotle:edit_item',args=[self.item1.id]))
+        self.assertEqual(response.status_code,200)
+        form = response.context['form']
+        self.assertTrue('questions' not form.fields)
 
 class QuestionnaireAdmin(AdminPageForConcept,TestCase):
     itemType=Questionnaire
