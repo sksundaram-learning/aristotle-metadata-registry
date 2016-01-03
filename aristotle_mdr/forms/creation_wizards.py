@@ -140,7 +140,7 @@ def subclassed_modelform(set_model):
     return MyForm
 
 def subclassed_edit_modelform(set_model):
-    class MyForm(CheckIfModifiedMixin,ConceptForm):
+    class MyForm(ConceptForm,CheckIfModifiedMixin):
         change_comments = forms.CharField(widget = forms.Textarea,required=False)
         class Meta(ConceptForm.Meta):
             model = set_model

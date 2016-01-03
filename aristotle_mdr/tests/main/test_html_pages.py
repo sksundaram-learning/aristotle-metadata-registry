@@ -94,6 +94,9 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.login_editor()
         response = self.client.get(reverse('aristotle:edit_item',args=[self.item1.id]))
         self.assertEqual(response.status_code,200)
+        form = response.context['form']
+        self.assertTrue('change_comments' in form.fields)
+
         response = self.client.get(reverse('aristotle:edit_item',args=[self.item2.id]))
         self.assertEqual(response.status_code,403)
 
