@@ -60,8 +60,8 @@ class WorkgroupAdmin(CompareVersionAdmin):
         ('Members', {'fields': ['managers','stewards','submitters','viewers',]}),
     ]
     filter_horizontal = ['managers', 'stewards', 'submitters', 'viewers', 'registrationAuthorities']
-    list_display = ('name', 'definition','ownership','archived' )
-    list_filter = ( 'ownership','archived', 'registrationAuthorities' )
+    list_display = ('name', 'definition','ownership','archived')
+    list_filter = ( 'ownership','archived', 'registrationAuthorities')
     search_fields = ('name','definition')
 
     def get_queryset(self, request):
@@ -97,7 +97,7 @@ class ConceptAdmin(CompareVersionAdmin,admin.ModelAdmin):
     list_display = ['name', 'description_stub','created','modified', 'workgroup', 'is_public', 'is_locked', 'readyToReview'] #,'status']
     list_filter = ['created', 'modified', ('workgroup', WorkgroupFilter)] #,'statuses']
     search_fields = ['name', 'synonyms']
-    inlines = [StatusInline, ]
+    inlines = [StatusInline,]
 
     change_list_template = "admin/change_list_filter_sidebar.html"
     change_list_filter_template = "admin/filter_listing.html"
@@ -107,11 +107,11 @@ class ConceptAdmin(CompareVersionAdmin,admin.ModelAdmin):
         (None, {'fields': ['name','definition','workgroup']}),
         ('Additional names', {
                 'classes':('grp-collapse grp-closed',),
-                'fields': ['synonyms', 'short_name', 'version', ]
+                'fields': ['synonyms', 'short_name', 'version',]
             }),
         #('Registry', {'fields': ['workgroup']}),
         ('Relationships', {
-                'classes':('grp-collapse grp-closed', ),
+                'classes':('grp-collapse grp-closed',),
                 'fields': ['origin_URI', 'superseded_by', 'deprecated'],
             })
     ]
@@ -228,7 +228,7 @@ class AristotleProfileInline(admin.StackedInline):
 # Define a new User admin
 class AristotleUserAdmin(UserAdmin):
 
-    inlines = [AristotleProfileInline, ]
+    inlines = [AristotleProfileInline,]
 
     def save_formset(self,request, form, formset, change):
         super(AristotleUserAdmin, self).save_formset(request, form, formset, change)

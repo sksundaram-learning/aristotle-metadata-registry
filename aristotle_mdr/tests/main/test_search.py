@@ -35,7 +35,7 @@ class TestSearch(utils.LoggedInViewPages,TestCase):
 
         self.item_xmen = [
             models.ObjectClass.objects.create(name=t,definition="known xman",workgroup=self.xmen_wg,readyToReview=True)\
-            for t in xmen.split() ]
+            for t in xmen.split()]
         for item in self.item_xmen:
             registered = self.ra.register(item,models.STATES.standard,self.registrar)
             self.assertTrue(item in registered['success'])
@@ -49,7 +49,7 @@ class TestSearch(utils.LoggedInViewPages,TestCase):
         self.avengers_wg.registrationAuthorities.add(self.ra1)
         self.item_avengers = [
             models.ObjectClass.objects.create(name=t,workgroup=self.avengers_wg)
-            for t in avengers.split() ]
+            for t in avengers.split()]
 
     def test_empty_search(self):
         self.logout()
@@ -242,7 +242,7 @@ class TestTokenSearch(TestCase):
 
         self.item_xmen = [
             models.ObjectClass.objects.create(name=t,version="0.%d.0"%(v+1),definition="known x-man",workgroup=self.xmen_wg,readyToReview=True)
-            for v,t in enumerate(xmen.split()) ]
+            for v,t in enumerate(xmen.split())]
         self.item_xmen.append(
             models.Property.objects.create(name="Power",definition="What power a mutant has?",workgroup=self.xmen_wg,readyToReview=True)
             )

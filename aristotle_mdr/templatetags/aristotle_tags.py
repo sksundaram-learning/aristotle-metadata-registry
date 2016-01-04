@@ -141,7 +141,7 @@ def public_standards(regAuth,itemType="aristotle_mdr._concept"):
         app_label,model_name=itemType.lower().split('.',1)[0:2]
         standard_states = [MDR.STATES.standard,MDR.STATES.preferred]
         return [
-                ( i,i.statuses.filter(registrationAuthority=regAuth,state__in=standard_states).first() )
+                ( i,i.statuses.filter(registrationAuthority=regAuth,state__in=standard_states).first())
                 for i in ContentType.objects.get(app_label=app_label,model=model_name).model_class().objects.filter(statuses__registrationAuthority=regAuth,statuses__state__in=standard_states).public()
         ]
     except:

@@ -189,7 +189,7 @@ class WorkgroupMembersCanMakePostsAndComments(utils.LoggedInViewPages,TestCase):
         )
         self.assertEqual(p1.comments.count(),1)
         c = p1.comments.first().id
-        self.assertRedirects(response,reverse('aristotle:discussionsPost',args=[p1.id])+"#comment_%s"%c )
+        self.assertRedirects(response,reverse('aristotle:discussionsPost',args=[p1.id])+"#comment_%s"%c)
 
     def test_viewer_can_comment_in_workgroup(self):
         self.login_viewer()
@@ -316,7 +316,7 @@ class WorkgroupMembersCanMakePostsAndComments(utils.LoggedInViewPages,TestCase):
         }
 
         response = self.client.post(reverse('aristotle:discussionsEditComment',args=[comment.id]),data)
-        self.assertRedirects(response,reverse('aristotle:discussionsPost',args=[post.id])+"#comment_%s"%comment.id )
+        self.assertRedirects(response,reverse('aristotle:discussionsPost',args=[post.id])+"#comment_%s"%comment.id)
         self.assertEqual(response.status_code,302)
         comment = models.DiscussionComment.objects.get(id=comment.id) #decache
         self.assertEqual(comment.body,"edit comment test")
@@ -411,7 +411,7 @@ class WorkgroupMembersCanMakePostsAndComments(utils.LoggedInViewPages,TestCase):
         self.assertEqual(p1.comments.count(),1)
         c = p1.comments.first().id
 
-        self.assertRedirects(response,reverse('aristotle:discussionsPost',args=[p1.id])+"#comment_%s"%c )
+        self.assertRedirects(response,reverse('aristotle:discussionsPost',args=[p1.id])+"#comment_%s"%c)
 
         p1.closed = True
         p1.save()
