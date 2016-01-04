@@ -57,7 +57,7 @@ def create_item(request,app_label=None,model_name=None):
 class PermissionWizard(SessionWizardView):
 
     @method_decorator(permission_required('aristotle_mdr.user_is_editor'))
-    def dispatch(self,  *args, **kwargs):
+    def dispatch(self, *args, **kwargs):
         return super(PermissionWizard,self).dispatch(*args, **kwargs)
     def get_template_names(self):
         return [self.templates[self.steps.current]]
@@ -286,7 +286,7 @@ class MultiStepAristotleWizard(PermissionWizard):
 
             SEPARATORS = getattr(settings, 'ARISTOTLE_SETTINGS', {}).get('SEPARATORS',{})
             initial.update({
-                'name' :        u"{oc}{separator}{pr}".format(
+                'name' : u"{oc}{separator}{pr}".format(
                     oc=oc_name,
                     separator=SEPARATORS["DataElementConcept"],
                     pr=pr_name,

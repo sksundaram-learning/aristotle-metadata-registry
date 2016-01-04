@@ -56,8 +56,8 @@ class WorkgroupFilter(RelatedFieldListFilter):
 
 class WorkgroupAdmin(CompareVersionAdmin):
     fieldsets = [
-        (None,              {'fields': ['name','definition','ownership','registrationAuthorities']}),
-        ('Members',         {'fields': ['managers','stewards','submitters','viewers',]}),
+        (None, {'fields': ['name','definition','ownership','registrationAuthorities']}),
+        ('Members', {'fields': ['managers','stewards','submitters','viewers',]}),
     ]
     filter_horizontal = ['managers', 'stewards', 'submitters', 'viewers', 'registrationAuthorities']
     list_display = ('name', 'definition','ownership','archived' )
@@ -104,15 +104,15 @@ class ConceptAdmin(CompareVersionAdmin,admin.ModelAdmin):
     date_hierarchy='created'# ,'modified']
 
     fieldsets = [
-        (None,              {'fields': ['name','definition','workgroup']}),
-        ('Additional names',{
+        (None, {'fields': ['name','definition','workgroup']}),
+        ('Additional names', {
                 'classes':('grp-collapse grp-closed',),
                 'fields': ['synonyms', 'short_name', 'version', ]
             }),
-        #('Registry',        {'fields': ['workgroup']}),
-        ('Relationships',   {
-                'classes':('grp-collapse grp-closed',),
-                'fields': ['origin_URI','superseded_by', 'deprecated'],
+        #('Registry', {'fields': ['workgroup']}),
+        ('Relationships', {
+                'classes':('grp-collapse grp-closed', ),
+                'fields': ['origin_URI', 'superseded_by', 'deprecated'],
             })
     ]
     name_suggest_fields = []
@@ -197,14 +197,14 @@ class SupplementaryValueInline(CodeValueInline):
 
 
 class RegistrationAuthorityAdmin(admin.ModelAdmin):
-    list_display = ['name', 'definition','created','modified']
-    list_filter = ['created','modified',]
-    filter_horizontal = ['managers','registrars',]
+    list_display = ['name', 'definition', 'created', 'modified']
+    list_filter = ['created', 'modified',]
+    filter_horizontal = ['managers', 'registrars',]
 
     fieldsets = [
-        (None,              {'fields': ['name','definition']}),
-        ('Members',         {'fields': ['managers','registrars',]}),
-        ('Visibility and control',              {'fields': ['locked_state','public_state',]}),
+        (None, {'fields': ['name', 'definition']}),
+        ('Members', {'fields': ['managers', 'registrars',]}),
+        ('Visibility and control', {'fields': ['locked_state', 'public_state',]}),
         ('Status descriptions',
             {'fields': ['notprogressed', 'incomplete', 'candidate', 'recorded', 'qualified', 'standard', 'preferred', 'superseded', 'retired',]}),
     ]
