@@ -4,7 +4,7 @@ from __future__ import absolute_import
 
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
-from notifications import notify
+from notifications.signals import notify
 from aristotle_mdr.utils import url_slugify_concept, url_slugify_workgroup
 
 def favourite_updated(recipient,obj):
