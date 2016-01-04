@@ -18,7 +18,7 @@ class Questionnaire(aristotle_mdr.models.concept):
     # Questionnaire is a test of a lazy developer who has done the bare minimum
     # To get an object in the system. This is a test of how little a dev can to
     # get a functional object. Ideally the string 'Questionnaire' should exist only here.
-
+    edit_page_excludes = ['questions']
     #template = "extension_test/concepts/question.html" # Blank to test default template
     questions = models.ManyToManyField(
             Question,

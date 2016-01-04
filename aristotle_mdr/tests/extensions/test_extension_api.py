@@ -77,3 +77,9 @@ class QuestionnaireViewPage(LoggedInViewExtensionConceptPages,TestCase):
         with self.assertRaises(TemplateDoesNotExist):
             response = self.client.get(self.get_help_page())# They never made this help page, this will error
 
+    def test_questions_not_on_edit_screen(self):
+        self.login_editor()
+        response = self.client.get(reverse('aristotle:edit_item',args=[self.item1.id]))
+        self.assertEqual(response.status_code,200)
+        form = response.context['form']
+        self.assertTrue('questions' not in form.fields)
