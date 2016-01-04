@@ -6,4 +6,3 @@ class AristotleExtensionBaseConfig(AppConfig):
 class AristotleMDRConfig(AristotleExtensionBaseConfig):
     name = 'aristotle_mdr'
     verbose_name = "Aristotle Metadata Registry"
-    

@@ -77,7 +77,7 @@ class ComparatorTester(utils.LoggedInViewPages):
         with reversion.create_revision():
             item2.definition = "bump to make a reversion"
             item2.save()
-        
+
         response = self.client.get(
             reverse('aristotle:compare_concepts')+"?item_a=%s&item_b=%s"%(item1.id,item2.id)
             )
@@ -93,9 +93,11 @@ class ComparatorTester(utils.LoggedInViewPages):
         self.assertTrue('definition' in same.keys()) #check that we have made a diff
         self.assertTrue('bump to make a reversion' in same['definition']['value']) #check that we have made a diff
 
+
 class ObjectClassComparatorTester(ComparatorTester,TestCase):
     itemType=models.ObjectClass
-    
+
+
 class ValueDomainComparatorTester(ComparatorTester,TestCase):
     itemType=models.ValueDomain
     def setUp(self):

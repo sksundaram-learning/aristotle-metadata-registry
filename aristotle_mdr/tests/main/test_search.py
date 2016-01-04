@@ -15,7 +15,7 @@ setup_test_environment()
 class TestSearch(utils.LoggedInViewPages,TestCase):
     def tearDown(self):
         call_command('clear_index', interactive=False, verbosity=0)
-    
+
     @reversion.create_revision()
     def setUp(self):
         super(TestSearch, self).setUp()
@@ -105,7 +105,7 @@ class TestSearch(utils.LoggedInViewPages,TestCase):
 
         response = self.client.get(reverse('aristotle:search')+"?q=deadpool")
         self.assertEqual(len(response.context['page'].object_list),0)
-        
+
         with reversion.create_revision():
             dp.readyToReview = True
             dp.save()
@@ -143,7 +143,7 @@ class TestSearch(utils.LoggedInViewPages,TestCase):
         response = self.client.get(reverse('aristotle:search')+"?q=captainAmerica")
         self.assertEqual(len(response.context['page'].object_list),0) # indexes are stale, so no results
         #self.assertFalse(steve_rogers._is_public)
-        
+
         from django.core import management # Lets recache this workgroup
         management.call_command('recache_workgroup_item_visibility', wg=[self.avengers_wg.pk], verbosity=0)
 
@@ -223,7 +223,7 @@ class TestSearch(utils.LoggedInViewPages,TestCase):
 class TestTokenSearch(TestCase):
     def tearDown(self):
         call_command('clear_index', interactive=False, verbosity=0)
-    
+
     @reversion.create_revision()
     def setUp(self):
         # These are really terrible Object Classes, but I was bored and needed to spice things up.

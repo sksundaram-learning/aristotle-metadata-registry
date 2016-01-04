@@ -80,7 +80,7 @@ def new(request):
                 workgroup = request.user.profile.myWorkgroups.get(id=request.GET.get('workgroup'))
                 items = request.GET.getlist('item')
                 initial.update({'relatedItems':workgroup.items.filter(id__in=items)})
-            
+
         form = MDRForms.discussions.NewPostForm(user=request.user,initial=initial)
     return render(request,"aristotle_mdr/discussions/new.html",
             {"form":form}

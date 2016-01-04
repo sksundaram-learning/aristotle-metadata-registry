@@ -418,7 +418,7 @@ def changeStatus(request, iid):
                         register_method = ra.cascaded_register
                     else:
                         register_method = ra.register
-    
+
                     register_method(item,state,request.user,
                             changeDetails=changeDetails,
                             registrationDate=regDate,

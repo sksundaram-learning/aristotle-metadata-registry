@@ -101,7 +101,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.login_editor()
         response = self.client.get(reverse('aristotle:edit_item',args=[self.item1.id]))
         self.assertEqual(response.status_code,200)
-        
+
         updated_item = utils.modeL_to_dict_with_change_time(response.context['item'])
         updated_name = updated_item['name'] + " updated!"
         updated_item['name'] = updated_name
@@ -114,7 +114,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.login_editor()
         response = self.client.get(reverse('aristotle:edit_item',args=[self.item1.id]))
         self.assertEqual(response.status_code,200)
-        
+
         updated_item = utils.modeL_to_dict_with_change_time(response.context['item'])
         updated_name = updated_item['name'] + " updated!"
         updated_item['name'] = updated_name
@@ -122,7 +122,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         updated_item['change_comments'] = change_comment
         response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
         self.item1 = self.itemType.objects.get(pk=self.item1.pk)
-        
+
         self.assertRedirects(response,url_slugify_concept(self.item1))
         self.assertEqual(self.item1.name,updated_name)
 
@@ -136,7 +136,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         modified = self.item1.modified
         response = self.client.get(reverse('aristotle:edit_item',args=[self.item1.id]))
         self.assertEqual(response.status_code,200)
-        
+
         #fake that we fetched the page seconds before modification
         updated_item = utils.modeL_to_dict_with_change_time(response.context['item'],fetch_time=modified-timedelta(seconds=5))
         updated_name = updated_item['name'] + " updated!"
@@ -152,7 +152,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
 
         #When sending a response with a bad last_fetch, the new one should come back right
         self.assertTrue(time_before_response < form.fields['last_fetched'].initial)
-        
+
         # With the new last_fetched we can submit ok!
         updated_item['last_fetched'] = form.fields['last_fetched'].initial
         response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
@@ -168,7 +168,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.assertTrue(form.errors['last_fetched'][0] == CheckIfModifiedMixin.modified_since_field_missing)
         #When sending a response with no last_fetch, the new one should come back right
         self.assertTrue(time_before_response < form.fields['last_fetched'].initial)
-        
+
         # With the new last_fetched we can submit ok!
         updated_item['last_fetched'] = form.fields['last_fetched'].initial
         response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
@@ -189,16 +189,16 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         updated_item = utils.modeL_to_dict_with_change_time(response.context['item'])
 
         updated_item['workgroup'] = str(self.wg_other.pk)
-        
+
         response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
         self.assertEqual(response.status_code,200)
 
         form = response.context['form']
-        
+
         self.assertTrue('workgroup' in form.errors.keys())
         self.assertTrue(len(form.errors['workgroup'])==1)
-        
-        # Submitter is logged in, tries to move item - fails because 
+
+        # Submitter is logged in, tries to move item - fails because
         self.assertFalse(perms.user_can_remove_from_workgroup(self.editor,self.item1.workgroup))
         self.assertTrue(form.errors['workgroup'][0] == WorkgroupVerificationMixin.cant_move_any_permission_error)
 
@@ -210,7 +210,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
 
         self.assertTrue('workgroup' in form.errors.keys())
         self.assertTrue(len(form.errors['workgroup'])==1)
-        
+
         self.assertTrue('Select a valid choice.' in form.errors['workgroup'][0])
 
     @override_settings(ARISTOTLE_SETTINGS=dict(settings.ARISTOTLE_SETTINGS, WORKGROUP_CHANGES=['submitter']))
@@ -223,7 +223,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.assertEqual(response.status_code,200)
         updated_item = utils.modeL_to_dict_with_change_time(response.context['item'])
         updated_item['workgroup'] = str(self.wg_other.pk)
-        
+
         response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
         self.assertEqual(response.status_code,200)
 
@@ -253,10 +253,10 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.assertEqual(response.status_code,200)
         updated_item = utils.modeL_to_dict_with_change_time(self.item1)
         updated_item['workgroup'] = str(self.wg_other.pk)
-        
+
         response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
         self.assertEqual(response.status_code,302)
-        
+
         updated_item = utils.modeL_to_dict_with_change_time(self.item1)
         updated_item['workgroup'] = str(self.wg2.pk)
         response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)

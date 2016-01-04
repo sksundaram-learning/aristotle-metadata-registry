@@ -27,7 +27,7 @@ def compare_concepts(request,obj_type=None):
     item_a = MDR._concept.objects.visible(request.user).filter(pk=item_a).first() #.item
     item_b = MDR._concept.objects.visible(request.user).filter(pk=item_b).first() #.item
     context = {"item_a":item_a,"item_b":item_b,}
-    
+
     request.GET = request.GET.copy()
 
     if item_a:
@@ -62,9 +62,9 @@ def compare_concepts(request,obj_type=None):
 
             compare_data_a, has_unfollowed_fields_a = comparator_a_to_b.compare(item_a, version2, version1)
             compare_data_b, has_unfollowed_fields_b = comparator_b_to_a.compare(item_a, version1, version2)
-    
+
             has_unfollowed = has_unfollowed_fields_a or has_unfollowed_fields_b
-            
+
             context.update({'debug':{'cmp_a':compare_data_a}})
             comparison = {}
             for field_diff_a in compare_data_a:
@@ -76,7 +76,7 @@ def compare_concepts(request,obj_type=None):
             for field_diff_b in compare_data_b:
                 name = field_diff_b['field'].name
                 comparison.get(name,{})['b'] = field_diff_b['diff']
-    
+
             same = {}
             for f in item_a._meta.fields:
                 if f.name not in comparison.keys():
@@ -85,7 +85,7 @@ def compare_concepts(request,obj_type=None):
                     #hidden field
                     comparison.pop(f.name,None)
                     same.pop(f.name,None)
-    
+
             hidden_fields = ['readyToReview','workgroup','created','modified','id']
             for h in hidden_fields:
                 comparison.pop(h,None)
@@ -106,7 +106,7 @@ def compare_concepts(request,obj_type=None):
                     f not in same.keys()\
                     and f.name not in hidden_fields:
                     only_b[f.name] = {'field':f,'value':getattr(item_b, f.name)}
-                    
+
             comparison = sorted(comparison.items())
             context.update({
                 "comparison":comparison,

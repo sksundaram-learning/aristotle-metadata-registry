@@ -132,7 +132,7 @@ class ConceptWizard(PermissionWizard):
     @reversion.create_revision()
     def done(self, form_list, **kwargs):
         item = None
-        
+
         for form in form_list:
             item = form.save()
         return HttpResponseRedirect(url_slugify_concept(item))
@@ -402,7 +402,7 @@ class DataElementConceptWizard(MultiStepAristotleWizard):
             'template_name':'aristotle_mdr/create/dec_template_wrapper.html',
             })
         return context
-        
+
     @reversion.create_revision()
     def done(self, form_list, **kwargs):
         oc = self.get_object_class()
@@ -715,7 +715,7 @@ class DataElementWizard(MultiStepAristotleWizard):
                     )
                 })
         return initial
-    
+
     @reversion.create_revision()
     def done(self, form_list, **kwargs):
         oc = self.get_object_class()

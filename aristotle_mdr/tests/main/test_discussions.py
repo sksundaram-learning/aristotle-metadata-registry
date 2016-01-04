@@ -392,7 +392,7 @@ class WorkgroupMembersCanMakePostsAndComments(utils.LoggedInViewPages,TestCase):
         expected = set([other_allowed_item.id])
         self.assertEqual(related,expected)
         self.assertEqual(response.status_code,200)
-        
+
     def test_post_to_closed_discussion(self):
         self.login_viewer()
 
@@ -410,7 +410,7 @@ class WorkgroupMembersCanMakePostsAndComments(utils.LoggedInViewPages,TestCase):
         )
         self.assertEqual(p1.comments.count(),1)
         c = p1.comments.first().id
-        
+
         self.assertRedirects(response,reverse('aristotle:discussionsPost',args=[p1.id])+"#comment_%s"%c )
 
         p1.closed = True

@@ -56,7 +56,7 @@ class WorkgroupVerificationMixin(forms.ModelForm):
                     self.data = self.data.copy() # need to make a mutable version of the POST querydict.
                     self.data['workgroup'] = self.instance.workgroup.pk
                     raise forms.ValidationError(WorkgroupVerificationMixin.cant_move_to_permission_error)
-        return new_workgroup 
+        return new_workgroup
 
 class CheckIfModifiedMixin(forms.ModelForm):
     modified_since_form_fetched_error = _(
@@ -73,7 +73,7 @@ class CheckIfModifiedMixin(forms.ModelForm):
         super(CheckIfModifiedMixin,self).__init__(*args, **kwargs)
         self.initial['last_fetched'] = timezone.now()
         self.fields['last_fetched'].initial = timezone.now()
-        
+
     def clean_last_fetched(self):
         # We need a UTC version of the modified time
         modified_time = timezone.localtime(self.instance.modified,timezone.utc)
