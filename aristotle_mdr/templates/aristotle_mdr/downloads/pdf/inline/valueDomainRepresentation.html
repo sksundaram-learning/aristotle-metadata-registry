@@ -37,23 +37,22 @@ So we've split this out into its own template.
 </tr>
 {% endif %}
 </table>
-</div>
+
 {% if item.permissibleValues.count > 0 %}
     <table class="codeList table table-striped">
         <thead>
             <tr>
-                <td style="width:5cm"></td>
-                <th style="width:2cm">Value</th>
+                <td ></td>
+                <th >Value</th>
                 <th>Meaning</th>
             </tr>
         </thead>
         {% if item.permissibleValues.count > 0 %}
+            <tr>
+            <th colspan="2">Permissible Values
+            </th></tr>
             {% for perm in item.permissibleValues.all %}
                 <tr>
-                    {% if forloop.first %}
-                    <th style="vertical-align:top;" rowspan="{{ item.permissibleValues.count }}">Permissible Values
-                    </th>
-                    {% endif %}
                     <td>{{ perm.value }}</td>
                     <td>{{ perm.meaning }}</td>
                 </tr>
@@ -62,12 +61,11 @@ So we've split this out into its own template.
         {% endif %}
         {% if item.supplementaryValues.count > 0 %}
         <tbody>
+            <tr>
+            <th colspan="2">Supplementary Values
+            </th></tr>
             {% for perm in item.supplementaryValues.all %}
                 <tr>
-                    {% if forloop.first %}
-                    <th rowspan="{{ item.supplementaryValues.count }}">Supplementary Values
-                    </th>
-                    {% endif %}
                     <td>{{ perm.value }}</td>
                     <td>{{ perm.meaning }}</td>
                 </tr>
@@ -76,3 +74,5 @@ So we've split this out into its own template.
         {% endif %}
     </table>
 {% endif %}
+
+</div>

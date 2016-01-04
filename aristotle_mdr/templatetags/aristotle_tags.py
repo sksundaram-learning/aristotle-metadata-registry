@@ -38,6 +38,13 @@ def can_alter_post(user,post):
         return False
 
 @register.filter
+def template_path(item,_type):
+    from aristotle_mdr.utils import get_download_template_path_for_item
+    _type,subpath=_type.split(',')
+    return get_download_template_path_for_item(item,_type,subpath)
+
+
+@register.filter
 def is_in(item,iterable):
     return item in iterable
 

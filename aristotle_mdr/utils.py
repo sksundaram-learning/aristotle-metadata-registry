@@ -30,10 +30,13 @@ def concept_to_clone_dict(obj):
     clone_dict['name'] = clone_dict['name'] + ugettext(u" (clone)")
     return clone_dict
 
-def get_download_template_path_for_item(item,downloadType):
+def get_download_template_path_for_item(item,downloadType,subpath=''):
     app_label = item._meta.app_label
     model_name = item._meta.model_name
-    template = "%s/downloads/%s/%s.html"%(app_label,downloadType,model_name)
+    if subpath:
+        template = "%s/downloads/%s/%s/%s.html"%(app_label,downloadType,subpath,model_name)
+    else:
+        template = "%s/downloads/%s/%s.html"%(app_label,downloadType,model_name)
     return template
 
 def url_slugify_concept(item):

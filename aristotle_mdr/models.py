@@ -684,7 +684,7 @@ class concept(_concept):
         return self
 
     @property
-    def getPdfItems(self):
+    def get_download_items(self):
         return {}
 
 class Status(TimeStampedModel):
