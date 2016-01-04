@@ -15,7 +15,7 @@ from model_utils.managers import InheritanceManager, InheritanceQuerySet
 from model_utils.models import TimeStampedModel
 from model_utils import Choices, FieldTracker
 
-import reversion# import revisions 
+import reversion  # import revisions
 
 import datetime
 from ckeditor.fields import RichTextField
@@ -258,9 +258,9 @@ class RegistrationAuthority(registryGroup):
         revision_message = _(
             "Cascade registration of item '%(name)s' (id:%(iid)s)\n"
         ) % {
-                'name': item.name,
-                'iid': item.id
-            }
+            'name': item.name,
+            'iid': item.id
+        }
         revision_message = revision_message + kwargs.get('changeDetails', "")
         seen_items = {'success': [], 'failed': []}
 
@@ -473,7 +473,7 @@ def update_registation_authorities(sender, instance, action, **kwargs):
     # to not change or add registration authorities to workgroups willy-nilly.
     if action in ['post_add', 'post_remove', 'post_clear']:
         created = instance.created >= timezone.now() - \
-                  datetime.timedelta(seconds=VERY_RECENTLY_SECONDS)
+            datetime.timedelta(seconds=VERY_RECENTLY_SECONDS)
         # Don't fire this off if the object was created very recently within
         # about the last 15 seconds.
         if not created:
@@ -1055,7 +1055,7 @@ class AbstractValue(aristotleComponent):
     value_meaning = models.ForeignKey(ValueMeaning, blank=True, null=True)
     # Below will generate exactly the same related name as django, but reversion-compare
     # needs an explicit related_name for some actions.
-    valueDomain = models.ForeignKey(ValueDomain,related_name="%(class)s_set")
+    valueDomain = models.ForeignKey(ValueDomain, related_name="%(class)s_set")
     order = models.PositiveSmallIntegerField("Position")
     start_date = models.DateField(
         blank=True,
