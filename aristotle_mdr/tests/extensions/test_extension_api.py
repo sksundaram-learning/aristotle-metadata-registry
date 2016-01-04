@@ -60,7 +60,7 @@ class QuestionnaireVisibility(utils.ManagedObjectVisibility,TestCase):
         response = self.client.get(reverse('aristotle:edit_item',args=[self.item1.id]))
         self.assertEqual(response.status_code,200)
         form = response.context['form']
-        self.assertTrue('questions' not form.fields)
+        self.assertTrue('questions' not in form.fields)
 
 class QuestionnaireAdmin(AdminPageForConcept,TestCase):
     itemType=Questionnaire

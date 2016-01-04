@@ -491,7 +491,7 @@ def deprecate(request, iid):
             )
 
 def valuedomain_value_edit(request,iid,value_type):
-    item = get_object_or_404(MDR._concept,pk=iid).item
+    item = get_object_or_404(MDR.ValueDomain,pk=iid).item
     if not user_can_edit(request.user,item):
         if request.user.is_anonymous():
             return redirect(reverse('friendly_login')+'?next=%s' % request.path)
