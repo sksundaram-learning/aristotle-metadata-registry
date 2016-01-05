@@ -37,7 +37,7 @@ class AdminPage(utils.LoggedInViewPages,TestCase):
         wg_nw.stewards.add(new_editor)
         wg_aw.stewards.add(new_editor)
 
-        new_editor = User.objects.get(pk=new_editor.pk) #decache
+        new_editor = User.objects.get(pk=new_editor.pk) # decache
 
         self.assertEqual(new_editor.profile.editable_workgroups.count(),2)
         self.assertTrue(wg_ns in new_editor.profile.editable_workgroups.all())
@@ -188,7 +188,7 @@ class AdminPageForConcept(utils.LoggedInViewPages):
         response = self.client.get(reverse("admin:%s_%s_add"%(self.itemType._meta.app_label,self.itemType._meta.model_name)))
 
         data = {'name':"admin_page_test_oc",'definition':"test","workgroup":self.wg1.id,
-                    'statuses-TOTAL_FORMS': 0, 'statuses-INITIAL_FORMS': 0 #no substatuses
+                    'statuses-TOTAL_FORMS': 0, 'statuses-INITIAL_FORMS': 0 # no substatuses
                 }
         data.update(self.form_defaults)
 
@@ -270,7 +270,7 @@ class AdminPageForConcept(utils.LoggedInViewPages):
         updated_item['name'] = updated_name
 
         updated_item.update({
-            'statuses-TOTAL_FORMS': 0, 'statuses-INITIAL_FORMS': 0 #no statuses
+            'statuses-TOTAL_FORMS': 0, 'statuses-INITIAL_FORMS': 0 # no statuses
         })
         updated_item.update(self.form_defaults)
         self.assertTrue(self.wg1 in self.editor.profile.editable_workgroups.all())
@@ -289,7 +289,7 @@ class AdminPageForConcept(utils.LoggedInViewPages):
         self.item1 = self.itemType.objects.get(pk=self.item1.pk)
         self.assertEqual(self.item1.name,updated_name)
 
-#deprecated
+# deprecated
     def test_supersedes_saves(self):
         self.item2 = self.itemType.objects.create(name="admin_page_test_oc_2",definition=" ",workgroup=self.wg1,**self.create_defaults)
         self.item3 = self.itemType.objects.create(name="admin_page_test_oc_2",definition=" ",workgroup=self.wg1,**self.create_defaults)
@@ -303,7 +303,7 @@ class AdminPageForConcept(utils.LoggedInViewPages):
         updated_item['name'] = updated_name
 
         updated_item.update({
-            'statuses-TOTAL_FORMS': 0, 'statuses-INITIAL_FORMS': 0, #no statuses
+            'statuses-TOTAL_FORMS': 0, 'statuses-INITIAL_FORMS': 0, # no statuses
             'deprecated':[self.item2.id,self.item3.id]
         })
         updated_item.update(self.form_defaults)
@@ -331,7 +331,7 @@ class AdminPageForConcept(utils.LoggedInViewPages):
         updated_item['name'] = updated_name
 
         updated_item.update({
-            'statuses-TOTAL_FORMS': 0, 'statuses-INITIAL_FORMS': 0, #no statuses
+            'statuses-TOTAL_FORMS': 0, 'statuses-INITIAL_FORMS': 0, # no statuses
             'superseded_by':self.item2.id
         })
         updated_item.update(self.form_defaults)

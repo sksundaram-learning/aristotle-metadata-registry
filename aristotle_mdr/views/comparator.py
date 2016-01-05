@@ -24,8 +24,8 @@ def compare_concepts(request,obj_type=None):
 
     context = {"item_a":item_a,"item_b":item_b,}
 
-    item_a = MDR._concept.objects.visible(request.user).filter(pk=item_a).first() #.item
-    item_b = MDR._concept.objects.visible(request.user).filter(pk=item_b).first() #.item
+    item_a = MDR._concept.objects.visible(request.user).filter(pk=item_a).first() # .item
+    item_b = MDR._concept.objects.visible(request.user).filter(pk=item_b).first() # .item
     context = {"item_a":item_a,"item_b":item_b,}
 
     request.GET = request.GET.copy()
@@ -82,7 +82,7 @@ def compare_concepts(request,obj_type=None):
                 if f.name not in comparison.keys():
                     same[f.name] = {'field':f,'value':getattr(item_a, f.name)}
                 if f.name.startswith('_'):
-                    #hidden field
+                    # hidden field
                     comparison.pop(f.name,None)
                     same.pop(f.name,None)
 
@@ -115,5 +115,5 @@ def compare_concepts(request,obj_type=None):
                 "only_b":only_b,
             })
     context.update({"form":form,})
-            #comparison = {'a':compare_data_a, 'b':compare_data_b}
+            # comparison = {'a':compare_data_a, 'b':compare_data_b}
     return render(request,"aristotle_mdr/actions/compare/compare_items.html",context)

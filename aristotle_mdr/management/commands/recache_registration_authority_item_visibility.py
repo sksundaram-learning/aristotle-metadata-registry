@@ -10,7 +10,7 @@ class Command(BaseCommand):
         for ra_id in options['ra']:
             try:
                 ra = RegistrationAuthority.objects.get(pk=int(ra_id))
-            except RegistrationAuthority.DoesNotExist: #pragma: no cover
+            except RegistrationAuthority.DoesNotExist: # pragma: no cover
                 raise CommandError('Registration Authority "%s" does not exist' % ra_id)
             self.stdout.write('Beginning update for items in Registration Authority "%s" (id:%s)' % (ra.name,ra_id,))
 

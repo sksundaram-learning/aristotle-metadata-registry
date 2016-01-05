@@ -27,7 +27,7 @@ class UserAwareModelForm(UserAwareForm,autocomplete_light.ModelForm):
         exclude = ['readyToReview','superseded_by','_is_public','_is_locked','originURI']
 
     def _media(self):
-        js = ('aristotle_mdr/aristotle.wizard.js',) #,'/static/tiny_mce/tiny_mce.js','/static/aristotle_mdr/aristotle.tinymce.js')
+        js = ('aristotle_mdr/aristotle.wizard.js',)  # ,'/static/tiny_mce/tiny_mce.js','/static/aristotle_mdr/aristotle.tinymce.js')
         media = forms.Media(js=js)
         for field in self.fields.values():
             media = media + field.widget.media
@@ -95,7 +95,7 @@ class ConceptForm(WorkgroupVerificationMixin,UserAwareModelForm):
     required_css_class = 'required'
     """
     def __init__(self, *args, **kwargs):
-        #TODO: Have tis throw a 'no user' error
+        # TODO: Have tis throw a 'no user' error
         first_load = kwargs.pop('first_load', None)
         super(ConceptForm, self).__init__(*args, **kwargs)
         if not self.user.is_superuser:
@@ -104,7 +104,7 @@ class ConceptForm(WorkgroupVerificationMixin,UserAwareModelForm):
 
 
     def concept_fields(self):
-        field_names = [field.name for field in MDR.baseAristotleObject._meta.fields]+['version','workgroup'] #version/workgroup are displayed with name/definition
+        field_names = [field.name for field in MDR.baseAristotleObject._meta.fields]+['version','workgroup'] # version/workgroup are displayed with name/definition
         concept_field_names = [ field.name
                                 for field in MDR.concept._meta.fields
                                 if field.name not in field_names
@@ -165,7 +165,7 @@ class Concept_2_Results(ConceptForm):
         self.fields['workgroup'].queryset = self.user.profile.editable_workgroups
         self.fields['workgroup'].initial = self.user.profile.activeWorkgroup
         self.fields['name'].widget = forms.widgets.TextInput()
-        #self.fields['definition'].widget = forms.widgets.TextInput()
+        # self.fields['definition'].widget = forms.widgets.TextInput()
         if not self.check_similar:
             self.fields.pop('make_new_item')
 
@@ -226,7 +226,7 @@ class DEC_Complete(UserAwareForm):
     def save(self, *args, **kwargs):
         pass
 
-#Data Element - Object Class / Property / Value Domain search form
+# Data Element - Object Class / Property / Value Domain search form
 class DE_OCPVD_Search(UserAwareForm):
     template = "aristotle_mdr/create/de_1_initial_search.html"
     # Object Class fields

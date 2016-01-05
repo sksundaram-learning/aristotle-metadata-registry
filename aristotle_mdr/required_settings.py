@@ -43,7 +43,7 @@ ALLOWED_HOSTS = []
 SOUTH_TESTS_MIGRATE = False
 
 INSTALLED_APPS = (
-    'aristotle_mdr', #Comes before grappelli for overloads
+    'aristotle_mdr',  # Comes before grappelli for overloads
     'grappelli',
     'haystack',
     'django.contrib.admin',
@@ -80,7 +80,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 
 
-    #'reversion.middleware.RevisionMiddleware',
+    # 'reversion.middleware.RevisionMiddleware',
 )
 
 
@@ -120,23 +120,23 @@ AUTHENTICATION_BACKENDS = ('aristotle_mdr.backends.AristotleBackend',)
 ARISTOTLE_SETTINGS = {
     'SEPARATORS': { 'DataElement':', ',
                     'DataElementConcept':u'–'},
-    'SITE_NAME': 'Default Site Name', # 'The main title for the site.'
+    'SITE_NAME': 'Default Site Name',  # 'The main title for the site.'
     'SITE_BRAND': '/static/aristotle_mdr/images/aristotle_small.png', # URL for the Site-wide logo
     'SITE_INTRO': 'Use Default Site Name to search for metadata...', # 'Intro text use on the home page as a prompt for users.'
-    'SITE_DESCRIPTION': 'About this site', # 'The main title for the site.'
+    'SITE_DESCRIPTION': 'About this site',  # 'The main title for the site.'
     'CONTENT_EXTENSIONS' : [],
     'PDF_PAGE_SIZE': 'A4',
-    'WORKGROUP_CHANGES':[] #['admin'] #or manager or submitter,
+    'WORKGROUP_CHANGES':[]  # ['admin'] # or manager or submitter,
     }
 ARISTOTLE_DOWNLOADS = [
-    #(fileType,menu,font-awesome-icon,module)
+    # (fileType,menu,font-awesome-icon,module)
     ('pdf','PDF','fa-file-pdf-o','aristotle_mdr','Downloads for various content types in the PDF format'),
     ('csv-vd','CSV list of values','fa-file-excel-o','aristotle_mdr','CSV downloads for value domain codelists'),
     ]
 
 CKEDITOR_CONFIGS = {
     'default': {
-        #'toolbar': 'full',
+        # 'toolbar': 'full',
         'toolbar' : [
             { 'name': 'clipboard', 'items': [ 'Cut', 'Copy', 'Paste', 'PasteText', '-', 'Undo', 'Redo']},
             { 'name': 'basicstyles', 'items' : [ 'Bold','Italic','Subscript','Superscript','-','RemoveFormat']},
@@ -149,7 +149,7 @@ CKEDITOR_CONFIGS = {
 }
 
 HAYSTACK_SIGNAL_PROCESSOR = 'aristotle_mdr.signals.AristotleSignalProcessor'
-#HAYSTACK_SEARCH_RESULTS_PER_PAGE = 10
+# HAYSTACK_SEARCH_RESULTS_PER_PAGE = 10
 HAYSTACK_CONNECTIONS = {
     'default': {
         'ENGINE': 'haystack.backends.whoosh_backend.WhooshEngine',

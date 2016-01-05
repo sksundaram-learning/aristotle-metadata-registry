@@ -57,8 +57,8 @@ class ComparatorTester(utils.LoggedInViewPages):
                 registrationDate=timezone.now(),
                 state=self.ra.public_state
                 )
-        item1 = self.itemType.objects.get(pk=item1.pk) #decache
-        item2 = self.itemType.objects.get(pk=item2.pk) #decache
+        item1 = self.itemType.objects.get(pk=item1.pk) # decache
+        item2 = self.itemType.objects.get(pk=item2.pk) # decache
 
         self.assertTrue(item1.is_public())
         self.assertTrue(item2.is_public())
@@ -87,11 +87,11 @@ class ComparatorTester(utils.LoggedInViewPages):
 
         self.assertTrue('item_a' not in form.errors.keys())
         self.assertTrue('item_b' not in form.errors.keys())
-        self.assertTrue('>different </ins' in response.content) #check that we have made a diff
+        self.assertTrue('>different </ins' in response.content) # check that we have made a diff
 
         same = response.context['same']
-        self.assertTrue('definition' in same.keys()) #check that we have made a diff
-        self.assertTrue('bump to make a reversion' in same['definition']['value']) #check that we have made a diff
+        self.assertTrue('definition' in same.keys()) # check that we have made a diff
+        self.assertTrue('bump to make a reversion' in same['definition']['value']) # check that we have made a diff
 
 
 class ObjectClassComparatorTester(ComparatorTester,TestCase):

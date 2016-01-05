@@ -395,7 +395,7 @@ class ManagedObjectVisibility(object):
         self.assertEqual(perms.user_can_edit(e2,self.item),True)
         self.assertEqual(perms.user_can_edit(e1,self.item),False)
 
-        #self.ra.register(self.item,self.ra.locked_state,registrar,timezone.now(),)
+        # self.ra.register(self.item,self.ra.locked_state,registrar,timezone.now(),)
         s = models.Status.objects.create(
                 concept=self.item,
                 registrationAuthority=self.ra,
@@ -505,7 +505,7 @@ class LoggedInViewPages(object):
         for html in args:
             try:
                 self.assertContains(response, html, html=True)
-            except AssertionError as e: #pragma: no cover
+            except AssertionError as e: # pragma: no cover
                 # Needs no coverage as the test should pass to be successful
                 debug_response(response, msg="%s" % e) # from django-tools
                 raise
@@ -513,7 +513,7 @@ class LoggedInViewPages(object):
         for html in args:
             try:
                 self.assertNotContains(response, html, html=True)
-            except AssertionError as e: #pragma: no cover
+            except AssertionError as e: # pragma: no cover
                 # Needs no coverage as the test should pass to be successful
                 debug_response(response, msg="%s" % e) # from django-tools
                 raise
@@ -525,7 +525,7 @@ class LoggedInViewPages(object):
     def assertResponseStatusCodeEqual(self,response,code):
             try:
                 self.assertEqual(response.status_code, code)
-            except AssertionError as e: #pragma: no cover
+            except AssertionError as e: # pragma: no cover
                 # Needs no coverage as the test should pass to be successful
                 if 'adminform' in response.context:
                     print(response.context['adminform'].form.errors.as_text())

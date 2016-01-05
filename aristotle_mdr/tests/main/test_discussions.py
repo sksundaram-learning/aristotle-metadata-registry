@@ -14,7 +14,7 @@ class PostingAndCommentingAtObjectLevel(TestCase):
     def setUp(self):
         self.wg1 = models.Workgroup.objects.create(name="Test WG 1")
         self.wg2 = models.Workgroup.objects.create(name="Test WG 2")
-        self.viewer1 = User.objects.create_user('vicky','','viewer') #viewer 1 always posts
+        self.viewer1 = User.objects.create_user('vicky','','viewer') # viewer 1 always posts
         self.viewer2 = User.objects.create_user('viewer2','','viewer')
         self.manager = User.objects.create_user('mandy','','manger')
         self.wg1.giveRoleToUser('viewer',self.viewer1)
@@ -40,16 +40,16 @@ class PostingAndCommentingAtObjectLevel(TestCase):
         comment2 = models.DiscussionComment.objects.create(author=self.viewer2,post=post,body="test2")
         comment3 = models.DiscussionComment.objects.create(author=self.viewer2,post=post,body="test3")
 
-        post = models.DiscussionPost.objects.get(id=post.id) #decache
+        post = models.DiscussionPost.objects.get(id=post.id) # decache
 
         self.assertTrue(post.comments.all()[0:3],[comment1,comment2,comment3])
         comment1.title = "modified"
         comment1.save()
-        post = models.DiscussionPost.objects.get(id=post.id) #decache
+        post = models.DiscussionPost.objects.get(id=post.id) # decache
         self.assertTrue(post.comments.all()[0:3],[comment1,comment2,comment3])
         comment2.title = "modified"
         comment2.save()
-        post = models.DiscussionPost.objects.get(id=post.id) #decache
+        post = models.DiscussionPost.objects.get(id=post.id) # decache
         self.assertTrue(post.comments.all()[0:3],[comment1,comment2,comment3])
 
     def test_post_ordering(self):
@@ -83,12 +83,12 @@ class WorkgroupMembersCanMakePostsAndComments(utils.LoggedInViewPages,TestCase):
         response = self.client.get(reverse('aristotle:discussionsPostToggle',args=[post.id]))
         self.assertRedirects(response,reverse('aristotle:discussionsPost',args=[post.id]))
         self.assertEqual(response.status_code,302)
-        post = models.DiscussionPost.objects.get(id=post.id) #decache
+        post = models.DiscussionPost.objects.get(id=post.id) # decache
         self.assertEqual(post.closed,True)
 
         response = self.client.get(reverse('aristotle:discussionsPostToggle',args=[post.id]))
         self.assertRedirects(response,reverse('aristotle:discussionsPost',args=[post.id]))
-        post = models.DiscussionPost.objects.get(id=post.id) #decache
+        post = models.DiscussionPost.objects.get(id=post.id) # decache
         self.assertEqual(post.closed,False)
 
     def test_viewer_can_toggle_post(self):
@@ -110,13 +110,13 @@ class WorkgroupMembersCanMakePostsAndComments(utils.LoggedInViewPages,TestCase):
         self.assertEqual(post.closed,False)
 
         response = self.client.get(reverse('aristotle:discussionsPostToggle',args=[post.id]))
-        post = models.DiscussionPost.objects.get(id=post.id) #decache
+        post = models.DiscussionPost.objects.get(id=post.id) # decache
         self.assertEqual(post.closed,False)
         self.assertEqual(response.status_code,403)
 
         response = self.client.get(reverse('aristotle:discussionsPostToggle',args=[post.id]))
         self.assertEqual(response.status_code,403)
-        post = models.DiscussionPost.objects.get(id=post.id) #decache
+        post = models.DiscussionPost.objects.get(id=post.id) # decache
         self.assertEqual(post.closed,False)
 
     def can_the_current_logged_in_user_post(self):
@@ -240,7 +240,7 @@ class WorkgroupMembersCanMakePostsAndComments(utils.LoggedInViewPages,TestCase):
         response = self.client.post(reverse('aristotle:discussionsEditPost',args=[post.id]),data)
         self.assertRedirects(response,reverse('aristotle:discussionsPost',args=[post.id]))
         self.assertEqual(response.status_code,302)
-        post = models.DiscussionPost.objects.get(id=post.id) #decache
+        post = models.DiscussionPost.objects.get(id=post.id) # decache
         self.assertEqual(post.body,"edit test")
 
     def test_viewer_can_edit_post(self):
@@ -270,7 +270,7 @@ class WorkgroupMembersCanMakePostsAndComments(utils.LoggedInViewPages,TestCase):
 
         response = self.client.post(reverse('aristotle:discussionsEditPost',args=[post.id]),data)
         self.assertEqual(response.status_code,403)
-        post = models.DiscussionPost.objects.get(id=post.id) #decache
+        post = models.DiscussionPost.objects.get(id=post.id) # decache
         self.assertEqual(post.body,"test")
 
     def can_the_current_logged_in_user_delete_comment(self):
@@ -318,7 +318,7 @@ class WorkgroupMembersCanMakePostsAndComments(utils.LoggedInViewPages,TestCase):
         response = self.client.post(reverse('aristotle:discussionsEditComment',args=[comment.id]),data)
         self.assertRedirects(response,reverse('aristotle:discussionsPost',args=[post.id])+"#comment_%s"%comment.id)
         self.assertEqual(response.status_code,302)
-        comment = models.DiscussionComment.objects.get(id=comment.id) #decache
+        comment = models.DiscussionComment.objects.get(id=comment.id) # decache
         self.assertEqual(comment.body,"edit comment test")
 
     def test_viewer_can_edit_comment(self):
@@ -348,7 +348,7 @@ class WorkgroupMembersCanMakePostsAndComments(utils.LoggedInViewPages,TestCase):
 
         response = self.client.post(reverse('aristotle:discussionsEditComment',args=[comment.id]),data)
         self.assertEqual(response.status_code,403)
-        comment = models.DiscussionComment.objects.get(id=comment.id) #decache
+        comment = models.DiscussionComment.objects.get(id=comment.id) # decache
         self.assertEqual(comment.body,"test comment")
 
     def test_post_to_workgroup_from_URL(self):

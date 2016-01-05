@@ -180,10 +180,10 @@ class ConceptAdmin(CompareVersionAdmin,admin.ModelAdmin):
         return response
 
 
-#For ValueDomains
+# For ValueDomains
 class CodeValueInline(admin.TabularInline):
     form = MDRForms.PermissibleValueForm
-    #fields = ("value","meaning")
+    # fields = ("value","meaning")
     sortable_field_name = "order"
     extra = 1
 
@@ -213,7 +213,7 @@ admin.site.register(MDR.RegistrationAuthority, RegistrationAuthorityAdmin)
 admin.site.register(MDR.Workgroup, WorkgroupAdmin)
 
 admin.site.register(MDR.Measure)
-#admin.site.register(MDR.)
+# admin.site.register(MDR.)
 
 
 # Define an inline admin descriptor for Employee model

@@ -12,7 +12,7 @@ from aristotle_mdr import perms
 
 @login_required
 def all(request):
-    #Show all discussions for all of a users workgroups
+    # Show all discussions for all of a users workgroups
     page = render(request,"aristotle_mdr/discussions/all.html",{
         'discussions':request.user.profile.discussions
         })
@@ -23,10 +23,10 @@ def workgroup(request,wgid):
     wg = get_object_or_404(MDR.Workgroup,pk=wgid)
     if not perms.user_in_workgroup(request.user,wg):
         raise PermissionDenied
-    #Show all discussions for a workgroups
+    # Show all discussions for a workgroups
     page = render(request,"aristotle_mdr/discussions/workgroup.html",{
         'workgroup':wg,
-        'discussions':wg.discussions.all() #MDR.DiscussionPost.objects.filter(workgroup=wg)
+        'discussions':wg.discussions.all() # MDR.DiscussionPost.objects.filter(workgroup=wg)
         })
     return page
 
@@ -35,7 +35,7 @@ def post(request,pid):
     post = get_object_or_404(MDR.DiscussionPost,pk=pid)
     if not perms.user_in_workgroup(request.user,post.workgroup):
         raise PermissionDenied
-    #Show all discussions for a workgroups
+    # Show all discussions for a workgroups
     comment_form = MDRForms.discussions.CommentForm(initial={'post':pid})
     page = render(request,"aristotle_mdr/discussions/post.html",{
         'workgroup':post.workgroup,

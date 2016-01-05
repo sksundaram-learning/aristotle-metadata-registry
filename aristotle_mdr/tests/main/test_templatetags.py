@@ -13,9 +13,9 @@ setup_test_environment()
 
 from django.core.exceptions import FieldDoesNotExist
 try:
-    from django.template import TemplateSyntaxError #Django1.8 only
+    from django.template import TemplateSyntaxError # Django1.8 only
 except:
-    from django.template.exceptions import TemplateSyntaxError #Django1.9 only
+    from django.template.exceptions import TemplateSyntaxError # Django1.9 only
 
 preamble = "{% load aristotle_tags %}"
 

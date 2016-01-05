@@ -31,7 +31,7 @@ class AristotleProfileForm(forms.ModelForm):
         super(AristotleProfileForm, self).__init__(*args, **kwargs)
         from django.contrib.auth.models import User # paranoid about circular imports now
 
-        #if self.instance and self.instance.user.count() == 1: # and self.instance.user.exists():
+        # if self.instance and self.instance.user.count() == 1: # and self.instance.user.exists():
         try:
             self.fields['registrar_in'].initial = self.instance.user.registrar_in.all()
             self.fields['registrationauthority_manager_in'].initial = self.instance.user.registrationauthority_manager_in.all()
@@ -95,7 +95,7 @@ class AdminConceptForm(autocomplete_light.ModelForm,UserAwareForm,WorkgroupVerif
         if name_suggest_fields:
             self.fields['name'].widget = widgets.NameSuggestInput(name_suggest_fields=name_suggest_fields,separator=separator)
         self.fields['workgroup'].queryset = self.request.user.profile.editable_workgroups.all()
-        #self.fields['workgroup'].initial = self.request.user.profile.activeWorkgroup
+        # self.fields['workgroup'].initial = self.request.user.profile.activeWorkgroup
 
 
     def save(self, *args, **kwargs):
@@ -104,7 +104,7 @@ class AdminConceptForm(autocomplete_light.ModelForm,UserAwareForm,WorkgroupVerif
             if user_can_edit(self.request.user,i) and i not in self.cleaned_data['deprecated']:
                 instance.supersedes.remove(i)
         for i in self.cleaned_data['deprecated']:
-            if user_can_edit(self.request.user,i): #Would check item.supersedes but its a set
+            if user_can_edit(self.request.user,i):  # Would check item.supersedes but its a set
                 instance.supersedes.add(i)
 
         return instance

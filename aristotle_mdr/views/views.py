@@ -49,7 +49,7 @@ def get_if_user_can_view(objtype,user,iid):
         return False
 
 def render_if_user_can_view(item_type, request, *args, **kwargs):
-    #request = kwargs.pop('request')
+    # request = kwargs.pop('request')
     return render_if_condition_met(request, user_can_view, item_type, *args,**kwargs)
 
 @login_required
@@ -137,14 +137,14 @@ def measure(request,iid,model_slug,name_slug):
     template = select_template([item.template])
     context = RequestContext(request,
         {'item':item,
-         #'view':request.GET.get('view','').lower(),
-         #'last_edit': last_edit
+         # 'view':request.GET.get('view','').lower(),
+         # 'last_edit': last_edit
             }
         )
 
     return HttpResponse(template.render(context))
 
-    #return render_if_user_can_view(MDR.Measure,*args,**kwargs)
+    # return render_if_user_can_view(MDR.Measure,*args,**kwargs)
 
 @cache_per_item_user(ttl=300, cache_post=False)
 def render_if_condition_met(request,condition,objtype,iid,model_slug=None,name_slug=None,subpage=None):
@@ -169,7 +169,7 @@ def render_if_condition_met(request,condition,objtype,iid,model_slug=None,name_s
     template = select_template([default_template,item.template])
     context = RequestContext(request,
         {'item':item,
-         #'view':request.GET.get('view','').lower(),
+         # 'view':request.GET.get('view','').lower(),
          'isFavourite': isFavourite,
          'last_edit': last_edit
             }
@@ -359,9 +359,9 @@ def about_all_items(request):
 
             out[app_label]=app
 
-    #models = ContentType.objects.filter(app_label__in=aristotle_apps).all()
-    #out = {}
-    #for m in models:
+    # models = ContentType.objects.filter(app_label__in=aristotle_apps).all()
+    # out = {}
+    # for m in models:
     #    if not m.model.startswith("_"):
     #        app_models = out.get(m.app_label,[])
     #        app_models.append(m.model_class())
@@ -479,7 +479,7 @@ def deprecate(request, iid):
                     if i not in form.cleaned_data['olderItems'] and user_can_edit(request.user,i):
                         item.supersedes.remove(i)
                 for i in form.cleaned_data['olderItems']:
-                    if user_can_edit(request.user,i): #Would check item.supersedes but its a set
+                    if user_can_edit(request.user,i): # Would check item.supersedes but its a set
                         item.supersedes.add(i)
             return HttpResponseRedirect(url_slugify_concept(item))
     else:
@@ -524,12 +524,12 @@ def valuedomain_value_edit(request,iid,value_type):
                         if form['value'].value() == '' and form['meaning'].value() == '':
                             continue # Skip over completely blank entries.
                         if form['id'].value() not in [deleted_record['id'].value() for deleted_record in formset.deleted_forms]:
-                            value = form.save(commit=False) #Don't immediately save, we need to attach the value domain
+                            value = form.save(commit=False) # Don't immediately save, we need to attach the value domain
                             value.valueDomain = item
                             value.save()
                     for obj in formset.deleted_objects:
                         obj.delete()
-                    #formset.save(commit=True)
+                    # formset.save(commit=True)
                     reversion.revisions.set_user(request.user)
                     reversion.revisions.set_comment(construct_change_message(request,None,[formset,]))
 
@@ -604,7 +604,7 @@ def browse(request,oc_id=None,dec_id=None):
             )
 
 
-#TODO: Check permissions for this
+# TODO: Check permissions for this
 @login_required
 def bulk_action(request):
     url = request.GET.get("next","/")

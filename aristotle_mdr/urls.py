@@ -1,6 +1,7 @@
 import notifications
 import autocomplete_light
 # import every app/autocomplete_light_registry.py
+
 autocomplete_light.autodiscover()
 
 from django.conf.urls import patterns, include, url
@@ -8,6 +9,7 @@ from django.contrib.auth.views import password_reset
 from django.contrib import admin
 from django.views.generic.base import RedirectView
 from aristotle_mdr.views.user_pages import friendly_redirect_login
+
 admin.autodiscover()
 
 urlpatterns = patterns('',
@@ -21,8 +23,8 @@ urlpatterns = patterns('',
     url(r'^grappelli/', include('grappelli.urls')), # grappelli URLS
     url(r'^ckeditor/', include('ckeditor.urls')),
     url(r'^account/notifications/', include(notifications.urls)),
-    url(r'^account/password/reset/$', password_reset), #, {'template_name': 'my_templates/password_reset.html'}
-    url(r'^account/password/reset_done/$', password_reset), #, {'template_name': 'my_templates/password_reset.html'}
+    url(r'^account/password/reset/$', password_reset),  # , {'template_name': 'my_templates/password_reset.html'}
+    url(r'^account/password/reset_done/$', password_reset),  # , {'template_name': 'my_templates/password_reset.html'}
     url(r'^', include('aristotle_mdr.urls_aristotle',app_name="aristotle_mdr",namespace="aristotle")),
 
     url(r'^user/password/reset/$',
@@ -43,4 +45,5 @@ urlpatterns = patterns('',
     url(r'^account/password/change/?$', 'django.contrib.auth.views.password_change', name='password_change'),
     url(r'^account/password/change/done/?$', 'django.contrib.auth.views.password_change_done', name='password_change_done'),
 )
+
 handler403 = 'aristotle_mdr.views.unauthorised'

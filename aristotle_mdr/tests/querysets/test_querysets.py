@@ -20,7 +20,7 @@ class CustomConceptQuerySetTest_Slow(object):
         cls.ra_users = []
         cls.ras = {}
         user_count = 100
-        #p = "permission_check %s "%str(cls.workgroup_owner_type)
+        # p = "permission_check %s "%str(cls.workgroup_owner_type)
         p = "perm_chk %s "%str(cls.workgroup_owner_type)
         # Default settings for locked/public
         cls.ras['default'] = models.RegistrationAuthority.objects.create(name=p+"Default RA")
@@ -36,7 +36,7 @@ class CustomConceptQuerySetTest_Slow(object):
 
         for key,ra in cls.ras.items():
             role = 'registrar'
-            #u = User.objects.create_user(p+role+key,'','user')
+            # u = User.objects.create_user(p+role+key,'','user')
             user_count +=1
             u = User.objects.create_user(p+str(user_count),'','user')
             ra.giveRoleToUser(role,u)
@@ -70,7 +70,7 @@ class CustomConceptQuerySetTest_Slow(object):
                 wg = models.Workgroup.objects.create(name="WG "+prefix,ownership=cls.workgroup_owner_type)
 
                 for role in ['viewer','submitter','steward']:
-                    #u = User.objects.create_user(role+prefix,'','user')
+                    # u = User.objects.create_user(role+prefix,'','user')
                     user_count +=1
                     u = User.objects.create_user(p+str(user_count),'','user')
                     wg.giveRoleToUser(role,u)
@@ -96,7 +96,7 @@ class CustomConceptQuerySetTest_Slow(object):
 
     @classmethod
     def tearDownClass(cls):
-        #This stuff gets left in the DB, lets scrap it all.
+        # This stuff gets left in the DB, lets scrap it all.
         super(CustomConceptQuerySetTest_Slow, cls).tearDownClass()
 
         cls.super_user.delete()
@@ -112,10 +112,10 @@ class CustomConceptQuerySetTest_Slow(object):
         invalid_items = []
         for user in self.wg_users + self.ra_users:
             for item in models.ObjectClass.objects.all().public():
-                if not item.is_public(): #pragma: no cover
+                if not item.is_public(): # pragma: no cover
                     # This branch needs no coverage as it shouldn't be hit
                     invalid_items.append((user,item))
-        if len(invalid_items) > 0: #pragma: no cover
+        if len(invalid_items) > 0: # pragma: no cover
             # This branch needs no coverage as it shouldn't be hit
             print("These items failed the check for ConceptQuerySet.public")
             for user,item in invalid_items:
@@ -132,10 +132,10 @@ class CustomConceptQuerySetTest_Slow(object):
         # TODO: Expand the below.
         for user in self.wg_users + self.ra_users:
             for item in queryset(user):
-                if not permission(user,item): #pragma: no cover
+                if not permission(user,item): # pragma: no cover
                     # This branch needs no coverage as it shouldn't be hit
                     invalid_items.append((user,item))
-        if len(invalid_items) > 0: #pragma: no cover
+        if len(invalid_items) > 0: # pragma: no cover
             # This branch needs no coverage as it shouldn't be hit
             print("These items failed the check for %s:"%name)
             for user,item in invalid_items:

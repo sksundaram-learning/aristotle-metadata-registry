@@ -8,7 +8,7 @@ import aristotle_mdr.tests.utils as utils
 from django.test.utils import setup_test_environment
 setup_test_environment()
 
-#This is for testing permissions around workgroup mangement.
+# This is for testing permissions around workgroup mangement.
 
 class WorkgroupMembership(TestCase):
     def test_userInWorkgroup(self):
@@ -17,7 +17,7 @@ class WorkgroupMembership(TestCase):
         wg.viewers.add(user)
         self.assertTrue(perms.user_in_workgroup(user,wg))
     def test_RemoveUserFromWorkgroup(self):
-        #Does removing a user from a workgroup remove their permissions? It should!
+        # Does removing a user from a workgroup remove their permissions? It should!
         wg = models.Workgroup.objects.create(name="Test WG 1")
         user = User.objects.create_user('editor1','','editor1')
         wg.managers.add(user)
@@ -207,12 +207,12 @@ class WorkgroupMemberTests(utils.LoggedInViewPages,TestCase):
         response = self.client.post(reverse('aristotle:archive_workgroup',args=[self.wg1.id]),{})
         self.assertRedirects(response,self.wg1.get_absolute_url())
 
-        self.wg1 = models.Workgroup.objects.get(pk=self.wg1.pk) #refetch
+        self.wg1 = models.Workgroup.objects.get(pk=self.wg1.pk) # refetch
         self.assertTrue(self.wg1.archived)
         self.assertTrue(self.wg1 not in self.viewer.profile.myWorkgroups)
 
         response = self.client.post(reverse('aristotle:archive_workgroup',args=[self.wg1.id]),{})
         self.assertRedirects(response,self.wg1.get_absolute_url())
-        self.wg1 = models.Workgroup.objects.get(pk=self.wg1.pk) #refetch
+        self.wg1 = models.Workgroup.objects.get(pk=self.wg1.pk) # refetch
         self.assertFalse(self.wg1.archived)
         self.assertTrue(self.wg1 in self.viewer.profile.myWorkgroups)

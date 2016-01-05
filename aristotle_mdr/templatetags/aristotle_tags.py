@@ -72,10 +72,10 @@ def can_edit(item,user):
         {{ item }}
       {% endif %}
     """
-    #return perms.user_can_edit(user,item)
+    # return perms.user_can_edit(user,item)
     try:
         return perms.user_can_edit(user,item)
-    except:  #pragma: no cover -- passing a bad item or user is the template authors fault
+    except:  # pragma: no cover -- passing a bad item or user is the template authors fault
         return None
 
 @register.filter
@@ -111,7 +111,7 @@ def can_view_iter(qs,user):
     """
     try:
         return qs.visible(user)
-    except: #pragma: no cover -- passing a bad queryset is the template authors fault
+    except: # pragma: no cover -- passing a bad queryset is the template authors fault
         return []
 
 @register.filter
@@ -147,7 +147,7 @@ def public_standards(regAuth,itemType="aristotle_mdr._concept"):
     except:
         return []
 
-#http://stackoverflow.com/questions/2047622/how-to-paginate-django-with-other-get-variables
+# http://stackoverflow.com/questions/2047622/how-to-paginate-django-with-other-get-variables
 @register.simple_tag
 def paginator_get(request, pageNumber, pop=''):
     dict_ = request.GET.copy()
@@ -190,7 +190,7 @@ def paginator_range(page,mode):
         else:
             return page.paginator.page_range[-1:]
 
-#@register.simple_tag
+# @register.simple_tag
 @register.filter
 def stateToText(state):
     """
@@ -265,7 +265,7 @@ def aboutLink(item):
 
 @register.simple_tag
 def itemURL(item):
-    #app_name = item._meta.app_label
+    # app_name = item._meta.app_label
     model_name = item._meta.model_name
     name = slugify(item.name)[:50]
     return reverse("aristotle:item",
@@ -338,7 +338,7 @@ def doc(item,field=None):
 
     from django.contrib.contenttypes.models import ContentType
 
-    #ct =  ContentType.objects.get(app_label=app_label,model=model_name).model_class()
+    # ct =  ContentType.objects.get(app_label=app_label,model=model_name).model_class()
     ct = item
     if field is None:
         return _(ct.__doc__)
@@ -346,6 +346,6 @@ def doc(item,field=None):
         if ct._meta.get_field(field).help_text:
             return _(ct._meta.get_field(field).help_text)
         else:
-            #return _("No help text for the field '%(field)s' found on the model '%(model)s' in the app '%(app)s'") % {'app':app_label,'model':model_name,'field':field}
+            # return _("No help text for the field '%(field)s' found on the model '%(model)s' in the app '%(app)s'") % {'app':app_label,'model':model_name,'field':field}
             return _("No help text for the field '%(field)s' found for the model '%(model)s'") % {'model':item.get_verbose_name(),'field':field}
 

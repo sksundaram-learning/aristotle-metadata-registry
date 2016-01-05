@@ -54,7 +54,7 @@ def time_delta(delta): # pragma: no cover
         """
         Today returns everything today.
         """
-        return datetime.date.today() #- datetime.timedelta(days=1)
+        return datetime.date.today() # - datetime.timedelta(days=1)
     elif delta == QUICK_DATES.week:
         """
         This week is pretty straight forward. SSReturns 7 days ago from the *beginning* of today.
@@ -120,7 +120,7 @@ class PermissionSearchQuerySet(SearchQuerySet):
             # Non-registrars can only see public things or things in their workgroup
             # if they have no workgroups they won't see anything extra
             if user.profile.workgroups.count() > 0:
-                #for w in user.profile.workgroups.all():
+                # for w in user.profile.workgroups.all():
                 #    q |= SQ(workgroup=str(w.id))
                 q |= SQ(workgroup__in=[int(w.id) for w in user.profile.workgroups.all()])
             if user.profile.is_registrar:
@@ -242,7 +242,7 @@ class PermissionSearchForm(TokenSearchForm):
         widget=DateTimePicker(options=datePickerOptions),)
 
     # Use short singular names
-    #ras = [(ra.id, ra.name) for ra in MDR.RegistrationAuthority.objects.all()]
+    # ras = [(ra.id, ra.name) for ra in MDR.RegistrationAuthority.objects.all()]
     ra = forms.MultipleChoiceField(required=False,label=_("Registration authority"),
         choices=[],widget=BootstrapDropdownSelectMultiple)
 
@@ -340,7 +340,7 @@ class PermissionSearchForm(TokenSearchForm):
             has_suggestions = False
             suggested_query = []
 
-            #lets assume the words are ordered in importance
+            # lets assume the words are ordered in importance
             # So we suggest words in order
             optimal_query = original_query
             for token in self.cleaned_data.get('q',"").split(" "):
@@ -403,7 +403,7 @@ class PermissionSearchForm(TokenSearchForm):
 
         return sqs
 
-    def apply_sorting(self,sqs): #pragma: no cover, no security issues, standard Haystack methods, so already tested.
+    def apply_sorting(self,sqs): # pragma: no cover, no security issues, standard Haystack methods, so already tested.
         sort_order  = self.cleaned_data['sort']
         if sort_order == SORT_OPTIONS.modified_ascending:
             sqs = sqs.order_by('-modified')

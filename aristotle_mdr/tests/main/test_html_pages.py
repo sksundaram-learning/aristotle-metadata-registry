@@ -32,7 +32,7 @@ class AnonymousUserViewingThePages(TestCase):
                 state=ra.locked_state
                 )
         home = self.client.get(url_slugify_concept(item))
-        #Anonymous users requesting a hidden page will be redirected to login
+        # Anonymous users requesting a hidden page will be redirected to login
         self.assertEqual(home.status_code,302)
         s.state = ra.public_state
         s.save()
@@ -137,7 +137,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         response = self.client.get(reverse('aristotle:edit_item',args=[self.item1.id]))
         self.assertEqual(response.status_code,200)
 
-        #fake that we fetched the page seconds before modification
+        # fake that we fetched the page seconds before modification
         updated_item = utils.modeL_to_dict_with_change_time(response.context['item'],fetch_time=modified-timedelta(seconds=5))
         updated_name = updated_item['name'] + " updated!"
         updated_item['name'] = updated_name
@@ -150,7 +150,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         form = response.context['form']
         self.assertTrue(form.errors['last_fetched'][0] == CheckIfModifiedMixin.modified_since_form_fetched_error)
 
-        #When sending a response with a bad last_fetch, the new one should come back right
+        # When sending a response with a bad last_fetch, the new one should come back right
         self.assertTrue(time_before_response < form.fields['last_fetched'].initial)
 
         # With the new last_fetched we can submit ok!
@@ -166,7 +166,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.assertEqual(response.status_code,200)
         form = response.context['form']
         self.assertTrue(form.errors['last_fetched'][0] == CheckIfModifiedMixin.modified_since_field_missing)
-        #When sending a response with no last_fetch, the new one should come back right
+        # When sending a response with no last_fetch, the new one should come back right
         self.assertTrue(time_before_response < form.fields['last_fetched'].initial)
 
         # With the new last_fetched we can submit ok!
@@ -174,7 +174,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
         self.assertEqual(response.status_code,302)
 
-    #Test if workgroup-moving settings work
+    # Test if workgroup-moving settings work
 
     @override_settings(ARISTOTLE_SETTINGS=dict(settings.ARISTOTLE_SETTINGS, WORKGROUP_CHANGES=[]))
     def test_submitter_cannot_change_workgroup_via_edit_page(self):
@@ -296,7 +296,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
         self.assertEqual(response.status_code,403)
 
-        self.wg1.submitters.add(self.manager) #Need to give manager edit permission to allow them to actually edit things
+        self.wg1.submitters.add(self.manager) # Need to give manager edit permission to allow them to actually edit things
         response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
         self.assertEqual(response.status_code,200)
         form = response.context['form']
@@ -309,7 +309,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.assertEqual(response.status_code,200)
         self.assertTrue('Select a valid choice.' in form.errors['workgroup'][0])
 
-        self.wg_other.submitters.add(self.manager) #Need to give manager edit permission to allow them to actually edit things
+        self.wg_other.submitters.add(self.manager) # Need to give manager edit permission to allow them to actually edit things
         response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
         self.assertEqual(response.status_code,302)
 
@@ -460,7 +460,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.assertEqual(response.status_code,302)
 
 
-        #Register to check if link is on page... it shouldn't be
+        # Register to check if link is on page... it shouldn't be
         models.Status.objects.create(
             concept=self.item1,
             registrationAuthority=self.ra,
@@ -518,7 +518,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
                     {   'registrationAuthorities': [str(self.ra.id)],
                         'state': self.ra.public_state,
                         'changeDetails': "testing",
-                        'cascadeRegistration': 0, #no
+                        'cascadeRegistration': 0, # no
                     }
                 )
         self.assertRedirects(response,url_slugify_concept(self.item1))
@@ -545,18 +545,18 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.assertEqual(self.item1.statuses.count(),0)
         response = self.client.post(reverse('aristotle:changeStatus',args=[self.item1.id]),
                     {   'registrationAuthorities': [str(self.ra.id)],
-                        'state': "Not a number",#obviously wrong
+                        'state': "Not a number", # obviously wrong
                         'changeDetails': "testing",
-                        'cascadeRegistration': 0, #no
+                        'cascadeRegistration': 0, # no
                     }
                 )
         self.assertFormError(response, 'form', 'state', 'Select a valid choice. Not a number is not one of the available choices.')
 
         response = self.client.post(reverse('aristotle:changeStatus',args=[self.item1.id]),
                     {   'registrationAuthorities': [str(self.ra.id)],
-                        'state': "343434", #also wrong
+                        'state': "343434", # also wrong
                         'changeDetails': "testing",
-                        'cascadeRegistration': 0, #no
+                        'cascadeRegistration': 0, # no
                     }
                 )
         self.assertFormError(response, 'form', 'state', 'Select a valid choice. 343434 is not one of the available choices.')
@@ -624,8 +624,8 @@ class ValueDomainViewPage(LoggedInViewConceptPages,TestCase):
         self.loggedin_user_can_use_value_page(value_type,self.item3,200)
 
         # Invalid value domain types are caught in the URL runner. This test isn't required yet.
-        #response = self.client.get(reverse('aristotle:valueDomain_edit_values',args=[self.item1.id,'accidentally'])) # a fake value domain type
-        #self.assertTrue(response.status_code,404)
+        # response = self.client.get(reverse('aristotle:valueDomain_edit_values',args=[self.item1.id,'accidentally'])) # a fake value domain type
+        # self.assertTrue(response.status_code,404)
 
         data = {}
         num_vals = getattr(self.item1,value_type+"Values").count()

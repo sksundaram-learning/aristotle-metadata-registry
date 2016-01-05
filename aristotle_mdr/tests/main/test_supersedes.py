@@ -26,7 +26,7 @@ class SupersededProperty(TestCase):
                 registrationDate=timezone.now(),
                 state=self.ra.public_state
                 )
-        #self.item1=models.ObjectClass.objects.get(id=self.item1.id)
+        # self.item1=models.ObjectClass.objects.get(id=self.item1.id)
 
         self.assertFalse(self.item1.is_superseded)
         s.state = models.STATES.superseded

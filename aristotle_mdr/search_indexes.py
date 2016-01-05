@@ -25,10 +25,10 @@ class baseObjectIndex(indexes.SearchIndex):
     modified = indexes.DateTimeField(model_attr='modified')
     created = indexes.DateTimeField(model_attr='created')
     name = indexes.CharField(model_attr='name',boost=1)
-    #access = indexes.MultiValueField()
+    # access = indexes.MultiValueField()
 
     def get_model(self):
-        raise NotImplementedError #pragma: no cover -- This should always be overridden
+        raise NotImplementedError # pragma: no cover -- This should always be overridden
 
     # From http://unfoldthat.com/2011/05/05/search-with-row-level-permissions.html
     def index_queryset(self, using=None):
@@ -36,14 +36,14 @@ class baseObjectIndex(indexes.SearchIndex):
 
         return self.get_model().objects.filter(modified__lte=timezone.now())
 
-    #def have_access(self, obj):
+    # def have_access(self, obj):
     #    for user in obj.viewers.users():
     #        yield user
 
     #    for group in obj.viewers.groups():
     #        yield group
 
-    #def prepare_access(self, obj):
+    # def prepare_access(self, obj):
     #    def _access_iter(obj):
     #        have_access = self.have_access(obj)
     #
