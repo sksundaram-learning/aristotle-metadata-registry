@@ -13,26 +13,30 @@ from aristotle_mdr.perms import user_can_view
 class BulkActionForm(forms.Form):
     confirm_page = None
     items = forms.ModelMultipleChoiceField(
-                queryset=MDR._concept.objects.all(),
-                label="Related items",required=False,
-                )
+        queryset=MDR._concept.objects.all(),
+        label="Related items", required=False,
+    )
+
     def __init__(self, *args, **kwargs):
         if 'user' in kwargs.keys():
             self.user = kwargs.pop('user', None)
         super(BulkActionForm, self).__init__(*args, **kwargs)
 
+
 class AddFavouriteForm(BulkActionForm):
     def make_changes(self):
         items = self.cleaned_data.get('items')
-        items = [i for i in items if user_can_view(self.user,i)]
+        items = [i for i in items if user_can_view(self.user, i)]
         self.user.profile.favourites.add(*items)
-        return '%d items favourited'%(len(items))
+        return '%d items favourited' % (len(items))
+
 
 class RemoveFavouriteForm(BulkActionForm):
     def make_changes(self):
         items = self.cleaned_data.get('items')
         self.user.profile.favourites.remove(*items)
-        return '%d items removed from favourites'%(len(items))
+        return '%d items removed from favourites' % (len(items))
+
 
 class ChangeStateForm(ChangeStatusForm):
     confirm_page = "aristotle_mdr/actions/bulk_change_status.html"
@@ -40,10 +44,10 @@ class ChangeStateForm(ChangeStatusForm):
     def __init__(self, *args, **kwargs):
         initial_items = kwargs.pop('items')
         super(ChangeStateForm, self).__init__(*args, **kwargs)
-        self.fields['items']=forms.ModelMultipleChoiceField(
+        self.fields['items'] = forms.ModelMultipleChoiceField(
             label="These are the items that will be be registered. Add or remove additional items with the autocomplete box.",
             queryset=MDR._concept.objects.all(),
-            initial = initial_items,
+            initial=initial_items,
             widget=autocomplete_light.MultipleChoiceWidget('Autocomplete_concept')
         )
         self.add_registration_authority_field()
@@ -65,7 +69,7 @@ class ChangeStateForm(ChangeStatusForm):
                 regDate = timezone.now().date()
             for item in items:
                 for ra in ras:
-                    ra.register(item,state,self.user,regDate,cascade,changeDetails)
-            message = '%d items registered in %d registration authorities'%(len(items),len(ras))
+                    ra.register(item, state, self.user, regDate, cascade, changeDetails)
+            message = '%d items registered in %d registration authorities' % (len(items), len(ras))
             reversion.revisions.set_comment(message)
             return message
