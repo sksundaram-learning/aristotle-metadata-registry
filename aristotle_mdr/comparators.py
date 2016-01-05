@@ -35,8 +35,7 @@ class ValueDomainComparator(Comparator):
                     ):
                     same_items_added.append(added)
                     same_items_removed.append(removed)
-                elif (removed.object.meaning == added.object.meaning
-                    ):
+                elif (removed.object.meaning == added.object.meaning):
                     if added not in same_meanings_added and removed not in same_meanings_removed:
                         same_meanings_added.append(added)
                         same_meanings_removed.append(removed)

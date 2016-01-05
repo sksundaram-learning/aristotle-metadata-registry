@@ -514,13 +514,15 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.assertEqual(response.status_code,200)
 
         self.assertEqual(self.item1.statuses.count(),0)
-        response = self.client.post(reverse('aristotle:changeStatus',args=[self.item1.id]),
-                    {   'registrationAuthorities': [str(self.ra.id)],
-                        'state': self.ra.public_state,
-                        'changeDetails': "testing",
-                        'cascadeRegistration': 0, # no
-                    }
-                )
+        response = self.client.post(
+            reverse('aristotle:changeStatus',args=[self.item1.id]),
+            {
+                'registrationAuthorities': [str(self.ra.id)],
+                'state': self.ra.public_state,
+                'changeDetails': "testing",
+                'cascadeRegistration': 0, # no
+            }
+        )
         self.assertRedirects(response,url_slugify_concept(self.item1))
 
         self.item1 = self.itemType.objects.get(pk=self.item1.pk)
@@ -543,22 +545,26 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.assertEqual(response.status_code,200)
 
         self.assertEqual(self.item1.statuses.count(),0)
-        response = self.client.post(reverse('aristotle:changeStatus',args=[self.item1.id]),
-                    {   'registrationAuthorities': [str(self.ra.id)],
-                        'state': "Not a number", # obviously wrong
-                        'changeDetails': "testing",
-                        'cascadeRegistration': 0, # no
-                    }
-                )
+        response = self.client.post(
+            reverse('aristotle:changeStatus', args=[self.item1.id]),
+            {
+                'registrationAuthorities': [str(self.ra.id)],
+                'state': "Not a number", # obviously wrong
+                'changeDetails': "testing",
+                'cascadeRegistration': 0, # no
+            }
+        )
         self.assertFormError(response, 'form', 'state', 'Select a valid choice. Not a number is not one of the available choices.')
 
-        response = self.client.post(reverse('aristotle:changeStatus',args=[self.item1.id]),
-                    {   'registrationAuthorities': [str(self.ra.id)],
-                        'state': "343434", # also wrong
-                        'changeDetails': "testing",
-                        'cascadeRegistration': 0, # no
-                    }
-                )
+        response = self.client.post(
+            reverse('aristotle:changeStatus',args=[self.item1.id]),
+            {
+                'registrationAuthorities': [str(self.ra.id)],
+                'state': "343434", # also wrong
+                'changeDetails': "testing",
+                'cascadeRegistration': 0, # no
+            }
+        )
         self.assertFormError(response, 'form', 'state', 'Select a valid choice. 343434 is not one of the available choices.')
 
     def test_viewer_cannot_change_status(self):

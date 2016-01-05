@@ -251,16 +251,19 @@ class PermissionSearchForm(TokenSearchForm):
 
     state = forms.MultipleChoiceField(required=False,label=_("Registration status"),
         choices=MDR.STATES,widget=BootstrapDropdownSelectMultiple)
-    public_only = forms.BooleanField(required=False,
+    public_only = forms.BooleanField(
+        required=False,
         label="Only show public items"
     )
-    myWorkgroups_only = forms.BooleanField(required=False,
+    myWorkgroups_only = forms.BooleanField(
+        required=False,
         label="Only show items in my workgroups"
     )
-    models = forms.MultipleChoiceField(choices=model_choices(),
-                required=False, label=_('Item type'),
-                widget=BootstrapDropdownSelectMultiple
-                )
+    models = forms.MultipleChoiceField(
+        choices=model_choices(),
+	required=False, label=_('Item type'),
+	widget=BootstrapDropdownSelectMultiple
+    )
 
     def __init__(self,*args, **kwargs):
         kwargs['searchqueryset'] = PermissionSearchQuerySet()
@@ -302,10 +305,11 @@ class PermissionSearchForm(TokenSearchForm):
         sqs = sqs.apply_registration_status_filters(states,ras)
 
         sqs = self.apply_date_filtering(sqs)
-        sqs = sqs.apply_permission_checks(  user=self.request.user,
-                                            public_only=self.cleaned_data['public_only'],
-                                            user_workgroups_only=self.cleaned_data['myWorkgroups_only']
-                                        )
+        sqs = sqs.apply_permission_checks(
+            user=self.request.user,
+            public_only=self.cleaned_data['public_only'],
+            user_workgroups_only=self.cleaned_data['myWorkgroups_only']
+        )
 
         self.has_spelling_suggestions = False
         if not self.repeat_search:

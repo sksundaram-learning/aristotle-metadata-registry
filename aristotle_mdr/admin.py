@@ -79,9 +79,10 @@ class WorkgroupAdmin(CompareVersionAdmin):
             if request.GET.get('t', None) == "registrygroup_ptr":
                 return True
             else:
-                return True in (request.user.has_perm('aristotle_mdr.admin_in_{name}'.format(name=w.name))
-                            for w in request.user.profile.workgroups.all()
-                         )
+                return True in (
+                    request.user.has_perm('aristotle_mdr.admin_in_{name}'.format(name=w.name))
+                        for w in request.user.profile.workgroups.all()
+                )
         elif perms.user_can_edit(request.user, obj):
             return True
         else:
@@ -251,24 +252,29 @@ register_concept(MDR.ValueDomain,
         'follow': ['permissiblevalue_set','supplementaryvalue_set'],
         'follow_classes':[MDR.PermissibleValue,MDR.SupplementaryValue]
         },
-    )
-register_concept(MDR.DataElementConcept,
+)
+
+register_concept(
+    MDR.DataElementConcept,
     name_suggest_fields = ['objectClass', 'property'],
     extra_fieldsets = [('Components', {'fields': ['objectClass', 'property']}),]
-    )
+)
 
-register_concept(MDR.DataElement,
+register_concept(
+    MDR.DataElement,
     name_suggest_fields = ['dataElementConcept', 'valueDomain'],
     extra_fieldsets = [('Components', {'fields': ['dataElementConcept', 'valueDomain']}),]
-    )
+)
 
-register_concept(MDR.DataElementDerivation,
+register_concept(
+    MDR.DataElementDerivation,
     extra_fieldsets = [('Derivation', {'fields': ['derivation_rule', 'derives', 'inputs']}),]
-    )
+)
 
 register_concept(MDR.ConceptualDomain)
 register_concept(MDR.DataType)
 
-register_concept(MDR.UnitOfMeasure,
+register_concept(
+    MDR.UnitOfMeasure,
     extra_fieldsets = [('Measures', {'fields': ['measure']}),]
-    )
+)

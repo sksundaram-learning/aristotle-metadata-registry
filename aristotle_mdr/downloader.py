@@ -28,12 +28,14 @@ def download(request,downloadType,item):
 
     if downloadType=="pdf":
         subItems = item.getPdfItems
-        return render_to_pdf(template,
-            {'item':item,
-             'items':subItems,
-             'tableOfContents':len(subItems)>0,
-             'view':request.GET.get('view','').lower(),
-             'pagesize':request.GET.get('pagesize',page_size),
+        return render_to_pdf(
+            template,
+            {
+                'item':item,
+		 'items':subItems,
+		 'tableOfContents':len(subItems)>0,
+		 'view':request.GET.get('view','').lower(),
+		 'pagesize':request.GET.get('pagesize',page_size),
             }
         )
 

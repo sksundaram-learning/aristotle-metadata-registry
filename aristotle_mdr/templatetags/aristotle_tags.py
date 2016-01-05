@@ -268,9 +268,10 @@ def itemURL(item):
     # app_name = item._meta.app_label
     model_name = item._meta.model_name
     name = slugify(item.name)[:50]
-    return reverse("aristotle:item",
-            kwargs={'iid':item.pk,'model_slug':model_name,'name_slug':name}
-            )
+    return reverse(
+        "aristotle:item",
+        kwargs={'iid':item.pk,'model_slug':model_name,'name_slug':name}
+    )
 
 @register.simple_tag
 def downloadMenu(item):

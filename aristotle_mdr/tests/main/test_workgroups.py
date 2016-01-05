@@ -75,13 +75,16 @@ class WorkgroupAnonTests(utils.LoggedInViewPages,TestCase):
 
         response = self.client.post(
             reverse('aristotle:addWorkgroupMembers',args=[self.wg1.id]),
-            {'roles':['Viewer'],
-             'users':[self.newuser.pk]
-            })
-        self.assertRedirects(response,
+            {
+                'roles':['Viewer'],
+                'users':[self.newuser.pk]
+            }
+        )
+        self.assertRedirects(
+            response,
             reverse("friendly_login",)+"?next="+
-            reverse('aristotle:addWorkgroupMembers',args=[self.wg1.id])
-            )
+            reverse('aristotle:addWorkgroupMembers', args=[self.wg1.id])
+        )
         self.assertListEqual(list(self.newuser.profile.workgroups.all()),[])
 
 class WorkgroupMemberTests(utils.LoggedInViewPages,TestCase):
@@ -109,18 +112,22 @@ class WorkgroupMemberTests(utils.LoggedInViewPages,TestCase):
 
         self.assertListEqual(list(self.newuser.profile.workgroups.all()),[])
         response = self.client.post(
-            reverse('aristotle:addWorkgroupMembers',args=[self.wg2.id]),
-            {'roles':['viewer'],
-             'users':[self.newuser.pk]
-            })
+            reverse('aristotle:addWorkgroupMembers', args=[self.wg2.id]),
+            {
+                'roles':['viewer'],
+                'users':[self.newuser.pk]
+            }
+        )
         self.assertEqual(response.status_code,403)
         self.assertListEqual(list(self.newuser.profile.workgroups.all()),[])
 
         response = self.client.post(
-            reverse('aristotle:addWorkgroupMembers',args=[self.wg1.id]),
-            {'roles':['viewer'],
-             'users':[self.newuser.pk]
-            })
+            reverse('aristotle:addWorkgroupMembers', args=[self.wg1.id]),
+            {
+                'roles': ['viewer'],
+                'users': [self.newuser.pk]
+            }
+        )
         self.assertEqual(response.status_code,302)
         self.assertTrue(self.newuser in self.wg1.members.all())
         self.assertListEqual(list(self.newuser.profile.workgroups.all()),[self.wg1])

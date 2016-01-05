@@ -77,8 +77,10 @@ class AdminPage(utils.LoggedInViewPages,TestCase):
 
     def test_su_can_add_new_user(self):
         self.login_superuser()
-        response = self.client.post(reverse("admin:auth_user_add"),
-            {'username':"newuser",'password1':"test",'password2':"test",
+        response = self.client.post(
+            reverse("admin:auth_user_add"),
+            {
+                'username':"newuser",'password1':"test",'password2':"test",
                 'profile-TOTAL_FORMS': 1, 'profile-INITIAL_FORMS': 0, 'profile-MAX_NUM_FORMS': 1,
                 'profile-0-workgroup_manager_in': [self.wg1.id],
                 'profile-0-steward_in': [self.wg1.id],
@@ -106,8 +108,10 @@ class AdminPage(utils.LoggedInViewPages,TestCase):
             self.assertEqual(rel.count(),1)
             self.assertEqual(rel.first(),self.ra)
 
-        response = self.client.post(reverse("admin:auth_user_add"),
-            {'username':"newuser_with_none",'password1':"test",'password2':"test",
+        response = self.client.post(
+            reverse("admin:auth_user_add"),
+            {
+                'username':"newuser_with_none",'password1':"test",'password2':"test",
                 'profile-TOTAL_FORMS': 1, 'profile-INITIAL_FORMS': 0, 'profile-MAX_NUM_FORMS': 1,
             }
         )

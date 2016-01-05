@@ -75,11 +75,12 @@ def admin_tools(request):
             if app_models['app'] is None:
                 app_models['app'] = getattr(apps.get_app_config(m.app_label),'verbose_name')
             app_models['models'].append(
-                    (m.model_class(),
-                     get_cached_object_count(m),
-                     reverse("admin:%s_%s_changelist" % (m.app_label, m.model))
-                    )
+                (
+                    m.model_class(),
+                    get_cached_object_count(m),
+                    reverse("admin:%s_%s_changelist" % (m.app_label, m.model))
                 )
+            )
             model_stats[m.app_label] = app_models
 
     page = render(request,"aristotle_mdr/user/userAdminTools.html",
@@ -133,14 +134,16 @@ def admin_stats(request):
 
             mod_counts.append(total)
             app_models['models'].append(
-                    (m.model_class(),
-                     {  'all_time': total,
-                        't7':t7_val,
-                        't30':t30_val
-                     },
-                     reverse("admin:%s_%s_changelist" % (m.app_label, m.model))
-                    )
+                (
+                    m.model_class(),
+                    {
+                        'all_time': total,
+                        't7': t7_val,
+                        't30' :t30_val
+                    },
+                    reverse("admin:%s_%s_changelist" % (m.app_label, m.model))
                 )
+            )
             model_stats[m.app_label] = app_models
 
     page = render(request,"aristotle_mdr/user/userAdminStats.html",
