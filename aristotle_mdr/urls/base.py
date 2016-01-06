@@ -1,4 +1,4 @@
-import notifications
+import notifications.urls
 import autocomplete_light
 # import every app/autocomplete_light_registry.py
 
