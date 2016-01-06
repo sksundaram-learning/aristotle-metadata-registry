@@ -247,11 +247,11 @@ register_concept(MDR.ObjectClass)
 register_concept(MDR.Property)
 register_concept(MDR.ValueDomain,
     extra_fieldsets = [('Representation', {'fields': ['format', 'maximum_length', 'unit_of_measure', 'data_type','description']}),],
-    extra_inlines = [PermissibleValueInline, SupplementaryValueInline]
+    extra_inlines = [PermissibleValueInline, SupplementaryValueInline],
     reversion = {
         'follow': ['permissiblevalue_set','supplementaryvalue_set'],
-        'follow_classes':[MDR.PermissibleValue,MDR.SupplementaryValue]
-        },
+        'follow_classes': [MDR.PermissibleValue,MDR.SupplementaryValue]
+    },
 )
 
 register_concept(
