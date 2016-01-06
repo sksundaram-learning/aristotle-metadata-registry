@@ -5,10 +5,11 @@ import autocomplete_light
 from django import forms
 from django.utils.translation import ugettext_lazy as _
 from django.utils import timezone
+from bootstrap3_datetime.widgets import DateTimePicker
 
 import aristotle_mdr.models as MDR
 from aristotle_mdr.perms import user_can_edit, user_can_view
-from bootstrap3_datetime.widgets import DateTimePicker
+from aristotle_mdr.forms.creation_wizards import UserAwareForm
 
 
 class UserSelfEditForm(forms.Form):
@@ -95,9 +96,9 @@ class SupersedeForm(forms.Form):
             raise forms.ValidationError("You cannot supersede with an item that you do not have permission to edit")
         return item
 
-from aristotle_mdr.forms.creation_wizards import UserAwareForm
+
 class ChangeStatusForm(UserAwareForm):
-    state = forms.ChoiceField(choices=MDR.STATES,widget=forms.RadioSelect)
+    state = forms.ChoiceField(choices=MDR.STATES, widget=forms.RadioSelect)
     registrationDate = forms.DateField(
         required=False,
         label=_("Registration date"),
@@ -126,7 +127,7 @@ class ChangeStatusForm(UserAwareForm):
 
     # Thanks to http://jacobian.org/writing/dynamic-form-generation/
     def __init__(self, *args, **kwargs):
-        #self.user = kwargs.pop('user')
+        # self.user = kwargs.pop('user')
         super(ChangeStatusForm, self).__init__(*args, **kwargs)
         self.add_registration_authority_field()
 

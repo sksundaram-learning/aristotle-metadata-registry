@@ -153,8 +153,9 @@ def subclassed_modelform(set_model):
 
 
 def subclassed_edit_modelform(set_model):
-    class MyForm(ConceptForm,CheckIfModifiedMixin):
-        change_comments = forms.CharField(widget = forms.Textarea,required=False)
+    class MyForm(ConceptForm, CheckIfModifiedMixin):
+        change_comments = forms.CharField(widget=forms.Textarea, required=False)
+
         class Meta(ConceptForm.Meta):
             model = set_model
             if set_model.edit_page_excludes:
