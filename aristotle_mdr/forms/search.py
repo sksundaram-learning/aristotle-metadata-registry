@@ -95,6 +95,11 @@ DELTA = {
 }
 
 
+def first_letter(j):
+    """Extract the first letter of a string"""
+    # Defined as a method rather than using a lambda to keep a style guide happy.
+    return j[0]
+
 class EmptyPermissionSearchQuerySet(EmptySearchQuerySet):
     # Just like a Haystack EmptySearchQuerySet, this behaves like a PermissionsSearchQuerySet
     # But returns nothing all the time.
@@ -156,9 +161,6 @@ class PermissionSearchQuerySet(SearchQuerySet):
 
 
 class TokenSearchForm(SearchForm):
-
-    def first_letter(j):
-        return j[0]
 
     def prepare_tokens(self):
         try:
