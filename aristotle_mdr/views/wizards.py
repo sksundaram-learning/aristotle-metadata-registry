@@ -475,7 +475,7 @@ def has_valid_data_elements_from_components(wizard):
 class DataElementWizard(MultiStepAristotleWizard):
     model = MDR.DataElement
     templates = {
-        "component_search"  "aristotle_mdr/create/de_1_initial_search.html",
+        "component_search": "aristotle_mdr/create/de_1_initial_search.html",
         "component_results": "aristotle_mdr/create/de_2_search_results.html",
         "make_oc": "aristotle_mdr/create/concept_wizard_2_results.html",
         "make_p": "aristotle_mdr/create/concept_wizard_2_results.html",
