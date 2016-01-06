@@ -25,8 +25,6 @@ urlpatterns = patterns(
     url(r'^account/notifications/', include(notifications.urls)),
     url(r'^account/password/reset/$', password_reset),  # , {'template_name': 'my_templates/password_reset.html'}
     url(r'^account/password/reset_done/$', password_reset),  # , {'template_name': 'my_templates/password_reset.html'}
-    url(r'^', include('aristotle_mdr.urls_aristotle', app_name="aristotle_mdr", namespace="aristotle")),
-
     url(
         r'^user/password/reset/$',
         'django.contrib.auth.views.password_reset',
@@ -49,4 +47,3 @@ urlpatterns = patterns(
     url(r'^account/password/change/done/?$', 'django.contrib.auth.views.password_change_done', name='password_change_done'),
 )
 
-handler403 = 'aristotle_mdr.views.unauthorised'

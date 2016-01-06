@@ -10,6 +10,10 @@ The following are required within a dictionary in the settings for the configure
     A list of the *namespaces* used to add additional content types,
     these are used when discovering the available extensions for about pages -
     required format a ``list`` of ``strings``.
+``BULK_ACTIONS``
+    A dictionary of bulk action names and the associated fully-ualified python 
+    path to the form that completes the action. :doc:`More information on configuring 
+    bulk actions is available here <../extensions/bulk_actions>`.
 ``PDF_PAGE_SIZE``
     The default page size to deliver PDF downloads if a page size is not specified in the URL
 ``SEPARATORS``
@@ -57,7 +61,7 @@ file types can be handled by the same extension.
 For example, if an object class had a PDF template, based on the above
 configuration the menu below would be accessible:
 
- .. image:: download_menu.png
+ .. image:: /_static/download_menu.png
     :alt: An example download menu with one option for a PDF download link.
 
 And clicking this would access the following relative URL::

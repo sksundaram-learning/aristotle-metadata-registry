@@ -126,7 +126,12 @@ ARISTOTLE_SETTINGS = {
     'SITE_DESCRIPTION': 'About this site',  # 'The main title for the site.'
     'CONTENT_EXTENSIONS' : [],
     'PDF_PAGE_SIZE': 'A4',
-    'WORKGROUP_CHANGES':[]  # ['admin'] # or manager or submitter,
+    'WORKGROUP_CHANGES':[], #['admin'] #or manager or submitter,
+    'BULK_ACTIONS': {
+        'add_favourites':'aristotle_mdr.forms.bulk_actions.AddFavouriteForm',
+        'remove_favourites':'aristotle_mdr.forms.bulk_actions.RemoveFavouriteForm',
+        'change_state':'aristotle_mdr.forms.bulk_actions.ChangeStateForm',
+        }
     }
 ARISTOTLE_DOWNLOADS = [
     # (fileType,menu,font-awesome-icon,module)
