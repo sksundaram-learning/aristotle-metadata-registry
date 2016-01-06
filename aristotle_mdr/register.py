@@ -136,4 +136,3 @@ def register_concept_admin(concept_class, *args, **kwargs):
 
 #def _register_concept_(concept_class, *args, **kwargs):
 #    pass
-

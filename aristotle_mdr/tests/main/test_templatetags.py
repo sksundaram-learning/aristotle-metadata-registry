@@ -68,4 +68,3 @@ class TestTemplateTags_aristotle_tags_py(TestCase):
 
     def test_in_workgroup(self):
         self.use_safe_filter('in_workgroup')
-

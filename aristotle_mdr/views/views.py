@@ -486,7 +486,7 @@ def deprecate(request, iid):
     return render(request, "aristotle_mdr/actions/deprecateItems.html", {"item": item, "form": form})
 
 
-def valuedomain_value_edit(request,iid,value_type):
+def valuedomain_value_edit(request, iid, value_type):
     item = get_object_or_404(MDR.ValueDomain, pk=iid).item
     if not user_can_edit(request.user, item):
         if request.user.is_anonymous():

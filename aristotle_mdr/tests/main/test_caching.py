@@ -66,4 +66,3 @@ class CachingForRawPermissions(TestCase):
             )
         self.assertTrue(perms.user_can_view(self.submitter,self.item))
         self.assertTrue(perms.user_can_view(self.viewer,self.item))
-

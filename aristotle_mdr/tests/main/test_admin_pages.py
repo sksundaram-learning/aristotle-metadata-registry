@@ -409,4 +409,3 @@ class DataElementDerivationAdminPage(AdminPageForConcept,TestCase):
         self.create_defaults = {'derives':self.derived_de}
         self.form_defaults = {'derives':self.derived_de.id}
         self.create_items()
-

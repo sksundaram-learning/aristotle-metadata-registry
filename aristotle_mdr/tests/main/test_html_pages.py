@@ -780,4 +780,3 @@ class RegistrationAuthorityViewPage(LoggedInViewUnmanagedPages,TestCase):
         self.logout()
         response = self.client.get(reverse('aristotle:allRegistrationAuthorities'))
         self.assertTrue(response.status_code,200)
-
