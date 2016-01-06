@@ -486,8 +486,8 @@ def deprecate(request, iid):
     return render(request, "aristotle_mdr/actions/deprecateItems.html", {"item": item, "form": form})
 
 
-def valuedomain_value_edit(request, iid, value_type):
-    item = get_object_or_404(MDR._concept, pk=iid).item
+def valuedomain_value_edit(request,iid,value_type):
+    item = get_object_or_404(MDR.ValueDomain, pk=iid).item
     if not user_can_edit(request.user, item):
         if request.user.is_anonymous():
             return redirect(reverse('friendly_login') + '?next=%s' % request.path)
@@ -595,70 +595,9 @@ def browse(request, oc_id=None, dec_id=None):
         return render(request, "aristotle_mdr/browse/dataElements.html", {"items": items, "dataElementConcept": dec})
 
 
-# TODO: Check permissions for this
-@login_required
-def bulk_action(request):
-    url = request.GET.get("next", "/")
-    message = ""
-    if request.method == 'POST':  # If the form has been submitted...
-        actions = {
-            "add_favourites": MDRForms.bulk_actions.AddFavouriteForm,
-            "remove_favourites": MDRForms.bulk_actions.RemoveFavouriteForm,
-            "change_state": MDRForms.bulk_actions.ChangeStateForm,
-            }
-        action = request.POST.get("bulkaction", None)
-        if action is None:
-            # no action, messed up, redirect
-            return HttpResponseRedirect(url)
-        if actions[action].confirm_page is None:
-            # if there is no confirm page or extra details required, do the action and redirect
-            form = actions[action](request.POST, user=request.user)  # A form bound to the POST data
-            if form.is_valid():
-                message = form.make_changes()
-                messages.add_message(request, messages.INFO, message)
-            else:
-                messages.add_message(request, messages.ERROR, form.errors)
-            return HttpResponseRedirect(url)
-        else:
-            form = MDRForms.bulk_actions.BulkActionForm(request.POST, user=request.user)
-            items = []
-            if form.is_valid():
-                items = form.cleaned_data['items']
-            confirmed = request.POST.get("confirmed", None)
-
-            if confirmed:
-                # We've passed the confirmation page, try and save.
-                form = actions[action](request.POST, user=request.user, items=items)  # A form bound to the POST data
-                # there was an error with the form redisplay
-                if form.is_valid():
-                    message = form.make_changes()
-                    messages.add_message(request, messages.INFO, message)
-                    return HttpResponseRedirect(url)
-            else:
-                # we need a confirmation, render the next form
-                form = actions[action](request.POST, user=request.user, items=items)
-            return render(
-                request,
-                actions[action].confirm_page,
-                {
-                    "items": items,
-                    "form": form,
-                    "next": url
-                }
-            )
-    return HttpResponseRedirect(url)
-
-
 # Search views
 
-
 class PermissionSearchView(SearchView):
-    def __call__(self, request):
-        if 'addFavourites' in request.GET.keys():
-            return bulkFavourite(request, url="aristotle:search")
-        else:
-            return super(PermissionSearchView, self).__call__(request)
-
     def build_form(self):
         form = super(self.__class__, self).build_form()
         form.request = self.request

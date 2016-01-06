@@ -95,9 +95,9 @@ class SupersedeForm(forms.Form):
             raise forms.ValidationError("You cannot supersede with an item that you do not have permission to edit")
         return item
 
-
-class ChangeStatusForm(forms.Form):
-    state = forms.ChoiceField(choices=MDR.STATES, widget=forms.RadioSelect)
+from aristotle_mdr.forms.creation_wizards import UserAwareForm
+class ChangeStatusForm(UserAwareForm):
+    state = forms.ChoiceField(choices=MDR.STATES,widget=forms.RadioSelect)
     registrationDate = forms.DateField(
         required=False,
         label=_("Registration date"),
@@ -126,7 +126,7 @@ class ChangeStatusForm(forms.Form):
 
     # Thanks to http://jacobian.org/writing/dynamic-form-generation/
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop('user')
+        #self.user = kwargs.pop('user')
         super(ChangeStatusForm, self).__init__(*args, **kwargs)
         self.add_registration_authority_field()
 

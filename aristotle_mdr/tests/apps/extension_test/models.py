@@ -1,8 +1,8 @@
 from __future__ import unicode_literals
 
-from django.db import models
-
+# Start of the question model
 import aristotle_mdr
+from django.db import models
 
 class Question(aristotle_mdr.models.concept):
     template = "extension_test/concepts/question.html"
@@ -12,12 +12,13 @@ class Question(aristotle_mdr.models.concept):
             aristotle_mdr.models.DataElement,
             related_name="questions",
             null=True,blank=True)
+# End of the question model
 
 class Questionnaire(aristotle_mdr.models.concept):
     # Questionnaire is a test of a lazy developer who has done the bare minimum
     # To get an object in the system. This is a test of how little a dev can to
     # get a functional object. Ideally the string 'Questionnaire' should exist only here.
-
+    edit_page_excludes = ['questions']
     #template = "extension_test/concepts/question.html" # Blank to test default template
     questions = models.ManyToManyField(
             Question,

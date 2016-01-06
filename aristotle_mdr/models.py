@@ -652,7 +652,8 @@ class _concept(baseAristotleObject):
     tracker = FieldTracker()
 
     comparator = comparators.Comparator
-
+    edit_page_excludes = None
+    
     class Meta:
         # So the url_name works for items we can't determine.
         verbose_name = "item"
