@@ -25,7 +25,7 @@ sqs = SearchQuerySet()
     """
 
 urlpatterns = patterns('aristotle_mdr.views',
-    url(r'^/?$', TemplateView.as_view(template_name='aristotle_mdr/static/home.html'),name="home"),
+    url(r'^/?$', TemplateView.as_view(template_name='aristotle_mdr/static/home.html'), name="home"),
 
     # all the below take on the same form:
     # url(r'^itemType/(?P<iid>\d+)?/?
@@ -50,17 +50,17 @@ urlpatterns = patterns('aristotle_mdr.views',
     url(r'^discussions/edit/post/(?P<pid>\d+)/?$', views.discussions.edit_post, name='discussionsEditPost'),
     url(r'^discussions/post/(?P<pid>\d+)/toggle/?$', views.discussions.toggle_post, name='discussionsPostToggle'),
 
-    #url(r'^item/(?P<iid>\d+)/?$', views.items.concept, name='item'),
+    # url(r'^item/(?P<iid>\d+)/?$', views.items.concept, name='item'),
     url(r'^item/(?P<iid>\d+)(?:\/(?P<model_slug>\w+)\/(?P<name_slug>.+))?/?$', views.concept, name='item'),
     url(r'^item/(?P<iid>\d+)/edit/?$', views.edit_item, name='edit_item'),
     url(r'^item/(?P<iid>\d+)/clone/?$', views.clone_item, name='clone_item'),
     url(r'^item/(?P<iid>\d+)/history/?$', views.item_history, name='item_history'),
     url(r'^item/(?P<iid>\d+)/registrationHistory/?$', views.registrationHistory, name='registrationHistory'),
-    url(r'^item/(?P<iid>\d+)(?:\/.*)?$', views.concept, name='item'), # Catch every other 'item' URL and throw it for a redirect
+    url(r'^item/(?P<iid>\d+)(?:\/.*)?$', views.concept, name='item'),  # Catch every other 'item' URL and throw it for a redirect
 
     url(r'^unmanaged/measure/(?P<iid>\d+)(?:\/(?P<model_slug>\w+)\/(?P<name_slug>.+))?/?$', views.measure, name='measure'),
 
-    #url(r'^create/?$', views.item, name='item'),
+    # url(r'^create/?$', views.item, name='item'),
     url(r'^create/?$', views.create_list, name='createList'),
     url(r'^create/(aristotle_mdr/)?dataelementconcept$', views.wizards.DataElementConceptWizard.as_view(), name='createDataElementConcept'),
     url(r'^create/(aristotle_mdr/)?dataelement$', views.wizards.DataElementWizard.as_view(), name='createDataElement'),
@@ -76,7 +76,7 @@ urlpatterns = patterns('aristotle_mdr.views',
     url(r'^action/compare/?$', views.comparator.compare_concepts, name='compare_concepts'),
 
     url(r'^changestatus/(?P<iid>\d+)$', views.changeStatus, name='changeStatus'),
-    #url(r'^remove/WorkgroupUser/(?P<iid>\d+)/(?P<userid>\d+)$', views.removeWorkgroupUser, name='removeWorkgroupUser'),
+    # url(r'^remove/WorkgroupUser/(?P<iid>\d+)/(?P<userid>\d+)$', views.removeWorkgroupUser, name='removeWorkgroupUser'),
 
     url(r'^account/?$', RedirectView.as_view(url='account/home/', permanent=True)),
     url(r'^account/home/?$', views.user_pages.home, name='userHome'),
@@ -107,10 +107,14 @@ urlpatterns = patterns('aristotle_mdr.views',
 
     url(r'^accessibility/?$', TemplateView.as_view(template_name='aristotle_mdr/static/accessibility.html'), name="accessibility"),
 
-    url(r'^search/?', search_view_factory(
-     view_class=views.PermissionSearchView,
-     template='search/search.html',
-     searchqueryset=None,
-     form_class=forms.search.PermissionSearchForm
-     ), name='search'),
+    url(
+        r'^search/?',
+        search_view_factory(
+            view_class=views.PermissionSearchView,
+            template='search/search.html',
+            searchqueryset=None,
+            form_class=forms.search.PermissionSearchForm
+            ),
+        name='search'
+    ),
 )

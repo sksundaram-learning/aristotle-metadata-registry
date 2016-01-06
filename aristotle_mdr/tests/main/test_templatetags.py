@@ -13,9 +13,9 @@ setup_test_environment()
 
 from django.core.exceptions import FieldDoesNotExist
 try:
-    from django.template import TemplateSyntaxError #Django1.8 only
+    from django.template import TemplateSyntaxError # Django1.8 only
 except:
-    from django.template.exceptions import TemplateSyntaxError #Django1.9 only
+    from django.template.exceptions import TemplateSyntaxError # Django1.9 only
 
 preamble = "{% load aristotle_tags %}"
 
@@ -30,7 +30,7 @@ class TestTemplateTags_aristotle_tags_py(TestCase):
 
     def test_doc(self):
         context = Context({"item": self.item})
-        
+
         # Definition has helptext
         template = Template(preamble+"{% doc item 'definition' %}")
         template = template.render(context)
@@ -40,14 +40,14 @@ class TestTemplateTags_aristotle_tags_py(TestCase):
         template = Template(preamble+"{% doc item 'modified' %}")
         template = template.render(context)
         self.assertTrue('No help text for the field' in template)
-        
+
         template = Template(preamble+"{% doc item %}")
         template.render(context)
-        
+
         with self.assertRaises(FieldDoesNotExist):
             template = Template(preamble+"{% doc item 'not_an_attribute' %}")
             template.render(context)
-        
+
 
     def use_safe_filter(self, safefilter):
         context = Context({"item": self.item})
@@ -62,12 +62,9 @@ class TestTemplateTags_aristotle_tags_py(TestCase):
 
     def test_can_alter_comment(self):
         self.use_safe_filter('can_alter_comment')
-        
+
     def test_can_alter_post(self):
         self.use_safe_filter('can_alter_post')
-        
+
     def test_in_workgroup(self):
         self.use_safe_filter('in_workgroup')
-
-        
-        

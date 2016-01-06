@@ -20,4 +20,3 @@ class TestBulkActions(utils.LoggedInViewPages,TestCase):
         response = self.client.get(reverse('aristotle:userFavourites'))
         self.assertEqual(response.status_code,200)
         self.assertTrue('incomplete action' in response.content)
-        

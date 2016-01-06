@@ -28,9 +28,10 @@ class TestExtensionListVisibility(TestCase):
 class QuestionVisibility(utils.ManagedObjectVisibility,TestCase):
     def setUp(self):
         super(QuestionVisibility, self).setUp()
-        self.item = Question.objects.create(name="Test Question",
+        self.item = Question.objects.create(
+            name="Test Question",
             workgroup=self.wg,
-            )
+        )
 
 class QuestionAdmin(AdminPageForConcept,TestCase):
     itemType=Question
@@ -52,9 +53,10 @@ class QuestionViewPage(LoggedInViewExtensionConceptPages,TestCase):
 class QuestionnaireVisibility(utils.ManagedObjectVisibility,TestCase):
     def setUp(self):
         super(QuestionnaireVisibility, self).setUp()
-        self.item = Questionnaire.objects.create(name="Test Question",
+        self.item = Questionnaire.objects.create(
+            name="Test Question",
             workgroup=self.wg,
-            )
+        )
 
 class QuestionnaireAdmin(AdminPageForConcept,TestCase):
     itemType=Questionnaire
@@ -63,13 +65,13 @@ class QuestionnaireAdmin(AdminPageForConcept,TestCase):
         self.login_editor()
         response = self.client.get(reverse("admin:%s_%s_change"%(self.itemType._meta.app_label,self.itemType._meta.model_name),args=[self.item1.pk]))
         self.assertResponseStatusCodeEqual(response,200)
-        #print dir(response.context['adminform'].model_admin)
+        # print dir(response.context['adminform'].model_admin)
         auto_fields = response.context['adminform'].model_admin.fieldsets[-1]
         self.assertEqual(auto_fields[0], u'Extra fields for Questionnaire')
         self.assertEqual(auto_fields[1]['fields'], ['questions'])
 
 class QuestionnaireViewPage(LoggedInViewExtensionConceptPages,TestCase):
-    url_name='item' #'questionnaire' # the lazy way
+    url_name='item' # 'questionnaire' # the lazy way
     itemType=Questionnaire
     def test_help_page_exists(self):
         self.logout()
