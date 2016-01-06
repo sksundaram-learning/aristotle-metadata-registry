@@ -55,12 +55,12 @@ def register_concept_reversions(concept_class, *args, **kwargs):
     follows = kwargs.get('reversion',{}).get('follow',[])
     follows.append('_concept_ptr')
     follow_classes = kwargs.get('reversion',{}).get('follow_classes',[])
-    
+
     reversion.register(concept_class, follow=follows)
 
     for cls in follow_classes:
         reversion.register(cls)
-        
+
 
 def register_concept_autocomplete(concept_class, *args, **kwargs):
     """ Registers the given ``concept`` with ``autocomplete_light`` based on the
@@ -136,4 +136,3 @@ def register_concept_admin(concept_class, *args, **kwargs):
 
 #def _register_concept_(concept_class, *args, **kwargs):
 #    pass
-

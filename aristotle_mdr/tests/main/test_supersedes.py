@@ -26,7 +26,7 @@ class SupersededProperty(TestCase):
                 registrationDate=timezone.now(),
                 state=self.ra.public_state
                 )
-        #self.item1=models.ObjectClass.objects.get(id=self.item1.id)
+        # self.item1=models.ObjectClass.objects.get(id=self.item1.id)
 
         self.assertFalse(self.item1.is_superseded)
         s.state = models.STATES.superseded
@@ -124,4 +124,3 @@ class DeprecatePage(utils.LoggedInViewPages,TestCase):
         response = self.client.post(reverse('aristotle:deprecate',args=[self.item1.id]),{'olderItems': [self.item4.id]})
         self.assertEqual(response.status_code,200) # Item 4 is a different type, so cannot deprecate, so it did not save and was served the form again.
         self.assertListEqual(list(self.item1.supersedes.all()),[self.item2])
-

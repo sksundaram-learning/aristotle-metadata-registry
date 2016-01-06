@@ -14,12 +14,12 @@ from aristotle_mdr.forms.creation_wizards import UserAwareForm
 class BulkActionForm(UserAwareForm):
     classes=""
     confirm_page = None
+    # queryset is all as we try to be nice and process what we can in bulk
+    # actions.
     items = forms.ModelMultipleChoiceField(
-                # queryset is all as we try to be nice and process what we can
-                # in bulk actions.
-                queryset=MDR._concept.objects.all(),
-                label="Related items",required=False,
-                )
+        queryset=MDR._concept.objects.all(),
+        label="Related items", required=False,
+    )
     item_label="Select some items"
     
     def __init__(self, *args, **kwargs):
@@ -51,6 +51,7 @@ class BulkActionForm(UserAwareForm):
         txt = txt.replace('Form','')
         txt = camel_case_to_spaces(txt)
         return txt
+
 
 class AddFavouriteForm(BulkActionForm):
     classes="fa-bookmark"

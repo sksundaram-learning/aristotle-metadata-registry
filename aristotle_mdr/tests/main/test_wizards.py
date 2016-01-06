@@ -382,9 +382,13 @@ class DataElementWizardPage(ConceptWizardPage,TestCase):
             at    = models.Property.objects.create(name="animal type",definition="",workgroup=self.wg1)
             momat = models.ValueDomain.objects.create(name="MoM animal type classification",
                     definition="Ministry of Magic standard classification of animagus animal types",workgroup=self.wg1)
-            ani_dec = models.DataElementConcept.objects.create(name="animagus--animal type",definition="",workgroup=self.wg1,
-                    objectClass=ani,property=at
-                    )
+            ani_dec = models.DataElementConcept.objects.create(
+                name="animagus--animal type",
+                definition="",
+                workgroup=self.wg1,
+                objectClass=ani,
+                property=at
+            )
 
         step_1_data = {
             self.wizard_form_name+'-current_step': 'component_search',

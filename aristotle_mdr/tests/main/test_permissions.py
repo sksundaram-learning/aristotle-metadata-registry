@@ -59,30 +59,34 @@ class PropertyVisibility(utils.ManagedObjectVisibility,TestCase):
 class ValueDomainVisibility(utils.ManagedObjectVisibility,TestCase):
     def setUp(self):
         super(ValueDomainVisibility, self).setUp()
-        self.item = models.ValueDomain.objects.create(name="Test VD",
-                workgroup=self.wg,
-                format = "X" ,
-                maximum_length = 3,
-                data_type = models.DataType.objects.create(name="Test DT",workgroup=self.wg)
-                )
+        self.item = models.ValueDomain.objects.create(
+            name="Test VD",
+            workgroup=self.wg,
+            format="X" ,
+            maximum_length=3,
+            data_type=models.DataType.objects.create(name="Test DT", workgroup=self.wg)
+        )
 class DataElementConceptVisibility(utils.ManagedObjectVisibility,TestCase):
     def setUp(self):
         super(DataElementConceptVisibility, self).setUp()
-        self.item = models.DataElementConcept.objects.create(name="Test DEC",
+        self.item = models.DataElementConcept.objects.create(
+            name="Test DEC",
             workgroup=self.wg,
-            )
+        )
 class DataElementVisibility(utils.ManagedObjectVisibility,TestCase):
     def setUp(self):
         super(DataElementVisibility, self).setUp()
-        self.item = models.DataElement.objects.create(name="Test DE",
+        self.item = models.DataElement.objects.create(
+            name="Test DE",
             workgroup=self.wg,
-            )
+        )
 class DataTypeVisibility(utils.ManagedObjectVisibility,TestCase):
     def setUp(self):
         super(DataTypeVisibility, self).setUp()
-        self.item = models.DataType.objects.create(name="Test DT",
+        self.item = models.DataType.objects.create(
+            name="Test DT",
             workgroup=self.wg,
-            )
+        )
 
 class WorkgroupPermissions(TestCase):
     def test_workgroup_add_members(self):
@@ -209,11 +213,13 @@ class RegistryCascadeTest(TestCase):
         self.wg.save()
         self.oc = models.ObjectClass.objects.create(name="Test OC",workgroup=self.wg,readyToReview=True)
         self.pr = models.Property.objects.create(name="Test P",workgroup=self.wg,readyToReview=True)
-        self.dec = models.DataElementConcept.objects.create(name="Test DEC",readyToReview=True,
+        self.dec = models.DataElementConcept.objects.create(
+            name="Test DEC",
+            readyToReview=True,
             objectClass=self.oc,
             property=self.pr,
             workgroup=self.wg,
-            )
+        )
 
         self.assertEqual(self.oc.statuses.count(),0)
         self.assertEqual(self.pr.statuses.count(),0)
@@ -243,22 +249,28 @@ class RegistryCascadeTest(TestCase):
         self.wg.save()
         self.oc = models.ObjectClass.objects.create(name="Test OC",workgroup=self.wg,readyToReview=True)
         self.pr = models.Property.objects.create(name="Test P",workgroup=self.wg,readyToReview=True)
-        self.vd = models.ValueDomain.objects.create(name="Test VD",readyToReview=True,
-                workgroup=self.wg,
-                format = "X" ,
-                maximum_length = 3,
-                data_type = models.DataType.objects.create(name="Test DT",workgroup=self.wg)
-                )
-        self.dec = models.DataElementConcept.objects.create(name="Test DEC",readyToReview=True,
+        self.vd = models.ValueDomain.objects.create(
+            name="Test VD",
+            readyToReview=True,
+            workgroup=self.wg,
+            format = "X" ,
+            maximum_length = 3,
+            data_type = models.DataType.objects.create(name="Test DT",workgroup=self.wg)
+        )
+        self.dec = models.DataElementConcept.objects.create(
+            name="Test DEC",
+            readyToReview=True,
             objectClass=self.oc,
             property=self.pr,
             workgroup=self.wg,
-            )
-        self.de = models.DataElement.objects.create(name="Test DE",readyToReview=True,
+        )
+        self.de = models.DataElement.objects.create(
+            name="Test DE",
+            readyToReview=True,
             dataElementConcept=self.dec,
             valueDomain=self.vd,
             workgroup=self.wg,
-            )
+        )
 
         self.assertEqual(self.oc.statuses.count(),0)
         self.assertEqual(self.pr.statuses.count(),0)

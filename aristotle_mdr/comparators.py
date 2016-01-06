@@ -9,7 +9,7 @@ class ValueDomainComparator(Comparator):
     Value Domains can be compared by their values as well as their text.
     A raw comparison of the value objects will fail though as they are
     specific to their value domain.
-    
+
     Another approach is needed.
     """
     def compare_supplementaryvalue_set(self,obj_compare):
@@ -35,8 +35,7 @@ class ValueDomainComparator(Comparator):
                     ):
                     same_items_added.append(added)
                     same_items_removed.append(removed)
-                elif (removed.object.meaning == added.object.meaning
-                    ):
+                elif (removed.object.meaning == added.object.meaning):
                     if added not in same_meanings_added and removed not in same_meanings_removed:
                         same_meanings_added.append(added)
                         same_meanings_removed.append(removed)

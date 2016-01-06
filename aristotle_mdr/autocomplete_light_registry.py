@@ -48,4 +48,3 @@ for cls in autocompletesToRegister:
     x = autocompleteTemplate.copy()
     x['name']='Autocomplete'+cls.__name__
     autocomplete_light.register(cls,PermissionsAutocomplete,**x)
-
