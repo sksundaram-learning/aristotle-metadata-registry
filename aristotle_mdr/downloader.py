@@ -34,7 +34,7 @@ def download(request, downloadType, item):
     template = get_download_template_path_for_item(item, downloadType)
     from django.conf import settings
     page_size = getattr(settings, 'PDF_PAGE_SIZE', "A4")
-    if downloadType = "pdf":
+    if downloadType == "pdf":
         subItems = item.get_download_items
         return render_to_pdf(
             template,
@@ -47,7 +47,7 @@ def download(request, downloadType, item):
             }
         )
 
-    elif downloadType = "csv-vd":
+    elif downloadType == "csv-vd":
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="%s.csv"' % (
             item.name
