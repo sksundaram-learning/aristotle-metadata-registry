@@ -27,7 +27,8 @@ def download(request,downloadType,item):
     page_size = getattr(settings, 'PDF_PAGE_SIZE', "A4")
     if downloadType=="pdf":
         subItems = item.get_download_items
-        return render_to_pdf(template,
+        return render_to_pdf(
+            template,
             {'item':item,
              'subitems':subItems,
              'tableOfContents':len(subItems)>0,

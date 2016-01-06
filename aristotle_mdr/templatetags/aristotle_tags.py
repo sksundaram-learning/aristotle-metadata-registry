@@ -38,13 +38,6 @@ def can_alter_post(user,post):
         return False
 
 @register.filter
-def template_path(item,_type):
-    from aristotle_mdr.utils import get_download_template_path_for_item
-    _type,subpath=_type.split(',')
-    return get_download_template_path_for_item(item,_type,subpath)
-
-
-@register.filter
 def is_in(item,iterable):
     return item in iterable
 
@@ -361,3 +354,10 @@ def can_use_action(user,bulk_action,*args):
     from aristotle_mdr.views.bulk_actions import get_bulk_actions
     bulk_action = get_bulk_actions().get(bulk_action)
     return bulk_action['can_use'](user)
+
+@register.filter
+def template_path(item,_type):
+    from aristotle_mdr.utils import get_download_template_path_for_item
+    _type,subpath=_type.split(',')
+    return get_download_template_path_for_item(item,_type,subpath)
+

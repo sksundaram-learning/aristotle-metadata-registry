@@ -124,12 +124,9 @@ def download(request,downloadType,iid=None):
         try:
             downloader = None
             # dangerous - we are really trusting the settings creators here.
-            exec("import %s.downloader as downloader"%module_name)
-            return downloader.download(request,downloadType,item)
-        except TemplateDoesNotExist as e:
-            # If the template doesn't exist lets tell the user not to try again
-            logger.warning("Download failed for %s."%request)
-            logger.warning("Error was %s."%e)
+            exec("import %s.downloader as downloader" % module_name)
+            return downloader.download(request, downloadType, item)
+        except TemplateDoesNotExist:
             raise Http404
 
     raise Http404
