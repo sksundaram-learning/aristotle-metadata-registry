@@ -4,9 +4,9 @@ from django.contrib.auth.models import User
 
 autocompleteTemplate = {
     # Just like in ModelAdmin.search_fields
-    'name':'AutocompleteConcept',
-    'choice_template':"aristotle_mdr/actions/autocompleteItem.html",
-    'attr':{
+    'name': 'AutocompleteConcept',
+    'choice_template': "aristotle_mdr/actions/autocompleteItem.html",
+    'attr': {
         # This will set the input placeholder attribute:
         'placeholder': 'Other model name ?',
         # This will set the yourlabs.Autocomplete.minimumCharacters
@@ -17,23 +17,26 @@ autocompleteTemplate = {
     # widget container element, and will be set to
     # yourlabs.Widget.maximumValues (jQuery handles the naming
     # conversion).
-    'widget_attrs':{
-        #'data-widget-maximum-values': 4,
+    'widget_attrs': {
+        # 'data-widget-maximum-values': 4,
         # Enable modern-style widget !
-        #'class': 'modern-style',
+        # 'class': 'modern-style',
     },
 }
 
+
 class UserAutocomplete(autocomplete_light.AutocompleteModelTemplate):
-    search_fields=['first_name', 'last_name','username','email']
+    search_fields = ['first_name', 'last_name', 'username', 'email']
+
 
 u = autocompleteTemplate.copy()
-u['name']='Autocomplete_AristotleUser'
-u['choice_template']='aristotle_mdr/actions/autocompleteUser.html'
-autocomplete_light.register(User,UserAutocomplete,**u)
+u['name'] = 'Autocomplete_AristotleUser'
+u['choice_template'] = 'aristotle_mdr/actions/autocompleteUser.html'
+autocomplete_light.register(User, UserAutocomplete, **u)
+
 
 class PermissionsAutocomplete(autocomplete_light.AutocompleteModelTemplate):
-    search_fields=['name', 'definition','id']
+    search_fields = ['name', 'definition', 'id']
 
     def choices_for_request(self):
         self.choices = self.choices.visible(self.request.user)
@@ -41,10 +44,10 @@ class PermissionsAutocomplete(autocomplete_light.AutocompleteModelTemplate):
 
 # When autocomplete respects queryset all of these can be removed
 autocompletesToRegister = [
-        MDR._concept,
-    ]
+    MDR._concept
+]
 for cls in autocompletesToRegister:
     # This will generate a PersonAutocomplete class
     x = autocompleteTemplate.copy()
-    x['name']='Autocomplete'+cls.__name__
-    autocomplete_light.register(cls,PermissionsAutocomplete,**x)
+    x['name'] = 'Autocomplete' + cls.__name__
+    autocomplete_light.register(cls, PermissionsAutocomplete, **x)
