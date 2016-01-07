@@ -11,8 +11,9 @@ from aristotle_mdr.forms import ChangeStatusForm
 from aristotle_mdr.perms import user_can_view, user_is_registrar
 from aristotle_mdr.forms.creation_wizards import UserAwareForm
 
+
 class BulkActionForm(UserAwareForm):
-    classes=""
+    classes = ""
     confirm_page = None
     # queryset is all as we try to be nice and process what we can in bulk
     # actions.
@@ -21,34 +22,34 @@ class BulkActionForm(UserAwareForm):
         label="Related items", required=False,
     )
     item_label="Select some items"
-    
-    def __init__(self, *args, **kwargs):
-        initial_items = kwargs.pop('items',[])
-        super(BulkActionForm, self).__init__(*args, **kwargs)
-        #if 'user' in kwargs.keys():
-        #    self.user = kwargs.pop('user', None)
-            #queryset = MDR._concept.objects.visible(self.user)
-        #else:
-            #queryset = MDR._concept.objects.public()
 
-        #self.fields['items']=forms.ModelMultipleChoiceField(
-        #    label = self.item_label,
-        #    queryset = queryset,
-        #    initial = initial_items,
-        #    widget=autocomplete_light.MultipleChoiceWidget('Autocomplete_concept')
-        #)
+    def __init__(self, *args, **kwargs):
+        initial_items = kwargs.pop('items', [])
+        super(BulkActionForm, self).__init__(*args, **kwargs)
+        # if 'user' in kwargs.keys():
+        #     self.user = kwargs.pop('user', None)
+        #     queryset = MDR._concept.objects.visible(self.user)
+        # else:
+        #     queryset = MDR._concept.objects.public()
+
+        # self.fields['items']=forms.ModelMultipleChoiceField(
+        #     label = self.item_label,
+        #     queryset = queryset,
+        #     initial = initial_items,
+        #     widget=autocomplete_light.MultipleChoiceWidget('Autocomplete_concept')
+        # )
 
     @classmethod
-    def can_use(cls,user):
+    def can_use(cls, user):
         return True
 
     @classmethod
     def text(cls):
-        if hasattr(cls,'action_text'):
+        if hasattr(cls, 'action_text'):
             return cls.action_text
         from django.utils.text import camel_case_to_spaces
         txt = cls.__name__
-        txt = txt.replace('Form','')
+        txt = txt.replace('Form', '')
         txt = camel_case_to_spaces(txt)
         return txt
 
@@ -56,29 +57,37 @@ class BulkActionForm(UserAwareForm):
 class AddFavouriteForm(BulkActionForm):
     classes="fa-bookmark"
     action_text = _('Add bookmark')
+
     def make_changes(self):
         items = self.cleaned_data.get('items')
-        bad_items = [str(i.id) for i in items if not user_can_view(self.user,i)]
+        bad_items = [str(i.id) for i in items if not user_can_view(self.user, i)]
         items = items.visible(self.user)
         self.user.profile.favourites.add(*items)
-        return _("%(num_items)s items favourited. \n"
-                 "Some items failed, they had the id's: %(bad_ids)s")%{
-                        'num_items':len(items),'bad_ids':",".join(bad_items)}
+        return _(
+            "%(num_items)s items favourited. \n"
+            "Some items failed, they had the id's: %(bad_ids)s"
+        ) % {
+            'num_items': len(items),
+            'bad_ids': ",".join(bad_items)
+        }
+
 
 class RemoveFavouriteForm(BulkActionForm):
     classes="fa-minus-square"
     action_text = _('Remove bookmark')
+
     def make_changes(self):
         items = self.cleaned_data.get('items')
         self.user.profile.favourites.remove(*items)
-        return _('%(num_items)s items removed from favourites')%{'num_items':len(items)}
+        return _('%(num_items)s items removed from favourites') % {'num_items': len(items)}
 
-class ChangeStateForm(ChangeStatusForm,BulkActionForm):
+
+class ChangeStateForm(ChangeStatusForm, BulkActionForm):
     confirm_page = "aristotle_mdr/actions/bulk_change_status.html"
     classes="fa-university"
     action_text = _('Change state')
     items_label="These are the items that will be be registered. Add or remove additional items with the autocomplete box.",
-    
+
     def __init__(self, *args, **kwargs):
         super(ChangeStateForm, self).__init__(*args, **kwargs)
         self.add_registration_authority_field()
@@ -102,7 +111,7 @@ class ChangeStateForm(ChangeStatusForm,BulkActionForm):
                 regDate = timezone.now().date()
             for item in items:
                 for ra in ras:
-                    r = ra.register(item,state,self.user,regDate,cascade,changeDetails)
+                    r = ra.register(item, state, self.user, regDate, cascade, changeDetails)
                     for f in r['failed']:
                         failed.append(f)
                     for s in r['success']:
@@ -110,15 +119,17 @@ class ChangeStateForm(ChangeStatusForm,BulkActionForm):
             failed = list(set(failed))
             success = list(set(success))
             bad_items = sorted([str(i.id) for i in failed])
-            message = _("%(num_items)s items registered in %(num_ra)s registration authorities. \n"
-                        "Some items failed, they had the id's: %(bad_ids)s"
-                        )%{ 'num_items':len(items),
-                            'num_ra':len(ras),
-                            'bad_ids':",".join(bad_items)
-                        }
+            message = _(
+                "%(num_items)s items registered in %(num_ra)s registration authorities. \n"
+                "Some items failed, they had the id's: %(bad_ids)s"
+            ) % {
+                'num_items': len(items),
+                'num_ra': len(ras),
+                'bad_ids': ",".join(bad_items)
+            }
             reversion.revisions.set_comment(message)
             return message
 
     @classmethod
-    def can_use(cls,user):
+    def can_use(cls, user):
         return user_is_registrar(user)
