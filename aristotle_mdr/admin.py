@@ -16,13 +16,15 @@ from aristotle_mdr.register import register_concept
 reversion.revisions.register(MDR._concept)
 reversion.revisions.register(MDR.Workgroup)
 
-"""
-Inline editor for registration status records
-"""
+
 class StatusInline(admin.TabularInline):
+    """
+    Inline editor for registration status records
+    """
+
     model = MDR.Status
     form = MDRForms.admin.StatusInlineForm
-    extra=0
+    extra = 0
 
     """
     The default queryset will return all objects of a given type.
@@ -56,13 +58,13 @@ class WorkgroupFilter(RelatedFieldListFilter):
 
 class WorkgroupAdmin(CompareVersionAdmin):
     fieldsets = [
-        (None, {'fields': ['name','definition','ownership','registrationAuthorities']}),
-        ('Members', {'fields': ['managers','stewards','submitters','viewers',]}),
+        (None, {'fields': ['name', 'definition', 'ownership', 'registrationAuthorities']}),
+        ('Members', {'fields': ['managers', 'stewards', 'submitters', 'viewers']}),
     ]
     filter_horizontal = ['managers', 'stewards', 'submitters', 'viewers', 'registrationAuthorities']
-    list_display = ('name', 'definition','ownership','archived')
-    list_filter = ( 'ownership','archived', 'registrationAuthorities')
-    search_fields = ('name','definition')
+    list_display = ('name', 'definition', 'ownership', 'archived')
+    list_filter = ('ownership', 'archived', 'registrationAuthorities')
+    search_fields = ('name', 'definition')
 
     def get_queryset(self, request):
         qs = super(WorkgroupAdmin, self).get_queryset(request)
@@ -80,44 +82,47 @@ class WorkgroupAdmin(CompareVersionAdmin):
                 return True
             else:
                 return True in (
-                    request.user.has_perm('aristotle_mdr.admin_in_{name}'.format(name=w.name))
-                        for w in request.user.profile.workgroups.all()
+                    request.user.has_perm(
+                        'aristotle_mdr.admin_in_{name}'.format(name=w.name)
+                    ) for w in request.user.profile.workgroups.all()
                 )
         elif perms.user_can_edit(request.user, obj):
             return True
         else:
             return super(WorkgroupAdmin, self).has_change_permission(request, obj=None)
 
-class ConceptAdmin(CompareVersionAdmin,admin.ModelAdmin):
+
+class ConceptAdmin(CompareVersionAdmin, admin.ModelAdmin):
     class Media:
         js = [
-                '/static/grappelli/tinymce/jscripts/tiny_mce/tiny_mce.js',
-            ]
+            '/static/grappelli/tinymce/jscripts/tiny_mce/tiny_mce.js'
+        ]
 
     form = MDRForms.admin.AdminConceptForm
-    list_display = ['name', 'description_stub','created','modified', 'workgroup', 'is_public', 'is_locked', 'readyToReview'] #,'status']
-    list_filter = ['created', 'modified', ('workgroup', WorkgroupFilter)] #,'statuses']
+    list_display = ['name', 'description_stub', 'created', 'modified', 'workgroup', 'is_public', 'is_locked', 'readyToReview']  # ,'status']
+    list_filter = ['created', 'modified', ('workgroup', WorkgroupFilter)]  # , 'statuses']
     search_fields = ['name', 'synonyms']
-    inlines = [StatusInline,]
+    inlines = [StatusInline]
 
     change_list_template = "admin/change_list_filter_sidebar.html"
     change_list_filter_template = "admin/filter_listing.html"
-    date_hierarchy='created'# ,'modified']
+    date_hierarchy = 'created'  # ,'modified']
 
     fieldsets = [
-        (None, {'fields': ['name','definition','workgroup']}),
+        (None, {'fields': ['name', 'definition', 'workgroup']}),
         ('Additional names', {
-                'classes':('grp-collapse grp-closed',),
-                'fields': ['synonyms', 'short_name', 'version',]
-            }),
-        #('Registry', {'fields': ['workgroup']}),
+            'classes': ('grp-collapse grp-closed',),
+            'fields': ['synonyms', 'short_name', 'version']
+        }),
+        # ('Registry', {'fields': ['workgroup']}),
         ('Relationships', {
-                'classes':('grp-collapse grp-closed',),
-                'fields': ['origin_URI', 'superseded_by', 'deprecated'],
-            })
+            'classes': ('grp-collapse grp-closed',),
+            'fields': ['origin_URI', 'superseded_by', 'deprecated'],
+        }),
     ]
     name_suggest_fields = []
-    actions_on_top = True; actions_on_bottom = False
+    actions_on_top = True
+    actions_on_bottom = False
 
     """
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
@@ -131,14 +136,16 @@ class ConceptAdmin(CompareVersionAdmin,admin.ModelAdmin):
         # Thanks: http://stackoverflow.com/questions/6321916
         # Thanks: http://stackoverflow.com/questions/2683689
         conceptForm = super(ConceptAdmin, self).get_form(request, obj, **kwargs)
+
         class ModelFormMetaClass(conceptForm):
             def __new__(cls, *args, **kwargs):
                 kwargs['request'] = request
                 kwargs['name_suggest_fields'] = self.name_suggest_fields
                 if self.name_suggest_fields:
-                    SEPARATORS = getattr(settings, 'ARISTOTLE_SETTINGS', {}).get('SEPARATORS',{})
+                    SEPARATORS = getattr(settings, 'ARISTOTLE_SETTINGS', {}).get('SEPARATORS', {})
                     kwargs['separator'] = SEPARATORS[self.model.__name__]
                 return conceptForm(*args, **kwargs)
+
         return ModelFormMetaClass
 
     def has_change_permission(self, request, obj=None):
@@ -170,14 +177,14 @@ class ConceptAdmin(CompareVersionAdmin,admin.ModelAdmin):
     #      http://www.szotten.com/david/custom-redirects-in-the-django-admin.html
     def response_add(self, request, obj, post_url_continue=None):
         response = super(ConceptAdmin, self).response_add(request, obj)
-        if request.POST.has_key('_save') and post_url_continue is None:
-            response['location'] = reverse("aristotle:item",args=(obj.id,))
+        if '_save' in request.POST and post_url_continue is None:
+            response['location'] = reverse("aristotle:item", args=(obj.id,))
         return response
 
     def response_change(self, request, obj, post_url_continue=None):
         response = super(ConceptAdmin, self).response_change(request, obj)
-        if request.POST.has_key('_save') and post_url_continue is None:
-            response['location'] = reverse("aristotle:item",args=(obj.id,))
+        if '_save' in request.POST and post_url_continue is None:
+            response['location'] = reverse("aristotle:item", args=(obj.id,))
         return response
 
 
@@ -199,15 +206,15 @@ class SupplementaryValueInline(CodeValueInline):
 
 class RegistrationAuthorityAdmin(admin.ModelAdmin):
     list_display = ['name', 'definition', 'created', 'modified']
-    list_filter = ['created', 'modified',]
-    filter_horizontal = ['managers', 'registrars',]
+    list_filter = ['created', 'modified']
+    filter_horizontal = ['managers', 'registrars']
 
     fieldsets = [
         (None, {'fields': ['name', 'definition']}),
-        ('Members', {'fields': ['managers', 'registrars',]}),
-        ('Visibility and control', {'fields': ['locked_state', 'public_state',]}),
+        ('Members', {'fields': ['managers', 'registrars']}),
+        ('Visibility and control', {'fields': ['locked_state', 'public_state']}),
         ('Status descriptions',
-            {'fields': ['notprogressed', 'incomplete', 'candidate', 'recorded', 'qualified', 'standard', 'preferred', 'superseded', 'retired',]}),
+            {'fields': ['notprogressed', 'incomplete', 'candidate', 'recorded', 'qualified', 'standard', 'preferred', 'superseded', 'retired']}),
     ]
 
 admin.site.register(MDR.RegistrationAuthority, RegistrationAuthorityAdmin)
@@ -226,15 +233,16 @@ class AristotleProfileInline(admin.StackedInline):
     can_delete = False
     verbose_name_plural = 'Membership details'
 
+
 # Define a new User admin
 class AristotleUserAdmin(UserAdmin):
 
-    inlines = [AristotleProfileInline,]
+    inlines = [AristotleProfileInline]
 
-    def save_formset(self,request, form, formset, change):
+    def save_formset(self, request, form, formset, change):
         super(AristotleUserAdmin, self).save_formset(request, form, formset, change)
         for f in formset.forms:
-           f.save_memberships(user = form.instance)
+            f.save_memberships(user=form.instance)
 
 
 # Re-register UserAdmin
@@ -245,30 +253,31 @@ admin.site.register(User, AristotleUserAdmin)
 
 register_concept(MDR.ObjectClass)
 register_concept(MDR.Property)
-register_concept(MDR.ValueDomain,
-    extra_fieldsets = [('Representation', {'fields': ['format', 'maximum_length', 'unit_of_measure', 'data_type','description']}),],
-    extra_inlines = [PermissibleValueInline, SupplementaryValueInline],
-    reversion = {
-        'follow': ['permissiblevalue_set','supplementaryvalue_set'],
-        'follow_classes': [MDR.PermissibleValue,MDR.SupplementaryValue]
-    },
+register_concept(
+    MDR.ValueDomain,
+    extra_fieldsets=[('Representation', {'fields': ['format', 'maximum_length', 'unit_of_measure', 'data_type', 'description']})],
+    extra_inlines=[PermissibleValueInline, SupplementaryValueInline],
+    reversion={
+        'follow': ['permissiblevalue_set', 'supplementaryvalue_set'],
+        'follow_classes': [MDR.PermissibleValue, MDR.SupplementaryValue]
+    }
 )
 
 register_concept(
     MDR.DataElementConcept,
-    name_suggest_fields = ['objectClass', 'property'],
-    extra_fieldsets = [('Components', {'fields': ['objectClass', 'property']}),]
+    name_suggest_fields=['objectClass', 'property'],
+    extra_fieldsets=[('Components', {'fields': ['objectClass', 'property']})]
 )
 
 register_concept(
     MDR.DataElement,
-    name_suggest_fields = ['dataElementConcept', 'valueDomain'],
-    extra_fieldsets = [('Components', {'fields': ['dataElementConcept', 'valueDomain']}),]
+    name_suggest_fields=['dataElementConcept', 'valueDomain'],
+    extra_fieldsets=[('Components', {'fields': ['dataElementConcept', 'valueDomain']})]
 )
 
 register_concept(
     MDR.DataElementDerivation,
-    extra_fieldsets = [('Derivation', {'fields': ['derivation_rule', 'derives', 'inputs']}),]
+    extra_fieldsets=[('Derivation', {'fields': ['derivation_rule', 'derives', 'inputs']})]
 )
 
 register_concept(MDR.ConceptualDomain)
@@ -276,5 +285,5 @@ register_concept(MDR.DataType)
 
 register_concept(
     MDR.UnitOfMeasure,
-    extra_fieldsets = [('Measures', {'fields': ['measure']}),]
+    extra_fieldsets=[('Measures', {'fields': ['measure']})]
 )
