@@ -828,7 +828,7 @@ class _concept(baseAristotleObject):
         overriding the ``get_download_items`` method on your item. By default
         this returns an empty list, but can be modified to include any number of
         items that inherit from ``_concept``.
-        
+
         When overriding, each entry in the list must be a two item tuple, with
         the first entry being the python class of the item or items being
         included, and the second being the queryset of items to include.

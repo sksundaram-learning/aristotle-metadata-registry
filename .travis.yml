@@ -40,7 +40,7 @@ before_install:
 before_script:
 #  - mysql -e 'create database aristotle_test_db;'
   - psql -c 'create database aristotle_test_db;' -U postgres
-  - pep8 --exclude=migrations --ignore=E501,E225,E123 aristotle_mdr/models.py aristotle_mdr/admin.py
+  - pep8 --exclude=migrations --ignore=E501,E225,E123 aristotle_mdr/models.py aristotle_mdr/admin.py aristotle_mdr/downloader.py
 #  - pep8 --exclude=migrations --ignore=E501,E225,E123 aristotle_mdr
 
 install:
