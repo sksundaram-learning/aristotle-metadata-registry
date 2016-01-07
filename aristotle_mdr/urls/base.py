@@ -2,14 +2,13 @@ import notifications.urls
 import autocomplete_light
 # import every app/autocomplete_light_registry.py
 
-autocomplete_light.autodiscover()
-
 from django.conf.urls import patterns, include, url
 from django.contrib.auth.views import password_reset
 from django.contrib import admin
 from django.views.generic.base import RedirectView
 from aristotle_mdr.views.user_pages import friendly_redirect_login
 
+autocomplete_light.autodiscover()
 admin.autodiscover()
 
 urlpatterns = patterns(
