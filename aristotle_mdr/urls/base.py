@@ -23,7 +23,7 @@ urlpatterns = patterns(
     url(r'^ckeditor/', include('ckeditor.urls')),
     url(
         r'^account/notifications/',
-        include(notifications.urls, namespace='notifications')
+        include(notifications.urls)
     ),
     url(r'^account/password/reset/$', password_reset),
     # , {'template_name': 'my_templates/password_reset.html'}
