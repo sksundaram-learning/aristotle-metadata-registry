@@ -28,7 +28,7 @@ class AristotleBackend(ModelBackend):
         app_label, perm_name = perm.split('.', 1)
         extensions = getattr(settings, 'ARISTOTLE_SETTINGS', {}).get('CONTENT_EXTENSIONS', [])
 
-        if app_label == "aristotle_mdr" and hasattr(perms perm_name):
+        if app_label == "aristotle_mdr" and hasattr(perms, perm_name):
             return getattr(perms, perm_name)(user_obj, obj)
 
         if app_label in extensions + ["aristotle_mdr"]:
