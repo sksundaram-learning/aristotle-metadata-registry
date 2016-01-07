@@ -35,7 +35,7 @@ def download(request, downloadType, item):
     from django.conf import settings
     page_size = getattr(settings, 'PDF_PAGE_SIZE', "A4")
     if downloadType == "pdf":
-        subItems = item.get_download_items
+        subItems = item.get_download_items()
         return render_to_pdf(
             template,
             {
