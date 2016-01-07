@@ -35,7 +35,7 @@ class Questionnaire(aristotle_mdr.models.concept):
             ),
             (
                 aristotle_mdr.models.DataElement,
-                aristotle_mdr.models.DataElement.objects.filter(question__questionnaire=self).order_by('name')
+                aristotle_mdr.models.DataElement.objects.filter(questions__questionnaire=self).order_by('name')
             ),
         ])
     # End of get_download_items
