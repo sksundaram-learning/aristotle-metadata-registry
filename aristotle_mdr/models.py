@@ -822,6 +822,19 @@ class _concept(baseAristotleObject):
                 seen_ras.append(ra)
         return current
 
+    def get_download_items(self):
+        """
+        When downloading a concept, extra items can be included for download by
+        overriding the ``get_download_items`` method on your item. By default
+        this returns an empty list, but can be modified to include any number of
+        items that inherit from ``_concept``.
+
+        When overriding, each entry in the list must be a two item tuple, with
+        the first entry being the python class of the item or items being
+        included, and the second being the queryset of items to include.
+        """
+        return []
+
 
 class concept(_concept):
     """
@@ -868,10 +881,6 @@ class concept(_concept):
         Return self, because we already have the correct item.
         """
         return self
-
-    @property
-    def getPdfItems(self):
-        return {}
 
 
 class Status(TimeStampedModel):

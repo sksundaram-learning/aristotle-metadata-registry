@@ -1,30 +1,21 @@
 import autocomplete_light
-autocomplete_light.autodiscover()
 
 from django.conf.urls import patterns, url
-
-import aristotle_mdr.views as views
-import aristotle_mdr.forms as forms
 from django.views.generic import TemplateView
 from django.views.generic.base import RedirectView
 
 from haystack.query import SearchQuerySet
 from haystack.views import search_view_factory
 
+import aristotle_mdr.views as views
+import aristotle_mdr.forms as forms
+
+autocomplete_light.autodiscover()
 sqs = SearchQuerySet()
 
-"""
-    url(r'^property/(?P<iid>\d+)?/?$', views.items.property, name='property'),
-    url(r'^valuedomain/(?P<iid>\d+)?/?$', views.items.valuedomain, name='valueDomain'),
-    url(r'^conceptualdomain/(?P<iid>\d+)?/?$', views.items.conceptualdomain, name='conceptualDomain'),
-    url(r'^dataelementconcept/(?P<iid>\d+)?/?$', views.items.dataelementconcept, name='dataElementConcept'),
-    url(r'^dataelement/(?P<iid>\d+)?(?:-[a-z\-]*)?/?$', views.items.dataelement, name='dataElement'),
-    url(r'^dataelementderivation/(?P<iid>\d+)?(?:-[a-z\-]*)?/?$', views.items.dataelementderivation, name='dataElementDerivation'),
-    url(r'^datatype/(?P<iid>\d+)/?$', views.items.datatype, name='dataType'),
-    url(r'^unitofmeasure/(?P<iid>\d+)/?$', views.items.unitofmeasure, name='unitOfMeasure'),
-    """
+urlpatterns = patterns(
+    'aristotle_mdr.views',
 
-urlpatterns = patterns('aristotle_mdr.views',
     url(r'^/?$', TemplateView.as_view(template_name='aristotle_mdr/static/home.html'), name="home"),
 
     # all the below take on the same form:

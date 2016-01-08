@@ -33,6 +33,9 @@ from haystack.views import SearchView
 
 PAGES_PER_RELATED_ITEM = 15
 
+import logging
+logger = logging.getLogger(__name__)
+logger.debug("Logging started for " + __name__)
 
 class DynamicTemplateView(TemplateView):
     def get_template_names(self):
@@ -130,7 +133,6 @@ def download(request, downloadType, iid=None):
             exec("import %s.downloader as downloader" % module_name)
             return downloader.download(request, downloadType, item)
         except TemplateDoesNotExist:
-            # If the template doesn't exist lets tell the user not to try again
             raise Http404
 
     raise Http404
