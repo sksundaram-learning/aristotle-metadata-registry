@@ -378,9 +378,9 @@ def can_use_action(user, bulk_action, *args):
     bulk_action = get_bulk_actions().get(bulk_action)
     return bulk_action['can_use'](user)
 
-@register.filter
-def template_path(item,_type):
-    from aristotle_mdr.utils import get_download_template_path_for_item
-    _type,subpath=_type.split(',')
-    return get_download_template_path_for_item(item,_type,subpath)
 
+@register.filter
+def template_path(item, _type):
+    from aristotle_mdr.utils import get_download_template_path_for_item
+    _type, subpath=_type.split(',')
+    return get_download_template_path_for_item(item, _type, subpath)
