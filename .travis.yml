@@ -40,10 +40,7 @@ before_install:
 before_script:
 #  - mysql -e 'create database aristotle_test_db;'
   - psql -c 'create database aristotle_test_db;' -U postgres
-  - pep8 --exclude=migrations --ignore=E501,E225,E123 aristotle_mdr/downloader.py
-  - pep8 --exclude=migrations --ignore=E501,E225,E123 aristotle_mdr/urls
-  - pep8 --exclude=migrations --ignore=E501,E225,E123 aristotle_mdr/models.py aristotle_mdr/admin.py aristotle_mdr/register.py aristotle_mdr/search_indexes.py aristotle_mdr/perms.py aristotle_mdr/required_settings.py aristotle_mdr/search_indexes.py
-#  - pep8 --exclude=migrations --ignore=E501,E225,E123 aristotle_mdr
+  - pep8 --exclude=migrations,tests --ignore=E501,E225,E123 aristotle_mdr
 
 install:
   - if [[ $DB == postgres ]]; then pip install -q psycopg2 --quiet; fi

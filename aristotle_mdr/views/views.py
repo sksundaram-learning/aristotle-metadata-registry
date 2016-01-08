@@ -30,12 +30,13 @@ from aristotle_mdr import exceptions as registry_exceptions
 
 from haystack.views import SearchView
 
+import logging
+
+logger = logging.getLogger(__name__)
+logger.debug("Logging started for " + __name__)
 
 PAGES_PER_RELATED_ITEM = 15
 
-import logging
-logger = logging.getLogger(__name__)
-logger.debug("Logging started for " + __name__)
 
 class DynamicTemplateView(TemplateView):
     def get_template_names(self):
