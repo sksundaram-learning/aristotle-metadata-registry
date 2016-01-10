@@ -65,7 +65,7 @@ Quick start
 
 For a complete example of how to successfully include Aristotle, see the `tests/settings.py` settings file.
 
-**A live Aristotle-MDR instance is available for review on PythonAnywhere at:** ``http://aristotle.pythonanywhere.com/``.
+**A live Aristotle-MDR instance is available for review on PythonAnywhere at:** `http://aristotle.pythonanywhere.com/ <http://aristotle.pythonanywhere.com/>`_.
 Be aware, this is an active development instance and may sporadically be unavailble.
 
 Screenshots for users
