@@ -32,10 +32,10 @@ class BulkActionForm(UserAwareForm):
         else:
             queryset = MDR._concept.objects.public()
 
-        self.fields['items']=forms.ModelMultipleChoiceField(
-            label = self.item_label,
-            queryset = queryset,
-            initial = initial_items,
+        self.fields['items'] = forms.ModelMultipleChoiceField(
+            label=self.item_label,
+            queryset=queryset,
+            initial=initial_items,
             widget=autocomplete_light.MultipleChoiceWidget('Autocomplete_concept')
         )
 
