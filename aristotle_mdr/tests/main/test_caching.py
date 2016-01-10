@@ -12,6 +12,7 @@ from time import sleep
 from django.test.utils import setup_test_environment
 setup_test_environment()
 
+
 class CachingForRawPermissions(TestCase):
 
     def setUp(self):
@@ -19,50 +20,50 @@ class CachingForRawPermissions(TestCase):
         self.wg = models.Workgroup.objects.create(name="Test WG 1")
         self.wg.registrationAuthorities=[self.ra]
         self.wg.save()
-        self.submitter = User.objects.create_user('suzie','','submitter')
+        self.submitter = User.objects.create_user('suzie', '', 'submitter')
         self.wg.submitters.add(self.submitter)
-        self.item = models.ObjectClass.objects.create(name="Test OC1",workgroup=self.wg)
+        self.item = models.ObjectClass.objects.create(name="Test OC1", workgroup=self.wg)
 
     def test_can_edit_cache(self):
-        self.assertTrue(perms.user_can_edit(self.submitter,self.item))
+        self.assertTrue(perms.user_can_edit(self.submitter, self.item))
         self.item.definition = "edit name, then quickly check permission"
         self.item.save()
-        self.assertTrue(perms.user_can_edit(self.submitter,self.item))
+        self.assertTrue(perms.user_can_edit(self.submitter, self.item))
         self.item.definition = "edit name, then wait 30 secs for 'recently edited to expire'"
         self.item.save()
-        sleep(models.VERY_RECENTLY_SECONDS+2)
-        self.assertTrue(perms.user_can_edit(self.submitter,self.item))
+        sleep(models.VERY_RECENTLY_SECONDS + 2)
+        self.assertTrue(perms.user_can_edit(self.submitter, self.item))
         # register then immediately check the permissions to make sure the cache is ignored
         # technically we haven't edited the item yet, although ``concept.recache_states`` will be called.
-        reg,c = models.Status.objects.get_or_create(
+        reg, c = models.Status.objects.get_or_create(
             concept=self.item,
             registrationAuthority=self.ra,
-            registrationDate = datetime.date(2009,04,28),
-            state =  models.STATES.standard
-            )
-        self.assertFalse(perms.user_can_edit(self.submitter,self.item))
+            registrationDate=datetime.date(2009, 04, 28),
+            state=models.STATES.standard
+        )
+        self.assertFalse(perms.user_can_edit(self.submitter, self.item))
 
     def test_can_view_cache(self):
-        self.viewer = User.objects.create_user('vicky','','viewer') # Don't need to assign any workgroups
+        self.viewer = User.objects.create_user('vicky', '', 'viewer')  # Don't need to assign any workgroups
 
-        self.assertTrue(perms.user_can_view(self.submitter,self.item))
-        self.assertFalse(perms.user_can_view(self.viewer,self.item))
+        self.assertTrue(perms.user_can_view(self.submitter, self.item))
+        self.assertFalse(perms.user_can_view(self.viewer, self.item))
         self.item.definition = "edit name, then quickly check permission"
         self.item.save()
-        self.assertTrue(perms.user_can_view(self.submitter,self.item))
-        self.assertFalse(perms.user_can_view(self.viewer,self.item))
+        self.assertTrue(perms.user_can_view(self.submitter, self.item))
+        self.assertFalse(perms.user_can_view(self.viewer, self.item))
         self.item.definition = "edit name, then wait 30 secs for 'recently edited to expire'"
         self.item.save()
-        sleep(models.VERY_RECENTLY_SECONDS+2)
-        self.assertTrue(perms.user_can_view(self.submitter,self.item))
-        self.assertFalse(perms.user_can_view(self.viewer,self.item))
+        sleep(models.VERY_RECENTLY_SECONDS + 2)
+        self.assertTrue(perms.user_can_view(self.submitter, self.item))
+        self.assertFalse(perms.user_can_view(self.viewer, self.item))
         # register then immediately check the permissions to make sure the cache is ignored
         # technically we haven't edited the item yet, although ``concept.recache_states`` will be called.
-        reg,c = models.Status.objects.get_or_create(
+        reg, c = models.Status.objects.get_or_create(
             concept=self.item,
             registrationAuthority=self.ra,
-            registrationDate = datetime.date(2009,04,28),
-            state =  models.STATES.standard
-            )
-        self.assertTrue(perms.user_can_view(self.submitter,self.item))
-        self.assertTrue(perms.user_can_view(self.viewer,self.item))
+            registrationDate=datetime.date(2009, 04, 28),
+            state=models.STATES.standard
+        )
+        self.assertTrue(perms.user_can_view(self.submitter, self.item))
+        self.assertTrue(perms.user_can_view(self.viewer, self.item))
