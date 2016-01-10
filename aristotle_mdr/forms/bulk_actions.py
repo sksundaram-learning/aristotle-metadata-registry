@@ -25,7 +25,6 @@ class ForbiddenAllowedModelMultipleChoiceField(forms.ModelMultipleChoiceField):
         """
         Given a list of possible PK values, returns a QuerySet of the
         corresponding objects. Skips values if they are not in the queryset.
-        
         This allows us to force a limited selection to the client, while
         ignoring certain additional values if given. However, this means
         *extra checking must be done* to limit over exposure and invalid
