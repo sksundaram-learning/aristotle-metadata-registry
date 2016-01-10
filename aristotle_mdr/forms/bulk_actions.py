@@ -26,18 +26,18 @@ class BulkActionForm(UserAwareForm):
     def __init__(self, *args, **kwargs):
         initial_items = kwargs.pop('items', [])
         super(BulkActionForm, self).__init__(*args, **kwargs)
-        # if 'user' in kwargs.keys():
-        #     self.user = kwargs.pop('user', None)
-        #     queryset = MDR._concept.objects.visible(self.user)
-        # else:
-        #     queryset = MDR._concept.objects.public()
+        if 'user' in kwargs.keys():
+            self.user = kwargs.pop('user', None)
+            queryset = MDR._concept.objects.visible(self.user)
+        else:
+            queryset = MDR._concept.objects.public()
 
-        # self.fields['items']=forms.ModelMultipleChoiceField(
-        #     label = self.item_label,
-        #     queryset = queryset,
-        #     initial = initial_items,
-        #     widget=autocomplete_light.MultipleChoiceWidget('Autocomplete_concept')
-        # )
+        self.fields['items']=forms.ModelMultipleChoiceField(
+            label = self.item_label,
+            queryset = queryset,
+            initial = initial_items,
+            widget=autocomplete_light.MultipleChoiceWidget('Autocomplete_concept')
+        )
 
     @classmethod
     def can_use(cls, user):
