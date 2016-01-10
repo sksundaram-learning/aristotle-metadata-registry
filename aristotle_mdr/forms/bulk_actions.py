@@ -12,13 +12,69 @@ from aristotle_mdr.perms import user_can_view, user_is_registrar
 from aristotle_mdr.forms.creation_wizards import UserAwareForm
 
 
+class ForbiddenAllowedModelMultipleChoiceField(forms.ModelMultipleChoiceField):
+    def __init__(self, queryset, validate_queryset, required=True, widget=None,
+                 label=None, initial=None, help_text='', *args, **kwargs):
+        self.validate_queryset = validate_queryset
+        super(ForbiddenAllowedModelMultipleChoiceField, self).__init__(
+            queryset, None, required, widget, label, initial, help_text,
+            *args, **kwargs
+        )
+
+    def _check_values(self, value):
+        """
+        Given a list of possible PK values, returns a QuerySet of the
+        corresponding objects. Skips values if they are not in the queryset.
+        
+        This allows us to force a limited selection to the client, while
+        ignoring certain additional values if given. However, this means
+        *extra checking must be done* to limit over exposure and invalid
+        data.
+        """
+        from django.core.exceptions import ValidationError
+        from django.utils.encoding import force_text
+
+        key = self.to_field_name or 'pk'
+        # deduplicate given values to avoid creating many querysets or
+        # requiring the database backend deduplicate efficiently.
+        try:
+            value = frozenset(value)
+        except TypeError:
+            # list of lists isn't hashable, for example
+            raise ValidationError(
+                self.error_messages['list'],
+                code='list',
+            )
+        true_value = []
+        for pk in value:
+            try:
+                self.validate_queryset.filter(**{key: pk})
+            except (ValueError, TypeError):
+                raise ValidationError(
+                    self.error_messages['invalid_pk_value'],
+                    code='invalid_pk_value',
+                    params={'pk': pk},
+                )
+        qs = self.validate_queryset.filter(**{'%s__in' % key: value})
+        pks = set(force_text(getattr(o, key)) for o in qs)
+        for val in value:
+            if force_text(val) not in pks:
+                raise ValidationError(
+                    self.error_messages['invalid_choice'],
+                    code='invalid_choice',
+                    params={'value': val},
+                )
+        return qs
+
+
 class BulkActionForm(UserAwareForm):
     classes = ""
     confirm_page = None
     # queryset is all as we try to be nice and process what we can in bulk
     # actions.
-    items = forms.ModelMultipleChoiceField(
+    items = ForbiddenAllowedModelMultipleChoiceField(
         queryset=MDR._concept.objects.all(),
+        validate_queryset=MDR._concept.objects.all(),
         label="Related items", required=False,
     )
     item_label="Select some items"
@@ -32,8 +88,9 @@ class BulkActionForm(UserAwareForm):
         else:
             queryset = MDR._concept.objects.public()
 
-        self.fields['items'] = forms.ModelMultipleChoiceField(
+        self.fields['items'] = ForbiddenAllowedModelMultipleChoiceField(
             label=self.item_label,
+            validate_queryset=MDR._concept.objects.all(),
             queryset=queryset,
             initial=initial_items,
             widget=autocomplete_light.MultipleChoiceWidget('Autocomplete_concept')
