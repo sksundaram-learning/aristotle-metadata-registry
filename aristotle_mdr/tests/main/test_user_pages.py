@@ -9,27 +9,28 @@ from aristotle_mdr import models
 from django.test.utils import setup_test_environment
 setup_test_environment()
 
-class UserHomePages(utils.LoggedInViewPages,TestCase):
+
+class UserHomePages(utils.LoggedInViewPages, TestCase):
     def setUp(self):
         super(UserHomePages, self).setUp()
 
     def check_generic_pages(self):
         response = self.client.get(reverse('aristotle:userHome',))
-        self.assertEqual(response.status_code,200)
+        self.assertEqual(response.status_code, 200)
         response = self.client.get(reverse('aristotle:userEdit',))
-        self.assertEqual(response.status_code,200)
+        self.assertEqual(response.status_code, 200)
         response = self.client.get(reverse('aristotle:userInbox',))
-        self.assertEqual(response.status_code,200)
-        response = self.client.get(reverse('aristotle:userInbox',args=['all']))
-        self.assertEqual(response.status_code,200)
+        self.assertEqual(response.status_code, 200)
+        response = self.client.get(reverse('aristotle:userInbox', args=['all']))
+        self.assertEqual(response.status_code, 200)
         response = self.client.get(reverse('aristotle:userFavourites',))
-        self.assertEqual(response.status_code,200)
+        self.assertEqual(response.status_code, 200)
         response = self.client.get(reverse('aristotle:userWorkgroups',))
-        self.assertEqual(response.status_code,200)
+        self.assertEqual(response.status_code, 200)
         response = self.client.get(reverse('aristotle:user_workgroups_archives',))
-        self.assertEqual(response.status_code,200)
+        self.assertEqual(response.status_code, 200)
         response = self.client.get(reverse('aristotle:userRecentItems',))
-        self.assertEqual(response.status_code,200)
+        self.assertEqual(response.status_code, 200)
 
     def test_user_can_edit_own_details(self):
         self.login_viewer()
@@ -168,23 +169,24 @@ class UserHomePages(utils.LoggedInViewPages,TestCase):
 
         self.assertTrue(self.su.is_superuser)
         response = self.client.get(reverse('aristotle:userAdminTools',))
-        self.assertEqual(response.status_code,200)
+        self.assertEqual(response.status_code, 200)
         response = self.client.get(reverse('aristotle:userAdminStats',))
-        self.assertEqual(response.status_code,200)
+        self.assertEqual(response.status_code, 200)
         self.logout()
 
     def test_login_redirects(self):
         response = self.client.get("/login")
-        self.assertEqual(response.status_code,200)
+        self.assertEqual(response.status_code, 200)
 
         self.login_superuser()
         response = self.client.get("/login")
-        self.assertRedirects(response,reverse('aristotle:userHome'))
+        self.assertRedirects(response, reverse('aristotle:userHome'))
 
-        response = self.client.get("/login?next="+reverse('aristotle:userFavourites'))
-        self.assertRedirects(response,reverse('aristotle:userFavourites'))
+        response = self.client.get("/login?next=" + reverse('aristotle:userFavourites'))
+        self.assertRedirects(response, reverse('aristotle:userFavourites'))
 
-class UserDashRecentItems(utils.LoggedInViewPages,TestCase):
+
+class UserDashRecentItems(utils.LoggedInViewPages, TestCase):
     def setUp(self):
         super(UserDashRecentItems, self).setUp()
         import haystack
@@ -198,45 +200,48 @@ class UserDashRecentItems(utils.LoggedInViewPages,TestCase):
         self.login_editor()
 
         response = self.client.get(reverse('aristotle:userHome',))
-        self.assertEqual(response.status_code,200)
-        self.assertEqual(len(response.context['recent']),0)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context['recent']), 0)
 
-        wizard_url = reverse('aristotle:createItem',args=['aristotle_mdr','objectclass'])
-        wizard_form_name="dynamic_aristotle_wizard"
+        wizard_url = reverse('aristotle:createItem', args=['aristotle_mdr', 'objectclass'])
+        wizard_form_name = "dynamic_aristotle_wizard"
 
         step_1_data = {
-            wizard_form_name+'-current_step': 'initial',
-            'initial-name':"Test Item"
+            wizard_form_name + '-current_step': 'initial',
+            'initial-name': "Test Item"
         }
 
         response = self.client.post(wizard_url, step_1_data)
         self.assertFalse(models._concept.objects.filter(name="Test Item").exists())
         step_2_data = {
-            wizard_form_name+'-current_step': 'results',
-            'results-name':"Test Item",
-            'results-definition':"Test Definition",
-            'results-workgroup':self.wg1.pk
-            }
+            wizard_form_name + '-current_step': 'results',
+            'results-name': "Test Item",
+            'results-definition': "Test Definition",
+            'results-workgroup': self.wg1.pk
+        }
         response = self.client.post(wizard_url, step_2_data)
         self.assertTrue(models._concept.objects.filter(name="Test Item").exists())
-        self.assertEqual(models._concept.objects.filter(name="Test Item").count(),1)
+        self.assertEqual(models._concept.objects.filter(name="Test Item").count(), 1)
         item = models._concept.objects.filter(name="Test Item").first()
 
         from reversion.models import Revision
 
         response = self.client.get(reverse('aristotle:userHome'))
-        self.assertEqual(response.status_code,200)
-        self.assertEqual(len(response.context['recent']),Revision.objects.filter(user=self.editor).count())
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            len(response.context['recent']),
+            Revision.objects.filter(user=self.editor).count()
+        )
 
         # Lets update an item so there is some recent history
         updated_item = utils.modeL_to_dict_with_change_time(item)
         updated_name = updated_item['name'] + " updated!"
         updated_item['name'] = updated_name
-        response = self.client.post(reverse('aristotle:edit_item',args=[item.id]), updated_item)
-        self.assertEqual(response.status_code,302)
+        response = self.client.post(reverse('aristotle:edit_item', args=[item.id]), updated_item)
+        self.assertEqual(response.status_code, 302)
 
         response = self.client.get(reverse('aristotle:userHome',))
-        self.assertEqual(response.status_code,200)
-        self.assertEqual(len(response.context['recent']),Revision.objects.filter(user=self.editor).count())
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context['recent']), Revision.objects.filter(user=self.editor).count())
 
-        self.assertContains(response,"Changed name")
+        self.assertContains(response, "Changed name")

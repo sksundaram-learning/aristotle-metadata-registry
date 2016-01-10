@@ -36,19 +36,20 @@ class BulkWorkgroupActionsPage(utils.LoggedInViewPages, TestCase):
     def test_bulk_add_favourite_on_forbidden_items(self):
         self.login_editor()
 
-        self.assertEqual(self.editor.profile.favourites.count(),0)
+        self.assertEqual(self.editor.profile.favourites.count(), 0)
         response = self.client.post(
             reverse('aristotle:bulk_action'),
-            {   'bulkaction': 'add_favourites',
-                'items'     : [self.item1.id,self.item4.id],
+            {
+                'bulkaction': 'add_favourites',
+                'items': [self.item1.id, self.item4.id],
             },
             follow=True
         )
-        self.assertEqual(self.editor.profile.favourites.count(),1)
+        self.assertEqual(self.editor.profile.favourites.count(), 1)
         self.assertFalse(self.item4 in self.editor.profile.favourites.all())
-        self.assertTrue("Some items failed, they had the id&#39;s: %s"%self.item4.id in response.content)
-        self.assertEqual(len(response.redirect_chain),1)
-        self.assertEqual(response.redirect_chain[0][1],302)
+        self.assertTrue("Some items failed, they had the id&#39;s: %s" % self.item4.id in response.content)
+        self.assertEqual(len(response.redirect_chain), 1)
+        self.assertEqual(response.redirect_chain[0][1], 302)
 
     def test_bulk_remove_favourite(self):
         self.login_editor()
@@ -111,9 +112,10 @@ class BulkWorkgroupActionsPage(utils.LoggedInViewPages, TestCase):
         self.assertFalse(self.item4.is_registered)
         response = self.client.post(
             reverse('aristotle:bulk_action'),
-            {   'bulkaction': 'change_state',
+            {
+                'bulkaction': 'change_state',
                 'state': 1,
-                'items': [self.item1.id,self.item2.id,self.item4.id],
+                'items': [self.item1.id, self.item2.id, self.item4.id],
                 'registrationDate': "2014-10-27",
                 'cascadeRegistration': 0,
                 'registrationAuthorities': [self.ra.id],
@@ -121,18 +123,18 @@ class BulkWorkgroupActionsPage(utils.LoggedInViewPages, TestCase):
             },
             follow=True
         )
-        self.assertEqual(200,response.status_code)
+        self.assertEqual(200, response.status_code)
         self.assertTrue(self.item1.is_registered)
         self.assertFalse(self.item2.is_registered)
         self.assertFalse(self.item4.is_registered)
 
         from django.utils.html import escape
         err1 = "Some items failed"
-        err2 = "s: %s"%','.join(sorted([str(self.item2.id),str(self.item4.id)]))
-        
+        err2 = "s: %s" % ','.join(sorted([str(self.item2.id), str(self.item4.id)]))
+
         self.assertTrue(err1 in response.content)
         self.assertTrue(err2 in response.content)
-        self.assertEqual(len(response.redirect_chain),1)
-        self.assertEqual(response.redirect_chain[0][1],302)
+        self.assertEqual(len(response.redirect_chain), 1)
+        self.assertEqual(response.redirect_chain[0][1], 302)
 
-    #TODO: bulk action *and* cascade, where a user doesn't have permission for child elements.
+    # TODO: bulk action *and* cascade, where a user doesn't have permission for child elements.
