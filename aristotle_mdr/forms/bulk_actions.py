@@ -17,11 +17,21 @@ class BulkActionForm(UserAwareForm):
     confirm_page = None
     # queryset is all as we try to be nice and process what we can in bulk
     # actions.
+    all_in_queryset = forms.BooleanField(
+        label=_("All items"),
+        required=False,
+    )
+    # all_on_page = forms.BooleanField(
+    #     label=_("All items on page"),
+    #     required=False,
+    # )
     items = forms.ModelMultipleChoiceField(
         queryset=MDR._concept.objects.all(),
-        label="Related items", required=False,
+        label="Related items",
+        required=False,
     )
     item_label="Select some items"
+    queryset = MDR._concept.objects.all()
 
     def __init__(self, *args, **kwargs):
         initial_items = kwargs.pop('items', [])
@@ -38,7 +48,24 @@ class BulkActionForm(UserAwareForm):
         #     initial = initial_items,
         #     widget=autocomplete_light.MultipleChoiceWidget('Autocomplete_concept')
         # )
-
+        self.fields['items']=forms.ModelMultipleChoiceField(
+            label = self.item_label,
+            queryset = self.queryset,
+            initial = initial_items,
+            required=False,
+            widget=autocomplete_light.MultipleChoiceWidget('Autocomplete_concept')
+        )
+    
+    @property
+    def items_to_change(self):
+        print 'data',self.data
+        print 'clean data',self.cleaned_data
+        1/0        
+        if bool(self.cleaned_data.get('all_in_queryset',False)):
+            items = self.queryset
+        else:
+            items = self.cleaned_data.get('items')
+        return items
     @classmethod
     def can_use(cls, user):
         return True
@@ -56,10 +83,10 @@ class BulkActionForm(UserAwareForm):
 
 class AddFavouriteForm(BulkActionForm):
     classes="fa-bookmark"
-    action_text = _('Add bookmark')
+    action_text = _('Add favourite')
 
     def make_changes(self):
-        items = self.cleaned_data.get('items')
+        items = self.items_to_change
         bad_items = [str(i.id) for i in items if not user_can_view(self.user, i)]
         items = items.visible(self.user)
         self.user.profile.favourites.add(*items)
@@ -74,10 +101,10 @@ class AddFavouriteForm(BulkActionForm):
 
 class RemoveFavouriteForm(BulkActionForm):
     classes="fa-minus-square"
-    action_text = _('Remove bookmark')
+    action_text = _('Remove favourite')
 
     def make_changes(self):
-        items = self.cleaned_data.get('items')
+        items = self.items_to_change
         self.user.profile.favourites.remove(*items)
         return _('%(num_items)s items removed from favourites') % {'num_items': len(items)}
 
@@ -85,7 +112,7 @@ class RemoveFavouriteForm(BulkActionForm):
 class ChangeStateForm(ChangeStatusForm, BulkActionForm):
     confirm_page = "aristotle_mdr/actions/bulk_change_status.html"
     classes="fa-university"
-    action_text = _('Change state')
+    action_text = _('Change registration status')
     items_label="These are the items that will be be registered. Add or remove additional items with the autocomplete box.",
 
     def __init__(self, *args, **kwargs):
@@ -98,7 +125,7 @@ class ChangeStateForm(ChangeStatusForm, BulkActionForm):
             raise PermissionDenied
         ras = self.cleaned_data['registrationAuthorities']
         state = self.cleaned_data['state']
-        items = self.cleaned_data['items']
+        items = items_to_change
         regDate = self.cleaned_data['registrationDate']
         cascade = self.cleaned_data['cascadeRegistration']
         changeDetails = self.cleaned_data['changeDetails']

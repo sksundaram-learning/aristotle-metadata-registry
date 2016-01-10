@@ -9,7 +9,9 @@ Showing {{ page.paginator.count }} results.
 <table class="table">
 <thead>
     <tr>
-        <th></th>
+        <th>
+            <input title='{% trans "Select all" %}' type="checkbox" id="all_in_queryset" name="all_in_queryset" checked="checked">
+        </th>
         <th></th>
         <th>{% trans 'Concept' %}
             {% if sort == "name_asc" %}
