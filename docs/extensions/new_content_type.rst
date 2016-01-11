@@ -305,6 +305,7 @@ can arise when extending from non-abstract classes:
 
     Failure to include this may lead to broken code or pages that expose private items.
 
+
 Creating ``unmanagedContent`` types
 -----------------------------------
 
@@ -327,6 +328,18 @@ from this class can be done like so::
 
 For example, in Aristotle-MDR "Measure" is an ``unmanagedObject`` type, that is used
 to give extra context to `UnitOfMeasure` objects.
+
+
+Including documentation in new content types
+--------------------------------------------
+To make deploying new content easier, and encourage better documentation, Aristotle
+reuses help content built into the Django Web framework. When producing dynamic
+documentation, Aristotle uses the Python docstring of a ``concept``-inheriting class
+and the field level `help_text` to produce documentation.
+
+This can be seen on in the concept editor, administrator pages, item comparator 
+and can be accessed in html pages using the ``doc`` template tag in the ``aristotle_tags``
+module.
 
 
 A complete example of an Aristotle Extension
