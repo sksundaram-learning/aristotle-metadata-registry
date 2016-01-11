@@ -31,7 +31,7 @@ For more information on configuring a more complete installation review the help
 
    On a linux machine, this can be done with the command::
 
-       wget https://github.com/aristotle-mdr/aristotle-metadata-registry/trunk/aristotle_easy_installer.py
+       wget https://raw.githubusercontent.com/aristotle-mdr/aristotle-metadata-registry/master/aristotle_easy_installer.py
 
 4. Run the easy installer: ``aristotle_easy_installer.py``. There are a number of command line arguments
    that are explained in the help documentation which can be access from the command line::
