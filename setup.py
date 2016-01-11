@@ -8,8 +8,8 @@ with open(os.path.join(os.path.dirname(__file__), 'README.rst')) as readme:
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
-    name='django-aristotle-metadata-registry',
-    version='0.0.1a1',
+    name='aristotle-metadata-registry',
+    version='1.1.0',
     packages=['aristotle_mdr'],
     include_package_data=True,
     license='Aristotle-MDR Modified BSD Licence',  # example license
