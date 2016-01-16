@@ -317,7 +317,7 @@ class PermissionSearchForm(TokenSearchForm):
         """Return an alphabetical list of model classes in the index."""
         search_models = []
 
-        if self.is_valid():
+        if self.is_valid() and self.cleaned_data['models']:
             for model in self.cleaned_data['models']:
                 search_models.append(models.get_model(*model.split('.')))
 
@@ -332,8 +332,9 @@ class PermissionSearchForm(TokenSearchForm):
         if not self.is_valid():
             return self.no_query_found()
 
-        filters = "mq cq cds cde mds mde state ra".split()
-        has_filter = any([self.cleaned_data.get(f, False) for f in filters])
+        filters = "models mq cq cds cde mds mde state ra".split()
+        self.applied_filters = [f for f in filters if self.cleaned_data.get(f, False)]
+        has_filter = len(self.applied_filters) > 0
         if has_filter and not self.query_text:  # and not self.kwargs:
             # If there is a filter, but no query then we'll force some results.
             sqs = self.searchqueryset.order_by('-modified')
