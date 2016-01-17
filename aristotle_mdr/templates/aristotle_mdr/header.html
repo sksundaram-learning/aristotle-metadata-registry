@@ -1,7 +1,7 @@
 {% load i18n %}
 {% load bootstrap3 %}
+{% load notifications_tags %}
 {% load firstof from future %}{# Only required for Django<=1.8 #}
-
 <a class="sr-only" accesskey="j" href="#content">Skip to content</a>
 <a class="sr-only" accesskey="l" href="{% url 'aristotle:accessibility' %}#accesskeys">Learn about the access keys available for {{ config.SITE_NAME }}</a>
 <nav class="main navbar navbar-inverse">
@@ -14,7 +14,7 @@
         <span class="icon-bar"></span>
       </button>
       <a href="{% url 'aristotle:home' %}" id="logo">
-        <img height="48px" src="{{ config.SITE_BRAND }}" alt="{{ config.SITE_NAME }}" title="{{ config.SITE_NAME }}">
+        <img height="50px" src="{{ config.SITE_BRAND }}" alt="{{ config.SITE_NAME }}" title="{{ config.SITE_NAME }}">
       </a>
     </div>
 
@@ -86,12 +86,12 @@
                     {% endif %}
                     {% if user.is_staff %}
                         <li role="presentation" class="divider"></li>
-                        <li><a href="{% url 'admin:index' %}">
+                        <li><a class="staff_action" href="{% url 'admin:index' %}">
                         <i class="fa fa-sliders fa-fw"></i> {% trans 'Management interface' %}
                         </a></li>
                     {% endif %}
                     {% if request.user.is_superuser %}
-                        <li><a href="{% url 'aristotle:userAdminTools' %}">
+                        <li><a class="su_action" href="{% url 'aristotle:userAdminTools' %}">
                         <i class="fa fa-user-md fa-fw"></i> {% trans 'Admin tools' %}
                         </a></li>
                     {% endif %}
@@ -118,11 +118,11 @@
                             <i class="fa fa-user-md fa-2x"></i> {% trans 'Admin only' %}
                         </li>
                         <li>
-                            <a href="{% url 'admin:aristotle_mdr_workgroup_add'%}">
+                            <a class="su_action" href="{% url 'admin:aristotle_mdr_workgroup_add'%}">
                                 <i class="fa fa-users fa-fw"></i> {% trans 'Workgroup' %}</a>
                         </li>
                         <li>
-                            <a href="{% url 'admin:auth_user_add'%}">
+                            <a class="su_action" href="{% url 'admin:auth_user_add'%}">
                                 <i class="fa fa-user-plus fa-fw"></i> {% trans 'User' %}
                             </a>
                         </li>
@@ -133,8 +133,9 @@
                     </li>
                 </ul>
             </li>
-            <li>
-                <a href="{% url 'notifications:all' %}">
+            <li class="dropdown">
+                <a href="{% url 'notifications:all' %}"
+                    class="dropdown-toggle" data-toggle="dropdown" title="{% trans 'Show recent notifications' %}">
                     {% if user.notifications.unread %}
                     <span class="notify" title="{% trans 'New notifications' %}"></span>
                     <span class="visible-xs-inline">{% trans 'New notifications' %}</span>
@@ -142,7 +143,9 @@
                     <span class="no-notify" title="{% trans 'No unread notifications' %}"></span>
                     <span class="visible-xs-inline">{% trans 'No unread notifications' %}</span>
                     {% endif %}
+                    {% live_notify_badge classes="badge" %}
                 </a>
+                {% live_notify_list classes="dropdown-menu" %}
             </li>
             <li>
                 <a href="{% url 'django.contrib.auth.views.logout' %}?next={{request.path}}" title="{% trans 'Log out'%}">

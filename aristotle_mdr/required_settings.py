@@ -1,4 +1,4 @@
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 import os
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
@@ -43,7 +43,7 @@ ALLOWED_HOSTS = []
 SOUTH_TESTS_MIGRATE = False
 
 INSTALLED_APPS = (
-    'aristotle_mdr', #Comes before grappelli for overloads
+    'aristotle_mdr',  # Comes before grappelli for overloads
     'grappelli',
     'haystack',
     'django.contrib.admin',
@@ -60,8 +60,8 @@ INSTALLED_APPS = (
     'static_precompiler',
     'bootstrap3',
     'bootstrap3_datetime',
-    'reversion', # https://github.com/etianen/django-reversion
-    'reversion_compare', # https://github.com/jedie/django-reversion-compare
+    'reversion',  # https://github.com/etianen/django-reversion
+    'reversion_compare',  # https://github.com/jedie/django-reversion-compare
     'autocomplete_light',
     'notifications',
 )
@@ -80,16 +80,16 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 
 
-    'reversion.middleware.RevisionMiddleware',
+    # 'reversion.middleware.RevisionMiddleware',
 )
 
 
 TEMPLATE_CONTEXT_PROCESSORS = (
-  'django.contrib.auth.context_processors.auth',
-  'django.core.context_processors.request',
-  'django.core.context_processors.static',
-  'aristotle_mdr.context_processors.settings',
-  'django.contrib.messages.context_processors.messages',
+    'django.contrib.auth.context_processors.auth',
+    'django.core.context_processors.request',
+    'django.core.context_processors.static',
+    'aristotle_mdr.context_processors.settings',
+    'django.contrib.messages.context_processors.messages',
 )
 
 ROOT_URLCONF = 'aristotle_mdr.urls'
@@ -103,6 +103,7 @@ STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     'static_precompiler.finders.StaticPrecompilerFinder',
 )
+
 if DEBUG:
     STATIC_PRECOMPILER_CACHE_TIMEOUT = 1
     STATIC_PRECOMPILER_DISABLE_AUTO_COMPILE = False
@@ -117,42 +118,51 @@ BOOTSTRAP3 = {
 AUTHENTICATION_BACKENDS = ('aristotle_mdr.backends.AristotleBackend',)
 
 ARISTOTLE_SETTINGS = {
-    'SEPARATORS': { 'DataElement':', ',
-                    'DataElementConcept':u'–'},
-    'SITE_NAME': 'Default Site Name', # 'The main title for the site.'
-    'SITE_BRAND': '/static/aristotle_mdr/images/aristotle_small.png', # URL for the Site-wide logo
-    'SITE_INTRO': 'Use Default Site Name to search for metadata...', # 'Intro text use on the home page as a prompt for users.'
-    'SITE_DESCRIPTION': 'About this site', # 'The main title for the site.'
-    'CONTENT_EXTENSIONS' : [],
+    'SEPARATORS': {
+        'DataElement': ', ',
+        'DataElementConcept': u'–'
+    },
+    'SITE_NAME': 'Default Site Name',  # 'The main title for the site.'
+    'SITE_BRAND': '/static/aristotle_mdr/images/aristotle_small.png',  # URL for the Site-wide logo
+    'SITE_INTRO': 'Use Default Site Name to search for metadata...',  # 'Intro text use on the home page as a prompt for users.'
+    'SITE_DESCRIPTION': 'About this site',  # 'The main title for the site.'
+    'CONTENT_EXTENSIONS': [],
     'PDF_PAGE_SIZE': 'A4',
-    }
+    'WORKGROUP_CHANGES': [],  # ['admin'] # or manager or submitter,
+    'BULK_ACTIONS': {
+        'add_favourites': 'aristotle_mdr.forms.bulk_actions.AddFavouriteForm',
+        'remove_favourites': 'aristotle_mdr.forms.bulk_actions.RemoveFavouriteForm',
+        'change_state': 'aristotle_mdr.forms.bulk_actions.ChangeStateForm',
+    },
+    'DASHBOARD_ADDONS': []
+}
 ARISTOTLE_DOWNLOADS = [
-    #(fileType,menu,font-awesome-icon,module)
-    ('pdf','PDF','fa-file-pdf-o','aristotle_mdr','Downloads for various content types in the PDF format'),
-    ('csv-vd','CSV list of values','fa-file-excel-o','aristotle_mdr','CSV downloads for value domain codelists'),
-    ]
+    # (fileType, menu, font-awesome-icon, module)
+    ('pdf', 'PDF', 'fa-file-pdf-o', 'aristotle_mdr', 'Downloads for various content types in the PDF format'),
+    ('csv-vd', 'CSV list of values', 'fa-file-excel-o', 'aristotle_mdr', 'CSV downloads for value domain codelists'),
+]
 
 CKEDITOR_CONFIGS = {
     'default': {
-        #'toolbar': 'full',
-        'toolbar' : [
-            { 'name': 'clipboard', 'items': [ 'Cut', 'Copy', 'Paste', 'PasteText', '-', 'Undo', 'Redo' ] },
-            { 'name': 'basicstyles', 'items' : [ 'Bold','Italic','Subscript','Superscript','-','RemoveFormat' ] },
-            { 'name': 'links', 'items' : [ 'Link','Unlink' ] },
-	        { 'name': 'paragraph', 'items' : [ 'NumberedList','BulletedList','-','Blockquote' ] },
-    	    { 'name': 'insert', 'items' : [ 'Image','Table','HorizontalRule','SpecialChar'] },
-            { 'name': 'document', 'items': [ 'Maximize','Source' ] },
+        # 'toolbar': 'full',
+        'toolbar': [
+            {'name': 'clipboard', 'items': ['Cut', 'Copy', 'Paste', 'PasteText', '-', 'Undo', 'Redo']},
+            {'name': 'basicstyles', 'items': ['Bold', 'Italic', 'Subscript', 'Superscript', '-', 'RemoveFormat']},
+            {'name': 'links', 'items': ['Link', 'Unlink']},
+            {'name': 'paragraph', 'items': ['NumberedList', 'BulletedList', '-', 'Blockquote']},
+            {'name': 'insert', 'items': ['Image', 'Table', 'HorizontalRule', 'SpecialChar']},
+            {'name': 'document', 'items': ['Maximize', 'Source']},
         ],
     },
 }
 
 HAYSTACK_SIGNAL_PROCESSOR = 'aristotle_mdr.signals.AristotleSignalProcessor'
-#HAYSTACK_SEARCH_RESULTS_PER_PAGE = 10
+# HAYSTACK_SEARCH_RESULTS_PER_PAGE = 10
 HAYSTACK_CONNECTIONS = {
     'default': {
         'ENGINE': 'haystack.backends.whoosh_backend.WhooshEngine',
         'PATH': os.path.join(os.path.dirname(__file__), 'whoosh_index'),
-        'INCLUDE_SPELLING':True,
+        'INCLUDE_SPELLING': True,
     },
 }
 

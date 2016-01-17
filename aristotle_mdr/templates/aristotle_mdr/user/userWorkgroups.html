@@ -14,36 +14,7 @@
     <section id="workgroups">
         <p>This is a list of active workgroups of which you are a member. To see a list of inactive workgroups,
         go to <a href="{% url 'aristotle:user_workgroups_archives'%}">Archived Workgroups.</a></p>
-        <header>Recent Workgroups</header>
 
-<table class='table'>
-    <thead>
-        <tr>
-            <th>Workgroup</th>
-            <th>
-                <i class="fa fa-users" title="Number of members"></i>
-            </th>
-            <th>
-                <i class="fa fa-file" title="Number of items"></i>
-            </th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for wg in user.profile.myWorkgroups.all %}
-        <tr>
-            <td>
-                <a href="{% url 'aristotle:workgroup' wg.id %}">{{ wg }}</a> -
-                <span>{{ wg.definition|striptags|safe|truncatewords:15 }}</span>
-            </td>
-            <td>
-                {{ wg.members.count }}
-            </td>
-            <td>
-                {{ wg.items.count }}
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+        {% include "aristotle_mdr/helpers/paginated_workgroup_list.html" with page=page %}
 </section>
 {% endblock %}

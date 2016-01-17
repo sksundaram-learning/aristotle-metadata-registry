@@ -35,6 +35,12 @@
     }
 }
 
+@media (max-width:@screen-sm-min)  {
+    span.visible-xs {
+        display: inline-block !important;
+    }
+}
+
 .main.navbar .navbar-nav li.dropdown a.dropdown-toggle {
     color:@colors_footer_text;
 }
@@ -519,4 +525,24 @@ dl.treble_defintions {
   left: 45%;
   top: 45%;
   z-index:2000; /* Needs to be greater than 1040 to go over the bootstrap modal-backdrop */
+}
+
+.su_action {
+background: repeating-linear-gradient(
+      45deg,
+    transparent,
+    transparent 10px,
+    rgba(250, 54, 54, 0.2) 10px,
+    rgba(250, 54, 54, 0.2) 20px
+    )
+}
+
+.staff_action {
+background: repeating-linear-gradient(
+      -45deg,
+    transparent,
+    transparent 10px,
+    rgba(250, 150, 54, 0.2) 10px,
+    rgba(250, 150, 54, 0.2) 20px
+    )
 }

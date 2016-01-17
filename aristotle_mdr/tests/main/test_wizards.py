@@ -162,8 +162,10 @@ class DataElementConceptWizardPage(ConceptWizardPage,TestCase):
         pass
     def test_editor_can_make_object__has_prior_components(self):
         self.login_editor()
-        ani = models.ObjectClass.objects.create(name="animagus",definition="",workgroup=self.wg1)
-        at  = models.Property.objects.create(name="animal type",definition="",workgroup=self.wg1)
+        from reversion.revisions import create_revision
+        with create_revision():
+            ani = models.ObjectClass.objects.create(name="animagus",definition="",workgroup=self.wg1)
+            at  = models.Property.objects.create(name="animal type",definition="",workgroup=self.wg1)
 
         step_1_data = {
             self.wizard_form_name+'-current_step': 'component_search',
@@ -374,13 +376,19 @@ class DataElementWizardPage(ConceptWizardPage,TestCase):
         pass
     def test_editor_can_make_object__has_prior_components(self):
         self.login_editor()
-        ani   = models.ObjectClass.objects.create(name="animagus",definition="",workgroup=self.wg1)
-        at    = models.Property.objects.create(name="animal type",definition="",workgroup=self.wg1)
-        momat = models.ValueDomain.objects.create(name="MoM animal type classification",
-                definition="Ministry of Magic standard classification of animagus animal types",workgroup=self.wg1)
-        ani_dec = models.DataElementConcept.objects.create(name="animagus--animal type",definition="",workgroup=self.wg1,
-                objectClass=ani,property=at
-                )
+        from reversion.revisions import create_revision
+        with create_revision():
+            ani   = models.ObjectClass.objects.create(name="animagus",definition="",workgroup=self.wg1)
+            at    = models.Property.objects.create(name="animal type",definition="",workgroup=self.wg1)
+            momat = models.ValueDomain.objects.create(name="MoM animal type classification",
+                    definition="Ministry of Magic standard classification of animagus animal types",workgroup=self.wg1)
+            ani_dec = models.DataElementConcept.objects.create(
+                name="animagus--animal type",
+                definition="",
+                workgroup=self.wg1,
+                objectClass=ani,
+                property=at
+            )
 
         step_1_data = {
             self.wizard_form_name+'-current_step': 'component_search',
@@ -438,10 +446,12 @@ class DataElementWizardPage(ConceptWizardPage,TestCase):
 
     def test_editor_can_make_object__has_prior_components_but_no_dec(self):
         self.login_editor()
-        ani   = models.ObjectClass.objects.create(name="animagus",definition="",workgroup=self.wg1)
-        at    = models.Property.objects.create(name="animal type",definition="",workgroup=self.wg1)
-        momat = models.ValueDomain.objects.create(name="MoM animal type classification",
-                definition="Ministry of Magic standard classification of animagus animal types",workgroup=self.wg1)
+        from reversion.revisions import create_revision
+        with create_revision():
+            ani   = models.ObjectClass.objects.create(name="animagus",definition="",workgroup=self.wg1)
+            at    = models.Property.objects.create(name="animal type",definition="",workgroup=self.wg1)
+            momat = models.ValueDomain.objects.create(name="MoM animal type classification",
+                    definition="Ministry of Magic standard classification of animagus animal types",workgroup=self.wg1)
 
         step_1_data = {
             self.wizard_form_name+'-current_step': 'component_search',

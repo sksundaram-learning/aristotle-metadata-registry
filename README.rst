@@ -1,8 +1,10 @@
 =====
-Aristotle MetaData Registry (Aristotle-MDR)
+Aristotle Metadata Registry (Aristotle-MDR)
 =====
 
-|build-status| |docs| |coveralls| |demoserver|
+|aristotle-logo|
+
+|build-status| |docs| |coveralls| |demoserver| |codeclimate|
 
 Introduction and mission statement
 ----------------------------------
@@ -65,7 +67,7 @@ Quick start
 
 For a complete example of how to successfully include Aristotle, see the `tests/settings.py` settings file.
 
-**A live Aristotle-MDR instance is available for review on PythonAnywhere at:** ``http://aristotle.pythonanywhere.com/``.
+**A live Aristotle-MDR instance is available for review on PythonAnywhere at:** `http://aristotle.pythonanywhere.com/ <http://aristotle.pythonanywhere.com/>`_.
 Be aware, this is an active development instance and may sporadically be unavailble.
 
 Screenshots for users
@@ -73,10 +75,10 @@ Screenshots for users
 
 `More screenshots available in the Aristotle-MDR Wiki <https://github.com/aristotle-mdr/aristotle-metadata-registry/wiki/Screenshots>`_.
 
-A data element on shown desktop and mobile
+A data element shown on desktop and mobile
 |newitemsample|
 
-An item being editted without changing screens
+An item being edited without changing screens
 |itemeditsample|
 
 Information for developers
@@ -98,6 +100,7 @@ About the badges (plus some extras):
 * |demoserver| - A link to a live demo and development server
 * |gitter| - Gitter, a git-powered chat room for developers
 * |waffleio| - Waffle.io bugs ready to be actioned.
+* |codeclimate| - Code Climate - additional code metrics
 
 .. |build-status| image:: https://travis-ci.org/aristotle-mdr/aristotle-metadata-registry.svg?branch=master
     :alt: build status
@@ -133,10 +136,18 @@ About the badges (plus some extras):
     :target: https://waffle.io/aristotle-mdr/aristotle-metadata-registry 
     :alt: 'Stories in Ready'
 
+.. |codeclimate| image:: https://codeclimate.com/github/aristotle-mdr/aristotle-metadata-registry/badges/gpa.svg
+   :target: https://codeclimate.com/github/aristotle-mdr/aristotle-metadata-registry
+   :alt: Code Climate
+
 .. |newitemsample| image:: https://cloud.githubusercontent.com/assets/2173174/7829993/4de09a2a-048b-11e5-8b25-c1935da42a2d.png
     :alt:  Data Element on desktop and mobile
     :scale: 100%
 
 .. |itemeditsample| image:: http://i.imgur.com/dAEboRg.png
     :alt: Edit screen for a Data Element
+    :scale: 100%
+
+.. |aristotle-logo| image:: https://raw.githubusercontent.com/LegoStormtroopr/aristotle-metadata-registry/develop/aristotle_mdr/static/aristotle_mdr/images/aristotle.png
+    :alt: Aristotle-MDR Logo
     :scale: 100%

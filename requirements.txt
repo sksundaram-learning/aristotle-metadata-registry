@@ -1,8 +1,5 @@
 --index-url https://pypi.python.org/simple/
-
--e git://github.com/LegoStormtroopr/django-notifications#egg=notifications
-
+ -e git://github.com/LegoStormtroopr/django-reversion-compare@master#egg=django_reversion_compare
+ 
 -e .
 
-#Some stuff fails on Django 1.7
-django-autocomplete-light==2.0.0a18
