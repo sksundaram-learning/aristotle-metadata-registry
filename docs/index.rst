@@ -15,7 +15,7 @@ by the requirements of the `ISO/IEC 11179:2013 specification <http://metadata-st
 
 Aristotle Metadata Registry represents a new way to manage and federate content built on and extending
 the principles of leading metadata registry. The code of Aristotle-MDR is completely open-source,
-building on the Django web framework and the mature model of the 11179 standard,
+building on the Django web framework and the mature model of the ISO 11179 standard,
 agencies can easily run their own metadata registries while also having the ability
 to extend the information model and tap into the permissions and roles defined
 in ISO 11179.
