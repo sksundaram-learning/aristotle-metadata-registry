@@ -1,5 +1,5 @@
 =====
-Aristotle MetaData Registry (Aristotle-MDR)
+Aristotle Metadata Registry (Aristotle-MDR)
 =====
 
 |aristotle-logo|
