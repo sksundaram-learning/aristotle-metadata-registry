@@ -384,3 +384,19 @@ def template_path(item, _type):
     from aristotle_mdr.utils import get_download_template_path_for_item
     _type, subpath=_type.split(',')
     return get_download_template_path_for_item(item, _type, subpath)
+
+@register.simple_tag
+def search_describe_filters(search_form):
+    """Gets the appropriate help text or docstring for a model or field.
+    Accepts 2 or 3 string arguments:
+    If 2, returns the docstring for the given model in the specified app.
+    If 3, returns the help_text for the field on the given model in the specified app.
+    """
+    
+    out = ""
+    if search_form.applied_filters:
+        for f in search_form.applied_filters:
+            out += str(search_form.cleaned_data.get(f))
+            out += str(search_form.cleaned_data.get(f))
+    
+    return out
