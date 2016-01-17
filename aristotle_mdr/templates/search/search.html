@@ -182,6 +182,7 @@
                     {% endfor %}, but no results were found.
                     </span>
                 {% endif %}
+            </div>{# closes div#spelling" #}
             {% elif form.has_spelling_suggestions  %}
                 Did you mean:
                 <a href="?q={{ form.suggested_query }}">
@@ -194,7 +195,6 @@
                 {% endfor %}
                 </a>
             {% endif %}
-            </div>
         {% endif %}
     {#  ----- MAIN RESULTS PAGE STARTS HERE ----- #}
     {% if query or form.filter_search %}
