@@ -201,9 +201,8 @@
         {% if page.object_list %}
             {% if form.applied_filters %}
             <div>
-                Showing only items:
-                    {% search_describe_filters form %}
-                    <small>{{form.applied_filters}}</small>
+                Showing only items where
+                {% search_describe_filters form %}
             </div>
             {% endif %}
         <div class="col-md-10 col-md-offset-1">

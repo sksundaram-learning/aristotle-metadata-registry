@@ -385,18 +385,43 @@ def template_path(item, _type):
     _type, subpath=_type.split(',')
     return get_download_template_path_for_item(item, _type, subpath)
 
+
 @register.simple_tag
 def search_describe_filters(search_form):
-    """Gets the appropriate help text or docstring for a model or field.
-    Accepts 2 or 3 string arguments:
-    If 2, returns the docstring for the given model in the specified app.
-    If 3, returns the help_text for the field on the given model in the specified app.
+    """
+    Takes a search form and returns a user friendly
+    textual description of the filters.
     """
     
     out = ""
     if search_form.applied_filters:
+        filter_texts = []
         for f in search_form.applied_filters:
-            out += str(search_form.cleaned_data.get(f))
-            out += str(search_form.cleaned_data.get(f))
+            val = search_form.cleaned_data.get(f)
+            field = search_form.fields.get(f)
+
+            if field.label is None:
+                continue
+            if hasattr(field,'choices'):
+                preamble = _('%s is') % field.label
+                try:
+                    choices = dict(field.choices)
+                    opts = [choices[x] for x in val]
+                except KeyError:
+                    choices = dict([(str(k),v) for k,v in field.choices])
+                    opts = [choices[x] for x in val]
+
+                if len(opts) > 1:
+                    verbed = ", ".join([str(o) for o in opts][:-1])
+                    verbed += _(' or %s') % str(opts[-1])
+                else:
+                    verbed = str(opts[0])
+                filter_texts.append('%s %s' % (preamble, verbed))
+            else:
+                preamble = _('%s is') % field.label
+                verbed = str(val)
+                filter_texts.append('%s %s' % (preamble, verbed))
+        out = "; ".join([str(o) for o in filter_texts][:-1])
+        out += _(' and %s') % str(filter_texts[-1])
     
     return out
