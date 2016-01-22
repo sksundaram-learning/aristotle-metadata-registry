@@ -51,43 +51,6 @@
             {% endcomment %}
             {% include "aristotle_mdr/statuses.html" with statuses=item.current_statuses infoBox=True %}
 
-    {% if not item.is_public or not item.is_locked %}
-    <section class=well>
-        {% if item.workgroup.ownership == workgroup_ownership.registry %}
-            {% if not item.is_locked %}
-            <div>This item will become locked if its status is locked in
-                <em>any</em> registration authority.
-            </div>
-            {% endif %}
-            {% if not item.is_public %}
-            <div>This item will become publically visible if its public is
-                locked in <em>any</em> registration authority.
-            </div>
-            {% endif %}
-        {% elif item.workgroup.ownership == workgroup_ownership.authority %}
-            <div>This item will be:</div>
-            {% if not item.is_locked %}
-            <em>locked</em> if its status is:
-            <ul>
-                {% for ra in item.workgroup.registrationAuthorities.all %}
-                    <li>{{ ra.get_locked_state_display }} or above in
-                    <a href="{{ ra.get_absolute_url }}">{{ ra }}</a></li>
-                {% endfor %}
-            </ul>
-            {% endif %}
-            {% if not item.is_public %}
-            <em>publically visible</em> if its status is:
-            <ul>
-                {% for ra in item.workgroup.registrationAuthorities.all %}
-                    <li>{{ ra.get_public_state_display }} or above in
-                    <a href="{{ ra.get_absolute_url }}">{{ ra }}</a></li>
-                {% endfor %}
-            </ul>
-            {% endif %}
-        {% endif %}
-    </section>
-    {% endif %}
-
             <dt>{% trans 'Last updated'%}</dt>
             <dd>
                 {% if request.user.is_superuser or request.user.is_staff and item.workgroup in request.user.workgroups %}
