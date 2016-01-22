@@ -66,7 +66,7 @@
             <em>locked</em> if its status is:
             <ul>
                 {% for ra in workgroup.registrationAuthorities.all %}
-                    <li>{{ ra.get_locked_state_display }} or above in 
+                    <li>{{ ra.get_locked_state_display }} or above in
                     <a href="{{ ra.get_absolute_url }}">{{ ra }}</a></li>
                 {% endfor %}
             </ul>
