@@ -26,6 +26,9 @@
 {% endif %}
 {% if user|in_workgroup:item.workgroup or user.is_superuser or user.profile.is_registrar %}
     <div id="review" class=" alert alert-info">
+        <button id="togglerVisiblity" class="pull-right btn btn-xs btn-primary" type="button" data-toggle="collapse" data-target="#collapseMoreVisibilityInfo" aria-expanded="false" aria-controls="collapseMoreVisibilityInfo">
+          Show more
+        </button>
         <strong>
         {% if item.readyToReview %}
             <i class="fa fa-flag"></i> {% trans 'This item has been marked as ready to review, but has not yet been registered in an authority.'%}
@@ -34,9 +37,6 @@
         {% endif %}
         </strong>
     
-        <button id="togglerVisiblity" class="pull-right btn btn-xs btn-primary" type="button" data-toggle="collapse" data-target="#collapseMoreVisibilityInfo" aria-expanded="false" aria-controls="collapseMoreVisibilityInfo">
-          Show more
-        </button>
         <div id="collapseMoreVisibilityInfo" class="collapse ">
             {% if item|can_edit:request.user %}
                 {% blocktrans %}
