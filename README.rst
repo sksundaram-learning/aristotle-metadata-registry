@@ -1,6 +1,8 @@
 =====
-Aristotle MetaData Registry (Aristotle-MDR)
+Aristotle Metadata Registry (Aristotle-MDR)
 =====
+
+|aristotle-logo|
 
 |build-status| |docs| |coveralls| |demoserver| |codeclimate|
 
@@ -144,4 +146,8 @@ About the badges (plus some extras):
 
 .. |itemeditsample| image:: http://i.imgur.com/dAEboRg.png
     :alt: Edit screen for a Data Element
+    :scale: 100%
+
+.. |aristotle-logo| image:: https://raw.githubusercontent.com/LegoStormtroopr/aristotle-metadata-registry/develop/aristotle_mdr/static/aristotle_mdr/images/aristotle.png
+    :alt: Aristotle-MDR Logo
     :scale: 100%
