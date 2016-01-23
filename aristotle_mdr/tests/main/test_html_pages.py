@@ -776,6 +776,9 @@ class RegistrationAuthorityViewPage(LoggedInViewUnmanagedPages,TestCase):
                 state=models.STATES.standard
                 )
 
+    def get_page(self,item):
+        return item.get_absolute_url()
+
     def test_view_all_ras(self):
         self.logout()
         response = self.client.get(reverse('aristotle:allRegistrationAuthorities'))
