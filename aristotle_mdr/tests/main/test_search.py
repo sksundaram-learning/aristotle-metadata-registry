@@ -51,6 +51,14 @@ class TestSearch(utils.LoggedInViewPages,TestCase):
             models.ObjectClass.objects.create(name=t,workgroup=self.avengers_wg)
             for t in avengers.split()]
 
+    def test_one_result_search_doesnt_have__did_you_mean(self):
+        self.logout()
+        response = self.client.get(reverse('aristotle:search')+"?q=wolverine")
+        self.assertEqual(response.status_code,200)
+        self.assertEqual(len(response.context['page'].object_list),1)
+        self.assertTrue("Did you mean" not in response.content)
+        self.assertTrue("wolverine" in response.content)
+
     def test_empty_search(self):
         self.logout()
         response = self.client.get(reverse('aristotle:search')+"?q=")
