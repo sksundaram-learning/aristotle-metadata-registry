@@ -392,7 +392,7 @@ def search_describe_filters(search_form):
     Takes a search form and returns a user friendly
     textual description of the filters.
     """
-    
+
     out = ""
     if search_form.applied_filters:
         filter_texts = []
@@ -402,13 +402,13 @@ def search_describe_filters(search_form):
 
             if field.label is None:
                 continue
-            if hasattr(field,'choices'):
+            if hasattr(field, 'choices'):
                 preamble = _('%s is') % field.label
                 try:
                     choices = dict(field.choices)
                     opts = [choices[x] for x in val]
                 except KeyError:
-                    choices = dict([(str(k),v) for k,v in field.choices])
+                    choices = dict([(str(k), v) for k, v in field.choices])
                     opts = [choices[x] for x in val]
 
                 if len(opts) > 1:
@@ -423,5 +423,5 @@ def search_describe_filters(search_form):
                 filter_texts.append('%s %s' % (preamble, verbed))
         out = "; ".join([str(o) for o in filter_texts][:-1])
         out += _(' and %s') % str(filter_texts[-1])
-    
+
     return out
