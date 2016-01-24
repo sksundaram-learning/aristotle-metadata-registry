@@ -50,6 +50,7 @@
             {% block includes %}{% endblock %}
             {% endcomment %}
             {% include "aristotle_mdr/statuses.html" with statuses=item.current_statuses infoBox=True %}
+
             <dt>{% trans 'Last updated'%}</dt>
             <dd>
                 {% if request.user.is_superuser or request.user.is_staff and item.workgroup in request.user.workgroups %}

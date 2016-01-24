@@ -62,6 +62,54 @@ class UserHomePages(utils.LoggedInViewPages, TestCase):
         self.assertEqual(response.status_code,403)
         self.logout()
 
+
+    def test_user_can_see_how_to_publish_content_in_workgroups(self):
+        self.login_viewer()
+
+        from aristotle_mdr.models import WORKGROUP_OWNERSHIP
+        wg1 = models.Workgroup.objects.create(
+            name="Test WG",
+            ownership=WORKGROUP_OWNERSHIP.registry
+        )
+        wg1.giveRoleToUser('viewer',self.viewer)
+        
+        response = self.client.get(wg1.get_absolute_url())
+        self.assertEqual(response.status_code,200)
+
+        self.assertTrue(
+            "Content in this registry can be made visible by <em>any</em> "
+            "Registration Authority." in response.content
+        )
+        self.assertTrue(
+            "<em>locked</em> if its status is locked in" in response.content
+            and "<em>any</em> registration authority"  in response.content
+        )        
+        ra = models.RegistrationAuthority.objects.create(name="RA1")
+        wg2 = models.Workgroup.objects.create(
+            name="Test WG",
+            ownership=WORKGROUP_OWNERSHIP.authority
+        )
+        wg2.registrationAuthorities.add(ra)
+        wg2.save()
+
+        wg2.giveRoleToUser('viewer',self.viewer)
+        response = self.client.get(wg2.get_absolute_url())
+        self.assertEqual(response.status_code,200)
+        
+        self.assertTrue(
+            "<em>locked</em> if its status is:" in response.content
+        )
+        self.assertTrue(
+            "<li>%s or above in" % ra.get_locked_state_display() in response.content
+        )
+        self.assertTrue(
+            "<em>publically visible</em> if its status is:" in response.content
+        )
+        self.assertTrue(
+            "<li>%s or above in" % ra.get_public_state_display() in response.content
+        )
+
+
     def test_user_can_filter_and_sort_workgroups(self):
         self.login_viewer()
 

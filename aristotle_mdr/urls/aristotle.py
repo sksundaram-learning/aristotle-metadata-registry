@@ -83,7 +83,7 @@ urlpatterns = patterns(
     url(r'^account/registrartools/?$', views.user_pages.registrar_tools, name='userRegistrarTools'),
     url(r'^account/registrartools/readyforreview/?$', views.user_pages.review_list, name='userReadyForReview'),
 
-    url(r'^registrationauthority/(?P<iid>\d+)?/?$', views.registrationauthority, name='registrationAuthority'),
+    url(r'^registrationauthority/(?P<iid>\d+)?(?:\/(?P<name_slug>.+))?/?$', views.registrationauthority, name='registrationAuthority'),
     url(r'^registrationauthorities/?$', views.allRegistrationAuthorities, name='allRegistrationAuthorities'),
     url(r'^account/toggleFavourite/(?P<iid>\d+)/?$', views.toggleFavourite, name='toggleFavourite'),
 

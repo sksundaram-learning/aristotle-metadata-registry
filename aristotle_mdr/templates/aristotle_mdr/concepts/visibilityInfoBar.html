@@ -1,0 +1,99 @@
+{% load i18n aristotle_tags %}
+
+<div class="col-sm-8">
+{% if item.is_superseded  %}
+    <div id="progress" class=" alert alert-info">
+        {% trans 'This item has been superseded by the newer version,'%}
+        <em>{% include "aristotle_mdr/helpers/itemLink.html" with item=item.superseded_by %}</em>.
+    </div>
+{% elif item.is_retired %}
+    <div id="progress" class=" alert alert-warning">
+        {% trans 'This item has been retired and is not recommended for use by any registration authority.'%}
+    </div>
+{% elif item.is_public %}
+    {# split the if condition as if its public and not technical, we want nothing not one of the lower alerts #}
+    <div id="progress" class='alert alert-success hidden'>
+        {% trans 'This item is currently public.'%}
+    </div>
+{% elif item.is_locked %}
+    <div id="progress" class=" alert alert-info">
+        {% trans 'This item is currently under development.'%}
+    </div>
+{% else %}
+    <div id="progress" class=" alert alert-warning">
+        {% trans 'This item is under active development. Content may change frequently.'%}
+    </div>
+{% endif %}
+{% if user|in_workgroup:item.workgroup or user.is_superuser or user.profile.is_registrar %}
+    <div id="review" class=" alert alert-info">
+        <button id="togglerVisiblity" class="pull-right btn btn-xs btn-primary" type="button" data-toggle="collapse" data-target="#collapseMoreVisibilityInfo" aria-expanded="false" aria-controls="collapseMoreVisibilityInfo">
+          Show more
+        </button>
+        <strong>
+        {% if item.readyToReview %}
+            <i class="fa fa-flag"></i> {% trans 'This item has been marked as ready to review, but has not yet been registered in an authority.'%}
+        {% else %}
+            <i class="fa fa-flag-o"></i> {% trans 'The visibility of this item is still restricted to your current workgroup.'%}
+        {% endif %}
+        </strong>
+    
+        <div id="collapseMoreVisibilityInfo" class="collapse ">
+            {% if item|can_edit:request.user %}
+                {% blocktrans %}
+                <p>You can control the visibility of this item by indicating its review status.
+                If an item is marked "ready for review", registrars will be able to see this item and
+                begin the standardisation process according to their registration authority.
+                </p>
+                {% endblocktrans %}
+                <a class="btn btn-default" href="{% url 'aristotle:mark_ready_to_review' item.id %}"
+                    data-toggle="modal" data-target="#r2r_modals">
+                    {% if item.readyToReview %}
+                        <i class="fa fa-flag-o"></i> {% trans 'Remove ready for review flag' %}
+                    {% else %}
+                        <i class="fa fa-flag"></i> {% trans 'Flag as ready for review' %}
+                    {% endif %}
+                </a>
+            {% endif %}
+    
+                
+        {% if not item.is_public or not item.is_locked %}
+        <section class=well>
+            {% if item.workgroup.ownership == workgroup_ownership.registry %}
+                {% if not item.is_locked %}
+                <div>This item will become locked if its status is locked in
+                    <em>any</em> registration authority.
+                </div>
+                {% endif %}
+                {% if not item.is_public %}
+                <div>This item will become publically visible if its public is
+                    locked in <em>any</em> registration authority.
+                </div>
+                {% endif %}
+            {% elif item.workgroup.ownership == workgroup_ownership.authority %}
+                <div>This item will be:</div>
+                {% if not item.is_locked %}
+                <em>locked</em> if its status is:
+                <ul>
+                    {% for ra in item.workgroup.registrationAuthorities.all %}
+                        <li>{{ ra.get_locked_state_display }} or above in
+                        <a href="{{ ra.get_absolute_url }}">{{ ra }}</a></li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+                {% if not item.is_public %}
+                <em>publically visible</em> if its status is:
+                <ul>
+                    {% for ra in item.workgroup.registrationAuthorities.all %}
+                        <li>{{ ra.get_public_state_display }} or above in
+                        <a href="{{ ra.get_absolute_url }}">{{ ra }}</a></li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            {% endif %}
+        </section>
+        {% endif %}
+        </div>{# end of collapseMoreVisibilityInfo #}
+    </div>
+    {% bootstrap_modal "r2r_modals" %}
+{% endif %}
+</div>
