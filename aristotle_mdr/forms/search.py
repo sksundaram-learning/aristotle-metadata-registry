@@ -359,16 +359,16 @@ class PermissionSearchForm(TokenSearchForm):
                 self.check_spelling(sqs)
 
             if sqs.count() == 0:
-                if has_filter and self.cleaned_data['q']:
+                if sqs.count() == 0 and self.has_spelling_suggestions:
+                    self.auto_correct_spell_search = True
+                    self.cleaned_data['q'] = self.suggested_query
+                elif has_filter and self.cleaned_data['q']:
                     # If there are 0 results with a search term, and filters applied
                     # lets be nice and remove the filters and try again.
                     # There will be a big message on the search page that says what we did.
                     for f in filters:
                         self.cleaned_data[f] = None
                     self.auto_broaden_search = True
-                elif sqs.count() == 0 and self.has_spelling_suggestions:
-                    self.auto_correct_spell_search = True
-                    self.cleaned_data['q'] = self.suggested_query
                 # Re run the query with the updated details
                 sqs = self.search(repeat_search=True)
             # Only apply sorting on the first pass through
@@ -405,10 +405,11 @@ class PermissionSearchForm(TokenSearchForm):
                     else:
                         suggested_query.append(token)
                     suggestions.append((token, suggestion))
-            self.spelling_suggestions = suggestions
-            self.has_spelling_suggestions = has_suggestions
-            self.original_query = self.cleaned_data.get('q')
-            self.suggested_query = quote_plus(' '.join(suggested_query), safe="")
+            if optimal_query != original_query:
+                self.spelling_suggestions = suggestions
+                self.has_spelling_suggestions = has_suggestions
+                self.original_query = self.cleaned_data.get('q')
+                self.suggested_query = quote_plus(' '.join(suggested_query), safe="")
 
     def apply_date_filtering(self, sqs):
         modify_quick_date = self.cleaned_data['mq']
