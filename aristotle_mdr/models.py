@@ -21,7 +21,7 @@ import datetime
 from ckeditor.fields import RichTextField
 from aristotle_mdr import perms
 from aristotle_mdr import messages
-from aristotle_mdr.utils import url_slugify_concept, url_slugify_workgroup
+from aristotle_mdr.utils import url_slugify_concept, url_slugify_workgroup, url_slugify_registration_authoritity
 from aristotle_mdr import comparators
 
 from model_utils.fields import AutoLastModifiedField
@@ -209,6 +209,9 @@ class RegistrationAuthority(registryGroup):
 
     class Meta:
         verbose_name_plural = _("Registration Authorities")
+
+    def get_absolute_url(self):
+        return url_slugify_registration_authoritity(self)
 
     def can_view(self, user):
         return True
