@@ -15,28 +15,31 @@ from bootstrap3_datetime.widgets import DateTimePicker
 import aristotle_mdr.models as MDR
 from aristotle_mdr.widgets import BootstrapDropdownSelectMultiple, BootstrapDropdownIntelligentDate, BootstrapDropdownSelect
 
-QUICK_DATES = Choices (
-       ('','anytime',_('Any time')),
-       ('h','hour',_('Last hour')),
-       ('t','today',_('Today')),
-       ('w','week',_('This week')),
-       ('m','month',_('This month')),
-       ('y','year',_('This year')),
-       ('X','custom',_('Custom period')),
-     )
 
-SORT_OPTIONS = Choices (
-       ('n','natural',_('Ranking')),
-       ('ma','modified_ascending',_('Modified ascending')),
-       ('md','modified_descending',_('Modified descending')),
-       ('ma','created_ascending',_('Created ascending')),
-       ('md','created_descending',_('Created descending')),
-       ('aa','alphabetical',_('Alphabetical')),
-       ('s','state',_('Registration state')),
-     )
+QUICK_DATES = Choices(
+    ('', 'anytime', _('Any time')),
+    ('h', 'hour', _('Last hour')),
+    ('t', 'today', _('Today')),
+    ('w', 'week', _('This week')),
+    ('m', 'month', _('This month')),
+    ('y', 'year', _('This year')),
+    ('X', 'custom', _('Custom period')),
+)
+
+
+SORT_OPTIONS = Choices(
+    ('n', 'natural', _('Ranking')),
+    ('ma', 'modified_ascending', _('Modified ascending')),
+    ('md', 'modified_descending', _('Modified descending')),
+    ('ma', 'created_ascending', _('Created ascending')),
+    ('md', 'created_descending', _('Created descending')),
+    ('aa', 'alphabetical', _('Alphabetical')),
+    ('s', 'state', _('Registration state')),
+)
+
 
 # This function is not critical and are mathematically sound, so testing is not required.
-def time_delta(delta): # pragma: no cover
+def time_delta(delta):  # pragma: no cover
     """
     Datetimes are expensive to search on, so this function gives approximations of the time options.
     Absolute precision can be used using the custom ranges, but may be slower.
@@ -48,13 +51,13 @@ def time_delta(delta): # pragma: no cover
         this returns objects between 60 and 119 mintues ago.
         """
         n = datetime.datetime.now()
-        n = datetime.datetime.combine(n.date(),datetime.time(hour=n.time().hour))
+        n = datetime.datetime.combine(n.date(), datetime.time(hour=n.time().hour))
         return n - datetime.timedelta(hours=1)
     elif delta == QUICK_DATES.today:
         """
         Today returns everything today.
         """
-        return datetime.date.today() #- datetime.timedelta(days=1)
+        return datetime.date.today()  # - datetime.timedelta(days=1)
     elif delta == QUICK_DATES.week:
         """
         This week is pretty straight forward. SSReturns 7 days ago from the *beginning* of today.
@@ -72,7 +75,7 @@ def time_delta(delta): # pragma: no cover
         """
         t = datetime.date.today()
         last_month = datetime.date(day=1, month=t.month, year=t.year) - datetime.timedelta(days=1)
-        days = max(((t.day)//7)*7,1)
+        days = max(((t.day) // 7) * 7, 1)
         last_month = datetime.date(day=days, month=last_month.month, year=last_month.year)
         return datetime.date(day=1, month=last_month.month, year=last_month.year)
     elif delta == QUICK_DATES.year:
@@ -81,32 +84,41 @@ def time_delta(delta): # pragma: no cover
         So it searchs from the first of this month, last year.
         """
         t = datetime.date.today()
-        return datetime.date(day=1, month=t.month, year=(t.year-1))
+        return datetime.date(day=1, month=t.month, year=(t.year - 1))
     return None
-DELTA ={QUICK_DATES.hour : datetime.timedelta(hours=1),
-        QUICK_DATES.today : datetime.timedelta(days=1),
-        QUICK_DATES.week  : datetime.timedelta(days=7),
-        QUICK_DATES.month : datetime.timedelta(days=31),
-        QUICK_DATES.year  : datetime.timedelta(days=366)
-        }
+DELTA = {
+    QUICK_DATES.hour: datetime.timedelta(hours=1),
+    QUICK_DATES.today: datetime.timedelta(days=1),
+    QUICK_DATES.week: datetime.timedelta(days=7),
+    QUICK_DATES.month: datetime.timedelta(days=31),
+    QUICK_DATES.year: datetime.timedelta(days=366)
+}
+
+
+def first_letter(j):
+    """Extract the first letter of a string"""
+    # Defined as a method rather than using a lambda to keep a style guide happy.
+    return j[0]
 
 
 class EmptyPermissionSearchQuerySet(EmptySearchQuerySet):
     # Just like a Haystack EmptySearchQuerySet, this behaves like a PermissionsSearchQuerySet
     # But returns nothing all the time.
-    def apply_permission_checks(self,user=None,public_only=False,user_workgroups_only=False):
-        return self
-    def apply_registration_status_filters(self,*args,**kwargs):
+    def apply_permission_checks(self, user=None, public_only=False, user_workgroups_only=False):
         return self
 
+    def apply_registration_status_filters(self, *args, **kwargs):
+        return self
+
+
 class PermissionSearchQuerySet(SearchQuerySet):
-    def models(self,*mods):
+    def models(self, *mods):
         # We have to redefine this because Whoosh & Haystack don't play well with model filtering
         from haystack.utils import get_model_ct
         mods = [get_model_ct(m) for m in mods]
         return self.filter(django_ct__in=mods)
 
-    def apply_permission_checks(self,user=None,public_only=False,user_workgroups_only=False):
+    def apply_permission_checks(self, user=None, public_only=False, user_workgroups_only=False):
         sqs = self
         q = SQ(is_public=True)
         if user is None or user.is_anonymous():
@@ -115,12 +127,12 @@ class PermissionSearchQuerySet(SearchQuerySet):
             return sqs
 
         if user.is_superuser:
-              q = SQ() # Super-users can see everything
+            q = SQ()  # Super-users can see everything
         else:
             # Non-registrars can only see public things or things in their workgroup
             # if they have no workgroups they won't see anything extra
             if user.profile.workgroups.count() > 0:
-                #for w in user.profile.workgroups.all():
+                # for w in user.profile.workgroups.all():
                 #    q |= SQ(workgroup=str(w.id))
                 q |= SQ(workgroup__in=[int(w.id) for w in user.profile.workgroups.all()])
             if user.profile.is_registrar:
@@ -133,7 +145,7 @@ class PermissionSearchQuerySet(SearchQuerySet):
         sqs = sqs.filter(q)
         return sqs
 
-    def apply_registration_status_filters(self,states=[],ras=[]):
+    def apply_registration_status_filters(self, states=[], ras=[]):
         sqs = self
         if states and not ras:
             states = [MDR.STATES[int(s)] for s in states]
@@ -144,11 +156,13 @@ class PermissionSearchQuerySet(SearchQuerySet):
         elif states and ras:
             # If we have both states and ras, merge them so we only search for
             # items with those statuses in those ras
-            terms = ["%s___%s"%(str(r),str(s)) for r in ras for s in states]
+            terms = ["%s___%s" % (str(r), str(s)) for r in ras for s in states]
             sqs = sqs.filter(ra_statuses__in=terms)
         return sqs
 
+
 class TokenSearchForm(SearchForm):
+
     def prepare_tokens(self):
         try:
             query = self.cleaned_data.get('q')
@@ -160,22 +174,21 @@ class TokenSearchForm(SearchForm):
         token_models = []
         for word in query.split(" "):
             if ":" in word:
-                opt,arg = word.split(":",1)
+                opt, arg = word.split(":", 1)
                 if opt in opts:
                     kwargs[str(opt)]=arg
                 elif opt == "type":
                     # we'll allow these through and assume they meant content type
                     from django.conf import settings
-                    aristotle_apps = getattr(settings, 'ARISTOTLE_SETTINGS', {}).get('CONTENT_EXTENSIONS',[])
+                    aristotle_apps = getattr(settings, 'ARISTOTLE_SETTINGS', {}).get('CONTENT_EXTENSIONS', [])
                     aristotle_apps += ["aristotle_mdr"]
 
                     from django.contrib.contenttypes.models import ContentType
-                    arg = arg.lower().replace('_','').replace('-','')
+                    arg = arg.lower().replace('_', '').replace('-', '')
                     mods = ContentType.objects.filter(app_label__in=aristotle_apps).all()
                     for i in mods:
-                        first_letter = lambda j: j[0]
-                        if hasattr(i.model_class(),'get_verbose_name'):
-                            model_short_code = "".join(map(first_letter,i.model_class()._meta.verbose_name.split(" "))).lower()
+                        if hasattr(i.model_class(), 'get_verbose_name'):
+                            model_short_code = "".join(map(first_letter, i.model_class()._meta.verbose_name.split(" "))).lower()
                             if arg == model_short_code:
                                 token_models.append(i.model_class())
                         if arg == i.model:
@@ -198,7 +211,7 @@ class TokenSearchForm(SearchForm):
             return self.no_query_found()
 
         sqs = self.searchqueryset.auto_query(self.query_text)
-        if hasattr(self,'models'):
+        if hasattr(self, 'models'):
             sqs = sqs.models(*self.models)
         if kwargs:
             sqs = sqs.filter(**kwargs)
@@ -211,13 +224,14 @@ class TokenSearchForm(SearchForm):
     def no_query_found(self):
         return EmptyPermissionSearchQuerySet()
 
-datePickerOptions={
+datePickerOptions = {
     "format": "YYYY-MM-DD",
     "pickTime": False,
     "pickDate": True,
-    "defaultDate":"",
+    "defaultDate": "",
     "useCurrent": False,
 }
+
 
 class PermissionSearchForm(TokenSearchForm):
     """
@@ -227,42 +241,72 @@ class PermissionSearchForm(TokenSearchForm):
 
         TODO: This might not scale well, so it may need to be looked at in production.
     """
-    mq=forms.ChoiceField(required=False,initial=QUICK_DATES.anytime,
-        choices=QUICK_DATES,widget=BootstrapDropdownIntelligentDate)
-    mds = forms.DateField(required=False,label="Modified after date",
-        widget=DateTimePicker(options=datePickerOptions),)
-    mde = forms.DateField(required=False,label="Modified before date",
-        widget=DateTimePicker(options=datePickerOptions),)
-
-    cq=forms.ChoiceField(required=False,initial=QUICK_DATES.anytime,
-        choices=QUICK_DATES,widget=BootstrapDropdownIntelligentDate)
-    cds = forms.DateField(required=False,label="Created after date",
-        widget=DateTimePicker(options=datePickerOptions),)
-    cde = forms.DateField(required=False,label="Created before date",
-        widget=DateTimePicker(options=datePickerOptions),)
+    mq=forms.ChoiceField(
+        required=False,
+        initial=QUICK_DATES.anytime,
+        choices=QUICK_DATES,
+        widget=BootstrapDropdownIntelligentDate
+    )
+    mds = forms.DateField(
+        required=False,
+        label="Modified after date",
+        widget=DateTimePicker(options=datePickerOptions)
+    )
+    mde = forms.DateField(
+        required=False,
+        label="Modified before date",
+        widget=DateTimePicker(options=datePickerOptions)
+    )
+    cq=forms.ChoiceField(
+        required=False,
+        initial=QUICK_DATES.anytime,
+        choices=QUICK_DATES,
+        widget=BootstrapDropdownIntelligentDate
+    )
+    cds = forms.DateField(
+        required=False,
+        label="Created after date",
+        widget=DateTimePicker(options=datePickerOptions)
+    )
+    cde = forms.DateField(
+        required=False,
+        label="Created before date",
+        widget=DateTimePicker(options=datePickerOptions)
+    )
 
     # Use short singular names
-    #ras = [(ra.id, ra.name) for ra in MDR.RegistrationAuthority.objects.all()]
-    ra = forms.MultipleChoiceField(required=False,label=_("Registration authority"),
-        choices=[],widget=BootstrapDropdownSelectMultiple)
+    # ras = [(ra.id, ra.name) for ra in MDR.RegistrationAuthority.objects.all()]
+    ra = forms.MultipleChoiceField(
+        required=False, label=_("Registration authority"),
+        choices=[], widget=BootstrapDropdownSelectMultiple
+    )
 
-    sort = forms.ChoiceField(required=False,initial=SORT_OPTIONS.natural,
-        choices=SORT_OPTIONS,widget=BootstrapDropdownSelect)
+    sort = forms.ChoiceField(
+        required=False, initial=SORT_OPTIONS.natural,
+        choices=SORT_OPTIONS, widget=BootstrapDropdownSelect
+    )
 
-    state = forms.MultipleChoiceField(required=False,label=_("Registration status"),
-        choices=MDR.STATES,widget=BootstrapDropdownSelectMultiple)
-    public_only = forms.BooleanField(required=False,
+    state = forms.MultipleChoiceField(
+        required=False,
+        label=_("Registration status"),
+        choices=MDR.STATES,
+        widget=BootstrapDropdownSelectMultiple
+    )
+    public_only = forms.BooleanField(
+        required=False,
         label="Only show public items"
     )
-    myWorkgroups_only = forms.BooleanField(required=False,
+    myWorkgroups_only = forms.BooleanField(
+        required=False,
         label="Only show items in my workgroups"
     )
-    models = forms.MultipleChoiceField(choices=model_choices(),
-                required=False, label=_('Item type'),
-                widget=BootstrapDropdownSelectMultiple
-                )
+    models = forms.MultipleChoiceField(
+        choices=model_choices(),
+        required=False, label=_('Item type'),
+        widget=BootstrapDropdownSelectMultiple
+    )
 
-    def __init__(self,*args, **kwargs):
+    def __init__(self, *args, **kwargs):
         kwargs['searchqueryset'] = PermissionSearchQuerySet()
         super(PermissionSearchForm, self).__init__(*args, **kwargs)
 
@@ -273,14 +317,13 @@ class PermissionSearchForm(TokenSearchForm):
         """Return an alphabetical list of model classes in the index."""
         search_models = []
 
-        if self.is_valid():
+        if self.is_valid() and self.cleaned_data['models']:
             for model in self.cleaned_data['models']:
                 search_models.append(models.get_model(*model.split('.')))
 
         return search_models
 
-
-    def search(self,repeat_search=False):
+    def search(self, repeat_search=False):
         # First, store the SearchQuerySet received from other processing.
         sqs = super(PermissionSearchForm, self).search()
         sqs = sqs.models(*self.get_models())
@@ -289,9 +332,10 @@ class PermissionSearchForm(TokenSearchForm):
         if not self.is_valid():
             return self.no_query_found()
 
-        filters = "mq cq cds cde mds mde state ra".split()
-        has_filter = any([self.cleaned_data.get(f,False) for f in filters])
-        if has_filter and not self.query_text: # and not self.kwargs:
+        filters = "models mq cq cds cde mds mde state ra".split()
+        self.applied_filters = [f for f in filters if self.cleaned_data.get(f, False)]
+        has_filter = len(self.applied_filters) > 0
+        if has_filter and not self.query_text:  # and not self.kwargs:
             # If there is a filter, but no query then we'll force some results.
             sqs = self.searchqueryset.order_by('-modified')
             self.filter_search = True
@@ -299,13 +343,14 @@ class PermissionSearchForm(TokenSearchForm):
 
         states = self.cleaned_data['state']
         ras = self.cleaned_data['ra']
-        sqs = sqs.apply_registration_status_filters(states,ras)
+        sqs = sqs.apply_registration_status_filters(states, ras)
 
         sqs = self.apply_date_filtering(sqs)
-        sqs = sqs.apply_permission_checks(  user=self.request.user,
-                                            public_only=self.cleaned_data['public_only'],
-                                            user_workgroups_only=self.cleaned_data['myWorkgroups_only']
-                                        )
+        sqs = sqs.apply_permission_checks(
+            user=self.request.user,
+            public_only=self.cleaned_data['public_only'],
+            user_workgroups_only=self.cleaned_data['myWorkgroups_only']
+        )
 
         self.has_spelling_suggestions = False
         if not self.repeat_search:
@@ -331,23 +376,23 @@ class PermissionSearchForm(TokenSearchForm):
 
         return sqs
 
-    def check_spelling(self,sqs):
+    def check_spelling(self, sqs):
         if self.query_text:
-            original_query = self.cleaned_data.get('q',"")
+            original_query = self.cleaned_data.get('q', "")
 
             from urllib import quote_plus
             suggestions = []
             has_suggestions = False
             suggested_query = []
 
-            #lets assume the words are ordered in importance
+            # lets assume the words are ordered in importance
             # So we suggest words in order
             optimal_query = original_query
-            for token in self.cleaned_data.get('q',"").split(" "):
-                if token: # remove blanks
+            for token in self.cleaned_data.get('q', "").split(" "):
+                if token:  # remove blanks
                     suggestion = self.searchqueryset.spelling_suggestion(token)
                     if suggestion:
-                        test_query = optimal_query.replace(token,suggestion)
+                        test_query = optimal_query.replace(token, suggestion)
                         # Haystack can *over correct* so we'll do a quick search with the
                         # suggested spelling to compare words against
                         try:
@@ -359,20 +404,19 @@ class PermissionSearchForm(TokenSearchForm):
                             suggestion = None
                     else:
                         suggested_query.append(token)
-                    suggestions.append((token,suggestion))
+                    suggestions.append((token, suggestion))
             self.spelling_suggestions = suggestions
             self.has_spelling_suggestions = has_suggestions
             self.original_query = self.cleaned_data.get('q')
-            self.suggested_query = quote_plus(' '.join(suggested_query),safe="")
+            self.suggested_query = quote_plus(' '.join(suggested_query), safe="")
 
-
-    def apply_date_filtering(self,sqs):
+    def apply_date_filtering(self, sqs):
         modify_quick_date = self.cleaned_data['mq']
         create_quick_date = self.cleaned_data['cq']
         create_date_start = self.cleaned_data['cds']
-        create_date_end   = self.cleaned_data['cde']
+        create_date_end = self.cleaned_data['cde']
         modify_date_start = self.cleaned_data['mds']
-        modify_date_end   = self.cleaned_data['mde']
+        modify_date_end = self.cleaned_data['mde']
 
         """
         Modified filtering is really hard to do formal testing for as the modified
@@ -381,11 +425,11 @@ class PermissionSearchForm(TokenSearchForm):
         However, this is the exact same process as creation date (which we can alter),
         so if creation filtering is working, modified filtering should work too.
         """
-        if modify_quick_date and modify_quick_date is not QUICK_DATES.anytime: # pragma: no cover
+        if modify_quick_date and modify_quick_date is not QUICK_DATES.anytime:  # pragma: no cover
             delta = time_delta(modify_quick_date)
             if delta is not None:
                 sqs = sqs.filter(modifed__gte=delta)
-        elif modify_date_start or modify_date_end: # pragma: no cover
+        elif modify_date_start or modify_date_end:  # pragma: no cover
             if modify_date_start:
                 sqs = sqs.filter(modifed__gte=modify_date_start)
             if modify_date_end:
@@ -403,8 +447,8 @@ class PermissionSearchForm(TokenSearchForm):
 
         return sqs
 
-    def apply_sorting(self,sqs): #pragma: no cover, no security issues, standard Haystack methods, so already tested.
-        sort_order  = self.cleaned_data['sort']
+    def apply_sorting(self, sqs):  # pragma: no cover, no security issues, standard Haystack methods, so already tested.
+        sort_order = self.cleaned_data['sort']
         if sort_order == SORT_OPTIONS.modified_ascending:
             sqs = sqs.order_by('-modified')
         elif sort_order == SORT_OPTIONS.modified_descending:

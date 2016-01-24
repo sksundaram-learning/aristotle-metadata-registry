@@ -24,18 +24,12 @@ associated with all of these actions.
 
 Likewise, creating relationships to pre-existing items only requires the correct
 application of `Django relationships <https://docs.djangoproject.com/en/stable/topics/db/examples/>`_
-such as a ``ForeignKey`` or ``ManyToManyField``, like so::
+such as a ``ForeignKey`` or ``ManyToManyField``, like so:
 
-    import aristotle_mdr
-    from django.db import models
-
-    class Question(aristotle_mdr.models.concept):
-        questionText = models.TextField()
-        responseLength = models.PositiveIntegerField()
-        collectedDataElement = models.ForeignKey(
-                aristotle_mdr.models.DataElement,
-                related_name="questions",
-                null=True,blank=True)
+.. literalinclude:: /../aristotle_mdr/tests/apps/extension_test/models.py
+    :caption: mymodule.models.Question
+    :start-after: # Start of the question model
+    :end-before: # End of the question model
 
 This code, extends our Question model from the previous example and adds an optional
 link to the ISO 11179 Data Element model managed by Aristotle-MDR and even adds a new property
@@ -44,6 +38,36 @@ that are used to collect information for that Data Element. Its also possible to
 :doc:`include content from objects across relations on other pages </extensions/including_extra_content>`
 without having to alter the templates of other content types. For example, this would allow
 pertinant information about questions to appear on data elements, and vice versa.
+
+Customising the edit page for a new type
+----------------------------------------
+
+To maintain consistancy edit pages have a similar look and feel across all
+concept types, but some customisation is possible. If one or more fields should
+be hidden on an edit page, they can be specified in the ``edit_page_excludes``
+property of the new concept class.
+
+An example of this is when an item specifies a ManyToManyField that has special
+attributes. This can be hidden on the default edit page like so::
+
+    class Questionnaire(aristotle_mdr.models.concept):
+        edit_page_excludes = ['questions']
+        questions = models.ManyToManyField(
+                Question,
+                related_name="questionnaires",
+                null=True,blank=True)
+
+Including additional items when downloading a custom concept type
+-----------------------------------------------------------------
+
+.. automethod:: aristotle_mdr.models.concept.get_download_items
+
+For example::
+
+.. literalinclude:: /../aristotle_mdr/tests/apps/extension_test/models.py
+    :caption: mymodule.models.Questionnaire.get_download_items
+    :start-after: # Start of get_download_items
+    :end-before: # End of get_download_items
 
 Caveats: ``concept`` versus ``_concept``
 ----------------------------------------
@@ -102,7 +126,7 @@ the best case a very cheap Python property is called and the item is returned st
 
 
 Setting up search, admin pages and autocompletes for new items types
-----------------------------------------
+--------------------------------------------------------------------
 
 The easiest way to configure an item for searching and editing within the
 django-admin app is using the ``aristotle_mdr.register.register_concept``
@@ -281,6 +305,7 @@ can arise when extending from non-abstract classes:
 
     Failure to include this may lead to broken code or pages that expose private items.
 
+
 Creating ``unmanagedContent`` types
 -----------------------------------
 
@@ -303,6 +328,18 @@ from this class can be done like so::
 
 For example, in Aristotle-MDR "Measure" is an ``unmanagedObject`` type, that is used
 to give extra context to `UnitOfMeasure` objects.
+
+
+Including documentation in new content types
+--------------------------------------------
+To make deploying new content easier, and encourage better documentation, Aristotle
+reuses help content built into the Django Web framework. When producing dynamic
+documentation, Aristotle uses the Python docstring of a ``concept``-inheriting class
+and the field level `help_text` to produce documentation.
+
+This can be seen on in the concept editor, administrator pages, item comparator 
+and can be accessed in html pages using the ``doc`` template tag in the ``aristotle_tags``
+module.
 
 
 A complete example of an Aristotle Extension

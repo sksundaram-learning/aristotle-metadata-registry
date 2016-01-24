@@ -1,6 +1,7 @@
 #Uncomment lines as required
 
--e git+git://github.com/aristotle-mdr/aristotle-metadata-registry#egg=django-aristotle-metadata-registry
+aristotle-metadata-registry>=1.1
+
 #!aristotle_dse! -e git+git://github.com/aristotle-mdr/aristotle-dataset-extensions#egg=aristotle-dse
 #!aristotle_glossary! -e git+git://github.com/aristotle-mdr/aristotle-glossary#egg=aristotle_glossary
 #!aristotle_ddi_utils! -e git+git://github.com/aristotle-mdr/aristotle-ddi-utils#egg=aristotle_ddi_utils

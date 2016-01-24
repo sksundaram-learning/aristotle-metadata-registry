@@ -109,5 +109,11 @@
         {% endif %}
     </li>
     {% endif %}
+    <li role="presentation" class="nav-divider"></li>
+    {% for addon in config.DASHBOARD_ADDONS %}
+        {% with addon|add:'/dashboard/sidebar.html' as template %}
+            {% include template %}
+        {% endwith %}
+    {% endfor %}
 </ul>
 

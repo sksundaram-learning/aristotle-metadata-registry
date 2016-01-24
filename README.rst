@@ -1,6 +1,8 @@
 =====
-Aristotle MetaData Registry (Aristotle-MDR)
+Aristotle Metadata Registry (Aristotle-MDR)
 =====
+
+|aristotle-logo|
 
 |build-status| |docs| |coveralls| |demoserver| |codeclimate|
 
@@ -65,7 +67,7 @@ Quick start
 
 For a complete example of how to successfully include Aristotle, see the `tests/settings.py` settings file.
 
-**A live Aristotle-MDR instance is available for review on PythonAnywhere at:** ``http://aristotle.pythonanywhere.com/``.
+**A live Aristotle-MDR instance is available for review on PythonAnywhere at:** `http://aristotle.pythonanywhere.com/ <http://aristotle.pythonanywhere.com/>`_.
 Be aware, this is an active development instance and may sporadically be unavailble.
 
 Screenshots for users
@@ -144,4 +146,8 @@ About the badges (plus some extras):
 
 .. |itemeditsample| image:: http://i.imgur.com/dAEboRg.png
     :alt: Edit screen for a Data Element
+    :scale: 100%
+
+.. |aristotle-logo| image:: https://raw.githubusercontent.com/LegoStormtroopr/aristotle-metadata-registry/develop/aristotle_mdr/static/aristotle_mdr/images/aristotle.png
+    :alt: Aristotle-MDR Logo
     :scale: 100%

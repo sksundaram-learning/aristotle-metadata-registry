@@ -9,26 +9,28 @@ import logging
 logger = logging.getLogger(__name__)
 logger.debug("Logging started for " + __name__)
 
+
 class ConceptFallbackCharField(indexes.CharField):
     def prepare_template(self, obj):
         try:
-            return super(ConceptFallbackCharField,self).prepare_template(obj)
+            return super(ConceptFallbackCharField, self).prepare_template(obj)
         except TemplateDoesNotExist:
 
-            logger.debug("No search template found for %s, uning untyped fallback."%obj)
+            logger.debug("No search template found for %s, uning untyped fallback." % obj)
 
             self.template_name = "search/indexes/aristotle_mdr/untyped_concept_text.txt"
-            return super(ConceptFallbackCharField,self).prepare_template(obj)
+            return super(ConceptFallbackCharField, self).prepare_template(obj)
+
 
 class baseObjectIndex(indexes.SearchIndex):
     text = ConceptFallbackCharField(document=True, use_template=True)
     modified = indexes.DateTimeField(model_attr='modified')
     created = indexes.DateTimeField(model_attr='created')
-    name = indexes.CharField(model_attr='name',boost=1)
-    #access = indexes.MultiValueField()
+    name = indexes.CharField(model_attr='name', boost=1)
+    # access = indexes.MultiValueField()
 
     def get_model(self):
-        raise NotImplementedError #pragma: no cover -- This should always be overridden
+        raise NotImplementedError  # pragma: no cover -- This should always be overridden
 
     # From http://unfoldthat.com/2011/05/05/search-with-row-level-permissions.html
     def index_queryset(self, using=None):
@@ -36,14 +38,14 @@ class baseObjectIndex(indexes.SearchIndex):
 
         return self.get_model().objects.filter(modified__lte=timezone.now())
 
-    #def have_access(self, obj):
+    # def have_access(self, obj):
     #    for user in obj.viewers.users():
     #        yield user
 
     #    for group in obj.viewers.groups():
     #        yield group
 
-    #def prepare_access(self, obj):
+    # def prepare_access(self, obj):
     #    def _access_iter(obj):
     #        have_access = self.have_access(obj)
     #
@@ -55,6 +57,7 @@ class baseObjectIndex(indexes.SearchIndex):
     #
     #    return list(_access_iter(obj))
 
+
 class conceptIndex(baseObjectIndex):
     statuses = indexes.MultiValueField()
     highest_state = indexes.IntegerField()
@@ -64,7 +67,7 @@ class conceptIndex(baseObjectIndex):
     is_public = indexes.BooleanField()
     version = indexes.CharField(model_attr="version")
 
-    def prepare_registrationAuthorities (self, obj):
+    def prepare_registrationAuthorities(self, obj):
         ras = [str(s.registrationAuthority.id) for s in obj.statuses.all()]
         if not ras and obj.readyToReview:
             # We fake a registration authority only if an item is "ready to review".
@@ -73,10 +76,10 @@ class conceptIndex(baseObjectIndex):
             ras = [str(r.id) for r in obj.workgroup.registrationAuthorities.all()]
         return ras
 
-    def prepare_is_public(self,obj):
+    def prepare_is_public(self, obj):
         return obj.is_public()
 
-    def prepare_workgroup(self,obj):
+    def prepare_workgroup(self, obj):
         return int(obj.workgroup.id)
 
     def prepare_statuses(self, obj):
@@ -86,7 +89,7 @@ class conceptIndex(baseObjectIndex):
 
     def prepare_highest_state(self, obj):
         # Include -99, so "unregistered" items get a value
-        state = max([int(s.state) for s in obj.statuses.all()]+[-99])
+        state = max([int(s.state) for s in obj.statuses.all()] + [-99])
         """
         We don't want retired or superseded ranking higher than standards during search
         as these are no longer "fit for purpose" so we'll place them below other
@@ -98,9 +101,9 @@ class conceptIndex(baseObjectIndex):
             state = -9
         return state
 
-
     def prepare_ra_statuses(self, obj):
         # This allows us to check a registration authority and a state simultaneously
-        states = ["%s___%s"%(str(s.registrationAuthority.id),str(s.state))
-                    for s in obj.statuses.all()]
+        states = [
+            "%s___%s" % (str(s.registrationAuthority.id), str(s.state)) for s in obj.statuses.all()
+        ]
         return states

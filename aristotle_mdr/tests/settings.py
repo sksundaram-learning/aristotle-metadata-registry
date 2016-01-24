@@ -1,10 +1,15 @@
-import os, sys
+import os
+import sys
 from aristotle_mdr.required_settings import *
+
 BASE = os.path.dirname(os.path.dirname(__file__))
 
-sys.path.insert(1,BASE)
-sys.path.insert(1,os.path.join(BASE, "tests"))
-sys.path.insert(1,os.path.join(BASE, "tests/apps"))
+sys.path.insert(1, BASE)
+sys.path.insert(1, os.path.join(BASE, "tests"))
+sys.path.insert(1, os.path.join(BASE, "tests/apps"))
+TEMPLATE_DIRS = [
+    os.path.join(BASE_DIR, 'tests/apps/bulk_actions_test/templates')
+]
 
 SECRET_KEY = 'inara+vtkprm7@0(fsc$+grbz9-s+tmo9d)e#k(9uf8m281&$7xhdkjr'
 SOUTH_TESTS_MIGRATE = True
@@ -17,37 +22,38 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': ':memory:',
-   }
+    }
 }
 
 if 'TRAVIS' in os.environ:
     if os.environ.get('DB') == 'sqlitefile':
         print("Running TRAVIS-CI test-suite with file-based SQLite")
         DATABASES['default'] = {
-            'ENGINE':   'django.db.backends.sqlite3',
-            'NAME':     'test_database',
-            'USER':     '',
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': 'test_database',
+            'USER': '',
             'PASSWORD': '',
-            'HOST':     '',
-            'PORT':     '',
+            'HOST': '',
+            'PORT': '',
         }
     elif os.environ.get('DB') == 'postgres':
         print("Running TRAVIS-CI test-suite with POSTGRESQL")
         DATABASES['default'] = {
-            'ENGINE':   'django.db.backends.postgresql_psycopg2',
-            'NAME':     'aristotle_test_db',
-            'USER':     'postgres',
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': 'aristotle_test_db',
+            'USER': 'postgres',
             'PASSWORD': '',
-            'HOST':     'localhost',
-            'PORT':     '',
+            'HOST': 'localhost',
+            'PORT': '',
         }
-    #elif os.eviron.get('DB') == 'mysql':
+    # elif os.eviron.get('DB') == 'mysql':
     elif os.environ.get('DB') == 'sqlitememory':
         print("Running TRAVIS-CI test-suite with memory-based SQLite")
         DATABASES['default'] = {
             'ENGINE': 'django.db.backends.sqlite3',
             'NAME': ':memory:',
-       }
+        }
+
 
 class DisableMigrations(object):
 
@@ -60,7 +66,7 @@ class DisableMigrations(object):
 MIGRATION_MODULES = DisableMigrations()
 
 INSTALLED_APPS = (
-    #The good stuff
+    # The good stuff
     'templatetags',
     'extension_test',
     'text_download_test',
@@ -70,7 +76,7 @@ HAYSTACK_CONNECTIONS = {
     'default': {
         'ENGINE': 'haystack.backends.whoosh_backend.WhooshEngine',
         'PATH': os.path.join(os.path.dirname(__file__), 'aristotle_mdr/tests/whoosh_index'),
-        'INCLUDE_SPELLING':True,
+        'INCLUDE_SPELLING': True,
     },
 }
 
@@ -81,8 +87,12 @@ PASSWORD_HASHERS = (
 )
 
 ARISTOTLE_SETTINGS['SEPARATORS']['DataElementConcept'] = '--'
-ARISTOTLE_SETTINGS['CONTENT_EXTENSIONS'] = ARISTOTLE_SETTINGS['CONTENT_EXTENSIONS'] +['extension_test']
-ARISTOTLE_DOWNLOADS = ARISTOTLE_DOWNLOADS +[
-    ('txt','Text','fa-file-pdf-o','text_download_test'),
-    ]
+ARISTOTLE_SETTINGS['CONTENT_EXTENSIONS'] = ARISTOTLE_SETTINGS['CONTENT_EXTENSIONS'] + ['extension_test']
+ARISTOTLE_DOWNLOADS = ARISTOTLE_DOWNLOADS + [
+    ('txt', 'Text', 'fa-file-pdf-o', 'text_download_test'),
+]
+ARISTOTLE_SETTINGS['BULK_ACTIONS'].update({
+    'delete': 'bulk_actions_test.actions.StaffDeleteActionForm',
+    'incomplete': 'bulk_actions_test.actions.IncompleteActionForm',
+})
 ROOT_URLCONF = 'extension_test.urls'
