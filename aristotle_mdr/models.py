@@ -1240,7 +1240,7 @@ class PossumProfile(models.Model):
     def registrarAuthorities(self):
         "NOTE: This is a list of Authorities the user is a *registrar* in!."
         if self.user.is_superuser:
-                return RegistrationAuthority.objects.all()
+            return RegistrationAuthority.objects.all()
         else:
             return self.user.registrar_in.all()
 
