@@ -62,8 +62,8 @@ class conceptIndex(baseObjectIndex):
     statuses = indexes.MultiValueField()
     highest_state = indexes.IntegerField()
     ra_statuses = indexes.MultiValueField()
-    registrationAuthorities = indexes.MultiValueField()
-    workgroup = indexes.IntegerField()
+    registrationAuthorities = indexes.MultiValueField(faceted=True)
+    workgroup = indexes.IntegerField(faceted=True)
     is_public = indexes.BooleanField()
     version = indexes.CharField(model_attr="version")
 

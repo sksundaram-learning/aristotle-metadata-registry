@@ -205,7 +205,13 @@
                 {% search_describe_filters form %}
             </div>
             {% endif %}
-        <div class="col-md-10 col-md-offset-1">
+        <div class="col-md-2">
+            <h3>Facets</h3>
+            <pre>
+                {{sqs.facet_counts }}
+            </pre>
+        </div>
+        <div class="col-md-10">
             {% if form.auto_broaden_search %}
                 <div class="alert alert-warning" role="alert">
                     <p>There were no results for "{{ form.q.value }}" with your requested filters.

@@ -7,7 +7,7 @@ from model_utils import Choices
 
 from haystack import connections
 from haystack.constants import DEFAULT_ALIAS
-from haystack.forms import SearchForm, model_choices
+from haystack.forms import SearchForm, FacetedSearchForm, model_choices
 from haystack.query import EmptySearchQuerySet, SearchQuerySet, SQ
 
 from bootstrap3_datetime.widgets import DateTimePicker
@@ -161,7 +161,7 @@ class PermissionSearchQuerySet(SearchQuerySet):
         return sqs
 
 
-class TokenSearchForm(SearchForm):
+class TokenSearchForm(FacetedSearchForm):
 
     def prepare_tokens(self):
         try:
@@ -374,6 +374,10 @@ class PermissionSearchForm(TokenSearchForm):
             # Only apply sorting on the first pass through
             sqs = self.apply_sorting(sqs)
 
+        
+        sqs = SearchQuerySet().facet('author', sort='index', )
+        sqs = sqs.facet('workgroup')
+        print sqs.facet_counts()
         return sqs
 
     def check_spelling(self, sqs):
