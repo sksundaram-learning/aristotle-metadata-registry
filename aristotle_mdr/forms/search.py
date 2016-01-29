@@ -148,7 +148,7 @@ class PermissionSearchQuerySet(SearchQuerySet):
     def apply_registration_status_filters(self, states=[], ras=[]):
         sqs = self
         if states and not ras:
-            states = [MDR.STATES[int(s)] for s in states]
+            states = [int(s) for s in states]
             sqs = sqs.filter(statuses__in=states)
         elif ras and not states:
             ras = [ra for ra in ras]
@@ -211,6 +211,7 @@ class TokenSearchForm(FacetedSearchForm):
             return self.no_query_found()
 
         sqs = self.searchqueryset.auto_query(self.query_text)
+        #sqs = super(TokenSearchForm, self).search()
         if hasattr(self, 'models'):
             sqs = sqs.models(*self.models)
         if kwargs:
@@ -374,10 +375,22 @@ class PermissionSearchForm(TokenSearchForm):
             # Only apply sorting on the first pass through
             sqs = self.apply_sorting(sqs)
 
-        
-        sqs = SearchQuerySet().facet('author', sort='index', )
-        sqs = sqs.facet('workgroup')
-        print sqs.facet_counts()
+        filters_to_facets = {
+            'ra': 'registrationAuthorities',
+            'models': 'facet_model_ct',
+            'state': 'statuses',
+            'wg': 'workgroup',
+            'res':'restriction_exact',
+        }
+        for _filter, facet in filters_to_facets.items():
+            if _filter not in self.applied_filters:
+                sqs = sqs.facet(facet, sort='count')
+
+        self.facets = sqs.facet_counts()
+        for facet,counts in self.facets['fields'].items():
+            # Return the 5 top results for each facet in order of number of results.
+            self.facets['fields'][facet] = sorted(counts, key=lambda x: -x[1])[:5]
+
         return sqs
 
     def check_spelling(self, sqs):
