@@ -259,7 +259,7 @@
                 {% for f in form.facets.fields.restriction %}
                     <dd>
                         <a href="{{ request.get_full_path }}&amp;res={{ f.0|urlencode }}">
-                            {{ f.0|restriction_to_text }}</a>{{f.o}}-
+                            {{ f.0|restriction_to_text }}</a>{{f.o}}
                         ({{ f.1 }})
                     </dd>
                 {% endfor %}
