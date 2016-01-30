@@ -28,7 +28,7 @@ from aristotle_mdr import models as MDR
 from aristotle_mdr.utils import concept_to_clone_dict
 from aristotle_mdr import exceptions as registry_exceptions
 
-from haystack.views import SearchView, FacetedSearchView 
+from haystack.views import SearchView, FacetedSearchView
 
 import logging
 

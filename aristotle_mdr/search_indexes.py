@@ -10,11 +10,13 @@ logger = logging.getLogger(__name__)
 logger.debug("Logging started for " + __name__)
 
 RESTRICTION = {
-    0 : 'Public',
-    1 : 'Locked',
-    2 : 'Unlocked',
+    0: 'Public',
+    1: 'Locked',
+    2: 'Unlocked',
 }
-RESTRICTION.update([(v,k) for k,v in RESTRICTION.items()])
+# reverse the dictionary to make two-way look ups easier
+RESTRICTION.update([(v, k) for k, v in RESTRICTION.items()])
+
 
 class ConceptFallbackCharField(indexes.CharField):
     def prepare_template(self, obj):
@@ -94,7 +96,7 @@ class conceptIndex(baseObjectIndex):
         # We don't remove duplicates as it should mean the more standard it is the higher it will rank
         states = [int(s.state) for s in obj.statuses.all()]
         if not states:
-            states = ['-99'] # Unregistered
+            states = ['-99']  # This is an unregistered item
         return states
 
     def prepare_highest_state(self, obj):
@@ -124,7 +126,7 @@ class conceptIndex(baseObjectIndex):
         ct = ContentType.objects.get_for_model(obj)
         return ct.pk
 
-    def prepare_restriction(self,obj):
+    def prepare_restriction(self, obj):
         if obj._is_public:
             return RESTRICTION['Public']
         elif obj._is_locked:

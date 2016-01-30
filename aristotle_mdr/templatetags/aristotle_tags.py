@@ -373,4 +373,3 @@ def template_path(item, _type):
     from aristotle_mdr.utils import get_download_template_path_for_item
     _type, subpath=_type.split(',')
     return get_download_template_path_for_item(item, _type, subpath)
-

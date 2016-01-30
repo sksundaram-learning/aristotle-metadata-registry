@@ -211,7 +211,7 @@ class TokenSearchForm(FacetedSearchForm):
             return self.no_query_found()
 
         sqs = self.searchqueryset.auto_query(self.query_text)
-        #sqs = super(TokenSearchForm, self).search()
+
         if hasattr(self, 'models'):
             sqs = sqs.models(*self.models)
         if kwargs:
@@ -380,14 +380,14 @@ class PermissionSearchForm(TokenSearchForm):
             'models': 'facet_model_ct',
             'state': 'statuses',
             'wg': 'workgroup',
-            'res':'restriction_exact',
+            'res': 'restriction_exact'
         }
         for _filter, facet in filters_to_facets.items():
             if _filter not in self.applied_filters:
                 sqs = sqs.facet(facet, sort='count')
 
         self.facets = sqs.facet_counts()
-        for facet,counts in self.facets['fields'].items():
+        for facet, counts in self.facets['fields'].items():
             # Return the 5 top results for each facet in order of number of results.
             self.facets['fields'][facet] = sorted(counts, key=lambda x: -x[1])[:5]
 
