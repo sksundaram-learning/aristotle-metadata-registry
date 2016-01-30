@@ -291,7 +291,7 @@ class TestSearch(utils.LoggedInViewPages,TestCase):
         self.assertTrue('workgroup' in facets.keys())
 
         for wg, count in facets['workgroup']:
-            wg = models.Workgroup.objects.create(pk=wg)
+            wg = models.Workgroup.objects.get(pk=wg)
             self.assertTrue(perms.user_in_workgroup(self.viewer,wg))
 
 
