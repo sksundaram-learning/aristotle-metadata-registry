@@ -89,6 +89,35 @@ class TestSearch(utils.LoggedInViewPages,TestCase):
         for i in response.context['page'].object_list:
             self.assertTrue(i.object.is_public())
 
+    def test_public_search_has_valid_facets(self):
+        self.logout()
+        response = self.client.get(reverse('aristotle:search')+"?q=xman")
+        self.assertEqual(response.status_code,200)
+        facets = response.context['form'].facets['fields']
+        self.assertTrue('workgroup' not in facets.keys())
+        self.assertTrue('restriction' not in facets.keys())
+
+        self.assertTrue('facet_model_ct' in facets.keys())
+        self.assertTrue('statuses' in facets.keys())
+        
+        for state, count in facets['statuses']:
+            self.assertTrue(int(state) >= self.ra.public_state)
+
+    def test_registrar_search_has_valid_facets(self):
+        response = self.client.post(reverse('friendly_login'),
+                    {'username': 'stryker', 'password': 'mutantsMustDie'})
+
+        self.assertEqual(response.status_code,302) # logged in
+
+        response = self.client.get(reverse('aristotle:search')+"?q=xman")
+        self.assertEqual(response.status_code,200)
+        facets = response.context['form'].facets['fields']
+        self.assertTrue('workgroup' in facets.keys())
+        self.assertTrue('restriction' in facets.keys())
+
+        self.assertTrue('facet_model_ct' in facets.keys())
+        self.assertTrue('statuses' in facets.keys())
+
     def test_registrar_search(self):
         self.logout()
         response = self.client.post(reverse('friendly_login'),
