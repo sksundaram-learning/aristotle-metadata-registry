@@ -385,8 +385,10 @@ class PermissionSearchForm(TokenSearchForm):
         for _filter, facet in filters_to_facets.items():
             if _filter not in self.applied_filters:
                 sqs = sqs.facet(facet, sort='count')
-
         self.facets = sqs.facet_counts()
+        print "="*20
+        print self.facets
+        print "="*20
         for facet, counts in self.facets['fields'].items():
             # Return the 5 top results for each facet in order of number of results.
             self.facets['fields'][facet] = sorted(counts, key=lambda x: -x[1])[:5]
