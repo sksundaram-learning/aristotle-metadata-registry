@@ -57,8 +57,11 @@ def search_describe_filters(search_form):
                 preamble = _('%s is') % field.label
                 verbed = str(val)
                 filter_texts.append('%s %s' % (preamble, verbed))
-        out = "; ".join([str(o) for o in filter_texts][:-1])
-        out += _(' and %s') % str(filter_texts[-1])
+        if len(filter_texts) > 1:
+            out = "; ".join([str(o) for o in filter_texts][:-1])
+            out += _(' and %s') % str(filter_texts[-1])
+        elif len(filter_texts) == 1:
+            out = str(filter_texts[0])
 
     return out
 

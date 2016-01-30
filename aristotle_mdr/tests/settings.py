@@ -21,7 +21,7 @@ CKEDITOR_UPLOAD_PATH = 'uploads/'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': ':memory:',
+            'NAME': 'test_database',
     }
 }
 

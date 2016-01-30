@@ -188,7 +188,11 @@ class TokenSearchForm(FacetedSearchForm):
                     mods = ContentType.objects.filter(app_label__in=aristotle_apps).all()
                     for i in mods:
                         if hasattr(i.model_class(), 'get_verbose_name'):
-                            model_short_code = "".join(map(first_letter, i.model_class()._meta.verbose_name.split(" "))).lower()
+                            model_short_code = "".join(
+                                map(
+                                    first_letter, i.model_class()._meta.verbose_name.split(" ")
+                                )
+                            ).lower()
                             if arg == model_short_code:
                                 token_models.append(i.model_class())
                         if arg == i.model:
@@ -324,6 +328,12 @@ class PermissionSearchForm(TokenSearchForm):
 
         return search_models
 
+    filters = "models mq cq cds cde mds mde state ra".split()
+
+    @property
+    def applied_filters(self):
+        return [f for f in self.filters if self.cleaned_data.get(f, False)]
+
     def search(self, repeat_search=False):
         # First, store the SearchQuerySet received from other processing.
         sqs = super(PermissionSearchForm, self).search()
@@ -333,8 +343,6 @@ class PermissionSearchForm(TokenSearchForm):
         if not self.is_valid():
             return self.no_query_found()
 
-        filters = "models mq cq cds cde mds mde state ra".split()
-        self.applied_filters = [f for f in filters if self.cleaned_data.get(f, False)]
         has_filter = len(self.applied_filters) > 0
         if has_filter and not self.query_text:  # and not self.kwargs:
             # If there is a filter, but no query then we'll force some results.
@@ -367,7 +375,7 @@ class PermissionSearchForm(TokenSearchForm):
                     # If there are 0 results with a search term, and filters applied
                     # lets be nice and remove the filters and try again.
                     # There will be a big message on the search page that says what we did.
-                    for f in filters:
+                    for f in self.filters:
                         self.cleaned_data[f] = None
                     self.auto_broaden_search = True
                 # Re run the query with the updated details
