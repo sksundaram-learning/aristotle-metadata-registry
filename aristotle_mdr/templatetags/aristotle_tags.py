@@ -281,17 +281,6 @@ def aboutLink(item):
 
 
 @register.simple_tag
-def itemURL(item):
-    # app_name = item._meta.app_label
-    model_name = item._meta.model_name
-    name = slugify(item.name)[:50]
-    return reverse(
-        "aristotle:item",
-        kwargs={'iid': item.pk, 'model_slug': model_name, 'name_slug': name}
-    )
-
-
-@register.simple_tag
 def downloadMenu(item):
     """
     Returns the complete download menu for a partcular item. It accepts the id of
@@ -384,44 +373,3 @@ def template_path(item, _type):
     from aristotle_mdr.utils import get_download_template_path_for_item
     _type, subpath=_type.split(',')
     return get_download_template_path_for_item(item, _type, subpath)
-
-
-@register.simple_tag
-def search_describe_filters(search_form):
-    """
-    Takes a search form and returns a user friendly
-    textual description of the filters.
-    """
-
-    out = ""
-    if search_form.applied_filters:
-        filter_texts = []
-        for f in search_form.applied_filters:
-            val = search_form.cleaned_data.get(f)
-            field = search_form.fields.get(f)
-
-            if field.label is None:
-                continue
-            if hasattr(field, 'choices'):
-                preamble = _('%s is') % field.label
-                try:
-                    choices = dict(field.choices)
-                    opts = [choices[x] for x in val]
-                except KeyError:
-                    choices = dict([(str(k), v) for k, v in field.choices])
-                    opts = [choices[x] for x in val]
-
-                if len(opts) > 1:
-                    verbed = ", ".join([str(o) for o in opts][:-1])
-                    verbed += _(' or %s') % str(opts[-1])
-                else:
-                    verbed = str(opts[0])
-                filter_texts.append('%s %s' % (preamble, verbed))
-            else:
-                preamble = _('%s is') % field.label
-                verbed = str(val)
-                filter_texts.append('%s %s' % (preamble, verbed))
-        out = "; ".join([str(o) for o in filter_texts][:-1])
-        out += _(' and %s') % str(filter_texts[-1])
-
-    return out

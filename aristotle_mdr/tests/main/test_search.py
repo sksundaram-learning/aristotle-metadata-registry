@@ -89,6 +89,35 @@ class TestSearch(utils.LoggedInViewPages,TestCase):
         for i in response.context['page'].object_list:
             self.assertTrue(i.object.is_public())
 
+    def test_public_search_has_valid_facets(self):
+        self.logout()
+        response = self.client.get(reverse('aristotle:search')+"?q=xman")
+        self.assertEqual(response.status_code,200)
+        facets = response.context['form'].facets['fields']
+        self.assertTrue('workgroup' not in facets.keys())
+        self.assertTrue('restriction' not in facets.keys())
+
+        self.assertTrue('facet_model_ct' in facets.keys())
+        self.assertTrue('statuses' in facets.keys())
+        
+        for state, count in facets['statuses']:
+            self.assertTrue(int(state) >= self.ra.public_state)
+
+    def test_registrar_search_has_valid_facets(self):
+        response = self.client.post(reverse('friendly_login'),
+                    {'username': 'stryker', 'password': 'mutantsMustDie'})
+
+        self.assertEqual(response.status_code,302) # logged in
+
+        response = self.client.get(reverse('aristotle:search')+"?q=xman")
+        self.assertEqual(response.status_code,200)
+        facets = response.context['form'].facets['fields']
+        self.assertTrue('workgroup' in facets.keys())
+        self.assertTrue('restriction' in facets.keys())
+
+        self.assertTrue('facet_model_ct' in facets.keys())
+        self.assertTrue('statuses' in facets.keys())
+
     def test_registrar_search(self):
         self.logout()
         response = self.client.post(reverse('friendly_login'),
@@ -227,6 +256,44 @@ class TestSearch(utils.LoggedInViewPages,TestCase):
         response = self.client.get(reverse('aristotle:search')+"?q=deadpool")
         self.assertEqual(len(response.context['page'].object_list),0)
 
+    def test_workgroup_member_search_has_valid_facets(self):
+        self.logout()
+        self.viewer = User.objects.create_user('charles.xavier','charles@schoolforgiftedyoungsters.edu','equalRightsForAll')
+        response = self.client.post(reverse('friendly_login'),
+                    {'username': 'charles.xavier', 'password': 'equalRightsForAll'})
+
+        self.assertEqual(response.status_code,302) # logged in
+
+        self.xmen_wg.giveRoleToUser('viewer',self.viewer)
+        self.weaponx_wg = models.Workgroup.objects.create(name="WeaponX")
+
+        response = self.client.post(reverse('friendly_login'),
+                    {'username': 'charles.xavier', 'password': 'equalRightsForAll'})
+
+        self.assertEqual(response.status_code,302) # logged in
+
+        #Create Deadpool in Weapon X workgroup
+        with reversion.create_revision():
+            dp = models.ObjectClass.objects.create(name="deadpool",
+                    definition="not really an xman, no matter how much he tries",
+                    workgroup=self.weaponx_wg,readyToReview=False)
+        dp = models.ObjectClass.objects.get(pk=dp.pk) # Un-cache
+        self.assertFalse(perms.user_can_view(self.viewer,dp))
+        self.assertFalse(dp.is_public())
+
+        response = self.client.get(reverse('aristotle:search')+"?q=xman")
+        self.assertEqual(response.status_code,200)
+        facets = response.context['form'].facets['fields']
+        self.assertTrue('restriction' in facets.keys())
+
+        self.assertTrue('facet_model_ct' in facets.keys())
+        self.assertTrue('statuses' in facets.keys())
+        self.assertTrue('workgroup' in facets.keys())
+
+        for wg, count in facets['workgroup']:
+            wg = models.Workgroup.objects.get(pk=wg)
+            self.assertTrue(perms.user_in_workgroup(self.viewer,wg))
+
 
 class TestTokenSearch(TestCase):
     def tearDown(self):
@@ -279,3 +346,58 @@ class TestTokenSearch(TestCase):
         objs = response.context['page'].object_list
         self.assertEqual(len(objs),1)
         self.assertTrue(objs[0].object.name,"Power")
+
+
+class TestSearchDescriptions(TestCase):
+    """
+    Test the 'form to plain text' description generator
+    """
+    # def setUp(self):
+    
+    def test_descriptions(self):
+        from aristotle_mdr.forms.search import PermissionSearchForm as PSF
+        from aristotle_mdr.templatetags.aristotle_search_tags import \
+            search_describe_filters as gen
+
+        ra = models.RegistrationAuthority.objects.create(name='Filter RA')
+
+        filters = {'models':['aristotle_mdr.objectclass']}
+        form = PSF(filters)
+        
+        if not form.is_valid(): # pragma: no cover
+            # If this branch happens, we messed up the test bad.
+            print form.errors
+            self.assertTrue('programmer' is 'good')
+
+        description = gen(form)
+        self.assertTrue('Item type is Object Classes' == description)
+        self.assertTrue('and' not in description)
+
+        filters = {'models':[
+            'aristotle_mdr.objectclass',
+            'aristotle_mdr.property',
+            'aristotle_mdr.dataelement',
+        ]}
+        form = PSF(filters)
+        if not form.is_valid(): # pragma: no cover
+            print form.errors
+            self.assertTrue('programmer' is 'good')
+        
+        description = gen(form)
+
+        self.assertTrue(
+            'item type is object classes, properties or data elements' == description.lower()
+        )
+        self.assertTrue('and' not in description)
+
+        filters = {'models':['aristotle_mdr.objectclass'],'ra':[str(ra.pk)]}
+        form = PSF(filters)
+        if not form.is_valid(): # pragma: no cover
+            print form.errors
+            self.assertTrue('programmer' is 'good')
+
+        description = gen(form)
+
+        self.assertTrue('Item type is Object Classes' in gen(form))
+        self.assertTrue('registration authority is %s'%ra.name.lower() in gen(form).lower())
+        self.assertTrue('and' in description)
