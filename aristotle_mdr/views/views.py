@@ -28,7 +28,7 @@ from aristotle_mdr import models as MDR
 from aristotle_mdr.utils import concept_to_clone_dict
 from aristotle_mdr import exceptions as registry_exceptions
 
-from haystack.views import SearchView
+from haystack.views import SearchView, FacetedSearchView
 
 import logging
 
@@ -600,7 +600,7 @@ def browse(request, oc_id=None, dec_id=None):
 
 # Search views
 
-class PermissionSearchView(SearchView):
+class PermissionSearchView(FacetedSearchView):
     def build_form(self):
         form = super(self.__class__, self).build_form()
         form.request = self.request
