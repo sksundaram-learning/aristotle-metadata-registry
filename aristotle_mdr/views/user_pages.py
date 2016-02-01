@@ -36,6 +36,7 @@ def home(request):
     page = render(request, "aristotle_mdr/user/userHome.html", {"item": request.user, 'recent': recent})
     return page
 
+
 @login_required
 def roles(request):
     page = render(request, "aristotle_mdr/user/userRoles.html", {"item": request.user})
