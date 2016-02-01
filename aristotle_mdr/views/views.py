@@ -19,6 +19,7 @@ import datetime
 
 import reversion
 from reversion.revisions import default_revision_manager
+from reversion_compare.views import HistoryCompareDetailView
 
 from aristotle_mdr.perms import user_can_view, user_can_edit, user_can_change_status
 from aristotle_mdr import perms
@@ -41,6 +42,19 @@ PAGES_PER_RELATED_ITEM = 15
 class DynamicTemplateView(TemplateView):
     def get_template_names(self):
         return ['aristotle_mdr/static/%s.html' % self.kwargs['template']]
+
+
+class ConceptHistoryCompareView(HistoryCompareDetailView):
+    model = MDR._concept
+    pk_url_kwarg = 'iid'
+    template_name = "aristotle_mdr/actions/concept_history_compare.html"
+
+    def get_object(self, queryset=None):
+        item = super(ConceptHistoryCompareView, self).get_object(queryset)
+        if not user_can_view(self.request.user, item):
+            raise PermissionDenied
+        self.model = item.item.__class__  # Get the subclassed object
+        return item
 
 
 class HelpTemplateView(TemplateView):

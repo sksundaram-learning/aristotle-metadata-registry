@@ -42,11 +42,12 @@ urlpatterns = patterns(
     url(r'^discussions/post/(?P<pid>\d+)/toggle/?$', views.discussions.toggle_post, name='discussionsPostToggle'),
 
     # url(r'^item/(?P<iid>\d+)/?$', views.items.concept, name='item'),
-    url(r'^item/(?P<iid>\d+)(?:\/(?P<model_slug>\w+)\/(?P<name_slug>.+))?/?$', views.concept, name='item'),
     url(r'^item/(?P<iid>\d+)/edit/?$', views.edit_item, name='edit_item'),
     url(r'^item/(?P<iid>\d+)/clone/?$', views.clone_item, name='clone_item'),
-    url(r'^item/(?P<iid>\d+)/history/?$', views.item_history, name='item_history'),
+    url(r'^item/(?P<iid>\d+)/history/?$', views.ConceptHistoryCompareView.as_view(), name='item_history'),
     url(r'^item/(?P<iid>\d+)/registrationHistory/?$', views.registrationHistory, name='registrationHistory'),
+
+    url(r'^item/(?P<iid>\d+)(?:\/(?P<model_slug>\w+)\/(?P<name_slug>.+))?/?$', views.concept, name='item'),
     url(r'^item/(?P<iid>\d+)(?:\/.*)?$', views.concept, name='item'),  # Catch every other 'item' URL and throw it for a redirect
 
     url(r'^unmanaged/measure/(?P<iid>\d+)(?:\/(?P<model_slug>\w+)\/(?P<name_slug>.+))?/?$', views.measure, name='measure'),
