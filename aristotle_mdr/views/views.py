@@ -53,7 +53,7 @@ class ConceptHistoryCompareView(HistoryCompareDetailView):
         item = super(ConceptHistoryCompareView, self).get_object(queryset)
         if not user_can_view(self.request.user, item):
             if self.request.user.is_anonymous():
-                return redirect(reverse('friendly_login') + '?next=%s' % request.path)
+                return redirect(reverse('friendly_login') + '?next=%s' % self.request.path)
             else:
                 raise PermissionDenied
         self.model = item.item.__class__  # Get the subclassed object
