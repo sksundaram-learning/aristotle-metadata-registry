@@ -1,6 +1,7 @@
 from django.apps import apps
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.core.exceptions import PermissionDenied, ImproperlyConfigured
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -15,6 +16,7 @@ from django.template.loader import select_template
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import TemplateView
 from django.utils import timezone
+from django.utils.decorators import method_decorator
 import datetime
 
 import reversion
@@ -52,12 +54,13 @@ class ConceptHistoryCompareView(HistoryCompareDetailView):
     def get_object(self, queryset=None):
         item = super(ConceptHistoryCompareView, self).get_object(queryset)
         if not user_can_view(self.request.user, item):
-            if self.request.user.is_anonymous():
-                return redirect(reverse('friendly_login') + '?next=%s' % self.request.path)
-            else:
-                raise PermissionDenied
+            raise PermissionDenied
         self.model = item.item.__class__  # Get the subclassed object
         return item
+
+    @method_decorator(login_required)
+    def dispatch(self, *args, **kwargs):
+        return super(ConceptHistoryCompareView, self).dispatch(*args, **kwargs)
 
 
 class HelpTemplateView(TemplateView):

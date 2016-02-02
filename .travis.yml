@@ -57,6 +57,8 @@ script:
   - if [[ $TEST == extensions ]]; then coverage run --branch --source=aristotle_mdr manage.py test aristotle_mdr.tests.extensions; fi
   - if [[ $TEST == querysets ]]; then coverage run --branch --source=aristotle_mdr manage.py test aristotle_mdr.tests.querysets; fi
 after_success:
+  - coverage combine
+  - coverage report
   - coveralls
   - codecov
   - pep8 --exclude=migrations --ignore=E501,E225,E123 aristotle_mdr
