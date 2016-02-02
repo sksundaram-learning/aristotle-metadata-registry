@@ -78,6 +78,10 @@
         {% endifequal %}
     </li>
     <li role="presentation" class="nav-divider"></li>
+    <li {% ifequal activeTab "role" %}class="active"{% endifequal %}>
+        <a href="{% url 'aristotle:userRoles' %}">
+        <i class="fa fa-industry fa-fw"></i> My roles</a>
+    </li>
     {% if request.user.profile.is_registrar %}
     <li {% ifequal activeTab "registrarTools" %}class="active"{% endifequal %}>
         <a href="{% url 'aristotle:userRegistrarTools' %}">
