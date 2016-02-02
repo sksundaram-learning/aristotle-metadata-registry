@@ -78,6 +78,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'aristotle_mdr.contrib.redirect.middleware.RedirectMiddleware',
 
 
     # 'reversion.middleware.RevisionMiddleware',

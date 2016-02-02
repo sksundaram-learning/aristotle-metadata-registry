@@ -214,23 +214,6 @@ def render_if_condition_met(request, condition, objtype, iid, model_slug=None, n
     return HttpResponse(template.render(context))
 
 
-def item_history(request, iid):
-    item = get_if_user_can_view(MDR._concept, request.user, iid)
-    if not item:
-        if request.user.is_anonymous():
-            return redirect(reverse('friendly_login') + '?next=%s' % request.path)
-        else:
-            raise PermissionDenied
-    item = item.item
-    versions = default_revision_manager.get_for_object(item)
-    from django.contrib.contenttypes.models import ContentType
-    ct = ContentType.objects.get_for_model(item)
-    versions = reversion.models.Version.objects.filter(content_type=ct, object_id=item.pk).order_by('-revision__date_created')
-
-    page = render(request, "aristotle_mdr/actions/concept_history.html", {"item": item, 'versions': versions})
-    return page
-
-
 def registrationHistory(request, iid):
     item = get_if_user_can_view(MDR._concept, request.user, iid)
     if not item:
