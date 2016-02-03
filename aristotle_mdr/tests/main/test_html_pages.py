@@ -455,6 +455,24 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         response = self.client.get(self.item1.get_absolute_url())
         self.assertTrue(reverse('aristotle:item_history',args=[self.item1.id]) in response.content)
 
+    def test_viewer_can_view_item_history__and__compare(self):
+        self.test_submitter_can_save_via_edit_page_with_change_comment()
+        self.login_editor()
+        
+        versions = tuple(reversion.Version.objects.filter(object_id=self.item1.id)[:2])
+        response = self.client.get(
+            reverse('aristotle:item_history',args=[self.item1.id]) +
+            "?version_id1=%s&version_id2=%s"%versions
+        )
+        self.assertEqual(response.status_code,200)
+        self.assertTrue(change_comment in response.content)
+        self.assertTrue('statuses' in response.content)
+        for s in self.item1.statuses:
+            self.assertTrue(
+                '%s is %s'%(self.item1.name,s.state)
+                in response.content
+            )
+
     def test_anon_cannot_view_item_history(self):
         self.logout()
         response = self.client.get(reverse('aristotle:item_history',args=[self.item1.id]))
