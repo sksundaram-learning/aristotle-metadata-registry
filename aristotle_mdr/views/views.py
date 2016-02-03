@@ -589,12 +589,12 @@ def browse(request, oc_id=None, dec_id=None):
         return render(request, "aristotle_mdr/browse/objectClasses.html", {"items": items})
     elif oc_id is not None and dec_id is None:
         oc = get_object_or_404(MDR.ObjectClass, id=oc_id)
-        items = MDR.DataElementConcept.objects.filter(objectClass=oc).order_by("name").public()
+        items = MDR.DataElementConcept.objects.filter(objectClass=oc).order_by("name").visible(request.user)
         return render(request, "aristotle_mdr/browse/dataElementConcepts.html", {"items": items, "objectClass": oc})
     elif oc_id is not None and dec_id is not None:
         # Yes, for now we ignore the Object Class. If the user is messing with IDs in the URL and things break thats their fault.
         dec = get_object_or_404(MDR.DataElementConcept, id=dec_id)
-        items = MDR.DataElement.objects.filter(dataElementConcept=dec).order_by("name").public()
+        items = MDR.DataElement.objects.filter(dataElementConcept=dec).order_by("name").visible(request.user)
         return render(request, "aristotle_mdr/browse/dataElements.html", {"items": items, "dataElementConcept": dec})
 
 

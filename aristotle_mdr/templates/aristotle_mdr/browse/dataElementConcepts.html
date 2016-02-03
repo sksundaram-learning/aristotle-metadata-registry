@@ -14,7 +14,8 @@
 </div>
 {% if items %}
 <p>
-    This is a complete list of all publically visible data element concepts based on the object class <em>{{ objectClass.name }}</em>.
+    This is a complete list of all publically visible data element concepts based on the object class
+    <a href="{% url 'aristotle:item' iid=objectClass.id %}"><em>{{ objectClass.name }}</em></a>.
     Click the name of any item below to see associated data element concepts.
 </p>
     <dl class='browse'>

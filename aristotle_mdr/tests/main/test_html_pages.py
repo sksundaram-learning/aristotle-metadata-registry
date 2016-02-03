@@ -719,6 +719,52 @@ class ConceptualDomainViewPage(LoggedInViewConceptPages,TestCase):
 class DataElementConceptViewPage(LoggedInViewConceptPages,TestCase):
     url_name='dataElementConcept'
     itemType=models.DataElementConcept
+    def test_browse_dec(self):
+        de1 = models.DataElement.objects.create(
+            name="public item",
+            dataElementConcept=self.item1,
+            workgroup=self.item1.workgroup
+        )
+        de2 = models.DataElement.objects.create(
+            name="invisible item",
+            dataElementConcept=self.item1,
+            workgroup=self.item1.workgroup
+        )
+
+        de3 = models.DataElement.objects.create(
+            name="public but not related",
+            # dataElementConcept=self.item1, # not attached to the DEC.
+            workgroup=self.item1.workgroup
+        )
+
+        oc1 = models.ObjectClass.objects.create(
+            name="public item",
+            workgroup=self.item1.workgroup
+        )
+        self.item1.objectClass = oc1
+        self.item1.save()
+        
+        models.Status.objects.create(
+            concept=de1,
+            registrationAuthority=self.ra,
+            registrationDate = datetime.date(2009,4,28),
+            state =  models.STATES.standard
+            )
+        models.Status.objects.create(
+            concept=de3,
+            registrationAuthority=self.ra,
+            registrationDate = datetime.date(2009,4,28),
+            state =  models.STATES.standard
+            )
+        self.logout()
+        response = self.client.get(
+            reverse('aristotle:browse',args=[oc1.id,self.item1.id])
+        )
+        self.assertTrue(response.status_code,200)
+        self.assertTrue(de1.name in response.content)
+        self.assertTrue(de2.name not in response.content)
+        self.assertTrue(de3.name not in response.content)
+        
 class DataElementViewPage(LoggedInViewConceptPages,TestCase):
     url_name='dataElement'
     itemType=models.DataElement
