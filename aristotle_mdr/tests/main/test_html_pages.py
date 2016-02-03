@@ -455,7 +455,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         response = self.client.get(self.item1.get_absolute_url())
         self.assertTrue(reverse('aristotle:item_history',args=[self.item1.id]) in response.content)
 
-    def test_viewer_can_view_item_history__and__compare(self):
+    def test_editor_can_view_item_history__and__compare(self):
         self.test_submitter_can_save_via_edit_page_with_change_comment()
         self.login_editor()
         
@@ -472,6 +472,75 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
                 '%s is %s'%(self.item1.name,s.state)
                 in response.content
             )
+
+    def test_editor_can_revert_item_and_status_goes_back_too(self):
+        self.login_editor()
+        
+        from reversion import revisions as reversion
+        with reversion.create_revision():
+            self.item1.readyToReview = True
+            self.item1.save()
+        original_name = self.item1.name
+        
+        response = self.client.get(reverse('aristotle:edit_item',args=[self.item1.id]))
+        self.assertEqual(response.status_code,200)
+        
+        updated_item = utils.modeL_to_dict_with_change_time(response.context['item'])
+        updated_name = updated_item['name'] + " updated!"
+        updated_item['name'] = updated_name
+        change_comment = "I changed this because I can"
+        updated_item['change_comments'] = change_comment
+        response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
+        self.item1 = self.itemType.objects.get(pk=self.item1.pk)
+        self.assertEqual(self.item1.name,updated_name)
+
+        r = self.ra.register(
+            item=self.item1,
+            state=models.STATES.incomplete,
+            user=self.registrar
+        )
+        self.item1 = self.itemType.objects.get(pk=self.item1.pk) #decache
+
+        self.assertTrue(self.item1.statuses.all().count() == 1)
+        self.assertTrue(self.item1.statuses.first().state == models.STATES.incomplete)
+
+        response = self.client.get(reverse('aristotle:edit_item',args=[self.item1.id]))
+        self.assertEqual(response.status_code,200)
+        updated_item = utils.modeL_to_dict_with_change_time(response.context['item'])
+        updated_name_again = updated_item['name'] + " updated!"
+        updated_item['name'] = updated_name_again
+        change_comment = "I changed this again because I can"
+        updated_item['change_comments'] = change_comment
+        response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
+        self.item1 = self.itemType.objects.get(pk=self.item1.pk)
+        self.assertEqual(self.item1.name,updated_name_again)
+
+        self.ra.register(self.item1,models.STATES.candidate,self.registrar)
+        self.item1 = self.itemType.objects.get(pk=self.item1.pk) #decache
+        self.assertTrue(self.item1.statuses.count() == 2)
+        self.assertTrue(self.item1.statuses.last().state == models.STATES.candidate)
+
+        versions = list(reversion.Version.objects.filter(object_id=self.item1.id))
+        versions[4].revision.revert(delete=True) # The version that has the first status changes
+
+        self.item1 = self.itemType.objects.get(pk=self.item1.pk) #decache
+
+        self.assertTrue(self.item1.statuses.count() == 1)
+        self.assertTrue(self.item1.statuses.first().state == models.STATES.incomplete)
+        self.assertEqual(self.item1.name,updated_name)
+
+        versions[0].revision.revert(delete=True)
+        self.item1 = self.itemType.objects.get(pk=self.item1.pk) #decache
+        self.assertTrue(self.item1.statuses.count() == 0)
+        self.assertEqual(self.item1.name,original_name)
+
+        versions[9].revision.revert(delete=True) # Back to the latest version
+        self.item1 = self.itemType.objects.get(pk=self.item1.pk) #decache
+        self.assertTrue(self.item1.statuses.count() == 2)
+        self.assertTrue(self.item1.statuses.order_by('state')[0].state == models.STATES.incomplete)
+        self.assertTrue(self.item1.statuses.order_by('state')[1].state == models.STATES.candidate)
+        self.assertEqual(self.item1.name,updated_name_again)
+
 
     def test_anon_cannot_view_item_history(self):
         self.logout()
