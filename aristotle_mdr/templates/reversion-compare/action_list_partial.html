@@ -1,12 +1,17 @@
 {% load i18n l10n %}
 {% if compare_view %}<form method="GET" action="{{ action }}">{% endif %}
-<table id="change-history" class='table'>
+<table id="change-history" class='table table-striped'>
+    <caption>Revisions for {{object.name}}
+    {% if compare_view %}
+    - {% trans 'Select two items and click compare to see the differences between them'%}
+    {% endif %}
+     </caption>
     <thead>
         <tr>
             {% if compare_view %}
                 <th scope="col">
                     {% if comparable %}
-                        <input type="submit" value="{% trans 'compare' %}">
+                        <input class="btn btn-default btn-xs" type="submit" value="{% trans 'compare' %}">
                     {% else %}
                        <i>{% trans 'compare' %}</i>
                     {% endif %}

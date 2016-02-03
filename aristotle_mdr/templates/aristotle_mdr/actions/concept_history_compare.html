@@ -1,7 +1,11 @@
 {% extends 'aristotle_mdr/base.html' %}
-{% load firstof from future %}{# Only required for Django<=1.8 #}
 {% load aristotle_tags i18n %}
-{% block title %}Version history of {{ item.name }}{% endblock %}
+{% load static compile_static %}
+{% block title %}Version history of {{ object.item.name }}{% endblock %}
+
+{% block extra_head_scripts %}
+    <link rel="stylesheet" href="{{ STATIC_URL }}{% compile 'aristotle_mdr/aristotle.compare.less' %}" />
+{% endblock %}
 
 {% block content %}{% with item=object.item %}
 <h1>
@@ -16,17 +20,6 @@
         <li><a href="#" class="active">{% trans 'Compare' %}</a></li>
     {% endif %}
 </ol>
-
-<style type="text/css">
-/* minimal style for the diffs */
-del, ins {
-    color: #000;
-    text-decoration: none;
-}
-del { background-color: #ffe6e6; }
-ins { background-color: #e6ffe6; }
-sup.follow { color: #5555ff; }
-</style>
 
 {% if request.GET.version_id1 %}
     <p>The details below show only the content that has changed between saves.</p>
