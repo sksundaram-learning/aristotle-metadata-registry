@@ -459,10 +459,11 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.test_submitter_can_save_via_edit_page_with_change_comment()
         self.login_editor()
         
-        versions = tuple(reversion.Version.objects.filter(object_id=self.item1.id)[:2])
+        from reversion import revisions as reversion
+        versions = reversion.Version.objects.filter(object_id=self.item1.id)[:2]
         response = self.client.get(
             reverse('aristotle:item_history',args=[self.item1.id]) +
-            "?version_id1=%s&version_id2=%s"%versions
+            "?version_id1=%s&version_id2=%s"%(versions[0].id,versions[1].id)
         )
         self.assertEqual(response.status_code,200)
         self.assertTrue(change_comment in response.content)
