@@ -1,5 +1,5 @@
 --index-url https://pypi.python.org/simple/
- -e git://github.com/LegoStormtroopr/django-reversion-compare@master#egg=django_reversion_compare
+# -e git://github.com/LegoStormtroopr/django-reversion-compare@master#egg=django_reversion_compare
  
 -e .
 

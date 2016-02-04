@@ -51,7 +51,7 @@ setup(
 
         # Revision control
         "django-reversion>=1.10",
-        'django-reversion-compare>=0.5.6',
+        'django-reversion-compare>=0.6.0',
         'diff-match-patch',
 
         # Fancy UI stuff

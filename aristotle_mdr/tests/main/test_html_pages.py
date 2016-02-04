@@ -456,22 +456,48 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.assertTrue(reverse('aristotle:item_history',args=[self.item1.id]) in response.content)
 
     def test_editor_can_view_item_history__and__compare(self):
-        self.test_submitter_can_save_via_edit_page_with_change_comment()
         self.login_editor()
-        
+
         from reversion import revisions as reversion
-        versions = reversion.Version.objects.filter(object_id=self.item1.id)[:2]
-        response = self.client.get(
-            reverse('aristotle:item_history',args=[self.item1.id]) +
-            "?version_id1=%s&version_id2=%s"%(versions[0].id,versions[1].id)
-        )
+        
+        with reversion.create_revision():
+            self.item1.name = "change 1"
+            reversion.set_comment("change 1")
+            self.item1.readyToReview = True
+            self.item1.save()
+
+        with reversion.create_revision():
+            self.item1.name = "change 2"
+            reversion.set_comment("change 2")
+            r = self.ra.register(
+                item=self.item1,
+                state=models.STATES.incomplete,
+                user=self.registrar
+            )
+            self.item1.save()
+
+        revisions = reversion.default_revision_manager.get_for_object(self.item1)
+
+        response = self.client.get(reverse('aristotle:item_history',args=[self.item1.id]))
         self.assertEqual(response.status_code,200)
-        self.assertTrue(change_comment in response.content)
+
+        response = self.client.get(
+            reverse('aristotle:item_history',args=[self.item1.id]),
+            {'version_id1' : revisions.first().pk,
+            'version_id2' : revisions.last().pk
+            }
+        )
+        
+        self.assertEqual(response.status_code,200)
+        self.assertTrue("change 2" in response.content)
         self.assertTrue('statuses' in response.content)
-        for s in self.item1.statuses:
-            self.assertTrue(
-                '%s is %s'%(self.item1.name,s.state)
-                in response.content
+        
+        self.item1 = self.itemType.objects.get(pk=self.item1.pk) #decache
+        self.assertTrue(self.item1.name == "change 2")
+        for s in self.item1.statuses.all():
+            self.assertContains(
+                response,
+                '%s is %s'%(self.item1.name,s.get_state_display())
             )
 
     def test_editor_can_revert_item_and_status_goes_back_too(self):
