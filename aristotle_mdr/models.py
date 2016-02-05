@@ -758,9 +758,12 @@ class _concept(baseAristotleObject):
         """
         if self.workgroup.ownership == WORKGROUP_OWNERSHIP.authority:
             authorities = self.workgroup.registrationAuthorities.all()
-            statuses = self.statuses.filter(
-                registrationAuthority__in=authorities
-            )
+            if authorities:
+                statuses = self.statuses.filter(
+                    registrationAuthority__in=authorities
+                )
+            else:
+                statuses = self.statuses.none()
         elif self.workgroup.ownership == WORKGROUP_OWNERSHIP.registry:
             statuses = self.statuses.all()
         statuses = self.current_statuses(qs=statuses, when=when)
@@ -812,18 +815,27 @@ class _concept(baseAristotleObject):
             Q(until_date__isnull=True)
         )
 
-        states = qs.filter(
+        qs = qs.filter(
             registered_before_now & registation_still_valid
         ).order_by("-registrationDate", "-created")
-
-        current = []
-        seen_ras = []
-        for s in states:
-            ra = s.registrationAuthority
-            if ra not in seen_ras:
-                current.append(s)
-                seen_ras.append(ra)
-        return current
+        try:
+            states = qs.distinct('registrationAuthority')
+            f=states[0]  # Force it to fetch from the database to force an error!
+        except NotImplementedError as e:
+            states = qs
+            if "DISTINCT ON" in e.message:
+                current_ids = []
+                seen_ras = []
+                for s in states:
+                    ra = s.registrationAuthority
+                    if ra not in seen_ras:
+                        current_ids.append(s.pk)
+                        seen_ras.append(ra)
+                # We hit again so we can return this as a queryset
+                states = states.filter(pk__in=current_ids)
+            else:
+                raise
+        return states
 
     def get_download_items(self):
         """
@@ -1240,7 +1252,7 @@ class PossumProfile(models.Model):
     def registrarAuthorities(self):
         "NOTE: This is a list of Authorities the user is a *registrar* in!."
         if self.user.is_superuser:
-                return RegistrationAuthority.objects.all()
+            return RegistrationAuthority.objects.all()
         else:
             return self.user.registrar_in.all()
 

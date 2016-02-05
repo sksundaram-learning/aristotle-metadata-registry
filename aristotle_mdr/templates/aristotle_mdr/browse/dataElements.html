@@ -12,14 +12,14 @@
 </div>
 {% if items %}
 <p>
-    This is a complete list of all publically visible data element based on the data element concept <em>{{ dataElementConcept.name }}</em>.
+    This is a list of all visible data element based on the data element concept
+    <a href="{% url 'aristotle:item' iid=dataElementConcept.id %}"><em>{{ dataElementConcept.name }}</em></a>.
     Click the name of any item below to go to the main page for an associated data element concept.
 </p>
     <dl class='browse'>
     {% for i in items %}
         <dt>
-            <a href="{% url 'aristotle:dataElement' iid=i.id %}">{{ i.name }}</a>
-            <!-- small>(<a href="{% url 'aristotle:dataElement' iid=i.id %}">{{ i.name }}</a>)</small -->
+            <a href="{% url 'aristotle:item' iid=i.id %}">{{ i.name }}</a>
         </dt>
         <dd>
             {{ i.definition|truncatewords:20|striptags }}
