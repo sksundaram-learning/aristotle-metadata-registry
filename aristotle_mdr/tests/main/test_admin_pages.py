@@ -376,6 +376,22 @@ class AdminPageForConcept(utils.LoggedInViewPages):
         self.assertResponseStatusCodeEqual(response,200)
         self.assertTrue(response.context['adminform'].form.initial['name'],new_name)
 
+    def test_prior_version_page_reverts(self):
+        from reversion import revisions as reversion
+        new_name = "A different name"
+        with reversion.create_revision():
+            self.item1.name = new_name
+            self.item1.save()
+        version_list = reversion.get_for_object(self.item1)
+
+        self.login_editor()
+        response = self.client.get(
+            reverse("admin:%s_%s_revision"%(self.itemType._meta.app_label,self.itemType._meta.model_name),
+            args=[self.item1.pk,version_list.first().id])
+            )
+        self.assertResponseStatusCodeEqual(response,200)
+        self.assertTrue(response.context['adminform'].form.initial['name'],new_name)
+
 
 class ObjectClassAdminPage(AdminPageForConcept,TestCase):
     itemType=models.ObjectClass
