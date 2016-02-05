@@ -817,7 +817,7 @@ class _concept(baseAristotleObject):
         ).order_by("-registrationDate", "-created")
         try:
             states = qs.distinct('registrationAuthority')
-            f=states[0] # Force it to fetch from the database to force an error!
+            f=states[0]  # Force it to fetch from the database to force an error!
         except NotImplementedError as e:
             states = qs
             if "DISTINCT ON" in e.message:
