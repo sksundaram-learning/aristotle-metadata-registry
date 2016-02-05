@@ -219,6 +219,40 @@ class TestSearch(utils.LoggedInViewPages,TestCase):
         response = self.client.get(reverse('aristotle:search')+"?q=deadpool")
         self.assertEqual(len(response.context['page'].object_list),0)
 
+    def test_current_statuses_only_in_search_results_and_index(self):
+        # See issue #327
+        self.logout()
+        response = self.client.post(reverse('friendly_login'),
+                    {'username': 'stryker', 'password': 'mutantsMustDie'})
+
+        self.assertEqual(response.status_code,302) # logged in
+        self.assertTrue(perms.user_is_registrar(self.registrar,self.ra))
+
+        with reversion.create_revision():
+            dp = models.ObjectClass.objects.create(name="deadpool",
+                    definition="not really an xman, no matter how much he tries",
+                    workgroup=self.xmen_wg,readyToReview=True)
+        dp = models.ObjectClass.objects.get(pk=dp.pk) # Un-cache
+        self.assertTrue(perms.user_can_view(self.registrar,dp))
+        self.assertFalse(dp.is_public())
+
+        from django.utils import timezone
+        import datetime
+
+        self.ra.register(dp,models.STATES.incomplete,self.registrar,
+            registrationDate=timezone.now()+datetime.timedelta(days=-7)
+        )
+
+        self.ra.register(dp,models.STATES.standard,self.registrar,
+            registrationDate=timezone.now()+datetime.timedelta(days=-1)
+        )
+
+        response = self.client.get(reverse('aristotle:search')+"?q=deadpool")
+        self.assertEqual(len(response.context['page'].object_list),1)
+        dp_result = response.context['page'].object_list[0]
+        self.assertTrue(dp_result.object.name=="deadpool")
+        self.assertTrue(len(dp_result.statuses) == 1)
+        self.assertTrue(dp_result.statuses[0] == models.STATES[models.STATES.standard])
 
 class TestTokenSearch(TestCase):
     def tearDown(self):
