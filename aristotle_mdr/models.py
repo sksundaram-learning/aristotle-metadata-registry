@@ -815,26 +815,23 @@ class _concept(baseAristotleObject):
             Q(until_date__isnull=True)
         )
 
-        qs = qs.filter(
+        states = qs.filter(
             registered_before_now & registation_still_valid
         ).order_by("registrationAuthority", "-registrationDate", "-created")
-        try:
-            states = qs.distinct('registrationAuthority')
-            f=states[0]  # Force it to fetch from the database to force an error!
-        except NotImplementedError as e:
-            states = qs
-            if "DISTINCT ON" in e.message:
-                current_ids = []
-                seen_ras = []
-                for s in states:
-                    ra = s.registrationAuthority
-                    if ra not in seen_ras:
-                        current_ids.append(s.pk)
-                        seen_ras.append(ra)
-                # We hit again so we can return this as a queryset
-                states = states.filter(pk__in=current_ids)
-            else:
-                raise
+
+        from django.db import connection
+        if connection.vendor == 'postgresql':
+            states = states.distinct('registrationAuthority')
+        else:
+            current_ids = []
+            seen_ras = []
+            for s in states:
+                ra = s.registrationAuthority
+                if ra not in seen_ras:
+                    current_ids.append(s.pk)
+                    seen_ras.append(ra)
+            # We hit again so we can return this as a queryset
+            states = states.filter(pk__in=current_ids)
         return states
 
     def get_download_items(self):
