@@ -758,9 +758,12 @@ class _concept(baseAristotleObject):
         """
         if self.workgroup.ownership == WORKGROUP_OWNERSHIP.authority:
             authorities = self.workgroup.registrationAuthorities.all()
-            statuses = self.statuses.filter(
-                registrationAuthority__in=authorities
-            )
+            if authorities:
+                statuses = self.statuses.filter(
+                    registrationAuthority__in=authorities
+                )
+            else:
+                statuses = self.statuses.none()
         elif self.workgroup.ownership == WORKGROUP_OWNERSHIP.registry:
             statuses = self.statuses.all()
         statuses = self.current_statuses(qs=statuses, when=when)
@@ -814,16 +817,22 @@ class _concept(baseAristotleObject):
 
         states = qs.filter(
             registered_before_now & registation_still_valid
-        ).order_by("-registrationDate", "-created")
+        ).order_by("registrationAuthority", "-registrationDate", "-created")
 
-        current = []
-        seen_ras = []
-        for s in states:
-            ra = s.registrationAuthority
-            if ra not in seen_ras:
-                current.append(s)
-                seen_ras.append(ra)
-        return current
+        from django.db import connection
+        if connection.vendor == 'postgresql':
+            states = states.distinct('registrationAuthority')
+        else:
+            current_ids = []
+            seen_ras = []
+            for s in states:
+                ra = s.registrationAuthority
+                if ra not in seen_ras:
+                    current_ids.append(s.pk)
+                    seen_ras.append(ra)
+            # We hit again so we can return this as a queryset
+            states = states.filter(pk__in=current_ids)
+        return states
 
     def get_download_items(self):
         """
