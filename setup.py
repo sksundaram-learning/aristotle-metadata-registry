@@ -9,7 +9,7 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
     name='aristotle-metadata-registry',
-    version='1.1.0',
+    version='1.1.1',
     packages=['aristotle_mdr'],
     include_package_data=True,
     license='Aristotle-MDR Modified BSD Licence',  # example license
@@ -56,7 +56,7 @@ setup(
 
         # Fancy UI stuff
         'django-static-precompiler',
-        'django-autocomplete-light',
+        'django-autocomplete-light==2.3.3',
         'django-bootstrap3',
         'django-bootstrap3-datetimepicker',
 
