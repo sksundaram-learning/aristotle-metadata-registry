@@ -327,7 +327,8 @@ class TestSearch(utils.LoggedInViewPages,TestCase):
         dp_result = response.context['page'].object_list[0]
         self.assertTrue(dp_result.object.name=="deadpool")
         self.assertTrue(len(dp_result.statuses) == 1)
-        self.assertTrue(dp_result.statuses[0] == models.STATES.standard)
+
+        self.assertTrue(int(dp_result.statuses[0]) == int(models.STATES.standard))
 
 class TestTokenSearch(TestCase):
     def tearDown(self):
