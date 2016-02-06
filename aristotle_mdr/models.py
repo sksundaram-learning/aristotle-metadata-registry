@@ -818,7 +818,7 @@ class _concept(baseAristotleObject):
 
         from django.db import connection
         if connection.vendor == 'postgresql':
-            states = qs.distinct('registrationAuthority')
+            states = states.distinct('registrationAuthority')
         else:
             current_ids = []
             seen_ras = []
