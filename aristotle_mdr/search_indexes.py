@@ -15,6 +15,7 @@ RESTRICTION = {
     2: 'Unlocked',
 }
 # reverse the dictionary to make two-way look ups easier
+RESTRICTION.update([(str(k), v) for k, v in RESTRICTION.items()])
 RESTRICTION.update([(v, k) for k, v in RESTRICTION.items()])
 
 
@@ -94,7 +95,7 @@ class conceptIndex(baseObjectIndex):
 
     def prepare_statuses(self, obj):
         # We don't remove duplicates as it should mean the more standard it is the higher it will rank
-        states = [int(s.state) for s in obj.current_statuses.all()]
+        states = [int(s.state) for s in obj.current_statuses().all()]
         if not states:
             states = ['-99']  # This is an unregistered item
         return states
