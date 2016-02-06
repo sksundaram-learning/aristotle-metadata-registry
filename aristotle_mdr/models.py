@@ -812,7 +812,7 @@ class _concept(baseAristotleObject):
             Q(until_date__isnull=True)
         )
 
-        qs = qs.filter(
+        states = qs.filter(
             registered_before_now & registation_still_valid
         ).order_by("registrationAuthority", "-registrationDate", "-created")
 
