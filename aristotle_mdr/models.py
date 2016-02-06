@@ -817,7 +817,7 @@ class _concept(baseAristotleObject):
 
         qs = qs.filter(
             registered_before_now & registation_still_valid
-        ).order_by("registrationAuthority","-registrationDate", "-created")
+        ).order_by("registrationAuthority", "-registrationDate", "-created")
         try:
             states = qs.distinct('registrationAuthority')
             f=states[0]  # Force it to fetch from the database to force an error!
