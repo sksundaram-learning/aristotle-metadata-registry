@@ -25,7 +25,7 @@ for the sharing of metadata.
 Extensions
 ++++++++++
 Aristotle-MDR aims to be compliant to the core model described within ISO/IEC 11179,
-however `a number of extensions are available to extend functionality and add additional content types <https://github.com/LegoStormtroopr/aristotle-metadata-registry/wiki/Available-Extensions>`_.
+however `a number of extensions are available to extend functionality and add additional content types <https://github.com/aristotle-mdr//aristotle-metadata-registry/wiki/Available-Extensions>`_.
 
 
 Quick start
@@ -148,6 +148,6 @@ About the badges (plus some extras):
     :alt: Edit screen for a Data Element
     :scale: 100%
 
-.. |aristotle-logo| image:: https://raw.githubusercontent.com/LegoStormtroopr/aristotle-metadata-registry/develop/aristotle_mdr/static/aristotle_mdr/images/aristotle.png
+.. |aristotle-logo| image:: https://raw.githubusercontent.com/aristotle-mdr/aristotle-metadata-registry/develop/aristotle_mdr/static/aristotle_mdr/images/aristotle.png
     :alt: Aristotle-MDR Logo
     :scale: 100%
