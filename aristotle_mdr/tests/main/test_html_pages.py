@@ -17,6 +17,14 @@ class AnonymousUserViewingThePages(TestCase):
     def test_homepage(self):
         home = self.client.get("/")
         self.assertEqual(home.status_code,200)
+
+    def test_notifications_for_anon_users(self):
+        home = self.client.get("/")
+        self.assertEqual(home.status_code,200)
+        # Make sure notifications library isn't loaded for anon users as they'll never have notifications.
+        self.assertTrue("notifications/notify.js" not in home.content)
+        # At some stage this might need a better test to check the 500 page doesn't show... after notifications is fixed.
+        
     def test_help_all_items(self):
         response = self.client.get(reverse('aristotle:about_all_items'))
         self.assertEqual(response.status_code,200)
