@@ -20,6 +20,10 @@ class CreateListPageTests(utils.LoggedInViewPages,TestCase):
         response = self.client.get(reverse('aristotle:createList'))
         self.assertEqual(response.status_code,403) # unauthorised
 
+        self.login_registrar()
+        response = self.client.get(reverse('aristotle:createList'))
+        self.assertEqual(response.status_code,403) # unauthorised
+
         self.login_editor()
         response = self.client.get(reverse('aristotle:createList'))
         self.assertEqual(response.status_code,200)
@@ -77,12 +81,12 @@ class ConceptWizardPage(utils.LoggedInViewPages):
     def test_viewer_cannot_view_create_page(self):
         self.login_viewer()
         response = self.client.get(self.wizard_url)
-        self.assertEqual(response.status_code,302)
+        self.assertEqual(response.status_code,403)
 
     def test_registrar_cannot_view_create_page(self):
         self.login_registrar()
         response = self.client.get(self.wizard_url)
-        self.assertEqual(response.status_code,302)
+        self.assertEqual(response.status_code,403)
 
     def test_editor_can_view_create_page(self):
         self.login_editor()
