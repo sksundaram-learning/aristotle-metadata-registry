@@ -15,6 +15,7 @@ RESTRICTION = {
     2: 'Unlocked',
 }
 # reverse the dictionary to make two-way look ups easier
+RESTRICTION.update([(str(k), v) for k, v in RESTRICTION.items()])
 RESTRICTION.update([(v, k) for k, v in RESTRICTION.items()])
 
 

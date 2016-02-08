@@ -3,7 +3,8 @@
     <header style="display:none"><h1>Submit Options</h1></header>
     <ul>
         {% if show_delete_link %}
-            <li class="grp-float-left"><a href="delete/" class="grp-button grp-delete-link">{% trans "Delete" %}</a></li>
+            {% url opts|admin_urlname:'delete' original.pk|admin_urlquote as delete_url %}
+            <li class="grp-float-left"><a href="{% add_preserved_filters delete_url %}" class="grp-button grp-delete-link">{% trans "Delete" %}</a></li>
         {% endif %}
         {% if original.id %}
         <li class="grp-float-left">

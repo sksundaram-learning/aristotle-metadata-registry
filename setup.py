@@ -39,7 +39,7 @@ setup(
 
         'django-model-utils==2.3.1',
         'django-notifications-hq>=1.0', #At least 0.8 for live notifications.
-        'django-grappelli',
+        'django-grappelli>=2.7.3',
         'docutils',
 
         #Search requirements
@@ -51,7 +51,7 @@ setup(
 
         # Revision control
         "django-reversion>=1.10",
-        'django-reversion-compare>=0.5.6',
+        'django-reversion-compare>=0.6.0',
         'diff-match-patch',
 
         # Fancy UI stuff

@@ -1,6 +1,7 @@
 from django.apps import apps
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.core.exceptions import PermissionDenied, ImproperlyConfigured
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -15,10 +16,12 @@ from django.template.loader import select_template
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import TemplateView
 from django.utils import timezone
+from django.utils.decorators import method_decorator
 import datetime
 
 import reversion
 from reversion.revisions import default_revision_manager
+from reversion_compare.views import HistoryCompareDetailView
 
 from aristotle_mdr.perms import user_can_view, user_can_edit, user_can_change_status
 from aristotle_mdr import perms
@@ -41,6 +44,24 @@ PAGES_PER_RELATED_ITEM = 15
 class DynamicTemplateView(TemplateView):
     def get_template_names(self):
         return ['aristotle_mdr/static/%s.html' % self.kwargs['template']]
+
+
+class ConceptHistoryCompareView(HistoryCompareDetailView):
+    model = MDR._concept
+    pk_url_kwarg = 'iid'
+    template_name = "aristotle_mdr/actions/concept_history_compare.html"
+
+    def get_object(self, queryset=None):
+        item = super(ConceptHistoryCompareView, self).get_object(queryset)
+        if not user_can_view(self.request.user, item):
+            raise PermissionDenied
+        self.model = item.item.__class__  # Get the subclassed object
+        return item
+
+    @method_decorator(login_required)
+    def dispatch(self, *args, **kwargs):
+        print "here", args, kwargs
+        return super(ConceptHistoryCompareView, self).dispatch(*args, **kwargs)
 
 
 class HelpTemplateView(TemplateView):
@@ -192,23 +213,6 @@ def render_if_condition_met(request, condition, objtype, iid, model_slug=None, n
     )
 
     return HttpResponse(template.render(context))
-
-
-def item_history(request, iid):
-    item = get_if_user_can_view(MDR._concept, request.user, iid)
-    if not item:
-        if request.user.is_anonymous():
-            return redirect(reverse('friendly_login') + '?next=%s' % request.path)
-        else:
-            raise PermissionDenied
-    item = item.item
-    versions = default_revision_manager.get_for_object(item)
-    from django.contrib.contenttypes.models import ContentType
-    ct = ContentType.objects.get_for_model(item)
-    versions = reversion.models.Version.objects.filter(content_type=ct, object_id=item.pk).order_by('-revision__date_created')
-
-    page = render(request, "aristotle_mdr/actions/concept_history.html", {"item": item, 'versions': versions})
-    return page
 
 
 def registrationHistory(request, iid):
