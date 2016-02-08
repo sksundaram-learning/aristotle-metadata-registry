@@ -8,7 +8,7 @@ from django.utils.translation import ugettext_lazy as _
 
 import aristotle_mdr.models as MDR
 from aristotle_mdr.forms import ChangeStatusForm
-from aristotle_mdr.perms import user_can_view, user_is_registrar
+from aristotle_mdr.perms import user_can_view, user_is_registrar,user_is_workgroup_manager
 from aristotle_mdr.forms.creation_wizards import UserAwareForm
 
 
@@ -139,10 +139,10 @@ class RemoveFavouriteForm(BulkActionForm):
 
 
 class ChangeStateForm(ChangeStatusForm, BulkActionForm):
-    confirm_page = "aristotle_mdr/actions/bulk_change_status.html"
+    confirm_page = "aristotle_mdr/actions//bulk/change_status.html"
     classes="fa-university"
     action_text = _('Change state')
-    items_label="These are the items that will be be registered. Add or remove additional items with the autocomplete box.",
+    items_label="These are the items that will be registered. Add or remove additional items with the autocomplete box.",
 
     def __init__(self, *args, **kwargs):
         super(ChangeStateForm, self).__init__(*args, **kwargs)
@@ -189,3 +189,63 @@ class ChangeStateForm(ChangeStatusForm, BulkActionForm):
     @classmethod
     def can_use(cls, user):
         return user_is_registrar(user)
+
+
+class ChangeWorkgroupForm(BulkActionForm):
+    confirm_page = "aristotle_mdr/actions/bulk_change_workgroup.html"
+    classes="fa-users"
+    action_text = _('Change workgroup')
+    items_label="These are the items that will be moved between workgroups. Add or remove additional items with the autocomplete box.",
+
+    def __init__(self, *args, **kwargs):
+        super(ChangeWorkgroupForm, self).__init__(*args, **kwargs)
+
+        wgs = [(wg.id, wg.name) for wg in self.user.profile.workgroups]
+        self.fields['workgroup']=forms.ChoiceField(
+            label="Workgroup to move items to",
+            choices=wgs
+        )
+
+    def make_changes(self):
+        import reversion
+        from aristotle_mdr.perms import user_can_remove_from_workgroup, user_can_move_to_workgroup
+        new_workgroup = self.cleaned_data['workgroup']
+
+        if not user_can_move_to_workgroup(self.user,new_workgroup):
+            raise PermissionDenied
+
+        move_from_checks = {}  # Cache workgroup permissions as we check them to speed things up
+        
+        failed = []
+        success = []
+        with transaction.atomic(), reversion.revisions.create_revision():
+            reversion.revisions.set_user(self.user)
+            for item in items:
+                can_move = move_from_checks.get(item.workgroup.pk,None)
+                if can_move is None:
+                    can_move = user_can_remove_from_workgroup(self.user,item.workgroup)
+                    move_from_checks[item.workgroup.pk] = can_move
+    
+                if not can_move:
+                    failed.append(item)
+                else:
+                    success.append(item)
+                    item.workgroup = new_workgroup
+                    item.save()
+
+            failed = list(set(failed))
+            success = list(set(success))
+            bad_items = sorted([str(i.id) for i in failed])
+            message = _(
+                "%(num_items)s items moved into the workgroup '%(new_wg)s'. \n"
+                "Some items failed, they had the id's: %(bad_ids)s"
+            ) % {
+                'num_items': len(success),
+                'bad_ids': ",".join(bad_items)
+            }
+            reversion.revisions.set_comment(message)
+            return message
+
+    @classmethod
+    def can_use(cls, user):
+        return user_can_move_any_workgroup(user)
