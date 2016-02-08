@@ -17,7 +17,7 @@
     </strong>
     <div class="details">
     <small>Statuses:
-    {% for s in choice.statuses.all %}
+    {% for s in choice.current_statuses.all %}
         [{{ s.registrationAuthority }}: {{ s.state_name }}]
     {% empty %}<strong>None</strong>
     {% endfor %}</small>
