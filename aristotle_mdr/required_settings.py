@@ -134,6 +134,7 @@ ARISTOTLE_SETTINGS = {
         'add_favourites': 'aristotle_mdr.forms.bulk_actions.AddFavouriteForm',
         'remove_favourites': 'aristotle_mdr.forms.bulk_actions.RemoveFavouriteForm',
         'change_state': 'aristotle_mdr.forms.bulk_actions.ChangeStateForm',
+        'move_workgroup': 'aristotle_mdr.forms.bulk_actions.ChangeWorkgroupForm',
     },
     'DASHBOARD_ADDONS': []
 }

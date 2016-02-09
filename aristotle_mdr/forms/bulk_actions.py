@@ -8,7 +8,12 @@ from django.utils.translation import ugettext_lazy as _
 
 import aristotle_mdr.models as MDR
 from aristotle_mdr.forms import ChangeStatusForm
-from aristotle_mdr.perms import user_can_view, user_is_registrar,user_is_workgroup_manager
+from aristotle_mdr.perms import (
+    user_can_view,
+    user_is_registrar,
+    user_is_workgroup_manager,
+    user_can_move_any_workgroup
+)
 from aristotle_mdr.forms.creation_wizards import UserAwareForm
 
 
@@ -139,7 +144,7 @@ class RemoveFavouriteForm(BulkActionForm):
 
 
 class ChangeStateForm(ChangeStatusForm, BulkActionForm):
-    confirm_page = "aristotle_mdr/actions//bulk/change_status.html"
+    confirm_page = "aristotle_mdr/actions/bulk_actions/change_status.html"
     classes="fa-university"
     action_text = _('Change state')
     items_label="These are the items that will be registered. Add or remove additional items with the autocomplete box.",
@@ -192,7 +197,7 @@ class ChangeStateForm(ChangeStatusForm, BulkActionForm):
 
 
 class ChangeWorkgroupForm(BulkActionForm):
-    confirm_page = "aristotle_mdr/actions/bulk_change_workgroup.html"
+    confirm_page = "aristotle_mdr/actions/bulk_actions/change_workgroup.html"
     classes="fa-users"
     action_text = _('Change workgroup')
     items_label="These are the items that will be moved between workgroups. Add or remove additional items with the autocomplete box.",
@@ -211,21 +216,21 @@ class ChangeWorkgroupForm(BulkActionForm):
         from aristotle_mdr.perms import user_can_remove_from_workgroup, user_can_move_to_workgroup
         new_workgroup = self.cleaned_data['workgroup']
 
-        if not user_can_move_to_workgroup(self.user,new_workgroup):
+        if not user_can_move_to_workgroup(self.user, new_workgroup):
             raise PermissionDenied
 
         move_from_checks = {}  # Cache workgroup permissions as we check them to speed things up
-        
+
         failed = []
         success = []
         with transaction.atomic(), reversion.revisions.create_revision():
             reversion.revisions.set_user(self.user)
             for item in items:
-                can_move = move_from_checks.get(item.workgroup.pk,None)
+                can_move = move_from_checks.get(item.workgroup.pk, None)
                 if can_move is None:
-                    can_move = user_can_remove_from_workgroup(self.user,item.workgroup)
+                    can_move = user_can_remove_from_workgroup(self.user, item.workgroup)
                     move_from_checks[item.workgroup.pk] = can_move
-    
+
                 if not can_move:
                     failed.append(item)
                 else:
