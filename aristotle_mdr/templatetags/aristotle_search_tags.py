@@ -79,7 +79,7 @@ def get_item_from_facet(_type, _id):
     item = None
 
     if model and _id:
-        print "offending RA is [%s]"%_id
+        print "offending RA is [%s]" % _id
         item = model.objects.get(pk=_id)
 
     return item
