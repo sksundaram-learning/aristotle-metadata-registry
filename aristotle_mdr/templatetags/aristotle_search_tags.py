@@ -70,7 +70,7 @@ def search_describe_filters(search_form):
 def get_item_from_facet(_type, _id):
     from django.contrib.contenttypes.models import ContentType
 
-    model = {
+    model_type = {
         'ra': MDR.RegistrationAuthority,
         'wg': MDR.Workgroup,
         'ct': ContentType,
@@ -78,10 +78,13 @@ def get_item_from_facet(_type, _id):
 
     item = None
 
-    if model and _id:
-        print "offending RA is [%s]" % _id
-        item = model.objects.get(pk=int(_id))
-
+    if model_type and _id:
+        
+        try:
+            item = model_type.objects.get(pk=int(_id))
+        except:
+            print "offending RA is [%s] - [%s] - [%s]" % (_id, _type, model_type)
+            raise
     return item
 
 
