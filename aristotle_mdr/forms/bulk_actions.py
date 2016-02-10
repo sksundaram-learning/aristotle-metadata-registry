@@ -188,7 +188,7 @@ class ChangeStateForm(ChangeStatusForm, BulkActionForm):
                 'num_ra': len(ras),
                 'bad_ids': ",".join(bad_items)
             }
-            reversion.revisions.set_comment(message)
+            reversion.revisions.set_comment(changeDetails+"\n\n"+message)
             return message
 
     @classmethod
@@ -210,11 +210,17 @@ class ChangeWorkgroupForm(BulkActionForm):
             label="Workgroup to move items to",
             choices=wgs
         )
+        self.fields['comments']=forms.CharField(
+            label="Change notes (optional)",
+            required=False,
+            widget=forms.Textarea
+        )
 
     def make_changes(self):
         import reversion
         from aristotle_mdr.perms import user_can_remove_from_workgroup, user_can_move_to_workgroup
         new_workgroup = self.cleaned_data['workgroup']
+        changeDetails = self.cleaned_data['changeDetails']
 
         if not user_can_move_to_workgroup(self.user, new_workgroup):
             raise PermissionDenied
@@ -248,7 +254,7 @@ class ChangeWorkgroupForm(BulkActionForm):
                 'num_items': len(success),
                 'bad_ids': ",".join(bad_items)
             }
-            reversion.revisions.set_comment(message)
+            reversion.revisions.set_comment(changeDetails+"\n\n"+message)
             return message
 
     @classmethod
