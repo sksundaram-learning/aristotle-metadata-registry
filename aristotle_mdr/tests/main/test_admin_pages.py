@@ -37,7 +37,7 @@ class AdminPage(utils.LoggedInViewPages,TestCase):
         wg_nw.stewards.add(new_editor)
         wg_aw.stewards.add(new_editor)
 
-        new_editor = User.objects.get(pk=new_editor.pk) #decache
+        new_editor = User.objects.get(pk=new_editor.pk) # decache
 
         self.assertEqual(new_editor.profile.editable_workgroups.count(),2)
         self.assertTrue(wg_ns in new_editor.profile.editable_workgroups.all())
@@ -77,8 +77,10 @@ class AdminPage(utils.LoggedInViewPages,TestCase):
 
     def test_su_can_add_new_user(self):
         self.login_superuser()
-        response = self.client.post(reverse("admin:auth_user_add"),
-            {'username':"newuser",'password1':"test",'password2':"test",
+        response = self.client.post(
+            reverse("admin:auth_user_add"),
+            {
+                'username':"newuser",'password1':"test",'password2':"test",
                 'profile-TOTAL_FORMS': 1, 'profile-INITIAL_FORMS': 0, 'profile-MAX_NUM_FORMS': 1,
                 'profile-0-workgroup_manager_in': [self.wg1.id],
                 'profile-0-steward_in': [self.wg1.id],
@@ -106,8 +108,10 @@ class AdminPage(utils.LoggedInViewPages,TestCase):
             self.assertEqual(rel.count(),1)
             self.assertEqual(rel.first(),self.ra)
 
-        response = self.client.post(reverse("admin:auth_user_add"),
-            {'username':"newuser_with_none",'password1':"test",'password2':"test",
+        response = self.client.post(
+            reverse("admin:auth_user_add"),
+            {
+                'username':"newuser_with_none",'password1':"test",'password2':"test",
                 'profile-TOTAL_FORMS': 1, 'profile-INITIAL_FORMS': 0, 'profile-MAX_NUM_FORMS': 1,
             }
         )
@@ -188,7 +192,7 @@ class AdminPageForConcept(utils.LoggedInViewPages):
         response = self.client.get(reverse("admin:%s_%s_add"%(self.itemType._meta.app_label,self.itemType._meta.model_name)))
 
         data = {'name':"admin_page_test_oc",'definition':"test","workgroup":self.wg1.id,
-                    'statuses-TOTAL_FORMS': 0, 'statuses-INITIAL_FORMS': 0 #no substatuses
+                    'statuses-TOTAL_FORMS': 0, 'statuses-INITIAL_FORMS': 0 # no substatuses
                 }
         data.update(self.form_defaults)
 
@@ -270,7 +274,7 @@ class AdminPageForConcept(utils.LoggedInViewPages):
         updated_item['name'] = updated_name
 
         updated_item.update({
-            'statuses-TOTAL_FORMS': 0, 'statuses-INITIAL_FORMS': 0 #no statuses
+            'statuses-TOTAL_FORMS': 0, 'statuses-INITIAL_FORMS': 0 # no statuses
         })
         updated_item.update(self.form_defaults)
         self.assertTrue(self.wg1 in self.editor.profile.editable_workgroups.all())
@@ -289,7 +293,7 @@ class AdminPageForConcept(utils.LoggedInViewPages):
         self.item1 = self.itemType.objects.get(pk=self.item1.pk)
         self.assertEqual(self.item1.name,updated_name)
 
-#deprecated
+# deprecated
     def test_supersedes_saves(self):
         self.item2 = self.itemType.objects.create(name="admin_page_test_oc_2",definition=" ",workgroup=self.wg1,**self.create_defaults)
         self.item3 = self.itemType.objects.create(name="admin_page_test_oc_2",definition=" ",workgroup=self.wg1,**self.create_defaults)
@@ -303,7 +307,7 @@ class AdminPageForConcept(utils.LoggedInViewPages):
         updated_item['name'] = updated_name
 
         updated_item.update({
-            'statuses-TOTAL_FORMS': 0, 'statuses-INITIAL_FORMS': 0, #no statuses
+            'statuses-TOTAL_FORMS': 0, 'statuses-INITIAL_FORMS': 0, # no statuses
             'deprecated':[self.item2.id,self.item3.id]
         })
         updated_item.update(self.form_defaults)
@@ -331,7 +335,7 @@ class AdminPageForConcept(utils.LoggedInViewPages):
         updated_item['name'] = updated_name
 
         updated_item.update({
-            'statuses-TOTAL_FORMS': 0, 'statuses-INITIAL_FORMS': 0, #no statuses
+            'statuses-TOTAL_FORMS': 0, 'statuses-INITIAL_FORMS': 0, # no statuses
             'superseded_by':self.item2.id
         })
         updated_item.update(self.form_defaults)
@@ -347,6 +351,76 @@ class AdminPageForConcept(utils.LoggedInViewPages):
         self.item1 = self.itemType.objects.get(pk=self.item1.pk)
         self.assertTrue(self.item2 == self.item1.superseded_by)
 
+    def test_history_page_loads(self):
+        self.login_editor()
+        response = self.client.get(
+            reverse("admin:%s_%s_history"%(self.itemType._meta.app_label,self.itemType._meta.model_name),
+            args=[self.item1.pk])
+            )
+        self.assertResponseStatusCodeEqual(response,200)
+
+    def test_prior_version_page_loads(self):
+        # Not going to let this issue crop up again!
+        from reversion import revisions as reversion
+        new_name = "A different name"
+        with reversion.create_revision():
+            self.item1.name = new_name
+            self.item1.save()
+        version_list = reversion.get_for_object(self.item1)
+
+        self.login_editor()
+        response = self.client.get(
+            reverse("admin:%s_%s_revision"%(self.itemType._meta.app_label,self.itemType._meta.model_name),
+            args=[self.item1.pk,version_list.last().id])
+            )
+        self.assertResponseStatusCodeEqual(response,200)
+        self.assertTrue(response.context['adminform'].form.initial['name'],new_name)
+
+    def test_admin_user_can_compare_statuses(self):
+        self.login_editor()
+
+        from reversion import revisions as reversion
+        
+        with reversion.create_revision():
+            self.item1.name = "change 1"
+            reversion.set_comment("change 1")
+            self.item1.readyToReview = True
+            self.item1.save()
+
+        with reversion.create_revision():
+            self.item1.name = "change 2"
+            reversion.set_comment("change 2")
+            r = self.ra.register(
+                item=self.item1,
+                state=models.STATES.incomplete,
+                user=self.registrar
+            )
+            self.item1.save()
+
+        revisions = reversion.default_revision_manager.get_for_object(self.item1)
+
+        response = self.client.get(
+            reverse(
+                "admin:%s_%s_compare"%(
+                    self.itemType._meta.app_label,self.itemType._meta.model_name
+                ),
+                args=[self.item1.pk]
+            ),
+            {'version_id1' : revisions.first().pk,
+            'version_id2' : revisions.last().pk
+            }
+        )
+        self.assertResponseStatusCodeEqual(response,200)
+        self.assertTrue("change 2" in response.content)
+        self.assertTrue('statuses' in response.content)
+        
+        self.item1 = self.itemType.objects.get(pk=self.item1.pk) #decache
+        self.assertTrue(self.item1.name == "change 2")
+        for s in self.item1.statuses.all():
+            self.assertContains(
+                response,
+                '%s is %s'%(self.item1.name,s.get_state_display())
+            )
 
 
 class ObjectClassAdminPage(AdminPageForConcept,TestCase):
@@ -381,4 +455,3 @@ class DataElementDerivationAdminPage(AdminPageForConcept,TestCase):
         self.create_defaults = {'derives':self.derived_de}
         self.form_defaults = {'derives':self.derived_de.id}
         self.create_items()
-

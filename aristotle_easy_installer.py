@@ -20,11 +20,12 @@ from random import getrandbits
 import hashlib
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+PIP_MSG = "You can finish installing by running - pip install -r requirements.txt - from the %s directory"%name
 
 optional_modules = [
     ("Aristotle Glossary Extension","#!aristotle_glossary!"),
     ("Aristotle Dataset Extensions","#!aristotle_dse!"),
-    ("Aristotle DDI Downloaders","#!aristotle_ddi!")
+    ("Aristotle DDI Downloaders","#!aristotle_ddi_utils!"),
     ("Aristotle MDR API","#!aristotle_mdr_api!")
 ]
 
@@ -72,7 +73,7 @@ def setup_mdr(name="",extensions=[],force_install=False,dry_install=False):
 
     if dry_install:
         print("Performing dry run, no requirements installed.")
-        print("You can finish installing by running - pip install requirements.txt - from the %s directory"%name)
+        print(PIP_MSG)
         return 0
     elif force_install:
         print("Installing from requirements.txt")
@@ -80,13 +81,13 @@ def setup_mdr(name="",extensions=[],force_install=False,dry_install=False):
         do_install = 'y' == valid_input("Ready to install requirements? (y/n): ", yn).lower()
         if not do_install:
             print("Performing dry run, no requirements installed.")
-            print("You can finish installing by running - pip install requirements.txt - from the %s directory"%name)
+            print(PIP_MSG)
             return 0
     try:
         install_reqs(name)
     except:
         print("Installing requirements failed.")
-        print("You can finish installing by running - pip install requirements.txt - from the %s directory"%name)
+        print(PIP_MSG)
         raise
 
     if not dry_install and do_install:

@@ -62,22 +62,26 @@
             }
 
             pdftoc {
-                color: #666;
+                color: #444;
             }
             pdftoc.pdftoclevel0 {
                 font-weight: bold;
                 margin-top: 0.5em;
                 border-bottom:1px solid black;
+                text-decoration:underline;
             }
             pdftoc.pdftoclevel1 {
                 margin-left: 1em;
                 border-bottom:1px solid black;
+                text-decoration:underline;
             }
             pdftoc.pdftoclevel2 {
                 margin-left: 2em;
-                font-style: italic;
+                border-bottom:1px solid black;
             }
-
+            td, td * , th, th *{
+                vertical-align:top;
+            }
             @page {
                 size: {{ pagesize }};
                 margin: 1cm;
@@ -119,11 +123,6 @@
         {%block page_foot%}
             Page <pdf:pagenumber> -
             {{ item.name }} (id: {{ item.id }}) -
-            {% if view == 'technical' %}
-                Technical view
-            {% else %}
-                Basic view
-            {% endif %} -
             Produced on {% now "DATETIME_FORMAT" %}
         {%endblock%}
         <br/>

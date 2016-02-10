@@ -9,26 +9,37 @@ import logging
 logger = logging.getLogger(__name__)
 logger.debug("Logging started for " + __name__)
 
+RESTRICTION = {
+    0: 'Public',
+    1: 'Locked',
+    2: 'Unlocked',
+}
+# reverse the dictionary to make two-way look ups easier
+RESTRICTION.update([(str(k), v) for k, v in RESTRICTION.items()])
+RESTRICTION.update([(v, k) for k, v in RESTRICTION.items()])
+
+
 class ConceptFallbackCharField(indexes.CharField):
     def prepare_template(self, obj):
         try:
-            return super(ConceptFallbackCharField,self).prepare_template(obj)
+            return super(ConceptFallbackCharField, self).prepare_template(obj)
         except TemplateDoesNotExist:
 
-            logger.debug("No search template found for %s, uning untyped fallback."%obj)
+            logger.debug("No search template found for %s, using untyped fallback." % obj)
 
             self.template_name = "search/indexes/aristotle_mdr/untyped_concept_text.txt"
-            return super(ConceptFallbackCharField,self).prepare_template(obj)
+            return super(ConceptFallbackCharField, self).prepare_template(obj)
+
 
 class baseObjectIndex(indexes.SearchIndex):
     text = ConceptFallbackCharField(document=True, use_template=True)
     modified = indexes.DateTimeField(model_attr='modified')
     created = indexes.DateTimeField(model_attr='created')
-    name = indexes.CharField(model_attr='name',boost=1)
-    #access = indexes.MultiValueField()
+    name = indexes.CharField(model_attr='name', boost=1)
+    # access = indexes.MultiValueField()
 
     def get_model(self):
-        raise NotImplementedError #pragma: no cover -- This should always be overridden
+        raise NotImplementedError  # pragma: no cover -- This should always be overridden
 
     # From http://unfoldthat.com/2011/05/05/search-with-row-level-permissions.html
     def index_queryset(self, using=None):
@@ -36,14 +47,14 @@ class baseObjectIndex(indexes.SearchIndex):
 
         return self.get_model().objects.filter(modified__lte=timezone.now())
 
-    #def have_access(self, obj):
+    # def have_access(self, obj):
     #    for user in obj.viewers.users():
     #        yield user
 
     #    for group in obj.viewers.groups():
     #        yield group
 
-    #def prepare_access(self, obj):
+    # def prepare_access(self, obj):
     #    def _access_iter(obj):
     #        have_access = self.have_access(obj)
     #
@@ -55,38 +66,43 @@ class baseObjectIndex(indexes.SearchIndex):
     #
     #    return list(_access_iter(obj))
 
+
 class conceptIndex(baseObjectIndex):
-    statuses = indexes.MultiValueField()
+    statuses = indexes.MultiValueField(faceted=True)
     highest_state = indexes.IntegerField()
     ra_statuses = indexes.MultiValueField()
-    registrationAuthorities = indexes.MultiValueField()
-    workgroup = indexes.IntegerField()
+    registrationAuthorities = indexes.MultiValueField(faceted=True)
+    workgroup = indexes.IntegerField(faceted=True)
     is_public = indexes.BooleanField()
+    restriction = indexes.IntegerField(faceted=True)
     version = indexes.CharField(model_attr="version")
+    facet_model_ct = indexes.IntegerField(faceted=True)
 
-    def prepare_registrationAuthorities (self, obj):
-        ras = [str(s.registrationAuthority.id) for s in obj.statuses.all()]
+    def prepare_registrationAuthorities(self, obj):
+        ras = [str(s.registrationAuthority.id) for s in obj.current_statuses().all()]
         if not ras and obj.readyToReview:
             # We fake a registration authority only if an item is "ready to review".
-            # This allows registrars to search for flag items in their authority.
+            # This allows registrars to search for flagged items in their authority.
             # But this item won't get a state.
             ras = [str(r.id) for r in obj.workgroup.registrationAuthorities.all()]
         return ras
 
-    def prepare_is_public(self,obj):
+    def prepare_is_public(self, obj):
         return obj.is_public()
 
-    def prepare_workgroup(self,obj):
+    def prepare_workgroup(self, obj):
         return int(obj.workgroup.id)
 
     def prepare_statuses(self, obj):
         # We don't remove duplicates as it should mean the more standard it is the higher it will rank
-        states = [s.state_name for s in obj.statuses.all()]
+        states = [int(s.state) for s in obj.current_statuses().all()]
+        if not states:
+            states = ['-99']  # This is an unregistered item
         return states
 
     def prepare_highest_state(self, obj):
         # Include -99, so "unregistered" items get a value
-        state = max([int(s.state) for s in obj.statuses.all()]+[-99])
+        state = max([int(s.state) for s in obj.current_statuses().all()] + [-99])
         """
         We don't want retired or superseded ranking higher than standards during search
         as these are no longer "fit for purpose" so we'll place them below other
@@ -98,9 +114,22 @@ class conceptIndex(baseObjectIndex):
             state = -9
         return state
 
-
     def prepare_ra_statuses(self, obj):
         # This allows us to check a registration authority and a state simultaneously
-        states = ["%s___%s"%(str(s.registrationAuthority.id),str(s.state))
-                    for s in obj.statuses.all()]
+        states = [
+            "%s___%s" % (str(s.registrationAuthority.id), str(s.state)) for s in obj.current_statuses().all()
+        ]
         return states
+
+    def prepare_facet_model_ct(self, obj):
+        # We need to use the content type, as if we use text it gets stemmed wierdly
+        from django.contrib.contenttypes.models import ContentType
+        ct = ContentType.objects.get_for_model(obj)
+        return ct.pk
+
+    def prepare_restriction(self, obj):
+        if obj._is_public:
+            return RESTRICTION['Public']
+        elif obj._is_locked:
+            return RESTRICTION['Locked']
+        return RESTRICTION['Unlocked']

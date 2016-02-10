@@ -20,6 +20,7 @@ the `Python programming language <https://www.python.org/about/gettingstarted/>`
    new_content_type.rst
    registering_new_content_types.rst
    downloads.rst
+   bulk_actions.rst
    templates.rst
    including_extra_content.rst
    out_of_the_box_features.rst

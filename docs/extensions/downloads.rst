@@ -39,7 +39,7 @@ registered for this module. The arguments are:
 permissions to view the requested item only. Permissions for other items will
 have to be checked within the download method.
 
-For an example of how to handle multiple download formats ina  single module,
+For an example of how to handle multiple download formats in a single module,
 review the ``aristotle_mdr.downloader`` module which provides downloads in the
 PDF and CSV format for various content types which is linked below:
 

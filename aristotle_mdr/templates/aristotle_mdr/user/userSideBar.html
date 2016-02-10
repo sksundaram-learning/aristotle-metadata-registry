@@ -33,7 +33,9 @@
         <span class="badge pull-right">{{ user.profile.myWorkgroups.count }}</span></a>
         {% if subWorkgroups %}
         <ul class="nav nav-pills nav-stacked nav-collapse dashSubMenu">
-            <li><a href="{% url 'aristotle:user_workgroups_archives' %}">{% trans "Archived Workgroups" %}</a></li>
+            <li><a href="{% url 'aristotle:user_workgroups_archives' %}">
+                <i class="fa fa-archive"></i>
+                {% trans "Archived Workgroups" %}</a></li>
             {% for item in subWorkgroups %}
             <li>
                 <a href="{% url 'aristotle:workgroup' item.id %}">{{ item }}</a>
@@ -50,6 +52,7 @@
         {% ifequal activeTab "workgroupArchives" %}
         <ul class="nav nav-pills nav-stacked nav-collapse dashSubMenu">
             <li class="active">
+                <i class="fa fa-archive"></i>
                 <a href="{% url 'aristotle:user_workgroups_archives' %}">{% trans "Archived Workgroups" %}</a>
             </li>
         </ul>
@@ -75,6 +78,10 @@
         {% endifequal %}
     </li>
     <li role="presentation" class="nav-divider"></li>
+    <li {% ifequal activeTab "role" %}class="active"{% endifequal %}>
+        <a href="{% url 'aristotle:userRoles' %}">
+        <i class="fa fa-industry fa-fw"></i> My roles</a>
+    </li>
     {% if request.user.profile.is_registrar %}
     <li {% ifequal activeTab "registrarTools" %}class="active"{% endifequal %}>
         <a href="{% url 'aristotle:userRegistrarTools' %}">
@@ -91,7 +98,7 @@
     </li>
     {% endif %}
     {% if request.user.is_superuser %}
-    <li {% ifequal activeTab "adminTools" %}class="active"{% endifequal %}>
+    <li class="su_action {% ifequal activeTab "adminTools" %}active{% endifequal %}">
         <a href="{% url 'aristotle:userAdminTools' %}">
         <i class="fa fa-user-md fa-fw"></i> {% trans "Administrator tools" %}
         </a>
@@ -106,5 +113,11 @@
         {% endif %}
     </li>
     {% endif %}
+    <li role="presentation" class="nav-divider"></li>
+    {% for addon in config.DASHBOARD_ADDONS %}
+        {% with addon|add:'/dashboard/sidebar.html' as template %}
+            {% include template %}
+        {% endwith %}
+    {% endfor %}
 </ul>
 

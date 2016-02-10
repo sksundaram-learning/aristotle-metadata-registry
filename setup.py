@@ -8,8 +8,8 @@ with open(os.path.join(os.path.dirname(__file__), 'README.rst')) as readme:
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
-    name='django-aristotle-metadata-registry',
-    version='0.0.1a1',
+    name='aristotle-metadata-registry',
+    version='1.1.1',
     packages=['aristotle_mdr'],
     include_package_data=True,
     license='Aristotle-MDR Modified BSD Licence',  # example license
@@ -34,12 +34,12 @@ setup(
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
     ],
     install_requires = [
-        "Django>=1.7",
+        "Django>=1.8,<1.9",
         'pytz',
 
-        'django-model-utils',
-        'django-notifications-hq',
-        'django-grappelli',
+        'django-model-utils==2.3.1',
+        'django-notifications-hq>=1.0', #At least 0.8 for live notifications.
+        'django-grappelli>=2.7.3',
         'docutils',
 
         #Search requirements
@@ -50,13 +50,13 @@ setup(
         'django-ckeditor==4.5.1',
 
         # Revision control
-        "django-reversion>=1.8",
-        'django-reversion-compare>=0.5.2',
+        "django-reversion>=1.10",
+        'django-reversion-compare>=0.6.0',
         'diff-match-patch',
 
         # Fancy UI stuff
         'django-static-precompiler',
-        'django-autocomplete-light',
+        'django-autocomplete-light==2.3.3',
         'django-bootstrap3',
         'django-bootstrap3-datetimepicker',
 

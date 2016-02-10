@@ -25,7 +25,7 @@ STATIC_ROOT =os.path.join(BASE_DIR, "static")
 
 # If you are using the Aristotle Glossary, uncomment the command below to enable
 # the glossary insertion button in the rich text editor
-#from aristotle_glossary.settings import CKEDITOR_CONFIGS
+#!aristotle_glossary!from aristotle_glossary.settings import CKEDITOR_CONFIGS
 
 # See https://docs.djangoproject.com/en/1.7/howto/deployment/checklist/
 # SECURITY WARNING: keep the secret key used in production secret!
@@ -49,7 +49,7 @@ ALLOWED_HOSTS = []
 # * the installation command in `requirements.txt` file
 # * the url import in `example_mdr/urls.py`
 INSTALLED_APPS = (
-    #!aristotle_ddi! 'aristotle_ddi_utils', # Download formats in the DDI3.2 XML format - https://github.com/aristotle-mdr/aristotle-ddi-utils
+    #!aristotle_ddi_utils! 'aristotle_ddi_utils', # Download formats in the DDI3.2 XML format - https://github.com/aristotle-mdr/aristotle-ddi-utils
     #!aristotle_dse! 'aristotle_dse', # Additional models for describing datasets - https://github.com/aristotle-mdr/aristotle-dataset-extensions
     #!aristotle_glossary! 'aristotle_glossary', # Model for managing and inserting glossary content - https://github.com/aristotle-mdr/aristotle-glossary
     #!aristotle_mdr_api! 'aristotle_mdr_api', # JSON API for programmatic access to content
@@ -104,17 +104,17 @@ ARISTOTLE_SETTINGS.update({
     'SITE_INTRO': 'Use Default Site Name to search for metadata...', # 'Intro text use on the home page as a prompt for users.'
     'SITE_DESCRIPTION': 'About this site', # 'The main title for the site.'
     'CONTENT_EXTENSIONS' : [ #Extensions that add additional object types for search/display.
-            # 'aristotle_dse',
-            # 'aristotle_glossary',
+            #!aristotle_dse! 'aristotle_dse',
+            #!aristotle_glossary! 'aristotle_glossary',
         ]
     })
 # Specified the agency to use when outputing items in the DDI XML format.
-# ARISTOTLE_DDI_AGENCY = "demo.ddi.aristotle_mdr"
+#!aristotle_ddi_utils!ARISTOTLE_DDI_AGENCY = "demo.ddi.aristotle_mdr"
 
 # This option gives a site the ability to register the different download options available for the site
 # This invoked in templates using the aristotle template tag "downloadMenu"
 ARISTOTLE_DOWNLOADS = ARISTOTLE_DOWNLOADS + [
-#    ('ddi3.2','DDI 3.2','fa-file-code-o','aristotle_ddi_utils'),
+##!aristotle_ddi_utils!    ('ddi3.2','DDI 3.2','fa-file-code-o','aristotle_ddi_utils'),
     ]
 
 #

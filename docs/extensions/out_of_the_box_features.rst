@@ -13,8 +13,8 @@ Content creation wizards that encourage reuse
 Every item type is provided with a basic 2-step content creation wizard that shows
 a user when they may be replicating content that already exists in the registry in an unobtusive way.
 
-This gives freedom to for content creators, but gives registry administrators the
-peace of mind knowing that they system will encourage reuse where possible.
+This gives freedom to content creators, but gives registry administrators the
+peace of mind knowing that the system will encourage reuse where possible.
 
 User-friendly modular editor
 ----------------------------
@@ -28,7 +28,7 @@ Basic HTML and downloadable PDF templates
 -----------------------------------------
 
 The decoupling of the model management and database back-end and Djangos powerful
-templating front-end means new item types can be quickly describe and prototyped
+templating front-end means new item types can be quickly described and prototyped
 in code, without having to worry about front-end concerns.
 
 Concepts have a generic fallback template that gives a unified look to new items,

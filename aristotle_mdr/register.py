@@ -31,11 +31,13 @@ import logging
 logger = logging.getLogger(__name__)
 logger.debug("Logging started for " + __name__)
 
+
 def register_concept(concept_class, *args, **kwargs):
     """ A handler for third-party apps to make registering
     extension models based on ``aristotle_mdr.models.concept`` easier.
 
-    Sets up the search index, django administrator page and autocomplete handlers.
+    Sets up the version controls, search indexes, django administrator page
+    and autocomplete handlers.
     All ``args`` and ``kwargs`` are passed to the called methods. For examples of
     what can be passed into this method review the other methods in
     ``aristotle_mdr.register``.
@@ -44,9 +46,28 @@ def register_concept(concept_class, *args, **kwargs):
 
         register_concept(Question, extra_fieldsets=[('Question','question_text'),]
     """
-    register_concept_autocomplete(concept_class, *args, **kwargs)
+
+    register_concept_reversions(concept_class, *args, **kwargs)  # must come before admin
     register_concept_admin(concept_class, *args, **kwargs)
+    register_concept_autocomplete(concept_class, *args, **kwargs)
     register_concept_search_index(concept_class, *args, **kwargs)
+
+
+def register_concept_reversions(concept_class, *args, **kwargs):
+    from reversion import revisions as reversion
+    follows = kwargs.get('reversion', {}).get('follow', [])
+    follows += [
+        '_concept_ptr',
+        'statuses',
+        'workgroup',
+    ]
+    follow_classes = kwargs.get('reversion', {}).get('follow_classes', [])
+
+    reversion.register(concept_class, follow=follows)
+
+    for cls in follow_classes:
+        reversion.register(cls)
+
 
 def register_concept_autocomplete(concept_class, *args, **kwargs):
     """ Registers the given ``concept`` with ``autocomplete_light`` based on the
@@ -56,8 +77,9 @@ def register_concept_autocomplete(concept_class, *args, **kwargs):
     :param concept concept_class: The model that is to be registered
     """
     x = reg.autocompleteTemplate.copy()
-    x['name']='Autocomplete'+concept_class.__name__
-    autocomplete_light.register(concept_class,reg.PermissionsAutocomplete,**x)
+    x['name'] = 'Autocomplete' + concept_class.__name__
+    autocomplete_light.register(concept_class, reg.PermissionsAutocomplete, **x)
+
 
 def register_concept_search_index(concept_class, *args, **kwargs):
     """ Registers the given ``concept`` with a Haystack search index that conforms
@@ -67,11 +89,13 @@ def register_concept_search_index(concept_class, *args, **kwargs):
 
     :param concept concept_class: The model that is to be registered for searching.
     """
-    class_name = "%s_%sSearchIndex"%(concept_class._meta.app_label,concept_class.__name__)
+
+    class_name = "%s_%sSearchIndex" % (concept_class._meta.app_label, concept_class.__name__)
     setattr(search_index, class_name, create(concept_class))
 
     # Since we've added a new class, kill the index so it is rebuilt.
     connections[DEFAULT_ALIAS]._index = None
+
 
 def create(cls):
     class SubclassedConceptIndex(conceptIndex, indexes.Indexable):
@@ -89,13 +113,13 @@ def register_concept_admin(concept_class, *args, **kwargs):
 
     :param boolean auto_fieldsets: If no extra_fieldsets, when set to true this generates a list of fields for the admin page as "Extra fields for [class]"
     :param concept concept_class: The model that is to be registered
-    :param list extra_fieldsets: Model-specific `fieldsets <https://docs.djangoproject.com/en/1.8/ref/contrib/admin/#django.contrib.admin.ModelAdmin.fieldsets>`_ to be displayed. Fields in the tuples given should be those *not* defined by the base ``aristotle_mdr.models._concept``class.
+    :param list extra_fieldsets: Model-specific `fieldsets <https://docs.djangoproject.com/en/1.8/ref/contrib/admin/#django.contrib.admin.ModelAdmin.fieldsets>`_ to be displayed. Fields in the tuples given should be those *not* defined by the base ``aristotle_mdr.models._concept`` class.
     :param list extra_inlines: Model-specific `inline <https://docs.djangoproject.com/en/1.8/ref/contrib/admin/#django.contrib.admin.ModelAdmin.inlines>`_ admin forms to be displayed.
     """
-    extra_fieldsets = kwargs.get('extra_fieldsets',[])
-    auto_fieldsets = kwargs.get('auto_fieldsets',False)
-    extra_inlines = kwargs.get('extra_inlines',[])
-    extra_name_suggest_fields = kwargs.get('name_suggest_fields',[])
+    extra_fieldsets = kwargs.get('extra_fieldsets', [])
+    auto_fieldsets = kwargs.get('auto_fieldsets', False)
+    extra_inlines = kwargs.get('extra_inlines', [])
+    extra_name_suggest_fields = kwargs.get('name_suggest_fields', [])
 
     # late import this as we call this in aristotle_mdr.admin and need it to be ready before we call this.
     from aristotle_mdr.admin import ConceptAdmin
@@ -103,13 +127,13 @@ def register_concept_admin(concept_class, *args, **kwargs):
 
     if not extra_fieldsets and auto_fieldsets:
         # returns every field that isn't in a concept
-        field_names = concept._meta.get_all_field_names()+['supersedes']
+        field_names = concept._meta.get_all_field_names() + ['supersedes']
 
         auto_fieldset = [f for f in concept_class._meta.get_all_field_names() if f not in field_names]
 
         if auto_fieldset:
-            extra_fieldsets_name = _('Extra fields for %(class_name)s') %{'class_name':concept_class._meta.verbose_name.title()}
-            extra_fieldsets = [(extra_fieldsets_name, {'fields': auto_fieldset}),]
+            extra_fieldsets_name = _('Extra fields for %(class_name)s') % {'class_name': concept_class._meta.verbose_name.title()}
+            extra_fieldsets = [(extra_fieldsets_name, {'fields': auto_fieldset})]
 
     class SubclassedConceptAdmin(ConceptAdmin):
         model = concept_class
@@ -118,8 +142,7 @@ def register_concept_admin(concept_class, *args, **kwargs):
         fieldsets = ConceptAdmin.fieldsets + extra_fieldsets
         inlines = ConceptAdmin.inlines + extra_inlines
 
-    admin.site.register(concept_class,SubclassedConceptAdmin)
+    admin.site.register(concept_class, SubclassedConceptAdmin)
 
-#def _register_concept_(concept_class, *args, **kwargs):
+# def _register_concept_(concept_class, *args, **kwargs):
 #    pass
-

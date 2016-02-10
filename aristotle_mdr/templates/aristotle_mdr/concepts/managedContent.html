@@ -32,19 +32,12 @@
         {% if item|can_edit:request.user and request.user.is_staff %}
             <a class="sr-only" accesskey="p" href="{% adminEdit item %}">{% trans 'Edit in admin'%}</a>
         {% elif item|can_edit:request.user %}
-            <a class="sr-only" accesskey="p" href="{% url 'aristotle:edit_item' item.id %}">{% trans 'Advanced editor'%}</a>
+            <a class="sr-only" accesskey="e" href="{% url 'aristotle:edit_item' item.id %}">{% trans 'Open item editor'%}</a>
         {% endif %}
     </h1>
     <div class="btn-group pull-right">
         {% if user.is_authenticated %}
-        <a class="btn btn-default favourite" href="{% url 'aristotle:toggleFavourite' item.id %}"
-            title="{% ternary isFavourite 'Remove from my favourite items' 'Add to my favourite items' %}">
-            {% if isFavourite %}
-                <i class="fa fa-bookmark "></i>
-            {% else %}
-                <i class="fa fa-bookmark-o "></i>
-            {% endif %}
-        </a>
+            {% include "aristotle_mdr/helpers/favourite_concept.html" %}
         {% endif %}
         {% if item|can_edit:request.user %}
             {% if request.user.is_staff %}
@@ -53,13 +46,12 @@
                     <i class="fa fa-pencil-square-o"></i> {% trans 'Edit'%} <span class="caret"></span>
                   </button>
                   <ul class="dropdown-menu dropdown-menu-right" role="menu">
-                    <!-- li><a id="ActivateInplaceEdit" class=""></a></li -->
                     <li><a class="" href="{% url 'aristotle:edit_item' item.id %}"
                                     data-toggle="modal" data-target="#infobox_adv_edit">
-                        <i class="fa fa-pencil-square"></i> {% trans 'Advanced editor'%}
+                        <i class="fa fa-pencil-square-o"></i> {% trans 'Open item editor'%}
                     </a></li>
-                    <li><a class="" href="{% adminEdit item %}">
-                        <i class="fa fa-sliders"></i> {% trans 'Edit in admin'%}
+                    <li><a class="staff_action" href="{% adminEdit item %}">
+                        <i class="fa fa-pencil-square"></i> {% trans 'Edit in admin'%}
                     </a></li>
                     {# % endif % #}
                     <li class="divider"></li>
@@ -67,7 +59,7 @@
                         <i class="fa fa-code-fork"></i> {% trans 'Clone this item'%}
                     </a></li>
                     {% if request.user.is_staff %}
-                    <li><a class="" href="{% clone item %}">
+                    <li><a class="staff_action" href="{% clone item %}">
                         <i class="fa fa-code-fork"></i> {% trans 'Clone this item via admin'%}
                     </a></li>
                     {% endif %}
@@ -92,59 +84,9 @@
 </header>
 <section class="managed row">
     {% include "aristotle_mdr/concepts/infobox.html" %}
-    {% if item.is_superseded  %}
-        <div id="progress" class=" alert alert-info">
-            {% trans 'This item has been superseded by the newer version,'%}
-            <em>{% include "aristotle_mdr/helpers/itemLink.html" with item=item.superseded_by %}</em>.
-        </div>
-    {% elif item.is_retired %}
-        <div id="progress" class=" alert alert-warning">
-            {% trans 'This item has been retired and is not recommended for use by any registration authority.'%}
-        </div>
-    {% elif item.is_public %}
-        {# split the if condition as if its public and not technical, we want nothing not one of the lower alerts #}
-        <div id="progress" class='alert alert-success hidden'>
-            {% trans 'This item is currently public.'%}
-        </div>
-    {% elif item.is_locked %}
-        <div id="progress" class=" alert alert-info">
-            {% trans 'This item is currently under development.'%}
-        </div>
-    {% else %}
-        <div id="progress" class=" alert alert-warning">
-            {% trans 'This item is under active development. Content may change frequently.'%}
-        </div>
-    {% endif %}
-    {% if not item.is_registered %}
-    <div id="review" class=" alert alert-info">
-        <strong>
-        {% if item.readyToReview %}
-            <i class="fa fa-flag"></i> {% trans 'This item has been marked as ready to review, but has not yet been registered in an authority.'%}
-        {% else %}
-            <i class="fa fa-flag-o"></i> {% trans 'The visibility of this item is still restricted to your current workgroup.'%}
-        {% endif %}
-        </strong>
+    {% include "aristotle_mdr/concepts/visibilityInfoBar.html" %}
 
-        {% if item|can_edit:request.user %}
-        {% blocktrans %}
-        <p>You can control the visibility of this item by indicating its review status.
-        If an item is marked "ready for review", registrars will be able to see this item and
-        begin the standardisation process according to their registration authority.
-        </p>
-        {% endblocktrans %}
-        <a class="btn btn-default" href="{% url 'aristotle:mark_ready_to_review' item.id %}"
-            data-toggle="modal" data-target="#r2r_modals">
-            {% if item.readyToReview %}
-                <i class="fa fa-flag-o"></i> {% trans 'Remove ready for review flag' %}
-            {% else %}
-                <i class="fa fa-flag"></i> {% trans 'Flag as ready for review' %}
-            {% endif %}
-        </a>
-        {% endif %}
-    </div>
-    {% bootstrap_modal "r2r_modals" %}
-    {% endif %}
-    <h2>{% trans 'Definition'%}</h2>
+    <h2 title="{% doc item 'definition' %}">{% trans 'Definition'%}</h2>
     <div id="definition" class="definition">
         {{ item.definition | safe}}
     </div>

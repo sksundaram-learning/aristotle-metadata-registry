@@ -1,11 +1,13 @@
+from django.conf import settings
 from django.core.urlresolvers import reverse
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.test.utils import setup_test_environment
 from django.utils import timezone
 
 import aristotle_mdr.models as models
 import aristotle_mdr.perms as perms
 from aristotle_mdr.utils import url_slugify_concept
+from aristotle_mdr.forms.creation_wizards import WorkgroupVerificationMixin,CheckIfModifiedMixin
 
 setup_test_environment()
 from aristotle_mdr.tests import utils
@@ -15,6 +17,14 @@ class AnonymousUserViewingThePages(TestCase):
     def test_homepage(self):
         home = self.client.get("/")
         self.assertEqual(home.status_code,200)
+
+    def test_notifications_for_anon_users(self):
+        home = self.client.get("/")
+        self.assertEqual(home.status_code,200)
+        # Make sure notifications library isn't loaded for anon users as they'll never have notifications.
+        self.assertTrue("notifications/notify.js" not in home.content)
+        # At some stage this might need a better test to check the 500 page doesn't show... after notifications is fixed.
+        
     def test_help_all_items(self):
         response = self.client.get(reverse('aristotle:about_all_items'))
         self.assertEqual(response.status_code,200)
@@ -30,7 +40,7 @@ class AnonymousUserViewingThePages(TestCase):
                 state=ra.locked_state
                 )
         home = self.client.get(url_slugify_concept(item))
-        #Anonymous users requesting a hidden page will be redirected to login
+        # Anonymous users requesting a hidden page will be redirected to login
         self.assertEqual(home.status_code,302)
         s.state = ra.public_state
         s.save()
@@ -92,33 +102,38 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.login_editor()
         response = self.client.get(reverse('aristotle:edit_item',args=[self.item1.id]))
         self.assertEqual(response.status_code,200)
+        form = response.context['form']
+        self.assertTrue('change_comments' in form.fields)
+
         response = self.client.get(reverse('aristotle:edit_item',args=[self.item2.id]))
         self.assertEqual(response.status_code,403)
 
     def test_submitter_can_save_via_edit_page(self):
-        from django.forms import model_to_dict
         self.login_editor()
         response = self.client.get(reverse('aristotle:edit_item',args=[self.item1.id]))
         self.assertEqual(response.status_code,200)
-        updated_item = dict((k,v) for (k,v) in model_to_dict(response.context['item']).items() if v is not None)
+
+        updated_item = utils.modeL_to_dict_with_change_time(response.context['item'])
         updated_name = updated_item['name'] + " updated!"
         updated_item['name'] = updated_name
         response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
         self.item1 = self.itemType.objects.get(pk=self.item1.pk)
         self.assertRedirects(response,url_slugify_concept(self.item1))
         self.assertEqual(self.item1.name,updated_name)
+
     def test_submitter_can_save_via_edit_page_with_change_comment(self):
-        from django.forms import model_to_dict
         self.login_editor()
         response = self.client.get(reverse('aristotle:edit_item',args=[self.item1.id]))
         self.assertEqual(response.status_code,200)
-        updated_item = dict((k,v) for (k,v) in model_to_dict(response.context['item']).items() if v is not None)
+
+        updated_item = utils.modeL_to_dict_with_change_time(response.context['item'])
         updated_name = updated_item['name'] + " updated!"
         updated_item['name'] = updated_name
         change_comment = "I changed this because I can"
         updated_item['change_comments'] = change_comment
         response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
         self.item1 = self.itemType.objects.get(pk=self.item1.pk)
+
         self.assertRedirects(response,url_slugify_concept(self.item1))
         self.assertEqual(self.item1.name,updated_name)
 
@@ -126,6 +141,194 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.assertEqual(response.status_code,200)
         self.assertTrue(change_comment in response.content)
 
+    def test_submitter_cannot_save_via_edit_page_if_other_saves_made(self):
+        from datetime import timedelta
+        self.login_editor()
+        modified = self.item1.modified
+        response = self.client.get(reverse('aristotle:edit_item',args=[self.item1.id]))
+        self.assertEqual(response.status_code,200)
+
+        # fake that we fetched the page seconds before modification
+        updated_item = utils.modeL_to_dict_with_change_time(response.context['item'],fetch_time=modified-timedelta(seconds=5))
+        updated_name = updated_item['name'] + " updated!"
+        updated_item['name'] = updated_name
+        change_comment = "I changed this because I can"
+        updated_item['change_comments'] = change_comment
+        time_before_response = timezone.now()
+        response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
+
+        self.assertEqual(response.status_code,200)
+        form = response.context['form']
+        self.assertTrue(form.errors['last_fetched'][0] == CheckIfModifiedMixin.modified_since_form_fetched_error)
+
+        # When sending a response with a bad last_fetch, the new one should come back right
+        self.assertTrue(time_before_response < form.fields['last_fetched'].initial)
+
+        # With the new last_fetched we can submit ok!
+        updated_item['last_fetched'] = form.fields['last_fetched'].initial
+        response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
+        self.assertEqual(response.status_code,302)
+
+
+        updated_item.pop('last_fetched')
+        time_before_response = timezone.now()
+        response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
+
+        self.assertEqual(response.status_code,200)
+        form = response.context['form']
+        self.assertTrue(form.errors['last_fetched'][0] == CheckIfModifiedMixin.modified_since_field_missing)
+        # When sending a response with no last_fetch, the new one should come back right
+        self.assertTrue(time_before_response < form.fields['last_fetched'].initial)
+
+        # With the new last_fetched we can submit ok!
+        updated_item['last_fetched'] = form.fields['last_fetched'].initial
+        response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
+        self.assertEqual(response.status_code,302)
+
+    # Test if workgroup-moving settings work
+
+    @override_settings(ARISTOTLE_SETTINGS=dict(settings.ARISTOTLE_SETTINGS, WORKGROUP_CHANGES=[]))
+    def test_submitter_cannot_change_workgroup_via_edit_page(self):
+        # based on the idea that 'submitter' is not set in ARISTOTLE_SETTINGS.WORKGROUP
+        self.wg_other = models.Workgroup.objects.create(name="Test WG to move to")
+        self.wg_other.submitters.add(self.editor)
+
+        self.login_editor()
+        response = self.client.get(reverse('aristotle:edit_item',args=[self.item1.id]))
+        self.assertEqual(response.status_code,200)
+
+        updated_item = utils.modeL_to_dict_with_change_time(response.context['item'])
+
+        updated_item['workgroup'] = str(self.wg_other.pk)
+
+        response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
+        self.assertEqual(response.status_code,200)
+
+        form = response.context['form']
+
+        self.assertTrue('workgroup' in form.errors.keys())
+        self.assertTrue(len(form.errors['workgroup'])==1)
+
+        # Submitter is logged in, tries to move item - fails because
+        self.assertFalse(perms.user_can_remove_from_workgroup(self.editor,self.item1.workgroup))
+        self.assertTrue(form.errors['workgroup'][0] == WorkgroupVerificationMixin.cant_move_any_permission_error)
+
+        updated_item['workgroup'] = str(self.wg2.pk)
+        response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
+        self.assertEqual(response.status_code,200)
+
+        form = response.context['form']
+
+        self.assertTrue('workgroup' in form.errors.keys())
+        self.assertTrue(len(form.errors['workgroup'])==1)
+
+        self.assertTrue('Select a valid choice.' in form.errors['workgroup'][0])
+
+    @override_settings(ARISTOTLE_SETTINGS=dict(settings.ARISTOTLE_SETTINGS, WORKGROUP_CHANGES=['submitter']))
+    def test_submitter_can_change_workgroup_via_edit_page(self):
+        # based on the idea that 'submitter' is set in ARISTOTLE_SETTINGS.WORKGROUP
+        self.wg_other = models.Workgroup.objects.create(name="Test WG to move to")
+
+        self.login_editor()
+        response = self.client.get(reverse('aristotle:edit_item',args=[self.item1.id]))
+        self.assertEqual(response.status_code,200)
+        updated_item = utils.modeL_to_dict_with_change_time(response.context['item'])
+        updated_item['workgroup'] = str(self.wg_other.pk)
+
+        response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
+        self.assertEqual(response.status_code,200)
+
+        form = response.context['form']
+
+        self.assertTrue('Select a valid choice.' in form.errors['workgroup'][0])
+
+        self.wg_other.submitters.add(self.editor)
+
+        response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
+        self.assertEqual(response.status_code,302)
+
+        updated_item['workgroup'] = str(self.wg2.pk)
+        response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
+        self.assertEqual(response.status_code,200)
+
+        self.assertTrue('Select a valid choice.' in form.errors['workgroup'][0])
+
+
+    @override_settings(ARISTOTLE_SETTINGS=dict(settings.ARISTOTLE_SETTINGS, WORKGROUP_CHANGES=['admin']))
+    def test_admin_can_change_workgroup_via_edit_page(self):
+        # based on the idea that 'admin' is set in ARISTOTLE_SETTINGS.WORKGROUP
+        self.wg_other = models.Workgroup.objects.create(name="Test WG to move to")
+
+        self.login_superuser()
+        response = self.client.get(reverse('aristotle:edit_item',args=[self.item1.id]))
+        self.assertEqual(response.status_code,200)
+        updated_item = utils.modeL_to_dict_with_change_time(self.item1)
+        updated_item['workgroup'] = str(self.wg_other.pk)
+
+        response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
+        self.assertEqual(response.status_code,302)
+
+        updated_item = utils.modeL_to_dict_with_change_time(self.item1)
+        updated_item['workgroup'] = str(self.wg2.pk)
+        response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
+        self.assertEqual(response.status_code,302)
+
+
+    @override_settings(ARISTOTLE_SETTINGS=dict(settings.ARISTOTLE_SETTINGS, WORKGROUP_CHANGES=['manager']))
+    def test_manager_of_two_workgroups_can_change_workgroup_via_edit_page(self):
+        # based on the idea that 'manager' is set in ARISTOTLE_SETTINGS.WORKGROUP
+        self.wg_other = models.Workgroup.objects.create(name="Test WG to move to")
+        self.wg_other.submitters.add(self.editor)
+
+        self.login_editor()
+        response = self.client.get(reverse('aristotle:edit_item',args=[self.item1.id]))
+        self.assertEqual(response.status_code,200)
+        updated_item = utils.modeL_to_dict_with_change_time(response.context['item'])
+        updated_item['workgroup'] = str(self.wg_other.pk)
+        response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
+        self.assertEqual(response.status_code,200)
+
+        form = response.context['form']
+        # Submitter can't move because they aren't a manager of any workgroups.
+        self.assertTrue(form.errors['workgroup'][0] == WorkgroupVerificationMixin.cant_move_any_permission_error)
+
+        self.wg_other.managers.add(self.editor)
+
+        response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
+        self.assertEqual(response.status_code,200)
+
+        form = response.context['form']
+        # Submitter can't move because they aren't a manager of the workgroup the item is in.
+        self.assertTrue(form.errors['workgroup'][0] == WorkgroupVerificationMixin.cant_move_from_permission_error)
+
+
+        self.login_manager()
+
+        response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
+        self.assertEqual(response.status_code,403)
+
+        self.wg1.submitters.add(self.manager) # Need to give manager edit permission to allow them to actually edit things
+        response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
+        self.assertEqual(response.status_code,200)
+        form = response.context['form']
+
+        self.assertTrue('Select a valid choice.' in form.errors['workgroup'][0])
+
+        self.wg_other.managers.add(self.manager)
+
+        response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
+        self.assertEqual(response.status_code,200)
+        self.assertTrue('Select a valid choice.' in form.errors['workgroup'][0])
+
+        self.wg_other.submitters.add(self.manager) # Need to give manager edit permission to allow them to actually edit things
+        response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
+        self.assertEqual(response.status_code,302)
+
+        updated_item['workgroup'] = str(self.wg2.pk)
+        response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
+        self.assertEqual(response.status_code,200)
+
+        self.assertTrue('Select a valid choice.' in form.errors['workgroup'][0])
 
     def test_anon_cannot_view_clone_page(self):
         self.logout()
@@ -146,11 +349,10 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         response = self.client.get(reverse('aristotle:clone_item',args=[self.item2.id]))
         self.assertEqual(response.status_code,403)
     def test_submitter_can_save_via_clone_page(self):
-        from django.forms import model_to_dict
         self.login_editor()
         response = self.client.get(reverse('aristotle:clone_item',args=[self.item1.id]))
         self.assertEqual(response.status_code,200)
-        updated_item = dict((k,v) for (k,v) in model_to_dict(response.context['item']).items() if v is not None)
+        updated_item = utils.model_to_dict(response.context['item'])
         updated_name = updated_item['name'] + " cloned!"
         updated_item['name'] = updated_name
         response = self.client.post(reverse('aristotle:clone_item',args=[self.item1.id]), updated_item)
@@ -261,6 +463,120 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         response = self.client.get(self.item1.get_absolute_url())
         self.assertTrue(reverse('aristotle:item_history',args=[self.item1.id]) in response.content)
 
+    def test_editor_can_view_item_history__and__compare(self):
+        self.login_editor()
+
+        from reversion import revisions as reversion
+        
+        with reversion.create_revision():
+            self.item1.name = "change 1"
+            reversion.set_comment("change 1")
+            self.item1.readyToReview = True
+            self.item1.save()
+
+        with reversion.create_revision():
+            self.item1.name = "change 2"
+            reversion.set_comment("change 2")
+            r = self.ra.register(
+                item=self.item1,
+                state=models.STATES.incomplete,
+                user=self.registrar
+            )
+            self.item1.save()
+
+        revisions = reversion.default_revision_manager.get_for_object(self.item1)
+
+        response = self.client.get(reverse('aristotle:item_history',args=[self.item1.id]))
+        self.assertEqual(response.status_code,200)
+
+        response = self.client.get(
+            reverse('aristotle:item_history',args=[self.item1.id]),
+            {'version_id1' : revisions.first().pk,
+            'version_id2' : revisions.last().pk
+            }
+        )
+        
+        self.assertEqual(response.status_code,200)
+        self.assertTrue("change 2" in response.content)
+        self.assertTrue('statuses' in response.content)
+        
+        self.item1 = self.itemType.objects.get(pk=self.item1.pk) #decache
+        self.assertTrue(self.item1.name == "change 2")
+        for s in self.item1.statuses.all():
+            self.assertContains(
+                response,
+                '%s is %s'%(self.item1.name,s.get_state_display())
+            )
+
+    def test_editor_can_revert_item_and_status_goes_back_too(self):
+        self.login_editor()
+        
+        from reversion import revisions as reversion
+        with reversion.create_revision():
+            self.item1.readyToReview = True
+            self.item1.save()
+        original_name = self.item1.name
+        
+        response = self.client.get(reverse('aristotle:edit_item',args=[self.item1.id]))
+        self.assertEqual(response.status_code,200)
+        
+        updated_item = utils.modeL_to_dict_with_change_time(response.context['item'])
+        updated_name = updated_item['name'] + " updated!"
+        updated_item['name'] = updated_name
+        change_comment = "I changed this because I can"
+        updated_item['change_comments'] = change_comment
+        response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
+        self.item1 = self.itemType.objects.get(pk=self.item1.pk)
+        self.assertEqual(self.item1.name,updated_name)
+
+        r = self.ra.register(
+            item=self.item1,
+            state=models.STATES.incomplete,
+            user=self.registrar
+        )
+        self.item1 = self.itemType.objects.get(pk=self.item1.pk) #decache
+
+        self.assertTrue(self.item1.statuses.all().count() == 1)
+        self.assertTrue(self.item1.statuses.first().state == models.STATES.incomplete)
+
+        response = self.client.get(reverse('aristotle:edit_item',args=[self.item1.id]))
+        self.assertEqual(response.status_code,200)
+        updated_item = utils.modeL_to_dict_with_change_time(response.context['item'])
+        updated_name_again = updated_item['name'] + " updated!"
+        updated_item['name'] = updated_name_again
+        change_comment = "I changed this again because I can"
+        updated_item['change_comments'] = change_comment
+        response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
+        self.item1 = self.itemType.objects.get(pk=self.item1.pk)
+        self.assertEqual(self.item1.name,updated_name_again)
+
+        self.ra.register(self.item1,models.STATES.candidate,self.registrar)
+        self.item1 = self.itemType.objects.get(pk=self.item1.pk) #decache
+        self.assertTrue(self.item1.statuses.count() == 2)
+        self.assertTrue(self.item1.statuses.last().state == models.STATES.candidate)
+
+        versions = list(reversion.Version.objects.filter(object_id=self.item1.id))
+        versions[4].revision.revert(delete=True) # The version that has the first status changes
+
+        self.item1 = self.itemType.objects.get(pk=self.item1.pk) #decache
+
+        self.assertTrue(self.item1.statuses.count() == 1)
+        self.assertTrue(self.item1.statuses.first().state == models.STATES.incomplete)
+        self.assertEqual(self.item1.name,updated_name)
+
+        versions[0].revision.revert(delete=True)
+        self.item1 = self.itemType.objects.get(pk=self.item1.pk) #decache
+        self.assertTrue(self.item1.statuses.count() == 0)
+        self.assertEqual(self.item1.name,original_name)
+
+        versions[9].revision.revert(delete=True) # Back to the latest version
+        self.item1 = self.itemType.objects.get(pk=self.item1.pk) #decache
+        self.assertTrue(self.item1.statuses.count() == 2)
+        self.assertTrue(self.item1.statuses.order_by('state')[0].state == models.STATES.incomplete)
+        self.assertTrue(self.item1.statuses.order_by('state')[1].state == models.STATES.candidate)
+        self.assertEqual(self.item1.name,updated_name_again)
+
+
     def test_anon_cannot_view_item_history(self):
         self.logout()
         response = self.client.get(reverse('aristotle:item_history',args=[self.item1.id]))
@@ -269,7 +585,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.assertEqual(response.status_code,302)
 
 
-        #Register to check if link is on page... it shouldn't be
+        # Register to check if link is on page... it shouldn't be
         models.Status.objects.create(
             concept=self.item1,
             registrationAuthority=self.ra,
@@ -323,13 +639,15 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.assertEqual(response.status_code,200)
 
         self.assertEqual(self.item1.statuses.count(),0)
-        response = self.client.post(reverse('aristotle:changeStatus',args=[self.item1.id]),
-                    {   'registrationAuthorities': [str(self.ra.id)],
-                        'state': self.ra.public_state,
-                        'changeDetails': "testing",
-                        'cascadeRegistration': 0, #no
-                    }
-                )
+        response = self.client.post(
+            reverse('aristotle:changeStatus',args=[self.item1.id]),
+            {
+                'registrationAuthorities': [str(self.ra.id)],
+                'state': self.ra.public_state,
+                'changeDetails': "testing",
+                'cascadeRegistration': 0, # no
+            }
+        )
         self.assertRedirects(response,url_slugify_concept(self.item1))
 
         self.item1 = self.itemType.objects.get(pk=self.item1.pk)
@@ -352,22 +670,26 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.assertEqual(response.status_code,200)
 
         self.assertEqual(self.item1.statuses.count(),0)
-        response = self.client.post(reverse('aristotle:changeStatus',args=[self.item1.id]),
-                    {   'registrationAuthorities': [str(self.ra.id)],
-                        'state': "Not a number",#obviously wrong
-                        'changeDetails': "testing",
-                        'cascadeRegistration': 0, #no
-                    }
-                )
+        response = self.client.post(
+            reverse('aristotle:changeStatus', args=[self.item1.id]),
+            {
+                'registrationAuthorities': [str(self.ra.id)],
+                'state': "Not a number", # obviously wrong
+                'changeDetails': "testing",
+                'cascadeRegistration': 0, # no
+            }
+        )
         self.assertFormError(response, 'form', 'state', 'Select a valid choice. Not a number is not one of the available choices.')
 
-        response = self.client.post(reverse('aristotle:changeStatus',args=[self.item1.id]),
-                    {   'registrationAuthorities': [str(self.ra.id)],
-                        'state': "343434", #also wrong
-                        'changeDetails': "testing",
-                        'cascadeRegistration': 0, #no
-                    }
-                )
+        response = self.client.post(
+            reverse('aristotle:changeStatus',args=[self.item1.id]),
+            {
+                'registrationAuthorities': [str(self.ra.id)],
+                'state': "343434", # also wrong
+                'changeDetails': "testing",
+                'cascadeRegistration': 0, # no
+            }
+        )
         self.assertFormError(response, 'form', 'state', 'Select a valid choice. 343434 is not one of the available choices.')
 
     def test_viewer_cannot_change_status(self):
@@ -433,8 +755,8 @@ class ValueDomainViewPage(LoggedInViewConceptPages,TestCase):
         self.loggedin_user_can_use_value_page(value_type,self.item3,200)
 
         # Invalid value domain types are caught in the URL runner. This test isn't required yet.
-        #response = self.client.get(reverse('aristotle:valueDomain_edit_values',args=[self.item1.id,'accidentally'])) # a fake value domain type
-        #self.assertTrue(response.status_code,404)
+        # response = self.client.get(reverse('aristotle:valueDomain_edit_values',args=[self.item1.id,'accidentally'])) # a fake value domain type
+        # self.assertTrue(response.status_code,404)
 
         data = {}
         num_vals = getattr(self.item1,value_type+"Values").count()
@@ -519,6 +841,52 @@ class ConceptualDomainViewPage(LoggedInViewConceptPages,TestCase):
 class DataElementConceptViewPage(LoggedInViewConceptPages,TestCase):
     url_name='dataElementConcept'
     itemType=models.DataElementConcept
+    def test_browse_dec(self):
+        de1 = models.DataElement.objects.create(
+            name="public item",
+            dataElementConcept=self.item1,
+            workgroup=self.item1.workgroup
+        )
+        de2 = models.DataElement.objects.create(
+            name="invisible item",
+            dataElementConcept=self.item1,
+            workgroup=self.item1.workgroup
+        )
+
+        de3 = models.DataElement.objects.create(
+            name="public but not related",
+            # dataElementConcept=self.item1, # not attached to the DEC.
+            workgroup=self.item1.workgroup
+        )
+
+        oc1 = models.ObjectClass.objects.create(
+            name="public item",
+            workgroup=self.item1.workgroup
+        )
+        self.item1.objectClass = oc1
+        self.item1.save()
+        
+        models.Status.objects.create(
+            concept=de1,
+            registrationAuthority=self.ra,
+            registrationDate = datetime.date(2009,4,28),
+            state =  models.STATES.standard
+            )
+        models.Status.objects.create(
+            concept=de3,
+            registrationAuthority=self.ra,
+            registrationDate = datetime.date(2009,4,28),
+            state =  models.STATES.standard
+            )
+        self.logout()
+        response = self.client.get(
+            reverse('aristotle:browse',args=[oc1.id,self.item1.id])
+        )
+        self.assertTrue(response.status_code,200)
+        self.assertTrue(de1.name in response.content)
+        self.assertTrue(de2.name not in response.content)
+        self.assertTrue(de3.name not in response.content)
+        
 class DataElementViewPage(LoggedInViewConceptPages,TestCase):
     url_name='dataElement'
     itemType=models.DataElement
@@ -576,8 +944,10 @@ class RegistrationAuthorityViewPage(LoggedInViewUnmanagedPages,TestCase):
                 state=models.STATES.standard
                 )
 
+    def get_page(self,item):
+        return item.get_absolute_url()
+
     def test_view_all_ras(self):
         self.logout()
         response = self.client.get(reverse('aristotle:allRegistrationAuthorities'))
         self.assertTrue(response.status_code,200)
-
