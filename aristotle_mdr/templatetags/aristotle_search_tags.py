@@ -22,6 +22,11 @@ import aristotle_mdr.models as MDR
 register = template.Library()
 
 
+import logging
+logger = logging.getLogger(__name__)
+logger.debug("Logging started for " + __name__)
+
+
 @register.simple_tag
 def search_describe_filters(search_form):
     """
@@ -79,13 +84,13 @@ def get_item_from_facet(_type, _id):
     item = None
 
     if model_type and _id:
-
-        try:
-            item = model_type.objects.get(pk=int(_id))
-        except:
-            print [(k, k.pk) for k in model_type.objects.all()]
-            print "offending RA is [%s] - [%s] - [%s]" % (_id, _type, model_type)
-            raise
+        # Related to https://github.com/aristotle-mdr/aristotle-metadata-registry/pull/343
+        # This fails sometimes on Postgres in *tests only*... so far.
+        item = model_type.objects.filter(pk=int(_id)).first()
+        if item is None:
+            logger.warning(
+                "Warning: Failed to find item type [%s] with id [%s]"
+            )
     return item
 
 
