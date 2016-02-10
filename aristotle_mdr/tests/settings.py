@@ -54,7 +54,6 @@ if 'TRAVIS' in os.environ:
             'NAME': ':memory:',
         }
 
-
 class DisableMigrations(object):
 
     def __contains__(self, item):
@@ -96,3 +95,44 @@ ARISTOTLE_SETTINGS['BULK_ACTIONS'].update({
     'incomplete': 'bulk_actions_test.actions.IncompleteActionForm',
 })
 ROOT_URLCONF = 'extension_test.urls'
+
+LOGGING = {
+    'version': 1,
+    'formatters': {
+        'verbose': {
+            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+        },
+        'simple': {
+            'format': '%(levelname)s %(message)s'
+        },
+    },
+    'handlers': {
+        'console-simple': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple'
+            },
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose'
+            },
+        },
+    'loggers': {
+        'aristotle_mdr': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': True,
+            },
+        'django': {
+            'handlers': ['console-simple'],
+            'level': 'INFO',
+            'propagate': True,
+            },
+        }
+    }
+
+if DEBUG:
+    # make all loggers use the console.
+    for logger in LOGGING['loggers']:
+        LOGGING['loggers'][logger]['handlers'] = ['console']

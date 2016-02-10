@@ -60,7 +60,6 @@ class ConceptHistoryCompareView(HistoryCompareDetailView):
 
     @method_decorator(login_required)
     def dispatch(self, *args, **kwargs):
-        print "here", args, kwargs
         return super(ConceptHistoryCompareView, self).dispatch(*args, **kwargs)
 
 
