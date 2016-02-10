@@ -18,8 +18,14 @@ from django.utils.translation import ugettext_lazy as _
 
 from aristotle_mdr import perms
 import aristotle_mdr.models as MDR
+import logging
+
 
 register = template.Library()
+
+
+logger = logging.getLogger(__name__)
+logger.debug("Logging started for " + __name__)
 
 
 @register.simple_tag
@@ -70,7 +76,7 @@ def search_describe_filters(search_form):
 def get_item_from_facet(_type, _id):
     from django.contrib.contenttypes.models import ContentType
 
-    model = {
+    model_type = {
         'ra': MDR.RegistrationAuthority,
         'wg': MDR.Workgroup,
         'ct': ContentType,
@@ -78,9 +84,14 @@ def get_item_from_facet(_type, _id):
 
     item = None
 
-    if model and _id:
-        item = model.objects.get(pk=_id)
-
+    if model_type and _id:
+        # Related to https://github.com/aristotle-mdr/aristotle-metadata-registry/pull/343
+        # This fails sometimes on Postgres in *tests only*... so far.
+        item = model_type.objects.filter(pk=int(_id)).first()
+        if item is None:
+            logger.warning(
+                "Warning: Failed to find item type [%s] with id [%s]"
+            )
     return item
 
 
