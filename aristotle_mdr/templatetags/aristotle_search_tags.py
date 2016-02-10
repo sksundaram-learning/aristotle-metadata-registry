@@ -18,11 +18,12 @@ from django.utils.translation import ugettext_lazy as _
 
 from aristotle_mdr import perms
 import aristotle_mdr.models as MDR
+import logging
+
 
 register = template.Library()
 
 
-import logging
 logger = logging.getLogger(__name__)
 logger.debug("Logging started for " + __name__)
 

@@ -42,7 +42,7 @@ if 'TRAVIS' in os.environ:
             'ENGINE': 'django.db.backends.postgresql_psycopg2',
             'NAME': 'aristotle_test_db',
             'USER': 'postgres',
-            'PASSWORD': 'x',
+            'PASSWORD': '',
             'HOST': 'localhost',
             'PORT': '',
         }
@@ -53,7 +53,6 @@ if 'TRAVIS' in os.environ:
             'ENGINE': 'django.db.backends.sqlite3',
             'NAME': ':memory:',
         }
-
 
 class DisableMigrations(object):
 
