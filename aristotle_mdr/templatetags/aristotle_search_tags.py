@@ -83,7 +83,7 @@ def get_item_from_facet(_type, _id):
         try:
             item = model_type.objects.get(pk=int(_id))
         except:
-            print model_type.objects.all()
+            print [k, k.pk for k in model_type.objects.all()]
             print "offending RA is [%s] - [%s] - [%s]" % (_id, _type, model_type)
             raise
     return item
