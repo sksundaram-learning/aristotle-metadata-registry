@@ -1225,12 +1225,10 @@ class PossumProfile(models.Model):
         if self.user.is_superuser:
             return Workgroup.objects.all()
         else:
-            # return (self.user.submitter_in.all() |
-            #     self.user.steward_in.all()
-            # ).distinct().filter(archived=False)
-            return Workgroup.objects.filter(archived=False).filter(
-                Q(submitters__pk=self.user.pk) | Q(stewards__pk=self.user.pk)
-            )
+            return (
+                self.user.submitter_in.all() |
+                self.user.steward_in.all()
+            ).distinct().filter(archived=False)
 
     @property
     def is_registrar(self):

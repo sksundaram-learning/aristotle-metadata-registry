@@ -53,6 +53,30 @@ class WorkgroupMembership(TestCase):
         self.assertFalse(perms.user_can_edit(user1,wg))
         self.assertFalse(perms.user_can_edit(user2,wg))
 
+    def test_editable_workgroups_are_unique(self):
+        # Tests against bug #333
+        # https://github.com/aristotle-mdr/aristotle-metadata-registry/issues/333
+        wg1 = models.Workgroup.objects.create(name="Test WG 1")
+        wg2 = models.Workgroup.objects.create(name="Test WG 2")
+        wg3 = models.Workgroup.objects.create(name="Test WG 3")
+        editor = User.objects.create_user('editor','','editor')
+        wg1.stewards.add(editor)
+        wg1.submitters.add(editor)
+        wg1.viewers.add(editor)
+        wg2.stewards.add(editor)
+        wg3.viewers.add(editor)
+        wg1.save()
+        wg2.save()
+        wg3.save()
+
+        editor = User.objects.get(pk=editor.pk)
+        
+        editable = editor.profile.editable_workgroups
+        self.assertTrue(editable.count() == 2)
+        self.assertTrue(wg1 in editable.all())
+        self.assertTrue(wg2 in editable.all())
+        self.assertTrue(wg3 not in editable.all())
+
 class WorkgroupAnonTests(utils.LoggedInViewPages,TestCase):
     def setUp(self):
         super(WorkgroupAnonTests, self).setUp()
