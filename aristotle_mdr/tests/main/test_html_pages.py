@@ -17,6 +17,14 @@ class AnonymousUserViewingThePages(TestCase):
     def test_homepage(self):
         home = self.client.get("/")
         self.assertEqual(home.status_code,200)
+
+    def test_notifications_for_anon_users(self):
+        home = self.client.get("/")
+        self.assertEqual(home.status_code,200)
+        # Make sure notifications library isn't loaded for anon users as they'll never have notifications.
+        self.assertTrue("notifications/notify.js" not in home.content)
+        # At some stage this might need a better test to check the 500 page doesn't show... after notifications is fixed.
+        
     def test_help_all_items(self):
         response = self.client.get(reverse('aristotle:about_all_items'))
         self.assertEqual(response.status_code,200)
@@ -719,6 +727,52 @@ class ConceptualDomainViewPage(LoggedInViewConceptPages,TestCase):
 class DataElementConceptViewPage(LoggedInViewConceptPages,TestCase):
     url_name='dataElementConcept'
     itemType=models.DataElementConcept
+    def test_browse_dec(self):
+        de1 = models.DataElement.objects.create(
+            name="public item",
+            dataElementConcept=self.item1,
+            workgroup=self.item1.workgroup
+        )
+        de2 = models.DataElement.objects.create(
+            name="invisible item",
+            dataElementConcept=self.item1,
+            workgroup=self.item1.workgroup
+        )
+
+        de3 = models.DataElement.objects.create(
+            name="public but not related",
+            # dataElementConcept=self.item1, # not attached to the DEC.
+            workgroup=self.item1.workgroup
+        )
+
+        oc1 = models.ObjectClass.objects.create(
+            name="public item",
+            workgroup=self.item1.workgroup
+        )
+        self.item1.objectClass = oc1
+        self.item1.save()
+        
+        models.Status.objects.create(
+            concept=de1,
+            registrationAuthority=self.ra,
+            registrationDate = datetime.date(2009,4,28),
+            state =  models.STATES.standard
+            )
+        models.Status.objects.create(
+            concept=de3,
+            registrationAuthority=self.ra,
+            registrationDate = datetime.date(2009,4,28),
+            state =  models.STATES.standard
+            )
+        self.logout()
+        response = self.client.get(
+            reverse('aristotle:browse',args=[oc1.id,self.item1.id])
+        )
+        self.assertTrue(response.status_code,200)
+        self.assertTrue(de1.name in response.content)
+        self.assertTrue(de2.name not in response.content)
+        self.assertTrue(de3.name not in response.content)
+        
 class DataElementViewPage(LoggedInViewConceptPages,TestCase):
     url_name='dataElement'
     itemType=models.DataElement
