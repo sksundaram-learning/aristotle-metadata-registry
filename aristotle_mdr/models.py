@@ -18,7 +18,7 @@ from model_utils import Choices, FieldTracker
 import reversion  # import revisions
 
 import datetime
-from ckeditor.fields import RichTextField
+from ckeditor_uploader.fields import RichTextUploadingField as RichTextField
 from aristotle_mdr import perms
 from aristotle_mdr import messages
 from aristotle_mdr.utils import url_slugify_concept, url_slugify_workgroup, url_slugify_registration_authoritity
@@ -378,7 +378,6 @@ class Workgroup(registryGroup):
     registrationAuthorities = models.ManyToManyField(
         RegistrationAuthority,
         blank=True,
-        null=True,
         related_name="workgroups",
         verbose_name=_('Registration Authorities'),
     )
@@ -1169,8 +1168,7 @@ class DataElementDerivation(concept):
     inputs = models.ManyToManyField(
         DataElement,
         related_name="input_to_derivation",
-        blank=True,
-        null=True
+        blank=True
     )
     derivation_rule = models.TextField(blank=True)
 

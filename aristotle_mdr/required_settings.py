@@ -4,7 +4,8 @@ import os
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 TEMPLATE_DIRS = [os.path.join(BASE_DIR, 'templates')]
 FIXTURES_DIRS = [os.path.join(BASE_DIR, 'fixtures')]
-STATIC_ROOT =os.path.join(BASE_DIR, "static")
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
+MEDIA_ROOT =os.path.join(BASE_DIR, "media")
 
 # https://docs.djangoproject.com/en/1.6/ref/settings/#databases
 # This provides for quick easy set up, but should be changed to a production
@@ -27,13 +28,8 @@ CACHES = {
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
-if DEBUG:
-    STATIC_ROOT =os.path.join(BASE_DIR, "static")
-
-    MEDIA_ROOT = '/home/aristotle/aristotle/possum-mdr/media/'
-    MEDIA_URL = '/media/'
-
-    CKEDITOR_UPLOAD_PATH = 'uploads/'
+MEDIA_URL = '/media/'
+CKEDITOR_UPLOAD_PATH = 'uploads/'
 
 
 # Required for admindocs, see: https://code.djangoproject.com/ticket/21386
@@ -56,6 +52,7 @@ INSTALLED_APPS = (
     'django.contrib.humanize',
 
     'ckeditor',
+    'ckeditor_uploader',
 
     'static_precompiler',
     'bootstrap3',
