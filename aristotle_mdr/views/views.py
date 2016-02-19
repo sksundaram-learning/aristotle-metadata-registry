@@ -438,7 +438,42 @@ def changeStatus(request, iid):
             return HttpResponseRedirect(url_slugify_concept(item))
     else:
         form = MDRForms.ChangeStatusForm(user=request.user)
-    return render(request, "aristotle_mdr/actions/changeStatus.html", {"item": item, "form": form})
+    matrix={}
+
+    visibility = "hidden"
+    if item._is_locked:
+        visibility = "locked"
+    if item._is_public:
+        visibility = "public"
+    
+    from aristotle_mdr.models import WORKGROUP_OWNERSHIP, STATES
+    import json
+    
+    for ra in request.user.profile.registrarAuthorities:
+        if item.workgroup.ownership == WORKGROUP_OWNERSHIP.authority:
+            owner = ra in item.workgroup.registrationAuthorities.all()
+        elif item.workgroup.ownership == WORKGROUP_OWNERSHIP.registry:
+            owner = True
+        ra_matrix = {'name':ra.name,'states':{}}
+        for s,_ in STATES:
+            if s > ra.public_state:
+                ra_matrix['states'][s] = [visibility,"public"][owner]
+            elif s > ra.locked_state:
+                ra_matrix['states'][s] = [visibility,"locked"][owner]
+            else:  
+                ra_matrix['states'][s] = [visibility,"hidden"][owner]
+        matrix[ra.id]=ra_matrix
+
+    return render(
+        request,
+        "aristotle_mdr/actions/changeStatus.html",
+        {
+            "item": item,
+            "form": form,
+            "status_matrix": json.dumps(matrix),
+            "visibility": visibility
+        }
+    )
 
 
 def supersede(request, iid):
