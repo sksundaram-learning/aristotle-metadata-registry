@@ -379,7 +379,7 @@ def template_path(item, _type):
 def ownedby_ra(item, ra_id):
     if item.workgroup.ownership == MDR.WORKGROUP_OWNERSHIP.registry:
         return True
-    
+
     ra = MDR.RegistrationAuthority.objects.get(pk=ra_id)
 
     return ra in item.workgroup.registrationAuthorities.all()
