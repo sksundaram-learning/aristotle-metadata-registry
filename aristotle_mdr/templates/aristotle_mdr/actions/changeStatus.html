@@ -60,6 +60,17 @@
             <div>
                 {{ form.state }}
                 <ul>
+                    <li class="alert alert-info">
+                        {% if item|owned_by_registry %}
+                            All registration authorities in this registry can alter 
+                            the visibility of this item.
+                        {% else %}
+                            Only registration authorities with an eye icon below
+                            can alter the visibility of this item. Other registration
+                            statuses will still be recorded and displayed to users with
+                            the correct permission.
+                        {% endif %}
+                    </li>
                 {% for val,label_text in form.registrationAuthorities.field.choices %}
                     <li>
                         <input type="checkbox" id="registrationAuthorities_{{val}}" name="registrationAuthorities" value="{{val}}">
@@ -67,7 +78,7 @@
                         <a href="{% url 'aristotle_mdr:registrationAuthority' iid=val %}" title="Visit the registration authority page to learn more about state meanings for this authority" class="pull-right">
                             <i class="fa fa-fw fa-university"></i>
                         </a>
-                        {% if item|ownedby_ra:val %}
+                        {% if item|owned_by_ra:val %}
                         <span class="pull-right" title="This registration authority has the ability to control an items visibility.">
                             <i class="fa fa-fw fa-eye"></i>
                         </span>

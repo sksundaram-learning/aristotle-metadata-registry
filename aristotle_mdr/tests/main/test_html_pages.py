@@ -655,6 +655,80 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.assertTrue(self.item1.is_registered)
         self.assertTrue(self.item1.is_public())
 
+    def test_registrar_can_change_status_with_cascade(self):
+        if not hasattr(self,"run_cascade_tests"):
+            return
+        self.login_registrar()
+
+        self.assertFalse(perms.user_can_view(self.registrar,self.item1))
+        self.item1.readyToReview = True
+        self.item1.save()
+        self.item1 = self.itemType.objects.get(pk=self.item1.pk)
+
+        self.assertTrue(perms.user_can_view(self.registrar,self.item1))
+        self.assertTrue(perms.user_can_change_status(self.registrar,self.item1))
+
+        response = self.client.get(reverse('aristotle:changeStatus',args=[self.item1.id]))
+        self.assertEqual(response.status_code,200)
+
+        self.assertEqual(self.item1.statuses.count(),0)
+        for sub_item in self.item1.registry_cascade_items:
+            if sub_item is not None:
+                self.assertEqual(sub_item.statuses.count(),0)
+
+        response = self.client.post(
+            reverse('aristotle:changeStatus',args=[self.item1.id]),
+            {
+                'registrationAuthorities': [str(self.ra.id)],
+                'state': self.ra.public_state,
+                'changeDetails': "testing",
+                'cascadeRegistration': 1, # yes
+            }
+        )
+        self.assertRedirects(response,url_slugify_concept(self.item1))
+
+        self.item1 = self.itemType.objects.get(pk=self.item1.pk)
+        self.assertEqual(self.item1.statuses.count(),1)
+        self.assertTrue(self.item1.is_registered)
+        self.assertTrue(self.item1.is_public())
+        for sub_item in self.item1.registry_cascade_items:
+            if sub_item is not None and perms.user_can_change_status(self.registrar,self.item1) :
+                self.assertTrue(sub_item.is_registered)
+
+    def test_registrar_can_change_status_of_registry_owned_item(self):
+        self.login_registrar()
+        wg = self.item.workgroup
+        wg.ownership = models.WORKGROUP_OWNERSHIP.registry
+        wg.save()
+        
+        self.assertFalse(perms.user_can_view(self.registrar,self.item1))
+        self.item1.readyToReview = True
+        self.item1.save()
+        self.item1 = self.itemType.objects.get(pk=self.item1.pk)
+
+        self.assertTrue(perms.user_can_view(self.registrar,self.item1))
+        self.assertTrue(perms.user_can_change_status(self.registrar,self.item1))
+
+        response = self.client.get(reverse('aristotle:changeStatus',args=[self.item1.id]))
+        self.assertEqual(response.status_code,200)
+
+        self.assertEqual(self.item1.statuses.count(),0)
+        response = self.client.post(
+            reverse('aristotle:changeStatus',args=[self.item1.id]),
+            {
+                'registrationAuthorities': [str(self.ra.id)],
+                'state': self.ra.public_state,
+                'changeDetails': "testing",
+                'cascadeRegistration': 0, # no
+            }
+        )
+        self.assertRedirects(response,url_slugify_concept(self.item1))
+
+        self.item1 = self.itemType.objects.get(pk=self.item1.pk)
+        self.assertEqual(self.item1.statuses.count(),1)
+        self.assertTrue(self.item1.is_registered)
+        self.assertTrue(self.item1.is_public())
+
     def test_registrar_cannot_use_faulty_statuses(self):
         self.login_registrar()
 
@@ -841,6 +915,22 @@ class ConceptualDomainViewPage(LoggedInViewConceptPages,TestCase):
 class DataElementConceptViewPage(LoggedInViewConceptPages,TestCase):
     url_name='dataElementConcept'
     itemType=models.DataElementConcept
+    run_cascade_tests = True
+    
+    def __init__(self,*args, **kwargs):
+        super(DataElementConceptViewPage, self).__init__(*args, **kwargs)
+        oc = models.ObjectClass.objects.create(
+            name="sub item OC",
+            workgroup=self.item1.workgroup
+        )
+        prop = models.Property`.objects.create(
+            name="sub item prop",
+            workgroup=self.item1.workgroup
+        )
+        self.item1.objectClass = oc
+        self.item1.property = prop
+        self.item1.save()
+        
     def test_browse_dec(self):
         de1 = models.DataElement.objects.create(
             name="public item",

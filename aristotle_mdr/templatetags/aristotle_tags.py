@@ -376,9 +376,14 @@ def template_path(item, _type):
 
 
 @register.filter
-def ownedby_ra(item, ra_id):
+def owned_by_registry(item):
+    return item.workgroup.ownership == MDR.WORKGROUP_OWNERSHIP.registry
+
+
+@register.filter
+def owned_by_ra(item, ra_id):
     if item.workgroup.ownership == MDR.WORKGROUP_OWNERSHIP.registry:
-        return True
+        return False
 
     ra = MDR.RegistrationAuthority.objects.get(pk=ra_id)
 
