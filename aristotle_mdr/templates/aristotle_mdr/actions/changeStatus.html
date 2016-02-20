@@ -1,5 +1,6 @@
 {% extends request.is_ajax|yesno:"aristotle_mdr/base_ajax.html,aristotle_mdr/base.html" %}
 {% load compile_static i18n %}
+{% load aristotle_tags %}
 
 {% block title %}Change state for {{ item.name }}{% endblock %}
 {% block content %}
@@ -21,25 +22,27 @@
         <div id="visibilty">
             This item is currently {{visibility}}.
             <span id="potential">
-                
+            {% trans 'Select a new state to see how the visibility of this item will change.' %}
             </span>
         </div>
         <section>
         <div id="changeStatusDate">
             <span>
-                {{ form.registrationDate.label }}:
+                <label for="id_registrationDate">{{ form.registrationDate.label }}</label>:
                 {{ form.registrationDate.errors }}
             </span>
-            <span>
+            <span class="pull-right">
                 {{ form.registrationDate }}
             </span>
         </div>
         <div id="cascadeRegistration">
             <span>
-                {{ form.cascadeRegistration.label }}:
+                <label for="id_cascadeRegistration">
+                {{ form.cascadeRegistration.label }}
+                </label>
                 {{ form.cascadeRegistration.errors }}
             </span>
-            <span>
+            <span class="pull-right">
                 {{ form.cascadeRegistration }}
             </span>
         </div>
@@ -56,7 +59,22 @@
             </div>
             <div>
                 {{ form.state }}
-                {{ form.registrationAuthorities }}
+                <ul>
+                {% for val,label_text in form.registrationAuthorities.field.choices %}
+                    <li>
+                        <input type="checkbox" id="registrationAuthorities_{{val}}" name="registrationAuthorities" value="{{val}}">
+                        <label for="registrationAuthorities_{{val}}">{{label_text}}</label>
+                        <a href="{% url 'aristotle_mdr:registrationAuthority' iid=val %}" title="Visit the registration authority page to learn more about state meanings for this authority" class="pull-right">
+                            <i class="fa fa-fw fa-university"></i>
+                        </a>
+                        {% if item|ownedby_ra:val %}
+                        <span class="pull-right" title="This registration authority has the ability to control an items visibility.">
+                            <i class="fa fa-fw fa-eye"></i>
+                        </span>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+                </ul>
             </div>
         </div>
         <div class="status_change_description">
@@ -81,8 +99,17 @@
 </pre>
 <script>
     status_matrix = {{status_matrix|safe}};
-    same_visibility_text = "will stay";
-    diff_visibility_text = "will become";
+    current_visibility = "{{visibility}}";
+    {# VISIBILITY_STATUS will be replaced in javascript #}
+    same_visibility_text = "{% trans 'After saving, this item will stay VISIBILITY_STATUS' %}";
+    {# VISIBILITY_STATUS will be replaced in javascript #}
+    diff_visibility_text = "{% trans 'After saving, this item will become VISIBILITY_STATUS' %}";
+    select_state_to_see = "{% trans 'Select a new state to see how the visibility of this item will change.' %}";
+    visibility_translations = {
+        "hidden":"{% trans 'hidden' %}",
+        "locked":"{% trans 'locked' %}",
+        "public":"{% trans 'public' %}"
+    }
 </script>
     {% block extra_head_scripts %}
         <script src="{{ STATIC_URL }}aristotle_mdr/aristotle.status_change.js"></script>
