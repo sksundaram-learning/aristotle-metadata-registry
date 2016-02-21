@@ -923,7 +923,7 @@ class DataElementConceptViewPage(LoggedInViewConceptPages,TestCase):
             name="sub item OC",
             workgroup=self.item1.workgroup
         )
-        prop = models.Property`.objects.create(
+        prop = models.Property.objects.create(
             name="sub item prop",
             workgroup=self.item1.workgroup
         )
