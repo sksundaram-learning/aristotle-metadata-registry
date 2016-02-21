@@ -120,7 +120,7 @@ def user_can_change_status(user, item):
         if item.workgroup.ownership == WORKGROUP_OWNERSHIP.authority:
             return any(
                 (user in ra.registrars.all()
-                     for ra in item.workgroup.registrationAuthorities.all())
+                    for ra in item.workgroup.registrationAuthorities.all())
             )
         else:
             return True
