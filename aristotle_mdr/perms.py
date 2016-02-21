@@ -115,7 +115,7 @@ def user_can_change_status(user, item):
         return True
     # TODO: restrict to only those registration authorities of that items based
     # on the items workgroup, unless the item is visible to the user.
-    if can_view or item.readyToReview:
+    if can_view and item.readyToReview:
         return user.registrar_in.count() > 0 and \
             True in (user in ra.registrars.all()
                      for ra in item.workgroup.registrationAuthorities.all())

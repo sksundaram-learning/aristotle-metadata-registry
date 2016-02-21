@@ -276,9 +276,10 @@ class RegistrationAuthority(registryGroup):
                     child_item, state, user, *args, **kwargs
                 )
                 if registered:
-                    seen_items['success'] = seen_items['success'] + [item]
+                    seen_items['success'] = seen_items['success'] + [child_item]
                 else:
-                    seen_items['failed'] = seen_items['failed'] + [item]
+                    seen_items['failed'] = seen_items['failed'] + [child_item]
+        print(seen_items)
         return seen_items
 
     def register(self, item, state, user, *args, **kwargs):

@@ -692,13 +692,17 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.assertTrue(self.item1.is_registered)
         self.assertTrue(self.item1.is_public())
         for sub_item in self.item1.registry_cascade_items:
-            if sub_item is not None and perms.user_can_change_status(self.registrar,self.item1) :
+            if sub_item is not None and perms.user_can_change_status(self.registrar,sub_item) :
+                if not sub_item.is_registered: # pragma: no cover
+                    # This is debug code, and should never happen
+                    print sub_item
                 self.assertTrue(sub_item.is_registered)
 
     def test_registrar_can_change_status_of_registry_owned_item(self):
         self.login_registrar()
-        wg = self.item.workgroup
+        wg = self.item1.workgroup
         wg.ownership = models.WORKGROUP_OWNERSHIP.registry
+        wg.registrationAuthorities = []
         wg.save()
         
         self.assertFalse(perms.user_can_view(self.registrar,self.item1))
@@ -917,11 +921,12 @@ class DataElementConceptViewPage(LoggedInViewConceptPages,TestCase):
     itemType=models.DataElementConcept
     run_cascade_tests = True
     
-    def __init__(self,*args, **kwargs):
-        super(DataElementConceptViewPage, self).__init__(*args, **kwargs)
+    def setUp(self, *args, **kwargs):
+        super(DataElementConceptViewPage, self).setUp(*args, **kwargs)
         oc = models.ObjectClass.objects.create(
             name="sub item OC",
-            workgroup=self.item1.workgroup
+            workgroup=self.item1.workgroup,
+            readyToReview = True
         )
         prop = models.Property.objects.create(
             name="sub item prop",
