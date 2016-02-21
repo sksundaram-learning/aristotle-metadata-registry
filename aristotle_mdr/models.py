@@ -276,9 +276,10 @@ class RegistrationAuthority(registryGroup):
                     child_item, state, user, *args, **kwargs
                 )
                 if registered:
-                    seen_items['success'] = seen_items['success'] + [item]
+                    seen_items['success'] = seen_items['success'] + [child_item]
                 else:
-                    seen_items['failed'] = seen_items['failed'] + [item]
+                    seen_items['failed'] = seen_items['failed'] + [child_item]
+        print(seen_items)
         return seen_items
 
     def register(self, item, state, user, *args, **kwargs):
@@ -695,8 +696,16 @@ class _concept(baseAristotleObject):
                 if ra.registrars.filter(pk=user.pk).exists():
                     return True
         if self.readyToReview:
-            for ra in self.workgroup.registrationAuthorities.all():
-                if ra.registrars.filter(pk=user.pk).exists():
+            if self.workgroup.ownership == WORKGROUP_OWNERSHIP.authority:
+                for ra in self.workgroup.registrationAuthorities.all():
+                    if ra.registrars.filter(pk=user.pk).exists():
+                        return True
+            else:
+                if self.workgroup.registrationAuthorities.count() > 0:
+                    for ra in self.workgroup.registrationAuthorities.all():
+                        if ra.registrars.filter(pk=user.pk).exists():
+                            return True
+                else:
                     return True
         return False
 
