@@ -701,7 +701,12 @@ class _concept(baseAristotleObject):
                     if ra.registrars.filter(pk=user.pk).exists():
                         return True
             else:
-                return True
+                if self.workgroup.registrationAuthorities.count() > 0:
+                    for ra in self.workgroup.registrationAuthorities.all():
+                        if ra.registrars.filter(pk=user.pk).exists():
+                            return True
+                else:
+                    return True
         return False
 
     @property
