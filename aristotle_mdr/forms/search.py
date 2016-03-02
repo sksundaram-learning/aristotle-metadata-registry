@@ -290,6 +290,12 @@ class PermissionSearchForm(TokenSearchForm):
         required=False, initial=SORT_OPTIONS.natural,
         choices=SORT_OPTIONS, widget=BootstrapDropdownSelect
     )
+    from aristotle_mdr.search_indexes import BASE_RESTRICTION
+    res = forms.ChoiceField(
+        required=False, initial=None,
+        choices=BASE_RESTRICTION.items(),
+        label="Item visibility state"
+    )
 
     state = forms.MultipleChoiceField(
         required=False,
@@ -328,7 +334,7 @@ class PermissionSearchForm(TokenSearchForm):
 
         return search_models
 
-    filters = "models mq cq cds cde mds mde state ra".split()
+    filters = "models mq cq cds cde mds mde state ra res".split()
 
     @property
     def applied_filters(self):
@@ -352,7 +358,11 @@ class PermissionSearchForm(TokenSearchForm):
 
         states = self.cleaned_data['state']
         ras = self.cleaned_data['ra']
+        restriction = self.cleaned_data['res']
         sqs = sqs.apply_registration_status_filters(states, ras)
+
+        if restriction:
+            sqs = sqs.filter(restriction=restriction)
 
         sqs = self.apply_date_filtering(sqs)
         sqs = sqs.apply_permission_checks(
