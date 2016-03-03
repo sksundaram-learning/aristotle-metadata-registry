@@ -9,14 +9,16 @@ import logging
 logger = logging.getLogger(__name__)
 logger.debug("Logging started for " + __name__)
 
-RESTRICTION = {
+BASE_RESTRICTION = {
     0: 'Public',
     1: 'Locked',
     2: 'Unlocked',
 }
+RESTRICTION = {}
 # reverse the dictionary to make two-way look ups easier
-RESTRICTION.update([(str(k), v) for k, v in RESTRICTION.items()])
-RESTRICTION.update([(v, k) for k, v in RESTRICTION.items()])
+RESTRICTION.update([(k, v) for k, v in BASE_RESTRICTION.items()])
+RESTRICTION.update([(str(k), v) for k, v in BASE_RESTRICTION.items()])
+RESTRICTION.update([(v, k) for k, v in BASE_RESTRICTION.items()])
 
 
 class ConceptFallbackCharField(indexes.CharField):
