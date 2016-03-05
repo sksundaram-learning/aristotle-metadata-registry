@@ -28,7 +28,7 @@ from aristotle_mdr import perms
 from aristotle_mdr.utils import cache_per_item_user, concept_to_dict, construct_change_message, url_slugify_concept
 from aristotle_mdr import forms as MDRForms
 from aristotle_mdr import models as MDR
-from aristotle_mdr.utils import concept_to_clone_dict
+from aristotle_mdr.utils import concept_to_clone_dict, get_concepts_for_apps
 from aristotle_mdr import exceptions as registry_exceptions
 
 from haystack.views import SearchView, FacetedSearchView
@@ -300,22 +300,18 @@ def create_list(request):
 
     aristotle_apps = getattr(settings, 'ARISTOTLE_SETTINGS', {}).get('CONTENT_EXTENSIONS', [])
     aristotle_apps += ["aristotle_mdr"]
-
-    from django.contrib.contenttypes.models import ContentType
-    models = ContentType.objects.filter(app_label__in=aristotle_apps).all()
     out = {}
-
-    for m in models:
-        if issubclass(m.model_class(), MDR._concept) and not m.model.startswith("_"):
-            # Only output subclasses of 11179 concept
-            app_models = out.get(m.app_label, {'app': None, 'models': []})
-            if app_models['app'] is None:
-                try:
-                    app_models['app'] = getattr(apps.get_app_config(m.app_label), 'verbose_name')
-                except:
-                    app_models['app'] = "No name"  # Where no name is configured in the app_config, set a dummy so we don't keep trying
-            app_models['models'].append((m, m.model_class()))
-            out[m.app_label] = app_models
+    
+    for m in get_concepts_for_apps(aristotle_apps):
+        # Only output subclasses of 11179 concept
+        app_models = out.get(m.app_label, {'app': None, 'models': []})
+        if app_models['app'] is None:
+            try:
+                app_models['app'] = getattr(apps.get_app_config(m.app_label), 'verbose_name')
+            except:
+                app_models['app'] = "No name"  # Where no name is configured in the app_config, set a dummy so we don't keep trying
+        app_models['models'].append((m, m.model_class()))
+        out[m.app_label] = app_models
 
     return render(request, "aristotle_mdr/create/create_list.html", {'models': out})
 

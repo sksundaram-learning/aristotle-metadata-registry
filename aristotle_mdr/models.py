@@ -91,11 +91,13 @@ class baseAristotleObject(TimeStampedModel):
         return "{name}".format(name=self.name)
 
     # Defined so we can access it during templates.
-    def get_verbose_name(self):
-        return self._meta.verbose_name.title()
+    @classmethod
+    def get_verbose_name(cls):
+        return cls._meta.verbose_name.title()
 
-    def get_verbose_name_plural(self):
-        return self._meta.verbose_name_plural.title()
+    @classmethod
+    def get_verbose_name_plural(cls):
+        return cls._meta.verbose_name_plural.title()
 
     # @property
     # def url_name(self):
