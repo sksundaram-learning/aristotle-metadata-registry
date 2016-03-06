@@ -723,7 +723,7 @@ class _concept(baseAristotleObject):
         Returns the parent _concept that an item is built on.
         If the item type is _concept, return itself.
         """
-        return getattr(self,'_concept_ptr',self)
+        return getattr(self, '_concept_ptr', self)
 
     @classmethod
     def get_autocomplete_name(self):
