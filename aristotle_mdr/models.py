@@ -717,6 +717,14 @@ class _concept(baseAristotleObject):
         """
         return _concept.objects.get_subclass(pk=self.pk)
 
+    @property
+    def concept(self):
+        """
+        Returns the parent _concept that an item is built on.
+        If the item type is _concept, return itself.
+        """
+        return getattr(self, '_concept_ptr', self)
+
     @classmethod
     def get_autocomplete_name(self):
         return 'Autocomplete' + "".join(

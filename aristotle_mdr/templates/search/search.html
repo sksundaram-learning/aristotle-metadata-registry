@@ -315,7 +315,12 @@
                 {% if result.object.name %}
                 <li>
                     {% if user.is_active %}
+                    <div class="action">
                         <input type='checkbox' id="id_items_{{result.object.id}}" name="items" value='{{ result.object.id }}' title='select to add to favourites'>
+                        {% if result.object.concept in request.user.profile.favourites.all %}
+                            <i class="fa fa-bookmark" title="{% trans 'This item is in your favourites list' %}"></i>
+                        {% endif %}
+                    </div>
                     {% endif %}
                     {% include "search/searchItem.html" with item=result.object %}
                 </li>
