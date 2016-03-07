@@ -118,42 +118,27 @@ class TestSearch(utils.LoggedInViewPages,TestCase):
         self.assertTrue('facet_model_ct' in facets.keys())
         self.assertTrue('statuses' in facets.keys())
 
-    def test_registrar_search(self):
+    def test_registrar_favourite_in_list(self):
         self.logout()
+        
+        response = self.client.get(reverse('aristotle:search')+"?q=xman")
+        self.assertTrue('div class="action"' not in response.content)
+        
         response = self.client.post(reverse('friendly_login'),
                     {'username': 'stryker', 'password': 'mutantsMustDie'})
 
         self.assertEqual(response.status_code,302) # logged in
-        self.assertTrue(perms.user_is_registrar(self.registrar,self.ra))
-
-        with reversion.create_revision():
-            dp = models.ObjectClass.objects.create(name="deadpool",
-                    definition="not really an xman, no matter how much he tries",
-                    workgroup=self.xmen_wg,readyToReview=False)
-        dp = models.ObjectClass.objects.get(pk=dp.pk) # Un-cache
-        self.assertFalse(perms.user_can_view(self.registrar,dp))
-        self.assertFalse(dp.is_public())
 
         response = self.client.get(reverse('aristotle:search')+"?q=xman")
+        self.assertTrue('This item is in your favourites list' not in response.content)
 
-        self.assertFalse(dp in [x.object for x in response.context['page'].object_list])
-        for i in response.context['page'].object_list:
-            self.assertTrue(perms.user_can_view(self.registrar,i.object))
-
-        response = self.client.get(reverse('aristotle:search')+"?q=deadpool")
-        self.assertEqual(len(response.context['page'].object_list),0)
-
-        with reversion.create_revision():
-            dp.readyToReview = True
-            dp.save()
-        dp = models.ObjectClass.objects.get(pk=dp.pk) # Un-cache
-        self.assertTrue(perms.user_can_view(self.registrar,dp))
-
-        # Stryker should be able to find items that are "ready for review" in his RA only.
-        response = self.client.get(reverse('aristotle:search')+"?q=deadpool")
-        self.assertEqual(len(response.context['page'].object_list),1)
-        self.assertEqual(response.context['page'].object_list[0].object.item,dp)
-        self.assertTrue(perms.user_can_view(self.registrar,response.context['page'].object_list[0].object))
+        i = self.xmen_wg.items.first()
+        
+        self.registrar.profile.favourites.add(i)
+        self.assertTrue(i in self.registrar.profile.favourites.all())
+        
+        response = self.client.get(reverse('aristotle:search')+"?q=xman")
+        self.assertTrue('This item is in your favourites list' in response.content)
 
     def test_registrar_search_after_adding_new_ra_to_workgroup(self):
         self.logout()
