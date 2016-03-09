@@ -24,7 +24,7 @@
         {% if model.help_name %}
         <tr>
         <td>
-            <a href="{% url 'aristotle:createItem' m.app_label m.model %}">
+            <a href="{% url 'browse_concepts' m.app_label m.model %}">
                 {{ model.get_verbose_name }}
             </a>
         </td>
