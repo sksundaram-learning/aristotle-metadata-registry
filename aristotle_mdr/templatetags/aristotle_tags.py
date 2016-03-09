@@ -339,6 +339,7 @@ def bootstrap_modal(_id, size=None):
     return modal % (_id, size_class)
 
 
+
 @register.simple_tag
 def doc(item, field=None):
     """Gets the appropriate help text or docstring for a model or field.
@@ -348,11 +349,17 @@ def doc(item, field=None):
     """
 
     from django.contrib.contenttypes.models import ContentType
+    from aristotle_mdr.utils.doc_parse import parse_rst, parse_docstring
 
-    # ct =  ContentType.objects.get(app_label=app_label, model=model_name).model_class()
     ct = item
     if field is None:
-        return _(ct.__doc__)
+        model_name = ct._meta.model_name
+        title, body, metadata = parse_docstring(ct.__doc__)
+        if title:
+            title = parse_rst(title, 'model', _('model:') + model_name)
+        if body:
+            body = parse_rst(body, 'model', _('model:') + model_name)
+        return title #, body
     else:
         if ct._meta.get_field(field).help_text:
             return _(ct._meta.get_field(field).help_text)
