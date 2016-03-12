@@ -21,7 +21,7 @@
         <li>
             <a href="{% url 'aristotle:createItem' m.app_label m.model %}">
                 {{ model.get_verbose_name }}
-            </a>
+            </a> - {% doc model %}
         </li>
         {% endif %}
     {% endfor %}
