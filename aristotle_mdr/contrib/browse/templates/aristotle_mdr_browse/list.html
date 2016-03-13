@@ -27,6 +27,7 @@
         <tr>
             <td>
                 <a href="{{obj.get_absolute_url}}">{{ obj.name }}</a>
+                {{ obj.is_public }}
             </td>
             <td>
                 {{ obj.definition | striptags | truncatewords:20 }}
