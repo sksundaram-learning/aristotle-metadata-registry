@@ -71,9 +71,9 @@ class BrowseConcepts(AppBrowser):
         return self._model
 
     def get_queryset(self, *args, **kwargs):
-        queryset = super(BrowseConcepts, self).get_queryset(*args,**kwargs)
+        queryset = super(BrowseConcepts, self).get_queryset(*args, **kwargs)
         return queryset.visible(self.request.user)
-        
+
     def get_context_data(self, **kwargs):
         # Call the base implementation first to get a context
         context = super(BrowseConcepts, self).get_context_data(**kwargs)
