@@ -1,4 +1,5 @@
 "Misc. utility functions/classes for admin documentation generator."
+# Once the contrib.help functionality is completed this module will become deprecated.
 
 import re
 from email.errors import HeaderParseError
