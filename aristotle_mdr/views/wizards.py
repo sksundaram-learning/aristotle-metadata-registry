@@ -16,6 +16,8 @@ from django.utils.html import strip_tags
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
+from aristotle_mdr.contrib.help.models import ConceptHelp
+
 from formtools.wizard.views import SessionWizardView
 from reversion import revisions as reversion
 
@@ -132,7 +134,14 @@ class ConceptWizard(PermissionWizard):
             else:
                 context.update({'similar_items': self.find_similar()})
             context['step_title'] = _('Select or create')
-        context.update({'model_name': self.model._meta.verbose_name,
+        context.update({'model': self.model._meta.model_name,
+                        'app_label': self.model._meta.app_label,
+                        'model_name': self.model._meta.verbose_name,
+                        'model_name_plural': self.model._meta.verbose_name_plural,
+                        'help': ConceptHelp.objects.filter(
+                            app_label=self.model._meta.app_label,
+                            concept_type=self.model._meta.model_name
+                        ).first(),
                         'template_name': self.template_name,
                         'help_guide': self.help_guide(),
                         'current_step': self.steps.current,

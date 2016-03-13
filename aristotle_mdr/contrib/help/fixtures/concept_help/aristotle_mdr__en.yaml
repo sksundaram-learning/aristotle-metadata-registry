@@ -31,6 +31,26 @@
         single parent object class but may have more than one child object classes. A
         child object class inherits all characteristics of its parent object class, but
         a child object class may have unique characteristics.</p>
+    creation_tip: >
+        Object classes are <em>things</em> we wish to collect information about.
+        Good names for object classes are short, descriptive nouns.
+        <ul>
+          <li><strong>Be generic:</strong> An object class should apply to the widest group possible.
+          Only make more specific classes, if there are particular attributes only found on the specialisation.
+          e.g. Person, not Australian Citizens</li>
+          <li><strong>Use singlar forms:</strong> When discusing individuals, use singular terms to ensure unambiguity. For example, a <em>Person</em> can have an age, but a <em>Group of people</em> has an average age.</li>
+          <!--  <li><strong>:</strong></li> -->
+        </ul>
+        
+        <!--
+        If you are unsure, use the name of your object class in the contexts below.
+        <ul>
+          <li>Measure of the age of <em>noun.</em></li>
+          <li>Comparing the yearly income of <em>nouns</em> and private companies</li>
+        </ul>
+        In these examples, <q>Comparing the yearly income of <em>Persons</em> and
+        private companies</q> makes sense, but <q>Measure of the age of <em>Wages.</em></q>
+        does not - wages is an attribute of people or businesses.-->
 - model: aristotle_mdr_help.concepthelp
   fields: 
     app_label: aristotle_mdr
@@ -52,6 +72,26 @@
         [[objectclass]] creates a [[dataelementconcept]].
         The above mentioned examples create the data element concepts
         <em>Person—sex</em> and <em>Person—date of birth</em>.</p>
+    creation_tip: >
+        Properties are specific <em>attributes</em> from things we wish to collect information about.
+        Good names for properties are short, descriptive nouns.
+        <ul>
+          <li><strong>Be generic:</strong> A property should apply to all members of an Object Class</li>
+          <li><strong>Properties are unitless:</strong> They should be describe some aspect of a thing, without prescribing how that aspect is measured.
+          For example, <em>height</em> is an attribute of all people regardless of how it is measured.
+          </li>
+          <!--  <li><strong>:</strong></li> -->
+        </ul>
+        
+        <!-- {% comment %}
+        If you are unsure, use the name of your object class in the contexts below.
+        <ul>
+          <li>Measure of the age of <em>noun.</em></li>
+          <li>Comparing the yearly income of <em>nouns</em> and private companies</li>
+        </ul>
+        In these examples, <q>Comparing the yearly income of <em>Persons</em> and private companies</q> makes sense,
+        but <q>Measure of the age of <em>Wages.</em></q> does not - wages is an attribute of people or businesses.
+        {% endcomment %} -->
 - model: aristotle_mdr_help.concepthelp
   fields:
     app_label: aristotle_mdr

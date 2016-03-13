@@ -62,8 +62,10 @@ pre-populate any new items you create.
     </div>
 </div>
 <aside class="creationTips col-sm-4">
-{% if help_guide %}
-    {% include help_guide  %}
+{% if help %}
+    <p>
+        {{ help.creation_tip |safe }}
+    </p>
 {% endif %}
 </aside>
 {% endblock %}

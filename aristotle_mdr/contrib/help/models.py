@@ -31,6 +31,11 @@ class ConceptHelp(models.Model):
         help_text=_("An link to an official source for a description of the concept")
     )
     long_help = RichTextField(
+        null=True, blank=True,
         help_text=_("An longer definition for an object, including images and links")
+    )
+    creation_tip = RichTextField(
+        null=True, blank=True,
+        help_text=_("Instructions for creating good content of this type")
     )
     unique_together = ("app_label", "concept_type", "languages")
