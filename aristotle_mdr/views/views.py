@@ -331,6 +331,13 @@ def toggleFavourite(request, iid):
     request.user.profile.toggleFavourite(item)
     if request.GET.get('next', None):
         return redirect(request.GET.get('next'))
+    if item.concept in request.user.profile.favourites.all():
+        message = _("%s added to favourites.")%(item.name)
+    else:
+        message = _("%s removed from favourites.")%(item.name)
+    message = _(message + " Review your favourites from the user menu.")
+    print message
+    messages.add_message(request, messages.SUCCESS, message)
     return redirect(url_slugify_concept(item))
 
 

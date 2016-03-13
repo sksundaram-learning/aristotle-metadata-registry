@@ -37,6 +37,7 @@ SITE_ID=None
 
 ALLOWED_HOSTS = []
 SOUTH_TESTS_MIGRATE = False
+MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
 
 INSTALLED_APPS = (
     'aristotle_mdr',  # Comes before grappelli for overloads
