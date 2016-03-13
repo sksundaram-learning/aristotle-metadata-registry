@@ -605,14 +605,28 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.assertEqual(response.status_code,302)
         self.assertEqual(self.viewer.profile.favourites.count(),0)
 
-        response = self.client.get(reverse('aristotle:toggleFavourite', args=[self.item1.id]))
-        self.assertRedirects(response,url_slugify_concept(self.item1))
+        response = self.client.get(
+            reverse('aristotle:toggleFavourite', args=[self.item1.id]),
+            follow=True
+        )
+        self.assertEqual(
+            response.redirect_chain,
+            [('http://testserver'+url_slugify_concept(self.item1),302)]
+        )
         self.assertEqual(self.viewer.profile.favourites.count(),1)
         self.assertEqual(self.viewer.profile.favourites.first().item,self.item1)
+        self.assertTrue("added to favourites" in response.content)
 
-        response = self.client.get(reverse('aristotle:toggleFavourite', args=[self.item1.id]))
-        self.assertRedirects(response,url_slugify_concept(self.item1))
+        response = self.client.get(
+            reverse('aristotle:toggleFavourite', args=[self.item1.id]),
+            follow=True
+        )
+        self.assertEqual(
+            response.redirect_chain,
+            [('http://testserver'+url_slugify_concept(self.item1),302)]
+        )
         self.assertEqual(self.viewer.profile.favourites.count(),0)
+        self.assertTrue("removed from favourites" in response.content)
 
         response = self.client.get(reverse('aristotle:toggleFavourite', args=[self.item2.id]))
         self.assertEqual(response.status_code,403)
