@@ -336,7 +336,6 @@ def toggleFavourite(request, iid):
     else:
         message = _("%s removed from favourites.")%(item.name)
     message = _(message + " Review your favourites from the user menu.")
-    print message
     messages.add_message(request, messages.SUCCESS, message)
     return redirect(url_slugify_concept(item))
 
