@@ -301,7 +301,7 @@ def create_list(request):
     aristotle_apps = getattr(settings, 'ARISTOTLE_SETTINGS', {}).get('CONTENT_EXTENSIONS', [])
     aristotle_apps += ["aristotle_mdr"]
     out = {}
-    
+
     for m in get_concepts_for_apps(aristotle_apps):
         # Only output subclasses of 11179 concept
         app_models = out.get(m.app_label, {'app': None, 'models': []})

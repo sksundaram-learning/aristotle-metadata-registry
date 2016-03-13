@@ -6,6 +6,7 @@ from django.utils.text import get_text_list
 from django.utils.encoding import force_text
 from django.utils.translation import ugettext as _
 
+
 def concept_to_dict(obj):
     """
     A replacement for the ```django.form.model_to_dict`` that includes additional
@@ -100,10 +101,11 @@ def get_concepts_for_apps(app_labels):
     from django.contrib.contenttypes.models import ContentType
     from aristotle_mdr import models as MDR
     models = ContentType.objects.filter(app_label__in=app_labels).all()
-    concepts = [m
+    concepts = [
+        m
         for m in models
-        if m.model_class() and issubclass(m.model_class(), MDR._concept)
-        and not m.model.startswith("_")
+        if m.model_class() and issubclass(m.model_class(), MDR._concept) and
+        not m.model.startswith("_")
     ]
     return concepts
 

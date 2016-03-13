@@ -4,8 +4,10 @@ from django.utils.translation import ugettext_lazy as _
 from django.conf.global_settings import LANGUAGES
 from aristotle_mdr.models import RichTextField
 
-#class Help(models.Model):
+
+# class Help(models.Model):
 #    pass
+
 
 class ConceptHelp(models.Model):
     app_label = models.CharField(max_length=256)
@@ -16,13 +18,16 @@ class ConceptHelp(models.Model):
     brief = models.TextField(
         help_text=_("A short description of the concept")
     )
-    offical_definition = models.TextField(null=True, blank=True,
+    offical_definition = models.TextField(
+        null=True, blank=True,
         help_text=_("An official description of the concept, e.g. the ISO/IEC definition for an Object Class")
     )
-    official_reference = models.TextField(null=True, blank=True,
+    official_reference = models.TextField(
+        null=True, blank=True,
         help_text=_("The reference document that describes this concept type")
     )
-    official_link = models.TextField(null=True, blank=True,
+    official_link = models.TextField(
+        null=True, blank=True,
         help_text=_("An link to an official source for a description of the concept")
     )
     long_help = RichTextField(

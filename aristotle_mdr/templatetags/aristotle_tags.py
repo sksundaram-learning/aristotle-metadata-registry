@@ -339,13 +339,12 @@ def bootstrap_modal(_id, size=None):
     return modal % (_id, size_class)
 
 
-
 @register.simple_tag
 def doc(item, field=None):
     """Gets the appropriate help text or docstring for a model or field.
-    Accepts 2 or 3 string arguments:
-    If 2, returns the docstring for the given model in the specified app.
-    If 3, returns the help_text for the field on the given model in the specified app.
+    Accepts 1 or 2 string arguments:
+    If 1, returns the docstring for the given model in the specified app.
+    If 2, returns the help_text for the field on the given model in the specified app.
     """
 
     from django.contrib.contenttypes.models import ContentType
@@ -359,7 +358,7 @@ def doc(item, field=None):
             title = parse_rst(title, 'model', _('model:') + model_name)
         if body:
             body = parse_rst(body, 'model', _('model:') + model_name)
-        return title #, body
+        return title
     else:
         if ct._meta.get_field(field).help_text:
             return _(ct._meta.get_field(field).help_text)

@@ -18,7 +18,7 @@
         <thead>
         <tr>
             <th>Name</th>
-            <th>Workgroup</th>
+            <th>Definition</th>
             <th>Modified</th>
         </tr>
         </thead>
@@ -29,7 +29,7 @@
                 <a href="{{obj.get_absolute_url}}">{{ obj.name }}</a>
             </td>
             <td>
-                <a href="{{obj.workgroup.get_absolute_url}}">{{ obj.workgroup.name }}</a>
+                {{ obj.definition | striptags | truncatewords:20 }}
             </td>
             <td>
                 {{ obj.modified }}

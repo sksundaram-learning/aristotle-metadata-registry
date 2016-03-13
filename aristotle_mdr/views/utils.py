@@ -5,6 +5,7 @@ from django.core.urlresolvers import reverse
 from django.db.models import Count
 from django.shortcuts import render
 
+
 paginate_sort_opts = {
     "mod_asc": "modified",
     "mod_desc": "-modified",
