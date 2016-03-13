@@ -1,5 +1,5 @@
 {% extends "aristotle_mdr_browse/base.html" %}
-{% load aristotle_tags aristotle_help %}
+{% load aristotle_tags %}
 
 {% block title %}Concept browser{% endblock %}
 
@@ -28,7 +28,7 @@
                 {{ model.get_verbose_name }}
             </a>
         </td>
-        <td>{% help_doc model 'brief' %}</td>
+        <td>{% doc model %}</td>
         </tr>
         {% endif %}
     {% endfor %}

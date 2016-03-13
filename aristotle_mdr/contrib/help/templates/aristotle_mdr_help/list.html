@@ -1,5 +1,4 @@
 {% extends "aristotle_mdr_browse/base.html" %}
-{% load aristotle_tags aristotle_help %}
 
 {% block breadcumbs %}
     <li><a href="{% url 'browse_apps'  %}">Concept browser</a></li>
@@ -8,12 +7,6 @@
 {% endblock %}
 
 {% block object_list %}
-    <p>
-        <em>{{ model.get_verbose_name }} - </em>
-        {% help_doc model 'brief' %} 
-        - <a href="{% url 'concept_help' app.label model_name %}">Read more about {{ model.get_verbose_name_plural }}</a>
-    </p>
-
     <table class="table">
         <thead>
         <tr>

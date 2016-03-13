@@ -70,6 +70,7 @@ class BrowseConcepts(AppBrowser):
         # Call the base implementation first to get a context
         context = super(BrowseConcepts, self).get_context_data(**kwargs)
         context['model'] = self.model
+        context['model_name'] = self.model._meta.model_name
         return context
 
     def get_template_names(self):
