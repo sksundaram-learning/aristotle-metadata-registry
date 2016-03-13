@@ -982,7 +982,7 @@ class Measure(unmanagedObject):
 class UnitOfMeasure(concept):
     """
     actual units in which the associated values are measured
-    [:model:`aristotle_mdr.ValueDomain`] (3.2.138)
+    :model:`aristotle_mdr.ValueDomain` (3.2.138)
     """
 
     class Meta:
