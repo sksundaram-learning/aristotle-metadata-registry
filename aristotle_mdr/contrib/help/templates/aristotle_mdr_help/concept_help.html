@@ -15,7 +15,16 @@
 {% if object.offical_definition %}
 <blockquote>{% relink object 'offical_definition' %}
     {% if object.official_reference %}
+        {% if object.official_link %}
+        <small>
+            <a href="{{object.official_link}}" title="{% trans 'Click to view the official source'%}">
+            {{ object.official_reference }}
+            <i class="fa fa-external-link-square" ></i>
+            </a>
+        </small>
+        {% else %}
         <small>{{ object.official_reference }}</small>
+        {% endif %}
     {% endif %}
 </blockquote>
 {% endif %}
