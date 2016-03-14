@@ -1,7 +1,10 @@
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.core.urlresolvers import reverse
 from django.db.models import Count
 from django.shortcuts import render
+
 
 paginate_sort_opts = {
     "mod_asc": "modified",
@@ -113,3 +116,20 @@ def paginated_workgroup_list(request, workgroups, template, extra_context={}):
         }
     context.update(extra_context)
     return render(request, template, context)
+
+
+def get_concept_redirect_or_404(get_item_perm, request, iid, objtype=None):
+    if objtype is None:
+        from aristotle_mdr.models import _concept
+        objtype = _concept
+
+    from aristotle_mdr.contrib.redirect.exceptions import Redirect
+
+    item = get_item_perm(objtype, request.user, iid)
+    if not item:
+        if request.user.is_anonymous():
+            raise Redirect(reverse('friendly_login') + '?next=%s' % request.path)
+        else:
+            raise PermissionDenied
+    else:
+        return item

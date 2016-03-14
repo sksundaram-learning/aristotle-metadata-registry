@@ -1,0 +1,207 @@
+- model: aristotle_mdr_help.c`oncepthelp
+  fields:
+    app_label: aristotle_mdr
+    concept_type: objectclass
+    language: en
+    brief: A definition for classifying a set of real objects, ideas or events
+        that all share a common measurable attributes
+    offical_definition: >
+        Set of ideas, abstractions or things in the real world that are
+        identified with explicit boundaries and meaning and whose properties and
+        behaviour follow the same rules
+    official_reference: ISO/IEC 11179 - Clause 3.2.88
+    official_link:
+    body: >
+        <p>An object class represents a person, organisation, structure or event that
+        is of interest and needs to be described.  Examples of object classes include
+        <em>Person, Dwelling</em> and <em>Family</em>.</p>
+    
+        <p>The union of a specific object class with a specific property creates a data
+        element concept. For example, some of the above mentioned object classes can be
+        combined with an <em>Religious affiliation</em> property to create the data
+        element concepts: <em>Person &mdash; religious affiliation</em> and <em>Family
+        &mdash; religious affiliation</em>.</p>
+    
+        <p>Object classes can be specialisations of other object classes.  For example,
+        <em>Adult</em> is an age group related specialisation of <em>Person</em>.</p>
+    
+        <p>Specialisations allow object classes to be grouped and subtyped in a
+        meaningful manner and help users in browsing and locating relevant object
+        classes. In a specialisation tree an object class can only be associated with a
+        single parent object class but may have more than one child object classes. A
+        child object class inherits all characteristics of its parent object class, but
+        a child object class may have unique characteristics.</p>
+    creation_tip: >
+        Object classes are <em>things</em> we wish to collect information about.
+        Good names for object classes are short, descriptive nouns.
+        <ul>
+          <li><strong>Be generic:</strong> An object class should apply to the widest group possible.
+          Only make more specific classes, if there are particular attributes only found on the specialisation.
+          e.g. Person, not Australian Citizens</li>
+          <li><strong>Use singlar forms:</strong> When discusing individuals, use singular terms to ensure unambiguity. For example, a <em>Person</em> can have an age, but a <em>Group of people</em> has an average age.</li>
+          <!--  <li><strong>:</strong></li> -->
+        </ul>
+        
+        <!--
+        If you are unsure, use the name of your object class in the contexts below.
+        <ul>
+          <li>Measure of the age of <em>noun.</em></li>
+          <li>Comparing the yearly income of <em>nouns</em> and private companies</li>
+        </ul>
+        In these examples, <q>Comparing the yearly income of <em>Persons</em> and
+        private companies</q> makes sense, but <q>Measure of the age of <em>Wages.</em></q>
+        does not - wages is an attribute of people or businesses.-->
+- model: aristotle_mdr_help.concepthelp
+  fields: 
+    app_label: aristotle_mdr
+    concept_type: property
+    language: en
+    brief: A definition of an attribute common to all members of a set defined by an
+        [[object class]] 
+    offical_definition: >
+        Quality common to all members of an [[Object Class]]
+    official_reference: ISO/IEC 11179 - Clause 3.2.100
+    official_link:
+    body: >
+        <p>A property is a characteristic of an object class of interest. For example,
+        the object class Person can have characteristics such as <em>sex</em> and
+        <em>date of birth</em>.
+        These characteristics are referred to as properties.</p>
+        
+        <p>The union of a specific property with a specific
+        [[objectclass]] creates a [[dataelementconcept]].
+        The above mentioned examples create the data element concepts
+        <em>Person—sex</em> and <em>Person—date of birth</em>.</p>
+    creation_tip: >
+        Properties are specific <em>attributes</em> from things we wish to collect information about.
+        Good names for properties are short, descriptive nouns.
+        <ul>
+          <li><strong>Be generic:</strong> A property should apply to all members of an Object Class</li>
+          <li><strong>Properties are unitless:</strong> They should be describe some aspect of a thing, without prescribing how that aspect is measured.
+          For example, <em>height</em> is an attribute of all people regardless of how it is measured.
+          </li>
+          <!--  <li><strong>:</strong></li> -->
+        </ul>
+        
+        <!-- {% comment %}
+        If you are unsure, use the name of your object class in the contexts below.
+        <ul>
+          <li>Measure of the age of <em>noun.</em></li>
+          <li>Comparing the yearly income of <em>nouns</em> and private companies</li>
+        </ul>
+        In these examples, <q>Comparing the yearly income of <em>Persons</em> and private companies</q> makes sense,
+        but <q>Measure of the age of <em>Wages.</em></q> does not - wages is an attribute of people or businesses.
+        {% endcomment %} -->
+- model: aristotle_mdr_help.concepthelp
+  fields:
+    app_label: aristotle_mdr
+    concept_type: dataelementconcept
+    language: en
+    brief: A valid pairing of an [[object class]] and a [[property]] to define a measurable
+        attribute of the object, idea or event being observed.
+    offical_definition: >
+        Concept that is an association of a [[Property]] with an [[Object Class]]
+    official_reference: ISO/IEC 11179 - Clause 3.2.29
+    official_link:
+    body: >
+        <p>A data element concept represents the union of an [[objectclass]] and a
+        [[property]]. Examples of data element concepts include concepts such as,
+        <em>Person</em> &mdash; <em>date of birth</em>, <em>Person</em> &mdash;
+        <em>country of birth</em>, and <em>Person</em> &mdash; <em>religious
+        affiliation</em>.</p>
+        
+        <p>A data element concept is solely a conceptual description
+        and does not include values for measurement or collection.
+        Values are described by a [[valuedomain]], which in combination with
+        the data element concept forms a [[dataelement]].</p>
+        
+        <p>A [[conceptualdomain]] may also be associated with a data element concept,
+        thereby providing meaning to the values associated with the concept.
+        A one-to-many relationship may be formed between a data element concept
+        and suitable conceptual domains.</p>
+- model: aristotle_mdr_help.concepthelp
+  fields:
+    app_label: aristotle_mdr
+    concept_type: valuedomain
+    language: en
+    brief: A definition of how to record the measurement a particular attribute, either
+        using a coded list of values or a description of the possible values.
+    offical_definition: a set of Permissible Values
+    official_reference: ISO/IEC 11179 - Clause 3.2.140
+    official_link: 
+    body: >
+        <p>A value domain provides a set of permissible values by which a [[data element]]
+        can be implemented. Value domains can be enumerated (e.g. Total centimetres NNN)
+        or non-enumerated (e.g. Sex code N).</p>
+        
+            <p>The union of a specific value domain with a specific [[data element concept]]
+            creates a [[data element]]. For example the data element concept
+            <em>Person&mdash;body height</em> can be implemented through union
+            with the <em>Total centimetres NNN</em> value domain. </p>
+        
+        <h2>Permissable values</h2>
+        {% include "aristotle_mdr/helpers/iso_quote.html" with quote="an expression of a Value Meaning allowed in a specific Value Domain" %}
+        <h2>Enumerated vs non-enumerated value domains</h2>
+        
+        <p>ISO/IEC 11179 allows for 2 different types of Value Domains - enumerated vs non-enumerated.
+        The distinction between these is that an enumerated value domain is <q>specified by a list of all its Value Meanings</q>,
+        while a non-enumerated value domain is <q>specified by a description rather than a list of all Permissible Values</q>.
+        </p>
+        <ul>
+            <li>
+                <em>An example of a enumerated value domain</em> would be a list of 10-year cohorts for recording a persons age:
+                <ul>
+                    <li> A code of A coresponsing to 0-15 years
+                    <li> A code of B coresponsing to 15-30 years
+                    <li> A code of C coresponsing to 30-45 years
+                    <li> A code of D coresponsing to 45+ years
+                </ul>
+                Here, every possible value within the set has been explicitly enumerated.
+            </li>
+            <li>
+                <em>An example of a non-enumerated value domain</em> would be an numeric range for recording a persons age,
+                where the number could be any two digit number greater than zero. While there is an implied set of values, these have not been expressly enumerated.
+            </li>
+        </ul>
+- model: aristotle_mdr_help.concepthelp
+  fields:
+    app_label: aristotle_mdr
+    concept_type: dataelement
+    language: en
+    brief: A precise way of defining how a measurable attribute of a set of objects
+        may be recorded in a system, using reusable metadata components.
+    offical_definition: A unit of data that is considered in context to be indivisible.
+    official_reference: ISO/IEC 11179 - Clause 3.2.28
+    official_link:
+    body: >
+        <p>A data element represents the union of a [[data element concept]] and 
+        a [[value domain]]. The following examples demonstrate how a concept can
+        be paired with values to capture detailed information, e.g.
+            <em>Person</em> &mdash; <em>date of birth</em>, <em>DDMMYYYY</em>,
+            <em>Person</em> &mdash; <em>country of birth</em>, <em> code Australian
+                Standard Classification of Countries NNNN</em> and
+            <em>Person</em> &mdash; <em>religious affiliation</em>, <em>code Religious
+                Affiliation Standard 2012 NNNN</em>.
+        </p>
+        
+        <p>The same data element concept may be paired with various sets of values to
+        form different data elements and thereby customising the way information is
+        specified for collection. For example the concept of Occupation may be associated
+        with a value domain which references the Australian and New Zealand Standard 
+        Classification of Occupations and be collected at different digit levels 
+        representing the Major Group, Sub-Major Group, Minor Group, Unit Group or Occupation.<p>
+        
+        <p>Data elements may stand alone or be associated with other item types such
+        as [[data element derivation|s]].</p>
+- model: aristotle_mdr_help.concepthelp
+  fields:
+    app_label: aristotle_mdr
+    concept_type: datatype
+    language: en
+    brief: --
+    offical_definition: >
+        pass
+    official_reference: ISO/IEC 11179 - Clause x.y.z
+    official_link:
+    body: >
+        pass    

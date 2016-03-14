@@ -1,0 +1,20 @@
+{% extends "aristotle_mdr/base.html" %}
+{% load static compile_static%}
+
+{% block extra_head_scripts %}
+    {# <link rel="stylesheet" href="{{ STATIC_URL }}{% compile 'aristotle_mdr/aristotle.help.less' %}" /> #}
+{% endblock %}
+
+{% block content %}
+    <h2>{% block title %}Help{% endblock %}</h2>
+
+    <ul class="breadcrumb">
+    {% block breadcumbs %}
+        <li class="active">Help</li>
+    {% endblock %}
+    </ul>
+
+    {% block help_content %}
+    {% endblock %}
+
+{% endblock %}

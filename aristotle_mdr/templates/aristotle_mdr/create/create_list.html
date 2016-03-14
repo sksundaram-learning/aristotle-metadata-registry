@@ -1,5 +1,5 @@
 {% extends 'aristotle_mdr/base.html' %}
-{% load aristotle_tags i18n %}
+{% load aristotle_tags aristotle_help i18n %}
 
 {% block title %}Creation List{% endblock %}
 
@@ -14,18 +14,30 @@
     {% endif %}
 </p>
 {% for app,app_models in models.items %}
-<h2>{{ app_models.app }}</h2>
-    <ul>
-    {% for m,model in app_models.models %}
-        {% if model.help_name %}
-        <li>
-            <a href="{% url 'aristotle:createItem' m.app_label m.model %}">
-                {{ model.get_verbose_name }}
-            </a>
-        </li>
-        {% endif %}
-    {% endfor %}
-    </ul>
+<h3>{{ app_models.app }}</h3>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>{% trans "Create new" %}</th>
+                <th>{% trans "Help" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for m,model in app_models.models %}
+            {% if model.help_name %}
+            <tr>
+                <td>
+                    <a href="{% url 'aristotle:createItem' m.app_label m.model %}">
+                        {{ model.get_verbose_name }}
+                    </a>
+                </td>
+                <td>{% help_doc model %}
+                </td>
+            </tr>
+            {% endif %}
+        {% endfor %}
+        </tbody>
+    </table>
 {% endfor %}
 
 {% endblock %}

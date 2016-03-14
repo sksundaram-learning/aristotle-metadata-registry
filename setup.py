@@ -9,7 +9,7 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
     name='aristotle-metadata-registry',
-    version='1.1.0',
+    version='1.1.1',
     packages=['aristotle_mdr'],
     include_package_data=True,
     license='Aristotle-MDR Modified BSD Licence',  # example license
@@ -39,7 +39,7 @@ setup(
 
         'django-model-utils==2.3.1',
         'django-notifications-hq>=1.0', #At least 0.8 for live notifications.
-        'django-grappelli',
+        'django-grappelli>=2.7.3',
         'docutils',
 
         #Search requirements
@@ -47,16 +47,16 @@ setup(
         'Whoosh',
 
         #Rich text editors
-        'django-ckeditor==4.5.1',
+        'django-ckeditor',
 
         # Revision control
         "django-reversion>=1.10",
-        'django-reversion-compare>=0.5.6',
+        'django-reversion-compare>=0.6.0',
         'diff-match-patch',
 
         # Fancy UI stuff
         'django-static-precompiler',
-        'django-autocomplete-light',
+        'django-autocomplete-light==2.3.3',
         'django-bootstrap3',
         'django-bootstrap3-datetimepicker',
 

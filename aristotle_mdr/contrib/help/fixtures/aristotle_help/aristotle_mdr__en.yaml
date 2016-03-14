@@ -1,0 +1,6 @@
+- model: aristotle_mdr_help.helppage
+  fields:
+    title: Metadata
+    language: en
+    body: >
+        Some things here

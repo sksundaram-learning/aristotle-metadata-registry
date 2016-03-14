@@ -17,6 +17,14 @@ class AnonymousUserViewingThePages(TestCase):
     def test_homepage(self):
         home = self.client.get("/")
         self.assertEqual(home.status_code,200)
+
+    def test_notifications_for_anon_users(self):
+        home = self.client.get("/")
+        self.assertEqual(home.status_code,200)
+        # Make sure notifications library isn't loaded for anon users as they'll never have notifications.
+        self.assertTrue("notifications/notify.js" not in home.content)
+        # At some stage this might need a better test to check the 500 page doesn't show... after notifications is fixed.
+        
     def test_help_all_items(self):
         response = self.client.get(reverse('aristotle:about_all_items'))
         self.assertEqual(response.status_code,200)
@@ -455,6 +463,120 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         response = self.client.get(self.item1.get_absolute_url())
         self.assertTrue(reverse('aristotle:item_history',args=[self.item1.id]) in response.content)
 
+    def test_editor_can_view_item_history__and__compare(self):
+        self.login_editor()
+
+        from reversion import revisions as reversion
+        
+        with reversion.create_revision():
+            self.item1.name = "change 1"
+            reversion.set_comment("change 1")
+            self.item1.readyToReview = True
+            self.item1.save()
+
+        with reversion.create_revision():
+            self.item1.name = "change 2"
+            reversion.set_comment("change 2")
+            r = self.ra.register(
+                item=self.item1,
+                state=models.STATES.incomplete,
+                user=self.registrar
+            )
+            self.item1.save()
+
+        revisions = reversion.default_revision_manager.get_for_object(self.item1)
+
+        response = self.client.get(reverse('aristotle:item_history',args=[self.item1.id]))
+        self.assertEqual(response.status_code,200)
+
+        response = self.client.get(
+            reverse('aristotle:item_history',args=[self.item1.id]),
+            {'version_id1' : revisions.first().pk,
+            'version_id2' : revisions.last().pk
+            }
+        )
+        
+        self.assertEqual(response.status_code,200)
+        self.assertTrue("change 2" in response.content)
+        self.assertTrue('statuses' in response.content)
+        
+        self.item1 = self.itemType.objects.get(pk=self.item1.pk) #decache
+        self.assertTrue(self.item1.name == "change 2")
+        for s in self.item1.statuses.all():
+            self.assertContains(
+                response,
+                '%s is %s'%(self.item1.name,s.get_state_display())
+            )
+
+    def test_editor_can_revert_item_and_status_goes_back_too(self):
+        self.login_editor()
+        
+        from reversion import revisions as reversion
+        with reversion.create_revision():
+            self.item1.readyToReview = True
+            self.item1.save()
+        original_name = self.item1.name
+        
+        response = self.client.get(reverse('aristotle:edit_item',args=[self.item1.id]))
+        self.assertEqual(response.status_code,200)
+        
+        updated_item = utils.modeL_to_dict_with_change_time(response.context['item'])
+        updated_name = updated_item['name'] + " updated!"
+        updated_item['name'] = updated_name
+        change_comment = "I changed this because I can"
+        updated_item['change_comments'] = change_comment
+        response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
+        self.item1 = self.itemType.objects.get(pk=self.item1.pk)
+        self.assertEqual(self.item1.name,updated_name)
+
+        r = self.ra.register(
+            item=self.item1,
+            state=models.STATES.incomplete,
+            user=self.registrar
+        )
+        self.item1 = self.itemType.objects.get(pk=self.item1.pk) #decache
+
+        self.assertTrue(self.item1.statuses.all().count() == 1)
+        self.assertTrue(self.item1.statuses.first().state == models.STATES.incomplete)
+
+        response = self.client.get(reverse('aristotle:edit_item',args=[self.item1.id]))
+        self.assertEqual(response.status_code,200)
+        updated_item = utils.modeL_to_dict_with_change_time(response.context['item'])
+        updated_name_again = updated_item['name'] + " updated!"
+        updated_item['name'] = updated_name_again
+        change_comment = "I changed this again because I can"
+        updated_item['change_comments'] = change_comment
+        response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
+        self.item1 = self.itemType.objects.get(pk=self.item1.pk)
+        self.assertEqual(self.item1.name,updated_name_again)
+
+        self.ra.register(self.item1,models.STATES.candidate,self.registrar)
+        self.item1 = self.itemType.objects.get(pk=self.item1.pk) #decache
+        self.assertTrue(self.item1.statuses.count() == 2)
+        self.assertTrue(self.item1.statuses.last().state == models.STATES.candidate)
+
+        versions = list(reversion.Version.objects.filter(object_id=self.item1.id))
+        versions[4].revision.revert(delete=True) # The version that has the first status changes
+
+        self.item1 = self.itemType.objects.get(pk=self.item1.pk) #decache
+
+        self.assertTrue(self.item1.statuses.count() == 1)
+        self.assertTrue(self.item1.statuses.first().state == models.STATES.incomplete)
+        self.assertEqual(self.item1.name,updated_name)
+
+        versions[0].revision.revert(delete=True)
+        self.item1 = self.itemType.objects.get(pk=self.item1.pk) #decache
+        self.assertTrue(self.item1.statuses.count() == 0)
+        self.assertEqual(self.item1.name,original_name)
+
+        versions[9].revision.revert(delete=True) # Back to the latest version
+        self.item1 = self.itemType.objects.get(pk=self.item1.pk) #decache
+        self.assertTrue(self.item1.statuses.count() == 2)
+        self.assertTrue(self.item1.statuses.order_by('state')[0].state == models.STATES.incomplete)
+        self.assertTrue(self.item1.statuses.order_by('state')[1].state == models.STATES.candidate)
+        self.assertEqual(self.item1.name,updated_name_again)
+
+
     def test_anon_cannot_view_item_history(self):
         self.logout()
         response = self.client.get(reverse('aristotle:item_history',args=[self.item1.id]))
@@ -483,14 +605,28 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.assertEqual(response.status_code,302)
         self.assertEqual(self.viewer.profile.favourites.count(),0)
 
-        response = self.client.get(reverse('aristotle:toggleFavourite', args=[self.item1.id]))
-        self.assertRedirects(response,url_slugify_concept(self.item1))
+        response = self.client.get(
+            reverse('aristotle:toggleFavourite', args=[self.item1.id]),
+            follow=True
+        )
+        self.assertEqual(
+            response.redirect_chain,
+            [('http://testserver'+url_slugify_concept(self.item1),302)]
+        )
         self.assertEqual(self.viewer.profile.favourites.count(),1)
         self.assertEqual(self.viewer.profile.favourites.first().item,self.item1)
+        self.assertTrue("added to favourites" in response.content)
 
-        response = self.client.get(reverse('aristotle:toggleFavourite', args=[self.item1.id]))
-        self.assertRedirects(response,url_slugify_concept(self.item1))
+        response = self.client.get(
+            reverse('aristotle:toggleFavourite', args=[self.item1.id]),
+            follow=True
+        )
+        self.assertEqual(
+            response.redirect_chain,
+            [('http://testserver'+url_slugify_concept(self.item1),302)]
+        )
         self.assertEqual(self.viewer.profile.favourites.count(),0)
+        self.assertTrue("removed from favourites" in response.content)
 
         response = self.client.get(reverse('aristotle:toggleFavourite', args=[self.item2.id]))
         self.assertEqual(response.status_code,403)
@@ -505,6 +641,84 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
     def test_registrar_can_change_status(self):
         self.login_registrar()
 
+        self.assertFalse(perms.user_can_view(self.registrar,self.item1))
+        self.item1.readyToReview = True
+        self.item1.save()
+        self.item1 = self.itemType.objects.get(pk=self.item1.pk)
+
+        self.assertTrue(perms.user_can_view(self.registrar,self.item1))
+        self.assertTrue(perms.user_can_change_status(self.registrar,self.item1))
+
+        response = self.client.get(reverse('aristotle:changeStatus',args=[self.item1.id]))
+        self.assertEqual(response.status_code,200)
+
+        self.assertEqual(self.item1.statuses.count(),0)
+        response = self.client.post(
+            reverse('aristotle:changeStatus',args=[self.item1.id]),
+            {
+                'registrationAuthorities': [str(self.ra.id)],
+                'state': self.ra.public_state,
+                'changeDetails': "testing",
+                'cascadeRegistration': 0, # no
+            }
+        )
+        self.assertRedirects(response,url_slugify_concept(self.item1))
+
+        self.item1 = self.itemType.objects.get(pk=self.item1.pk)
+        self.assertEqual(self.item1.statuses.count(),1)
+        self.assertTrue(self.item1.is_registered)
+        self.assertTrue(self.item1.is_public())
+
+    def test_registrar_can_change_status_with_cascade(self):
+        if not hasattr(self,"run_cascade_tests"):
+            return
+        self.login_registrar()
+
+        self.assertFalse(perms.user_can_view(self.registrar,self.item1))
+        self.item1.readyToReview = True
+        self.item1.save()
+        self.item1 = self.itemType.objects.get(pk=self.item1.pk)
+
+        self.assertTrue(perms.user_can_view(self.registrar,self.item1))
+        self.assertTrue(perms.user_can_change_status(self.registrar,self.item1))
+
+        response = self.client.get(reverse('aristotle:changeStatus',args=[self.item1.id]))
+        self.assertEqual(response.status_code,200)
+
+        self.assertEqual(self.item1.statuses.count(),0)
+        for sub_item in self.item1.registry_cascade_items:
+            if sub_item is not None:
+                self.assertEqual(sub_item.statuses.count(),0)
+
+        response = self.client.post(
+            reverse('aristotle:changeStatus',args=[self.item1.id]),
+            {
+                'registrationAuthorities': [str(self.ra.id)],
+                'state': self.ra.public_state,
+                'changeDetails': "testing",
+                'cascadeRegistration': 1, # yes
+            }
+        )
+        self.assertRedirects(response,url_slugify_concept(self.item1))
+
+        self.item1 = self.itemType.objects.get(pk=self.item1.pk)
+        self.assertEqual(self.item1.statuses.count(),1)
+        self.assertTrue(self.item1.is_registered)
+        self.assertTrue(self.item1.is_public())
+        for sub_item in self.item1.registry_cascade_items:
+            if sub_item is not None and perms.user_can_change_status(self.registrar,sub_item) :
+                if not sub_item.is_registered: # pragma: no cover
+                    # This is debug code, and should never happen
+                    print sub_item
+                self.assertTrue(sub_item.is_registered)
+
+    def test_registrar_can_change_status_of_registry_owned_item(self):
+        self.login_registrar()
+        wg = self.item1.workgroup
+        wg.ownership = models.WORKGROUP_OWNERSHIP.registry
+        wg.registrationAuthorities = []
+        wg.save()
+        
         self.assertFalse(perms.user_can_view(self.registrar,self.item1))
         self.item1.readyToReview = True
         self.item1.save()
@@ -719,6 +933,69 @@ class ConceptualDomainViewPage(LoggedInViewConceptPages,TestCase):
 class DataElementConceptViewPage(LoggedInViewConceptPages,TestCase):
     url_name='dataElementConcept'
     itemType=models.DataElementConcept
+    run_cascade_tests = True
+    
+    def setUp(self, *args, **kwargs):
+        super(DataElementConceptViewPage, self).setUp(*args, **kwargs)
+        oc = models.ObjectClass.objects.create(
+            name="sub item OC",
+            workgroup=self.item1.workgroup,
+            readyToReview = True
+        )
+        prop = models.Property.objects.create(
+            name="sub item prop",
+            workgroup=self.item1.workgroup
+        )
+        self.item1.objectClass = oc
+        self.item1.property = prop
+        self.item1.save()
+        
+    def test_browse_dec(self):
+        de1 = models.DataElement.objects.create(
+            name="public item",
+            dataElementConcept=self.item1,
+            workgroup=self.item1.workgroup
+        )
+        de2 = models.DataElement.objects.create(
+            name="invisible item",
+            dataElementConcept=self.item1,
+            workgroup=self.item1.workgroup
+        )
+
+        de3 = models.DataElement.objects.create(
+            name="public but not related",
+            # dataElementConcept=self.item1, # not attached to the DEC.
+            workgroup=self.item1.workgroup
+        )
+
+        oc1 = models.ObjectClass.objects.create(
+            name="public item",
+            workgroup=self.item1.workgroup
+        )
+        self.item1.objectClass = oc1
+        self.item1.save()
+        
+        models.Status.objects.create(
+            concept=de1,
+            registrationAuthority=self.ra,
+            registrationDate = datetime.date(2009,4,28),
+            state =  models.STATES.standard
+            )
+        models.Status.objects.create(
+            concept=de3,
+            registrationAuthority=self.ra,
+            registrationDate = datetime.date(2009,4,28),
+            state =  models.STATES.standard
+            )
+        self.logout()
+        response = self.client.get(
+            reverse('aristotle:browse',args=[oc1.id,self.item1.id])
+        )
+        self.assertTrue(response.status_code,200)
+        self.assertTrue(de1.name in response.content)
+        self.assertTrue(de2.name not in response.content)
+        self.assertTrue(de3.name not in response.content)
+        
 class DataElementViewPage(LoggedInViewConceptPages,TestCase):
     url_name='dataElement'
     itemType=models.DataElement

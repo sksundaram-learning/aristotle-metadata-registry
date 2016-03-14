@@ -38,6 +38,12 @@ def home(request):
 
 
 @login_required
+def roles(request):
+    page = render(request, "aristotle_mdr/user/userRoles.html", {"item": request.user})
+    return page
+
+
+@login_required
 def recent(request):
     from reversion.models import Revision
     from aristotle_mdr.views.utils import paginated_reversion_list

@@ -376,6 +376,52 @@ class AdminPageForConcept(utils.LoggedInViewPages):
         self.assertResponseStatusCodeEqual(response,200)
         self.assertTrue(response.context['adminform'].form.initial['name'],new_name)
 
+    def test_admin_user_can_compare_statuses(self):
+        self.login_editor()
+
+        from reversion import revisions as reversion
+        
+        with reversion.create_revision():
+            self.item1.name = "change 1"
+            reversion.set_comment("change 1")
+            self.item1.readyToReview = True
+            self.item1.save()
+
+        with reversion.create_revision():
+            self.item1.name = "change 2"
+            reversion.set_comment("change 2")
+            r = self.ra.register(
+                item=self.item1,
+                state=models.STATES.incomplete,
+                user=self.registrar
+            )
+            self.item1.save()
+
+        revisions = reversion.default_revision_manager.get_for_object(self.item1)
+
+        response = self.client.get(
+            reverse(
+                "admin:%s_%s_compare"%(
+                    self.itemType._meta.app_label,self.itemType._meta.model_name
+                ),
+                args=[self.item1.pk]
+            ),
+            {'version_id1' : revisions.first().pk,
+            'version_id2' : revisions.last().pk
+            }
+        )
+        self.assertResponseStatusCodeEqual(response,200)
+        self.assertTrue("change 2" in response.content)
+        self.assertTrue('statuses' in response.content)
+        
+        self.item1 = self.itemType.objects.get(pk=self.item1.pk) #decache
+        self.assertTrue(self.item1.name == "change 2")
+        for s in self.item1.statuses.all():
+            self.assertContains(
+                response,
+                '%s is %s'%(self.item1.name,s.get_state_display())
+            )
+
 
 class ObjectClassAdminPage(AdminPageForConcept,TestCase):
     itemType=models.ObjectClass

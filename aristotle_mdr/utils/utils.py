@@ -97,6 +97,19 @@ def construct_change_message(request, form, formsets):
     return change_message or _('No fields changed.')
 
 
+def get_concepts_for_apps(app_labels):
+    from django.contrib.contenttypes.models import ContentType
+    from aristotle_mdr import models as MDR
+    models = ContentType.objects.filter(app_label__in=app_labels).all()
+    concepts = [
+        m
+        for m in models
+        if m.model_class() and issubclass(m.model_class(), MDR._concept) and
+        not m.model.startswith("_")
+    ]
+    return concepts
+
+
 # "There are only two hard problems in Computer Science: cache invalidation, naming things and off-by-one errors"
 def cache_per_item_user(ttl=None, prefix=None, cache_post=False):
     '''

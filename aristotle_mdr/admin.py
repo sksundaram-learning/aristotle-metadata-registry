@@ -13,7 +13,8 @@ from reversion_compare.admin import CompareVersionAdmin
 import reversion
 
 from aristotle_mdr.register import register_concept
-reversion.revisions.register(MDR._concept)
+reversion.revisions.register(MDR.Status)
+reversion.revisions.register(MDR._concept, follow=['statuses', 'workgroup'])
 reversion.revisions.register(MDR.Workgroup)
 
 
@@ -266,13 +267,19 @@ register_concept(
 register_concept(
     MDR.DataElementConcept,
     name_suggest_fields=['objectClass', 'property'],
-    extra_fieldsets=[('Components', {'fields': ['objectClass', 'property']})]
+    extra_fieldsets=[('Components', {'fields': ['objectClass', 'property']})],
+    reversion={
+        'follow': ['objectClass', 'property'],
+    }
 )
 
 register_concept(
     MDR.DataElement,
     name_suggest_fields=['dataElementConcept', 'valueDomain'],
-    extra_fieldsets=[('Components', {'fields': ['dataElementConcept', 'valueDomain']})]
+    extra_fieldsets=[('Components', {'fields': ['dataElementConcept', 'valueDomain']})],
+    reversion={
+        'follow': ['dataElementConcept', 'valueDomain'],
+    }
 )
 
 register_concept(

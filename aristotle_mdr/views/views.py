@@ -1,6 +1,7 @@
 from django.apps import apps
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.core.exceptions import PermissionDenied, ImproperlyConfigured
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -15,20 +16,22 @@ from django.template.loader import select_template
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import TemplateView
 from django.utils import timezone
+from django.utils.decorators import method_decorator
 import datetime
 
 import reversion
 from reversion.revisions import default_revision_manager
+from reversion_compare.views import HistoryCompareDetailView
 
 from aristotle_mdr.perms import user_can_view, user_can_edit, user_can_change_status
 from aristotle_mdr import perms
 from aristotle_mdr.utils import cache_per_item_user, concept_to_dict, construct_change_message, url_slugify_concept
 from aristotle_mdr import forms as MDRForms
 from aristotle_mdr import models as MDR
-from aristotle_mdr.utils import concept_to_clone_dict
+from aristotle_mdr.utils import concept_to_clone_dict, get_concepts_for_apps
 from aristotle_mdr import exceptions as registry_exceptions
 
-from haystack.views import SearchView
+from haystack.views import SearchView, FacetedSearchView
 
 import logging
 
@@ -41,6 +44,23 @@ PAGES_PER_RELATED_ITEM = 15
 class DynamicTemplateView(TemplateView):
     def get_template_names(self):
         return ['aristotle_mdr/static/%s.html' % self.kwargs['template']]
+
+
+class ConceptHistoryCompareView(HistoryCompareDetailView):
+    model = MDR._concept
+    pk_url_kwarg = 'iid'
+    template_name = "aristotle_mdr/actions/concept_history_compare.html"
+
+    def get_object(self, queryset=None):
+        item = super(ConceptHistoryCompareView, self).get_object(queryset)
+        if not user_can_view(self.request.user, item):
+            raise PermissionDenied
+        self.model = item.item.__class__  # Get the subclassed object
+        return item
+
+    @method_decorator(login_required)
+    def dispatch(self, *args, **kwargs):
+        return super(ConceptHistoryCompareView, self).dispatch(*args, **kwargs)
 
 
 class HelpTemplateView(TemplateView):
@@ -194,23 +214,6 @@ def render_if_condition_met(request, condition, objtype, iid, model_slug=None, n
     return HttpResponse(template.render(context))
 
 
-def item_history(request, iid):
-    item = get_if_user_can_view(MDR._concept, request.user, iid)
-    if not item:
-        if request.user.is_anonymous():
-            return redirect(reverse('friendly_login') + '?next=%s' % request.path)
-        else:
-            raise PermissionDenied
-    item = item.item
-    versions = default_revision_manager.get_for_object(item)
-    from django.contrib.contenttypes.models import ContentType
-    ct = ContentType.objects.get_for_model(item)
-    versions = reversion.models.Version.objects.filter(content_type=ct, object_id=item.pk).order_by('-revision__date_created')
-
-    page = render(request, "aristotle_mdr/actions/concept_history.html", {"item": item, 'versions': versions})
-    return page
-
-
 def registrationHistory(request, iid):
     item = get_if_user_can_view(MDR._concept, request.user, iid)
     if not item:
@@ -297,22 +300,18 @@ def create_list(request):
 
     aristotle_apps = getattr(settings, 'ARISTOTLE_SETTINGS', {}).get('CONTENT_EXTENSIONS', [])
     aristotle_apps += ["aristotle_mdr"]
-
-    from django.contrib.contenttypes.models import ContentType
-    models = ContentType.objects.filter(app_label__in=aristotle_apps).all()
     out = {}
 
-    for m in models:
-        if issubclass(m.model_class(), MDR._concept) and not m.model.startswith("_"):
-            # Only output subclasses of 11179 concept
-            app_models = out.get(m.app_label, {'app': None, 'models': []})
-            if app_models['app'] is None:
-                try:
-                    app_models['app'] = getattr(apps.get_app_config(m.app_label), 'verbose_name')
-                except:
-                    app_models['app'] = "No name"  # Where no name is configured in the app_config, set a dummy so we don't keep trying
-            app_models['models'].append((m, m.model_class()))
-            out[m.app_label] = app_models
+    for m in get_concepts_for_apps(aristotle_apps):
+        # Only output subclasses of 11179 concept
+        app_models = out.get(m.app_label, {'app': None, 'models': []})
+        if app_models['app'] is None:
+            try:
+                app_models['app'] = getattr(apps.get_app_config(m.app_label), 'verbose_name')
+            except:
+                app_models['app'] = "No name"  # Where no name is configured in the app_config, set a dummy so we don't keep trying
+        app_models['models'].append((m, m.model_class()))
+        out[m.app_label] = app_models
 
     return render(request, "aristotle_mdr/create/create_list.html", {'models': out})
 
@@ -328,6 +327,12 @@ def toggleFavourite(request, iid):
     request.user.profile.toggleFavourite(item)
     if request.GET.get('next', None):
         return redirect(request.GET.get('next'))
+    if item.concept in request.user.profile.favourites.all():
+        message = _("%s added to favourites.") % (item.name)
+    else:
+        message = _("%s removed from favourites.") % (item.name)
+    message = _(message + " Review your favourites from the user menu.")
+    messages.add_message(request, messages.SUCCESS, message)
     return redirect(url_slugify_concept(item))
 
 
@@ -435,7 +440,42 @@ def changeStatus(request, iid):
             return HttpResponseRedirect(url_slugify_concept(item))
     else:
         form = MDRForms.ChangeStatusForm(user=request.user)
-    return render(request, "aristotle_mdr/actions/changeStatus.html", {"item": item, "form": form})
+    matrix={}
+
+    visibility = "hidden"
+    if item._is_locked:
+        visibility = "locked"
+    if item._is_public:
+        visibility = "public"
+
+    from aristotle_mdr.models import WORKGROUP_OWNERSHIP, STATES
+    import json
+
+    for ra in request.user.profile.registrarAuthorities:
+        if item.workgroup.ownership == WORKGROUP_OWNERSHIP.authority:
+            owner = ra in item.workgroup.registrationAuthorities.all()
+        elif item.workgroup.ownership == WORKGROUP_OWNERSHIP.registry:
+            owner = True
+        ra_matrix = {'name': ra.name, 'states': {}}
+        for s, _ in STATES:
+            if s > ra.public_state:
+                ra_matrix['states'][s] = [visibility, "public"][owner]
+            elif s > ra.locked_state:
+                ra_matrix['states'][s] = [visibility, "locked"][owner]
+            else:
+                ra_matrix['states'][s] = [visibility, "hidden"][owner]
+        matrix[ra.id] = ra_matrix
+
+    return render(
+        request,
+        "aristotle_mdr/actions/changeStatus.html",
+        {
+            "item": item,
+            "form": form,
+            "status_matrix": json.dumps(matrix),
+            "visibility": visibility
+        }
+    )
 
 
 def supersede(request, iid):
@@ -589,18 +629,18 @@ def browse(request, oc_id=None, dec_id=None):
         return render(request, "aristotle_mdr/browse/objectClasses.html", {"items": items})
     elif oc_id is not None and dec_id is None:
         oc = get_object_or_404(MDR.ObjectClass, id=oc_id)
-        items = MDR.DataElementConcept.objects.filter(objectClass=oc).order_by("name").public()
+        items = MDR.DataElementConcept.objects.filter(objectClass=oc).order_by("name").visible(request.user)
         return render(request, "aristotle_mdr/browse/dataElementConcepts.html", {"items": items, "objectClass": oc})
     elif oc_id is not None and dec_id is not None:
         # Yes, for now we ignore the Object Class. If the user is messing with IDs in the URL and things break thats their fault.
         dec = get_object_or_404(MDR.DataElementConcept, id=dec_id)
-        items = MDR.DataElement.objects.filter(dataElementConcept=dec).order_by("name").public()
+        items = MDR.DataElement.objects.filter(dataElementConcept=dec).order_by("name").visible(request.user)
         return render(request, "aristotle_mdr/browse/dataElements.html", {"items": items, "dataElementConcept": dec})
 
 
 # Search views
 
-class PermissionSearchView(SearchView):
+class PermissionSearchView(FacetedSearchView):
     def build_form(self):
         form = super(self.__class__, self).build_form()
         form.request = self.request
