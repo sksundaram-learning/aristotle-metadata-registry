@@ -26,7 +26,8 @@ class HelpBase(TimeStampedModel):
     unique_together = ("app_label", "title", "language")
 
 class HelpPage(HelpBase):
-    pass #  Yeah, this is just terrible. So what.
+    class Meta:
+        ordering = ('title',)
 
 class ConceptHelp(HelpBase):
     class Meta:
