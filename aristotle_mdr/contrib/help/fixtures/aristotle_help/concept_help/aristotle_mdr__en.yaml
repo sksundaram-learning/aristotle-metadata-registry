@@ -1,4 +1,4 @@
-- model: aristotle_mdr_help.concepthelp
+- model: aristotle_mdr_help.c`oncepthelp
   fields:
     app_label: aristotle_mdr
     concept_type: objectclass
@@ -11,7 +11,7 @@
         behaviour follow the same rules
     official_reference: ISO/IEC 11179 - Clause 3.2.88
     official_link:
-    long_help: >
+    body: >
         <p>An object class represents a person, organisation, structure or event that
         is of interest and needs to be described.  Examples of object classes include
         <em>Person, Dwelling</em> and <em>Family</em>.</p>
@@ -62,7 +62,7 @@
         Quality common to all members of an [[Object Class]]
     official_reference: ISO/IEC 11179 - Clause 3.2.100
     official_link:
-    long_help: >
+    body: >
         <p>A property is a characteristic of an object class of interest. For example,
         the object class Person can have characteristics such as <em>sex</em> and
         <em>date of birth</em>.
@@ -103,7 +103,7 @@
         Concept that is an association of a [[Property]] with an [[Object Class]]
     official_reference: ISO/IEC 11179 - Clause 3.2.29
     official_link:
-    long_help: >
+    body: >
         <p>A data element concept represents the union of an [[objectclass]] and a
         [[property]]. Examples of data element concepts include concepts such as,
         <em>Person</em> &mdash; <em>date of birth</em>, <em>Person</em> &mdash;
@@ -129,7 +129,7 @@
     offical_definition: a set of Permissible Values
     official_reference: ISO/IEC 11179 - Clause 3.2.140
     official_link: 
-    long_help: >
+    body: >
         <p>A value domain provides a set of permissible values by which a [[data element]]
         can be implemented. Value domains can be enumerated (e.g. Total centimetres NNN)
         or non-enumerated (e.g. Sex code N).</p>
@@ -173,7 +173,7 @@
     offical_definition: A unit of data that is considered in context to be indivisible.
     official_reference: ISO/IEC 11179 - Clause 3.2.28
     official_link:
-    long_help: >
+    body: >
         <p>A data element represents the union of a [[data element concept]] and 
         a [[value domain]]. The following examples demonstrate how a concept can
         be paired with values to capture detailed information, e.g.
@@ -192,7 +192,7 @@
         representing the Major Group, Sub-Major Group, Minor Group, Unit Group or Occupation.<p>
         
         <p>Data elements may stand alone or be associated with other item types such
-        as [[data element derivations]].</p>
+        as [[data element derivation|s]].</p>
 - model: aristotle_mdr_help.concepthelp
   fields:
     app_label: aristotle_mdr
@@ -203,5 +203,5 @@
         pass
     official_reference: ISO/IEC 11179 - Clause x.y.z
     official_link:
-    long_help: >
+    body: >
         pass    
