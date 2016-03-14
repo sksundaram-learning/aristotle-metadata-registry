@@ -214,12 +214,6 @@
     {#  ----- MAIN RESULTS PAGE STARTS HERE ----- #}
     {% if query or form.filter_search %}
         {% if page.object_list %}
-            {% if form.applied_filters %}
-            <div>
-                Showing only items where
-                {% search_describe_filters form %}
-            </div>
-            {% endif %}
         <div class="col-md-3 panel panel-default facets">
             <div class='panel-heading'>Refine your results</div>
             <dl class="panel-body">
@@ -288,6 +282,7 @@
             </dl>
         </div>
         <div class="col-md-9">
+
             {% if form.auto_broaden_search %}
                 <div class="alert alert-warning" role="alert">
                     <p>There were no results for "{{ form.q.value }}" with your requested filters.
@@ -298,6 +293,13 @@
                 </div>
             {% endif %}
             <h3>Results</h3>
+            {% if form.applied_filters %}
+            <div>
+                Showing only items where
+                {% search_describe_filters form %}
+            </div>
+            {% endif %}
+
             <p>
                 {% if page.has_other_pages %}
                 Showing {{ page.start_index }} - {{ page.end_index }} of {{ page.paginator.count }} results.
