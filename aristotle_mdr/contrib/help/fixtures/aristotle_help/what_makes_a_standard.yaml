@@ -1,0 +1,8 @@
+- model: aristotle_mdr_help.helppage
+  fields:
+    title: What makes metadata standard?
+    language: en
+    body: >
+        <p>
+        
+        </p>

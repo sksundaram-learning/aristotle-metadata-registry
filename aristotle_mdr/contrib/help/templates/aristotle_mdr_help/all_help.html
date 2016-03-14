@@ -27,7 +27,7 @@
       {% for obj in object_list %}
         <tr>
             <td>
-                <a href="{% url 'help_page' obj.pk obj.title|slugify %}">
+                <a href="{% url 'help_page' obj.slug %}">
                     {{ obj.title }}</a>
             </td>
             <td>{{ obj.body|striptags|truncatewords:20 }}

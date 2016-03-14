@@ -351,34 +351,6 @@ def allRegistrationAuthorities(request):
     return render(request, "aristotle_mdr/allRegistrationAuthorities.html", {'registrationAuthorities': ras})
 
 
-def about_all_items(request):
-
-    aristotle_apps = getattr(settings, 'ARISTOTLE_SETTINGS', {}).get('CONTENT_EXTENSIONS', [])
-    aristotle_apps += ["aristotle_mdr"]
-    out = {}
-    from django.contrib.contenttypes.models import ContentType
-    if aristotle_apps:
-        for app_label in aristotle_apps:
-            app=apps.get_app_config(app_label)
-            try:
-                app.about_url = reverse('%s:about' % app_label)
-            except:
-                pass  # if there is no about URL, thats ok.
-            app.mymodels = ContentType.objects.filter(app_label=app_label).all()
-
-            out[app_label]=app
-
-    # models = ContentType.objects.filter(app_label__in=aristotle_apps).all()
-    # out = {}
-    # for m in models:
-    #    if not m.model.startswith("_"):
-    #        app_models = out.get(m.app_label, [])
-    #        app_models.append(m.model_class())
-    #        out[m.app_label] = app_models
-
-    return render(request, "aristotle_mdr/static/all_items.html", {'models': out, })
-
-
 # Actions
 
 

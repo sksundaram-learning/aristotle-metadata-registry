@@ -46,6 +46,7 @@ def relink(help_item, field):
                 model = m[0]
             else:
                 app, model = m
+            print app,model
 
             ct = ContentType.objects.get(app_label=app, model=model)
 

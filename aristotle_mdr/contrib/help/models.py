@@ -6,9 +6,11 @@ from django.utils.translation import ugettext_lazy as _
 from django.conf.global_settings import LANGUAGES
 from aristotle_mdr.models import RichTextField
 from model_utils.models import TimeStampedModel
+from autoslug import AutoSlugField
 
 
 class HelpBase(TimeStampedModel):
+    slug = AutoSlugField(populate_from='title')
     app_label = models.CharField(
         max_length=256,null=True,blank=True,
         help_text=_('Add an app for app specific help, required for concept help')
