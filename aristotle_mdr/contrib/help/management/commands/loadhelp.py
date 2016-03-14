@@ -32,6 +32,7 @@ from django.core.management.commands.loaddata import humanize
 import glob
 from django.utils import lru_cache
 
+
 class Command(loaddata):
     help = 'Installs the named help fixture(s) in the database.'
     missing_args_message = ("No database fixture specified. Please provide the "
@@ -69,11 +70,15 @@ class Command(loaddata):
                 objects_in_fixture = 0
                 loaded_objects_in_fixture = 0
                 if self.verbosity >= 2:
-                    self.stdout.write("Installing %s fixture '%s' from %s." %
-                        (ser_fmt, fixture_name, humanize(fixture_dir)))
+                    self.stdout.write(
+                        "Installing %s fixture '%s' from %s." %
+                        (ser_fmt, fixture_name, humanize(fixture_dir))
+                    )
 
-                objects = serializers.deserialize(ser_fmt, fixture,
-                    using=self.using, ignorenonexistent=self.ignore)
+                objects = serializers.deserialize(
+                    ser_fmt, fixture,
+                    using=self.using, ignorenonexistent=self.ignore
+                )
 
                 for obj in objects:
                     objects_in_fixture += 1
@@ -138,8 +143,10 @@ class Command(loaddata):
                                 for dir_ in fixture_dirs]
                 fixture_name = os.path.basename(fixture_name)
 
-        suffixes = ('.'.join(ext for ext in combo if ext)
-                for combo in product(databases, ser_fmts, cmp_fmts))
+        suffixes = (
+            '.'.join(ext for ext in combo if ext)
+            for combo in product(databases, ser_fmts, cmp_fmts)
+        )
 
         if fixture_name == "*":
             search_name = ""
@@ -164,7 +171,8 @@ class Command(loaddata):
 
             # Check kept for backwards-compatibility; it isn't clear why
             # duplicates are only allowed in different directories.
-            #if len(fixture_files_in_dir) > 1:
+            # Commented out from django
+            # if len(fixture_files_in_dir) > 1:
             #    raise CommandError(
             #        "Multiple fixtures named '%s' in %s. Aborting." %
             #        (fixture_name, humanize(fixture_dir)))

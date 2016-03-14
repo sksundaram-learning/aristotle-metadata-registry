@@ -6,6 +6,7 @@ from django.template import TemplateDoesNotExist
 from django.utils import timezone
 from aristotle_mdr.search_indexes import RESTRICTION
 
+
 class HelpObjectIndex(indexes.SearchIndex):
     text = indexes.CharField(document=True, use_template=True)
     modified = indexes.DateTimeField(model_attr='modified')
@@ -15,7 +16,7 @@ class HelpObjectIndex(indexes.SearchIndex):
 
     restriction = indexes.IntegerField(faceted=True)
     template_name = "search/searchHelpItem.html"
-    
+
     def get_model(self):
         raise NotImplementedError  # pragma: no cover -- This should always be overridden
 
@@ -27,7 +28,6 @@ class HelpObjectIndex(indexes.SearchIndex):
 
     def prepare_restriction(self, obj):
         return RESTRICTION['Public']
-
 
     def prepare_facet_model_ct(self, obj):
         # We need to use the content type, as if we use text it gets stemmed wierdly

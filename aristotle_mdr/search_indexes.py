@@ -81,7 +81,7 @@ class conceptIndex(baseObjectIndex):
     facet_model_ct = indexes.IntegerField(faceted=True)
 
     template_name = "search/searchItem.html"
-    
+
     def prepare_registrationAuthorities(self, obj):
         ras = [str(s.registrationAuthority.id) for s in obj.current_statuses().all()]
         if not ras and obj.readyToReview:

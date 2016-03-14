@@ -12,7 +12,7 @@ from autoslug import AutoSlugField
 class HelpBase(TimeStampedModel):
     slug = AutoSlugField(populate_from='title')
     app_label = models.CharField(
-        max_length=256,null=True,blank=True,
+        max_length=256, null=True, blank=True,
         help_text=_('Add an app for app specific help, required for concept help')
         )
     title = models.TextField(
@@ -27,13 +27,15 @@ class HelpBase(TimeStampedModel):
     )
     unique_together = ("app_label", "title", "language")
 
+
 class HelpPage(HelpBase):
     class Meta:
         ordering = ('title',)
 
+
 class ConceptHelp(HelpBase):
     class Meta:
-        ordering = ('concept_type','app_label')
+        ordering = ('concept_type', 'app_label')
 
     concept_type = models.CharField(max_length=256)
     brief = models.TextField(
@@ -66,7 +68,7 @@ class ConceptHelp(HelpBase):
         from django.contrib.contenttypes.models import ContentType
         return ContentType.objects.get(
             app_label=self.app_label,
-            model = self.concept_type
+            model=self.concept_type
             ).model_class()
 
     def validate_unique(self, exclude=None):

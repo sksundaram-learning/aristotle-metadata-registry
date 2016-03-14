@@ -23,20 +23,23 @@ class AllHelpView(ListView):
     template_name = "aristotle_mdr_help/all_help.html"
     model = HelpPage
 
+
 class AllConceptHelpView(ListView):
     template_name = "aristotle_mdr_help/all_concept_help.html"
     model = ConceptHelp
 
+
 class ConceptAppHelpView(ListView):
     template_name = "aristotle_mdr_help/app_concept_help.html"
+
     def get_context_data(self, **kwargs):
         context = super(ConceptAppHelpView, self).get_context_data(**kwargs)
         context['app'] = apps.get_app_config(self.kwargs['app'])
         return context
 
-    def get_queryset(self,*args,**kwargs):
+    def get_queryset(self, *args, **kwargs):
         return ConceptHelp.objects.filter(app_label=self.kwargs['app'])
-    
+
 
 class HelpView(AppHelpViewer):
     template_name = "aristotle_mdr_help/regular_help.html"

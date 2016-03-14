@@ -10,5 +10,5 @@ class AristotleHelpSignalProcessor(signals.BaseSignalProcessor):
         from aristotle_mdr.contrib.help.models import HelpPage, ConceptHelp
         post_save.connect(self.handle_save, sender=HelpPage)
         post_save.connect(self.handle_save, sender=ConceptHelp)
-        #post_revision_commit.connect(self.handle_save, sender=HelpPage)
+        # post_revision_commit.connect(self.handle_save, sender=HelpPage)
         super(AristotleHelpSignalProcessor, self).setup()
