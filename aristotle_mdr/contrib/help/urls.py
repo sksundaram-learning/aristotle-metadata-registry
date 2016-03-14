@@ -1,5 +1,9 @@
 from django.conf.urls import patterns, url
-from aristotle_mdr.contrib.help import views
+from aristotle_mdr.contrib.help import views, forms
+
+from haystack.views import search_view_factory
+from haystack.query import SearchQuerySet
+sqs = SearchQuerySet()
 
 
 urlpatterns = patterns(
@@ -12,3 +16,15 @@ urlpatterns = patterns(
     url(r'^page/(?P<pk>\d+)(?:/(.*))?', views.HelpView.as_view(), name='help_page'),
     url(r'^/?', views.AllHelpView.as_view(), name='help_base'),
 )
+
+"""
+    url(
+        r'^search/?',
+        search_view_factory(
+            template='aristotle_help/search.html',
+            searchqueryset=None,
+            form_class=forms.HelpSearchForm
+            ),
+        name='help_search'
+    ),
+"""

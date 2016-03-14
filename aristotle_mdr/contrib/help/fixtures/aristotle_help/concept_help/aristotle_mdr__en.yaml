@@ -1,4 +1,4 @@
-- model: aristotle_mdr_help.c`oncepthelp
+- model: aristotle_mdr_help.concepthelp
   fields:
     app_label: aristotle_mdr
     concept_type: objectclass

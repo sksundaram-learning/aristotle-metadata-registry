@@ -164,10 +164,10 @@ class Command(loaddata):
 
             # Check kept for backwards-compatibility; it isn't clear why
             # duplicates are only allowed in different directories.
-            if len(fixture_files_in_dir) > 1:
-                raise CommandError(
-                    "Multiple fixtures named '%s' in %s. Aborting." %
-                    (fixture_name, humanize(fixture_dir)))
+            #if len(fixture_files_in_dir) > 1:
+            #    raise CommandError(
+            #        "Multiple fixtures named '%s' in %s. Aborting." %
+            #        (fixture_name, humanize(fixture_dir)))
             fixture_files.extend(fixture_files_in_dir)
 
         if fixture_name != 'initial_data' and not fixture_files:

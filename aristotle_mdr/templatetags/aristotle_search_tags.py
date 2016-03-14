@@ -99,7 +99,7 @@ def get_item_from_facet(_type, _id):
 def search_state_to_text(state):
     try:
         return MDR.STATES[int(state)]
-    except KeyError:
+    except: # KeyError, TypeError:
         return _('Not registered')
 
 
