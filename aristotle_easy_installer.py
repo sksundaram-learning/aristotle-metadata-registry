@@ -102,7 +102,7 @@ def setup_mdr(name="",extensions=[],force_install=False,dry_install=False):
 
 def generate_secret_key(name):
     key = "Change-this-key-as-soon-as-you-can"
-    gen_key = hashlib.sha224(str(getrandbits(128))).hexdigest() # This is probably not cryptographically secure, not for production.
+    gen_key = hashlib.sha224(str(getrandbits(128)).encode('utf-8')).hexdigest() # This is probably not cryptographically secure, not for production.
     fname = './%s/%s/settings.py'%(name,name)
     with open(fname) as f:
         s = f.read()
