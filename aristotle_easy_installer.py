@@ -31,12 +31,14 @@ optional_modules = [
 ]
 
 def valid_input(prompt,match):
+
     try:
-        input = raw_input
+        # Ensure input compatability across Python 2/3
+        input_func = vars(__builtins__).get('raw_input', input)
     except:
         pass
     for i in range(5):
-        check = input(prompt)
+        check = input_func(prompt)
         if re.match(match, check):
             return check
     raise Exception
