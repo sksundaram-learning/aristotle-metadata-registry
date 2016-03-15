@@ -20,6 +20,7 @@ from random import getrandbits
 import hashlib
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+name = "newly created" # Forward-declaration placeholder
 PIP_MSG = "You can finish installing by running - pip install -r requirements.txt - from the %s directory"%name
 
 optional_modules = [
