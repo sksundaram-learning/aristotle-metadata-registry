@@ -170,10 +170,10 @@ def main(argv=None):
         try:
             opts, args = getopt.getopt(argv[1:], "n:dfh", ["dry","force","help","name=",])
             opts = dict(opts)
-        except getopt.error, msg:
+        except getopt.error as msg:
              raise Usage(msg)
         # more code, unchanged
-    except Usage, err:
+    except Usage as err:
         print >>sys.stderr, err.msg
         print >>sys.stderr, "for help use --help"
         return 2
