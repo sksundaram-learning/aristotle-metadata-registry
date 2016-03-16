@@ -13,6 +13,7 @@ class HelpObjectIndex(indexes.SearchIndex):
     created = indexes.DateTimeField(model_attr='created')
     name = indexes.CharField(model_attr='title')
     facet_model_ct = indexes.IntegerField(faceted=True)
+    is_public = indexes.BooleanField()
 
     restriction = indexes.IntegerField(faceted=True)
     template_name = "search/searchHelpItem.html"
@@ -26,6 +27,8 @@ class HelpObjectIndex(indexes.SearchIndex):
 
         return self.get_model().objects.filter(modified__lte=timezone.now())
 
+    def prepare_is_public(self, obj):
+        return True
     def prepare_restriction(self, obj):
         return RESTRICTION['Public']
 
