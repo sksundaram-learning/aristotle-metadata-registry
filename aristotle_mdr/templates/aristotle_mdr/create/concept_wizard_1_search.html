@@ -1,4 +1,5 @@
 {% extends "aristotle_mdr/create/concept_wizard_wrapper.html" %}
+{% load aristotle_help %}
 
 {% block steps %}
     <li role="presentation" class="active">Search</li>
@@ -64,7 +65,7 @@ pre-populate any new items you create.
 <aside class="creationTips col-sm-4">
 {% if help %}
     <p>
-        {{ help.creation_tip |safe }}
+        {% relink help 'creation_tip' %}
     </p>
 {% endif %}
 </aside>

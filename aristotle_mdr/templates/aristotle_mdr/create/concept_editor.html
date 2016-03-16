@@ -1,4 +1,4 @@
-{% load i18n %}
+{% load i18n aristotle_help %}
 
 {{ form.errors }}
 
@@ -207,7 +207,7 @@
                 help page.</strong>
                 </a>
                 <p>
-                    {{ help.creation_tip |safe }}
+                    {% relink help 'creation_tip' %}
                 </p>
             {% endif %}
         </div>
