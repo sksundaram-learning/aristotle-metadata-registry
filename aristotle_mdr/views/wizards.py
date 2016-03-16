@@ -150,6 +150,8 @@ class ConceptWizard(PermissionWizard):
 
     @reversion.create_revision()
     def done(self, form_list, **kwargs):
+        reversion.set_user(self.request.user)
+        reversion.set_comment("Added via concept wizard")
         item = None
 
         for form in form_list:
@@ -434,6 +436,9 @@ class DataElementConceptWizard(MultiStepAristotleWizard):
 
     @reversion.create_revision()
     def done(self, form_list, **kwargs):
+        reversion.set_user(self.request.user)
+        reversion.set_comment("Added via data element concept wizard")
+
         oc = self.get_object_class()
         pr = self.get_property()
         dec = None
@@ -760,6 +765,9 @@ class DataElementWizard(MultiStepAristotleWizard):
 
     @reversion.create_revision()
     def done(self, form_list, **kwargs):
+        reversion.set_user(self.request.user)
+        reversion.set_comment("Added via data element wizard")
+
         oc = self.get_object_class()
         pr = self.get_property()
         vd = self.get_value_domain()

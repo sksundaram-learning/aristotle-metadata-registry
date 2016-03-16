@@ -41,6 +41,7 @@ MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
 
 INSTALLED_APPS = (
     'aristotle_mdr',  # Comes before grappelli for overloads
+    'aristotle_mdr.contrib.generic',
     'grappelli',
     'haystack',
     'django.contrib.admin',

@@ -119,6 +119,10 @@ class baseAristotleObject(TimeStampedModel):
         # This should always be overridden
         raise NotImplementedError  # pragma: no cover
 
+    @classmethod
+    def meta(self):
+        # I know what I'm doing, get out the way.
+        return self._meta
 
 class unmanagedObject(baseAristotleObject):
     class Meta:
