@@ -5,7 +5,7 @@
     body: >
       <h2>Restricting search with the advanced search options</h2>
       <p>
-          The <a href="{% url 'aristotle:search' %}">search page</a> provides a form that gives users control to filter and sort search results.</p>
+          The <a href="/search/">search page</a> provides a form that gives users control to filter and sort search results.</p>
       <p>
           When searching the "indexed text" refers to everything crawled by the search engine.
           This always includes names, definitions, version and comments.

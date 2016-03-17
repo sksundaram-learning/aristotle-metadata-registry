@@ -260,7 +260,16 @@ def edit_item(request, iid, *args, **kwargs):
                 return HttpResponseRedirect(url_slugify_concept(item))
     else:
         form = base_form(instance=item, user=request.user)
-    return render(request, "aristotle_mdr/actions/advanced_editor.html", {"item": item, "form": form})
+    return render(
+        request,
+        "aristotle_mdr/actions/advanced_editor.html", 
+        {
+            "item": item,
+            "form": form,
+            'model': item._meta.model_name,
+            'app_label': item._meta.app_label
+        }
+    )
 
 
 def clone_item(request, iid, *args, **kwargs):
