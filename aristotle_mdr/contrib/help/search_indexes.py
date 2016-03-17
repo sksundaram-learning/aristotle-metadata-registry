@@ -29,6 +29,7 @@ class HelpObjectIndex(indexes.SearchIndex):
 
     def prepare_is_public(self, obj):
         return True
+
     def prepare_restriction(self, obj):
         return RESTRICTION['Public']
 

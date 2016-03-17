@@ -124,6 +124,7 @@ class baseAristotleObject(TimeStampedModel):
         # I know what I'm doing, get out the way.
         return self._meta
 
+
 class unmanagedObject(baseAristotleObject):
     class Meta:
         abstract = True

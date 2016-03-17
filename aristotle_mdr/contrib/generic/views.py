@@ -44,10 +44,11 @@ class GenericAlterManyToManyView(FormView):
                 ),
             )
         return M2MForm
+
     def get_initial(self):
-        initial = [i.pk for i in getattr(self.item,self.model_base_field).visible(self.request.user)]
-        print initial
-        return {'items_to_add':getattr(self.item,self.model_base_field).all()}
+        return {
+            'items_to_add': getattr(self.item, self.model_base_field).all()
+        }
 
     def post(self, request, *args, **kwargs):
         """
@@ -59,8 +60,8 @@ class GenericAlterManyToManyView(FormView):
             return self.form_valid(form)
         else:
             return self.form_invalid(form)
-    
+
     def form_valid(self, form):
-        self.item.__setattr__(self.model_base_field,form.cleaned_data['items_to_add'])
+        self.item.__setattr__(self.model_base_field, form.cleaned_data['items_to_add'])
         self.item.save()
         return HttpResponseRedirect(self.get_success_url())
