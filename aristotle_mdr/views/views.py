@@ -262,7 +262,7 @@ def edit_item(request, iid, *args, **kwargs):
         form = base_form(instance=item, user=request.user)
     return render(
         request,
-        "aristotle_mdr/actions/advanced_editor.html", 
+        "aristotle_mdr/actions/advanced_editor.html",
         {
             "item": item,
             "form": form,
