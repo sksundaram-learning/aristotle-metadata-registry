@@ -15,7 +15,7 @@ import datetime
 
 __apps__ = settings.INSTALLED_APPS
 overrides = override_settings(
-        INSTALLED_APPS = ['aristotle_mdr.contrib.browse','aristotle_mdr.contrib.help',] + list(__apps__),
+        INSTALLED_APPS = ['aristotle_mdr.contrib.browse',] + list(__apps__),
         ROOT_URLCONF = 'aristotle_mdr.contrib.browse.tests.urls'
     )
 
