@@ -134,9 +134,7 @@ class ConceptWizard(PermissionWizard):
             else:
                 context.update({'similar_items': self.find_similar()})
             context['step_title'] = _('Select or create')
-        context.update({'model': self.model._meta.model_name,
-                        'app_label': self.model._meta.app_label,
-                        'model_name': self.model._meta.verbose_name,
+        context.update({'model_name': self.model._meta.verbose_name,
                         'model_name_plural': self.model._meta.verbose_name_plural,
                         'help': ConceptHelp.objects.filter(
                             app_label=self.model._meta.app_label,
@@ -207,6 +205,13 @@ class MultiStepAristotleWizard(PermissionWizard):
     We can reuse a lot of the functionality as DE and DECs have a lot of the same underlying components.
     This should not be extended for creating other type of Aristotle/11179 concepts - make a fresh wizard.
     """
+
+    def get_context_data(self, form, **kwargs):
+        context = super(MultiStepAristotleWizard, self).get_context_data(form=form, **kwargs)
+        context.update({'model': self.model._meta.model_name,
+                        'app_label': self.model._meta.app_label})
+        return context
+
     def get_object_class(self):
         if hasattr(self, '_object_class'):
             return self._object_class
