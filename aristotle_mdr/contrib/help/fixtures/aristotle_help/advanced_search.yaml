@@ -132,9 +132,6 @@
               <li><code>name:Person</code> - "Person" appearing in the name</li>
               <li><code>type:dec</code> - Are of the type Data Element Concept</li>
               <li><code>version:1.2.3</code> - Have a version of "1.2.3"</li>
-              <!-- li><code></code></li -->
-              <!-- li><code>is:public</code></li -->
-              <!-- li><code>when:today</code></li -->
           </ul>
       
       </div>
