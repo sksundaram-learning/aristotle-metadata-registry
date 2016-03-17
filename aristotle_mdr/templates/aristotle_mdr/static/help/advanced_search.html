@@ -18,11 +18,13 @@
     Some items will also include additional text from associated items.
     For example, Data Elements include the text from its related Data Element Concept and Value Domain.</p>
 
-{% if request.user.is_active %}
 <h3><i class="fa fa-eye fa-fw"></i> Only show public items</h3>
 <p>
-    When searching select this box to limit results to only those items that are visible to all users, including those without an account.
-    This option is only shown to logged-in users as non-logged in users only have right to view to public content.
+    When logged in, selecting this option limits search results 
+    to only those items that are publically visible to all users,
+    including those without an account.
+    This option is only shown to logged-in users as non-logged in
+    users only have right to view to public content.
 </p>
 
 <h3><i class="fa fa-users fa-fw"></i> Only show items in my workgroups</h3>
@@ -30,7 +32,7 @@
     When searching select this box to limit results to only those items that are within a workgroup a user belongs.
     This option is only shown to logged-in users.
 </p>
-{% endif %}
+
 <h3><i class="fa fa-magic fa-fw"></i> Smart spellcheck and filter removal</h3>
 <p>
     When searching Aristotle-MDR performs spellchecks against search terms, and if there is
