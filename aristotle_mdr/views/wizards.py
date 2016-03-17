@@ -89,6 +89,12 @@ class PermissionWizard(SessionWizardView):
             # there is no extra content for this item, and thats ok.
             return None
 
+    def get_context_data(self, form, **kwargs):
+        context = super(MultiStepAristotleWizard, self).get_context_data(form=form, **kwargs)
+        context.update({'model': self.model._meta.model_name,
+                        'app_label': self.model._meta.app_label})
+        return context
+
 
 class ConceptWizard(PermissionWizard):
     widgets = {}
@@ -205,12 +211,6 @@ class MultiStepAristotleWizard(PermissionWizard):
     We can reuse a lot of the functionality as DE and DECs have a lot of the same underlying components.
     This should not be extended for creating other type of Aristotle/11179 concepts - make a fresh wizard.
     """
-
-    def get_context_data(self, form, **kwargs):
-        context = super(MultiStepAristotleWizard, self).get_context_data(form=form, **kwargs)
-        context.update({'model': self.model._meta.model_name,
-                        'app_label': self.model._meta.app_label})
-        return context
 
     def get_object_class(self):
         if hasattr(self, '_object_class'):
