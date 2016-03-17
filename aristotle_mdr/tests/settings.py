@@ -96,7 +96,8 @@ ARISTOTLE_SETTINGS['BULK_ACTIONS'].update({
 })
 ROOT_URLCONF = 'extension_test.urls'
 
-LOGGING = {
+# disable
+__LOGGING__ = {
     'version': 1,
     'formatters': {
         'verbose': {
