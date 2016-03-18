@@ -57,6 +57,7 @@ class ConceptHelp(HelpBase):
         null=True, blank=True,
         help_text=_("Instructions for creating good content of this type")
     )
+    unique_together = ("app_label", "concept_type", "language")
 
     def natural_key(self):
         return (self.app_label, self.concept_type, self.language)
@@ -72,7 +73,7 @@ class ConceptHelp(HelpBase):
             ).model_class()
 
     def validate_unique(self, exclude=None):
-        qs = ConceptHelp.objects.filter(
+        qs = ConceptHelp.objects.exclude(pk=self.pk).filter(
             app_label=self.app_label,
             concept_type=self.concept_type,
             language=self.language)

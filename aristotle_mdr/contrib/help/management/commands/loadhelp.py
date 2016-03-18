@@ -22,6 +22,7 @@ from django.db import (
     DEFAULT_DB_ALIAS, DatabaseError, IntegrityError, connections, router,
     transaction,
 )
+from django.forms.models import model_to_dict
 from django.utils._os import upath
 from django.utils.encoding import force_text
 from django.utils.functional import cached_property
@@ -38,6 +39,14 @@ class Command(loaddata):
     missing_args_message = ("No database fixture specified. Please provide the "
                             "path of at least one fixture in the command line.")
 
+    def add_arguments(self, parser):
+        super(Command, self).add_arguments(parser)
+        parser.add_argument(
+            '--update', '-U', action='store_true',
+            dest='update', default=False,
+            help='Updates existing helps files if they exist.'
+        )
+
     def handle(self, *fixture_labels, **options):
 
         self.ignore = options.get('ignore')
@@ -45,6 +54,7 @@ class Command(loaddata):
         self.app_label = options.get('app_label')
         self.hide_empty = options.get('hide_empty', False)
         self.verbosity = options.get('verbosity')
+        self.update = options.get('update')
 
         with transaction.atomic(using=self.using):
             self.loaddata(fixture_labels)
@@ -86,14 +96,38 @@ class Command(loaddata):
                         loaded_objects_in_fixture += 1
                         self.models.add(obj.object.__class__)
                         try:
-                            # obj.save()
-                            obj.object.save()
+                            if self.update:
+                                keys = dict([
+                                    (key, getattr(obj.object, key))
+                                    for key in obj.object.unique_together
+                                ])
+                                vals = dict([
+                                    (k, v)
+                                    for k, v in model_to_dict(obj.object).items()
+                                    if v is not None
+                                    ])
+
+                                item, created = obj.object.__class__.objects.get_or_create(
+                                    defaults=vals,
+                                    **keys
+                                )
+                                if not created:
+                                    if show_progress:
+                                        self.stdout.write(
+                                            'Updated an object(s).',
+                                            ending=''
+                                        )
+                                    for k, v in vals.items():
+                                        setattr(item, k, v)
+                                    item.save()
+                            else:
+                                obj.object.save()
                             if show_progress:
                                 self.stdout.write(
                                     '\rProcessed %i object(s).' % loaded_objects_in_fixture,
                                     ending=''
                                 )
-                        except (DatabaseError, IntegrityError, ValidationError) as e:
+                        except (DatabaseError, IntegrityError) as e:
                             e.args = ("Could not load %(app_label)s.%(object_name)s(pk=%(pk)s): %(error_msg)s" % {
                                 'app_label': obj.object._meta.app_label,
                                 'object_name': obj.object._meta.object_name,
