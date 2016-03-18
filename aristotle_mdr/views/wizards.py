@@ -77,17 +77,9 @@ class PermissionWizard(SessionWizardView):
         return kwargs
 
     def help_guide(self, model=None):
-        if model is None:
-            model=self.model
-        from django.template import TemplateDoesNotExist
-        try:
-            from django.template.loader import get_template
-            template_name = '%s/create/tips/%s.html' % (model._meta.app_label, model._meta.model_name)
-            get_template(template_name)
-            return template_name
-        except TemplateDoesNotExist:
-            # there is no extra content for this item, and thats ok.
-            return None
+        # Refactored out as part of help changes
+        # TODO: Need to permanently remove
+        return None
 
     def get_context_data(self, form, **kwargs):
         context = super(PermissionWizard, self).get_context_data(form=form, **kwargs)

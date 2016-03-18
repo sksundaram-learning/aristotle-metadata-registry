@@ -360,6 +360,10 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         most_recent = self.itemType.objects.order_by('-created').first()
         self.assertRedirects(response,url_slugify_concept(most_recent))
         self.assertEqual(most_recent.name,updated_name)
+        
+        # Make sure the right item was save and our original hasn't been altered.
+        self.item1 = self.itemType.objects.get(id=self.item1.id) # Stupid cache
+        self.assertTrue('cloned' not in self.item1.name)
 
     def test_su_can_download_pdf(self):
         self.login_superuser()

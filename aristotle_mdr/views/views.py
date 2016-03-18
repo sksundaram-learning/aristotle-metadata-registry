@@ -1,5 +1,4 @@
 from django.apps import apps
-from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
@@ -270,28 +269,6 @@ def edit_item(request, iid, *args, **kwargs):
             'app_label': item._meta.app_label
         }
     )
-
-
-def clone_item(request, iid, *args, **kwargs):
-    item_to_clone = get_object_or_404(MDR._concept, pk=iid).item
-    if not user_can_edit(request.user, item_to_clone):
-        if request.user.is_anonymous():
-            return redirect(reverse('friendly_login') + '?next=%s' % request.path)
-        else:
-            raise PermissionDenied
-    base_form = MDRForms.wizards.subclassed_modelform(item_to_clone.__class__)
-    if request.method == 'POST':  # If the form has been submitted...
-        form = base_form(request.POST, user=request.user)
-
-        if form.is_valid():
-            with transaction.atomic(), reversion.revisions.create_revision():
-                new_clone = form.save()
-                reversion.revisions.set_user(request.user)
-                reversion.revisions.set_comment("Cloned from %s (id: %s)" % (item_to_clone.name, str(item_to_clone.pk)))
-                return HttpResponseRedirect(url_slugify_concept(new_clone))
-    else:
-        form = base_form(initial=concept_to_clone_dict(item_to_clone), user=request.user)
-    return render(request, "aristotle_mdr/create/clone_item.html", {"item": item_to_clone, "form": form})
 
 
 def unauthorised(request, path=''):
