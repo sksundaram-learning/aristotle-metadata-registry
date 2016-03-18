@@ -94,7 +94,7 @@ urlpatterns = patterns(
 
     url(r'^about/aristotle/?$', TemplateView.as_view(template_name='aristotle_mdr/static/aristotle_mdr.html'), name="aboutMain"),
     url(r'^about/(?P<template>.+)/?$', views.DynamicTemplateView.as_view(), name="about"),
-    url(r'^help/(?P<template>.+)/?$', views.HelpTemplateView.as_view(), name="help"),
+    #url(r'^help/(?P<template>.+)/?$', views.HelpTemplateView.as_view(), name="help"),
 
     url(r'^accessibility/?$', TemplateView.as_view(template_name='aristotle_mdr/static/accessibility.html'), name="accessibility"),
 

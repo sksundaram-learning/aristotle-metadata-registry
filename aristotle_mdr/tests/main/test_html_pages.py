@@ -44,6 +44,10 @@ class AnonymousUserViewingThePages(TestCase):
         home = self.client.get(url_slugify_concept(item))
         self.assertEqual(home.status_code,200)
 
+def setUpModule():
+    from django.core.management import call_command
+    call_command('loadhelp', 'aristotle_help/concept_help/*', verbosity=0, interactive=False)
+
 class LoggedInViewConceptPages(utils.LoggedInViewPages):
     defaults = {}
     def setUp(self):
@@ -427,7 +431,9 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
 
     def test_help_page_exists(self):
         self.logout()
-        response = self.client.get(self.get_help_page())
+        response = self.client.get(
+            reverse('concept_help',args=[self.itemType._meta.app_label,self.itemType._meta.model_name])
+        )
         self.assertEqual(response.status_code,200)
 
     def test_viewer_can_view_registration_history(self):
