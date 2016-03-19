@@ -13,21 +13,10 @@ setup_test_environment()
 from aristotle_mdr.tests import utils
 import datetime
 
-__apps__ = settings.INSTALLED_APPS
-overrides = override_settings(
-        INSTALLED_APPS = ['aristotle_mdr.contrib.browse',] + list(__apps__),
-        ROOT_URLCONF = 'aristotle_mdr.contrib.browse.tests.urls'
-    )
-
-with overrides:
-    from django.db import connection
-    connection.creation.create_test_db()
-
 
 class LoggedInViewConceptBrowsePages(utils.LoggedInViewPages):
     defaults = {}
     
-    @overrides
     def setUp(self):
         super(LoggedInViewConceptBrowsePages, self).setUp()
 
@@ -38,7 +27,6 @@ class LoggedInViewConceptBrowsePages(utils.LoggedInViewPages):
             readyToReview=True,**self.defaults)
         self.ra.register(self.item4,self.ra.public_state,self.su)
 
-    @overrides
     def test_anon_can_view_browse(self):
         self.logout()
         response = self.client.get(
@@ -48,7 +36,6 @@ class LoggedInViewConceptBrowsePages(utils.LoggedInViewPages):
         self.assertTrue(self.item4.name in response.content)
         self.assertTrue(self.item2.name not in response.content)
 
-    @overrides
     def test_editor_can_view_browse(self):
         self.login_editor()
         response = self.client.get(
