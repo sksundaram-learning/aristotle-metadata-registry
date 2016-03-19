@@ -59,13 +59,11 @@ class PermissionFormView(FormView):
         return context
 
 
-class GenericEditItemView(PermissionFormView):
-    def get_form_class(self):
-        return MDRForms.wizards.subclassed_modelform(self.model)
-
-
-class EditItemView(GenericEditItemView):
+class EditItemView(PermissionFormView):
     template_name = "aristotle_mdr/actions/advanced_editor.html"
+
+    def get_form_class(self):
+        return MDRForms.wizards.subclassed_edit_modelform(self.model)
 
     def get_form_kwargs(self):
         kwargs = super(EditItemView, self).get_form_kwargs()
@@ -95,7 +93,7 @@ class EditItemView(GenericEditItemView):
         return self.form_invalid(form)
 
 
-class CloneItemView(GenericEditItemView):
+class CloneItemView(PermissionFormView):
     template_name = "aristotle_mdr/create/clone_item.html"
 
     def dispatch(self, request, *args, **kwargs):
