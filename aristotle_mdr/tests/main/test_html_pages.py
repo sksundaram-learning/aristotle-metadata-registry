@@ -25,9 +25,6 @@ class AnonymousUserViewingThePages(TestCase):
         self.assertTrue("notifications/notify.js" not in home.content)
         # At some stage this might need a better test to check the 500 page doesn't show... after notifications is fixed.
         
-    def test_help_all_items(self):
-        response = self.client.get(reverse('aristotle:about_all_items'))
-        self.assertEqual(response.status_code,200)
     def test_visible_item(self):
         wg = models.Workgroup.objects.create(name="Setup WG")
         ra = models.RegistrationAuthority.objects.create(name="Test RA")
@@ -46,6 +43,10 @@ class AnonymousUserViewingThePages(TestCase):
         s.save()
         home = self.client.get(url_slugify_concept(item))
         self.assertEqual(home.status_code,200)
+
+def setUpModule():
+    from django.core.management import call_command
+    call_command('loadhelp', 'aristotle_help/concept_help/*', verbosity=0, interactive=False)
 
 class LoggedInViewConceptPages(utils.LoggedInViewPages):
     defaults = {}
@@ -359,6 +360,10 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         most_recent = self.itemType.objects.order_by('-created').first()
         self.assertRedirects(response,url_slugify_concept(most_recent))
         self.assertEqual(most_recent.name,updated_name)
+        
+        # Make sure the right item was save and our original hasn't been altered.
+        self.item1 = self.itemType.objects.get(id=self.item1.id) # Stupid cache
+        self.assertTrue('cloned' not in self.item1.name)
 
     def test_su_can_download_pdf(self):
         self.login_superuser()
@@ -430,7 +435,9 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
 
     def test_help_page_exists(self):
         self.logout()
-        response = self.client.get(self.get_help_page())
+        response = self.client.get(
+            reverse('concept_help',args=[self.itemType._meta.app_label,self.itemType._meta.model_name])
+        )
         self.assertEqual(response.status_code,200)
 
     def test_viewer_can_view_registration_history(self):
@@ -800,14 +807,6 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
 class ObjectClassViewPage(LoggedInViewConceptPages,TestCase):
     url_name='objectClass'
     itemType=models.ObjectClass
-    def test_browse(self):
-        self.logout()
-        response = self.client.get(reverse('aristotle:browse'))
-        self.assertTrue(response.status_code,200)
-    def test_browse_oc(self):
-        self.logout()
-        response = self.client.get(reverse('aristotle:browse',args=[self.item1.id]))
-        self.assertTrue(response.status_code,200)
 class PropertyViewPage(LoggedInViewConceptPages,TestCase):
     url_name='property'
     itemType=models.Property
@@ -949,53 +948,7 @@ class DataElementConceptViewPage(LoggedInViewConceptPages,TestCase):
         self.item1.objectClass = oc
         self.item1.property = prop
         self.item1.save()
-        
-    def test_browse_dec(self):
-        de1 = models.DataElement.objects.create(
-            name="public item",
-            dataElementConcept=self.item1,
-            workgroup=self.item1.workgroup
-        )
-        de2 = models.DataElement.objects.create(
-            name="invisible item",
-            dataElementConcept=self.item1,
-            workgroup=self.item1.workgroup
-        )
 
-        de3 = models.DataElement.objects.create(
-            name="public but not related",
-            # dataElementConcept=self.item1, # not attached to the DEC.
-            workgroup=self.item1.workgroup
-        )
-
-        oc1 = models.ObjectClass.objects.create(
-            name="public item",
-            workgroup=self.item1.workgroup
-        )
-        self.item1.objectClass = oc1
-        self.item1.save()
-        
-        models.Status.objects.create(
-            concept=de1,
-            registrationAuthority=self.ra,
-            registrationDate = datetime.date(2009,4,28),
-            state =  models.STATES.standard
-            )
-        models.Status.objects.create(
-            concept=de3,
-            registrationAuthority=self.ra,
-            registrationDate = datetime.date(2009,4,28),
-            state =  models.STATES.standard
-            )
-        self.logout()
-        response = self.client.get(
-            reverse('aristotle:browse',args=[oc1.id,self.item1.id])
-        )
-        self.assertTrue(response.status_code,200)
-        self.assertTrue(de1.name in response.content)
-        self.assertTrue(de2.name not in response.content)
-        self.assertTrue(de3.name not in response.content)
-        
 class DataElementViewPage(LoggedInViewConceptPages,TestCase):
     url_name='dataElement'
     itemType=models.DataElement
@@ -1020,8 +973,8 @@ class LoggedInViewUnmanagedPages(utils.LoggedInViewPages):
 
     def test_help_page_exists(self):
         self.logout()
-        response = self.client.get(self.get_help_page())
-        self.assertEqual(response.status_code,200)
+        #response = self.client.get(self.get_help_page())
+        #self.assertEqual(response.status_code,200)
 
     def test_item_page_exists(self):
         self.logout()

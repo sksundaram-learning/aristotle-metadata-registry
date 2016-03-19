@@ -1,5 +1,4 @@
 from django.apps import apps
-from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
@@ -28,7 +27,7 @@ from aristotle_mdr import perms
 from aristotle_mdr.utils import cache_per_item_user, concept_to_dict, construct_change_message, url_slugify_concept
 from aristotle_mdr import forms as MDRForms
 from aristotle_mdr import models as MDR
-from aristotle_mdr.utils import concept_to_clone_dict
+from aristotle_mdr.utils import concept_to_clone_dict, get_concepts_for_apps
 from aristotle_mdr import exceptions as registry_exceptions
 
 from haystack.views import SearchView, FacetedSearchView
@@ -260,29 +259,16 @@ def edit_item(request, iid, *args, **kwargs):
                 return HttpResponseRedirect(url_slugify_concept(item))
     else:
         form = base_form(instance=item, user=request.user)
-    return render(request, "aristotle_mdr/actions/advanced_editor.html", {"item": item, "form": form})
-
-
-def clone_item(request, iid, *args, **kwargs):
-    item_to_clone = get_object_or_404(MDR._concept, pk=iid).item
-    if not user_can_edit(request.user, item_to_clone):
-        if request.user.is_anonymous():
-            return redirect(reverse('friendly_login') + '?next=%s' % request.path)
-        else:
-            raise PermissionDenied
-    base_form = MDRForms.wizards.subclassed_modelform(item_to_clone.__class__)
-    if request.method == 'POST':  # If the form has been submitted...
-        form = base_form(request.POST, user=request.user)
-
-        if form.is_valid():
-            with transaction.atomic(), reversion.revisions.create_revision():
-                new_clone = form.save()
-                reversion.revisions.set_user(request.user)
-                reversion.revisions.set_comment("Cloned from %s (id: %s)" % (item_to_clone.name, str(item_to_clone.pk)))
-                return HttpResponseRedirect(url_slugify_concept(new_clone))
-    else:
-        form = base_form(initial=concept_to_clone_dict(item_to_clone), user=request.user)
-    return render(request, "aristotle_mdr/create/clone_item.html", {"item": item_to_clone, "form": form})
+    return render(
+        request,
+        "aristotle_mdr/actions/advanced_editor.html",
+        {
+            "item": item,
+            "form": form,
+            'model': item._meta.model_name,
+            'app_label': item._meta.app_label
+        }
+    )
 
 
 def unauthorised(request, path=''):
@@ -300,22 +286,18 @@ def create_list(request):
 
     aristotle_apps = getattr(settings, 'ARISTOTLE_SETTINGS', {}).get('CONTENT_EXTENSIONS', [])
     aristotle_apps += ["aristotle_mdr"]
-
-    from django.contrib.contenttypes.models import ContentType
-    models = ContentType.objects.filter(app_label__in=aristotle_apps).all()
     out = {}
 
-    for m in models:
-        if issubclass(m.model_class(), MDR._concept) and not m.model.startswith("_"):
-            # Only output subclasses of 11179 concept
-            app_models = out.get(m.app_label, {'app': None, 'models': []})
-            if app_models['app'] is None:
-                try:
-                    app_models['app'] = getattr(apps.get_app_config(m.app_label), 'verbose_name')
-                except:
-                    app_models['app'] = "No name"  # Where no name is configured in the app_config, set a dummy so we don't keep trying
-            app_models['models'].append((m, m.model_class()))
-            out[m.app_label] = app_models
+    for m in get_concepts_for_apps(aristotle_apps):
+        # Only output subclasses of 11179 concept
+        app_models = out.get(m.app_label, {'app': None, 'models': []})
+        if app_models['app'] is None:
+            try:
+                app_models['app'] = getattr(apps.get_app_config(m.app_label), 'verbose_name')
+            except:
+                app_models['app'] = "No name"  # Where no name is configured in the app_config, set a dummy so we don't keep trying
+        app_models['models'].append((m, m.model_class()))
+        out[m.app_label] = app_models
 
     return render(request, "aristotle_mdr/create/create_list.html", {'models': out})
 
@@ -353,34 +335,6 @@ def registrationauthority(request, iid, *args, **kwargs):
 def allRegistrationAuthorities(request):
     ras = MDR.RegistrationAuthority.objects.order_by('name')
     return render(request, "aristotle_mdr/allRegistrationAuthorities.html", {'registrationAuthorities': ras})
-
-
-def about_all_items(request):
-
-    aristotle_apps = getattr(settings, 'ARISTOTLE_SETTINGS', {}).get('CONTENT_EXTENSIONS', [])
-    aristotle_apps += ["aristotle_mdr"]
-    out = {}
-    from django.contrib.contenttypes.models import ContentType
-    if aristotle_apps:
-        for app_label in aristotle_apps:
-            app=apps.get_app_config(app_label)
-            try:
-                app.about_url = reverse('%s:about' % app_label)
-            except:
-                pass  # if there is no about URL, thats ok.
-            app.mymodels = ContentType.objects.filter(app_label=app_label).all()
-
-            out[app_label]=app
-
-    # models = ContentType.objects.filter(app_label__in=aristotle_apps).all()
-    # out = {}
-    # for m in models:
-    #    if not m.model.startswith("_"):
-    #        app_models = out.get(m.app_label, [])
-    #        app_models.append(m.model_class())
-    #        out[m.app_label] = app_models
-
-    return render(request, "aristotle_mdr/static/all_items.html", {'models': out, })
 
 
 # Actions
@@ -625,21 +579,6 @@ def extensions(request):
         "aristotle_mdr/static/extensions.html",
         {'content_extensions': content, 'download_extensions': downloads, }
     )
-
-
-def browse(request, oc_id=None, dec_id=None):
-    if oc_id is None:
-        items = MDR.ObjectClass.objects.order_by("name").public()
-        return render(request, "aristotle_mdr/browse/objectClasses.html", {"items": items})
-    elif oc_id is not None and dec_id is None:
-        oc = get_object_or_404(MDR.ObjectClass, id=oc_id)
-        items = MDR.DataElementConcept.objects.filter(objectClass=oc).order_by("name").visible(request.user)
-        return render(request, "aristotle_mdr/browse/dataElementConcepts.html", {"items": items, "objectClass": oc})
-    elif oc_id is not None and dec_id is not None:
-        # Yes, for now we ignore the Object Class. If the user is messing with IDs in the URL and things break thats their fault.
-        dec = get_object_or_404(MDR.DataElementConcept, id=dec_id)
-        items = MDR.DataElement.objects.filter(dataElementConcept=dec).order_by("name").visible(request.user)
-        return render(request, "aristotle_mdr/browse/dataElements.html", {"items": items, "dataElementConcept": dec})
 
 
 # Search views

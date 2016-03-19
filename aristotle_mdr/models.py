@@ -91,11 +91,13 @@ class baseAristotleObject(TimeStampedModel):
         return "{name}".format(name=self.name)
 
     # Defined so we can access it during templates.
-    def get_verbose_name(self):
-        return self._meta.verbose_name.title()
+    @classmethod
+    def get_verbose_name(cls):
+        return cls._meta.verbose_name.title()
 
-    def get_verbose_name_plural(self):
-        return self._meta.verbose_name_plural.title()
+    @classmethod
+    def get_verbose_name_plural(cls):
+        return cls._meta.verbose_name_plural.title()
 
     # @property
     # def url_name(self):
@@ -116,6 +118,11 @@ class baseAristotleObject(TimeStampedModel):
     def can_view(self, user):
         # This should always be overridden
         raise NotImplementedError  # pragma: no cover
+
+    @classmethod
+    def meta(self):
+        # I know what I'm doing, get out the way.
+        return self._meta
 
 
 class unmanagedObject(baseAristotleObject):
@@ -615,7 +622,8 @@ class ConceptQuerySet(InheritanceQuerySet):
 
 
 class ConceptManager(InheritanceManager):
-    """The ``ConceptManager`` is the default object manager for ``concept`` and
+    """
+    The ``ConceptManager`` is the default object manager for ``concept`` and
     ``_concept`` items, and extends from the django-model-utils
     ``InheritanceManager``.
 
@@ -950,7 +958,8 @@ post_delete.connect(recache_concept_states, sender=Status)
 
 
 class ObjectClass(concept):
-    """Set of ideas, abstractions or things in the real world that are
+    """
+    Set of ideas, abstractions or things in the real world that are
     identified with explicit boundaries and meaning and whose properties and
     behaviour follow the same rules (3.2.88)
     """
@@ -961,7 +970,8 @@ class ObjectClass(concept):
 
 
 class Property(concept):
-    """Quality common to all members of an :model:`aristotle_mdr.ObjectClass`
+    """
+    Quality common to all members of an :model:`aristotle_mdr.ObjectClass`
     (3.2.100)
     """
     template = "aristotle_mdr/concepts/property.html"
@@ -975,8 +985,9 @@ class Measure(unmanagedObject):
 
 
 class UnitOfMeasure(concept):
-    """actual units in which the associated values are measured
-    [:model:`aristotle_mdr.ValueDomain`] (3.2.138)
+    """
+    actual units in which the associated values are measured
+    :model:`aristotle_mdr.ValueDomain` (3.2.138)
     """
 
     class Meta:
@@ -988,13 +999,15 @@ class UnitOfMeasure(concept):
 
 
 class DataType(concept):
-    """set of distinct values, characterized by properties of those values and
+    """
+    set of distinct values, characterized by properties of those values and
     by operations on those values (3.1.9)"""
     template = "aristotle_mdr/concepts/dataType.html"
 
 
 class ConceptualDomain(concept):
-    """Concept that expresses its description or valid instance meanings (3.2.21)
+    """
+    Concept that expresses its description or valid instance meanings (3.2.21)
     """
 
     # Implementation note: Since a Conceptual domain "must be either one or
@@ -1041,7 +1054,8 @@ class ValueMeaning(aristotleComponent):
 
 
 class ValueDomain(concept):
-    """set of permissible values (3.2.140)"""
+    """
+    set of permissible values (3.2.140)"""
 
     # Implementation note: Since a Value domain "must be either one or
     # both an Enumerated Valued or a Described_Value_Domain" there is
@@ -1127,7 +1141,8 @@ class SupplementaryValue(AbstractValue):
 
 
 class DataElementConcept(concept):
-    """Concept that is an association of a :model:`aristotle_mdr.Property`
+    """
+    Concept that is an association of a :model:`aristotle_mdr.Property`
     with an :model:`aristotle_mdr.ObjectClass` (3.2.29)"""
 
     # Redefine in this context as we need 'property' for the 11179 terminology.
@@ -1149,7 +1164,8 @@ class DataElementConcept(concept):
 # Yes this name looks bad - blame 11179:3:2013 for renaming "administered item"
 # to "concept".
 class DataElement(concept):
-    """Unit of data that is considered in context to be indivisible (3.2.28)"""
+    """
+    Unit of data that is considered in context to be indivisible (3.2.28)"""
 
     template = "aristotle_mdr/concepts/dataElement.html"
     dataElementConcept = models.ForeignKey(
@@ -1172,9 +1188,10 @@ class DataElement(concept):
 
 
 class DataElementDerivation(concept):
-    """Application of a derivation rule to one or more
-    input :model:`aristotle_mdr.DataElement`s to derive one or more
-    output :model:`aristotle_mdr.DataElement`s (3.2.33)"""
+    """
+    Application of a derivation rule to one or more
+    input :model:`aristotle_mdr.DataElement`\s to derive one or more
+    output :model:`aristotle_mdr.DataElement`\s (3.2.33)"""
 
     derives = models.ForeignKey(
         DataElement,

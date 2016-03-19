@@ -1,5 +1,5 @@
 {% extends 'aristotle_mdr/downloads/pdf/pdf.html' %}
-{% load aristotle_tags %}
+{% load aristotle_tags aristotle_help %}
 
 {% block title %}{{ item.name }}{% endblock %}
 {% block content %}
@@ -51,7 +51,7 @@
     {% for type,subitemset in subitems %}
     <div style="page-break-after:always;">
         <h2>{{type.get_verbose_name}}</h2>
-        <p>{% doc type %}</p>
+        <p>{% help_doc type 'brief' %}</p>
         {% for i in subitemset %} 
             <div id='{{i.id}}'>
                 {% include i|template_path:'pdf,inline' with item=i only %}
