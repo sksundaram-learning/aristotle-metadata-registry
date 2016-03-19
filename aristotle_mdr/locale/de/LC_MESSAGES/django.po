@@ -20,50 +20,50 @@ msgstr ""
 
 #: forms/admin.py:23 forms/admin.py:24 forms/admin.py:25 forms/admin.py:26
 msgid "workgroups"
-msgstr ""
+msgstr "Arbeitsgruppen"
 
 #: forms/admin.py:29
 msgid "registration authorities"
-msgstr ""
+msgstr "Registrierungsstellen"
 
 #: forms/bulk_actions.py:115
 msgid "Add bookmark"
-msgstr ""
+msgstr "Füge Bookmark hinzu"
 
 #: forms/bulk_actions.py:123
 #, python-format
 msgid ""
 "%(num_items)s items favourited. \n"
 "Some items failed, they had the id's: %(bad_ids)s"
-msgstr ""
+msgstr "Einige Elemente haben nicht funktioniert, sie hatten die ID's: %(bad_ids)s"
 
 #: forms/bulk_actions.py:133
 msgid "Remove bookmark"
-msgstr ""
+msgstr "Entferne Bookmark"
 
 #: forms/bulk_actions.py:138
 #, python-format
 msgid "%(num_items)s items removed from favourites"
-msgstr ""
+msgstr "%(num_items)s Elemente wurden von den Favouriten entfernt"
 
 #: forms/bulk_actions.py:144
 msgid "Change state"
-msgstr ""
+msgstr "Ändere Status"
 
 #: forms/bulk_actions.py:179
 #, python-format
 msgid ""
 "%(num_items)s items registered in %(num_ra)s registration authorities. \n"
 "Some items failed, they had the id's: %(bad_ids)s"
-msgstr ""
+msgstr "SEinige Elemente haben nicht funktioniert, sie hatten die ID's: %(bad_ids)s"
 
 #: forms/creation_wizards.py:42
 msgid "You do not have permission to move an item between workgroups."
-msgstr ""
+msgstr "Sie haben nicht die Erlaubnis ein Element zwischen Arbeitsgruppen zu bewegen"
 
 #: forms/creation_wizards.py:43
 msgid "You do not have permission to remove an item from this workgroup."
-msgstr ""
+msgstr "Sie haben nicht die Erlaubnis, um ein Element von dieser Arbeitsgruppe zu entfernen"
 
 #: forms/creation_wizards.py:44
 msgid "You do not have permission to move an item to that workgroup."
