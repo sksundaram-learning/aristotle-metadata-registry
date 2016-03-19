@@ -1,3 +1,8 @@
+"""
+Aristotle Help models
+=====================
+"""
+
 from django.apps import apps
 from django.db import models
 from django.core.exceptions import ValidationError
@@ -10,6 +15,9 @@ from autoslug import AutoSlugField
 
 
 class HelpBase(TimeStampedModel):
+    """
+    The base help class for Aristotle help pages.
+    """
     slug = AutoSlugField(populate_from='title')
     app_label = models.CharField(
         max_length=256, null=True, blank=True,
@@ -29,11 +37,18 @@ class HelpBase(TimeStampedModel):
 
 
 class HelpPage(HelpBase):
+    """
+    A help page is a generic way of providing help to a user on a topic.
+    """
     class Meta:
         ordering = ('title',)
 
 
 class ConceptHelp(HelpBase):
+    """
+    A Concept help page documents a given model that inherits from an
+    11179 concept.
+    """
     class Meta:
         ordering = ('concept_type', 'app_label')
 
