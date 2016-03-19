@@ -41,7 +41,7 @@
             </div>
             <div class="panel-body">
                 <a href="{% url 'aristotle:allRegistrationAuthorities' %}">Current registration authorities</a>
-                <a href="{% url 'aristotle:browse' %}">Browse the registry</a>
+                <a href="{% url 'browse_apps' %}">Browse the registry</a>
                 {% if config.CONTENT_EXTENSIONS %}
                 <a href="{% url 'aristotle:extensions' %}">View current extensions</a>
                 {% endif %}
@@ -67,7 +67,7 @@
                 <h2 class="panel-title"><a href="">How can I add content?</a></h2>
             </div>
             <div class="panel-body">
-                <a href="{% url 'aristotle:about' 'workgroups' %}">What is a workgroup?</a>
+                <a href="/help/page/what-are-workgroups">What is a workgroup?</a>
                 <a href="/help/page/how-does-content-become-visible">How does content become visible?</a>
                 <a href="{% url 'help_page' 'registry-roles' %}">What roles exist within a registry?</a>
             </div>
@@ -81,7 +81,7 @@
             <div class="panel-body">
                 <a href="{% url 'help_page' 'what-makes-a-standard' %}">What makes metadata "standard"?</a>
                 <a href="/help/page/versioning-content">Versioning content</a>
-                <a href="{% url 'aristotle:about' 'registrationauthority' %}">What is a registration authority?</a>
+                <a href="{% url 'help_page' 'registration-authorities' %}">What is a registration authority?</a>
             </div>
         </div>
     </div>
