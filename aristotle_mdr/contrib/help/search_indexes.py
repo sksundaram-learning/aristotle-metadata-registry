@@ -16,7 +16,6 @@ class HelpObjectIndex(indexes.SearchIndex):
     is_public = indexes.BooleanField()
 
     restriction = indexes.IntegerField(faceted=True)
-    template_name = "search/searchHelpItem.html"
 
     def get_model(self):
         raise NotImplementedError  # pragma: no cover -- This should always be overridden
@@ -41,10 +40,14 @@ class HelpObjectIndex(indexes.SearchIndex):
 
 
 class ConceptHelpIndex(HelpObjectIndex, indexes.Indexable):
+    template_name = "search/searchConceptHelp.html"
+
     def get_model(self):
         return models.ConceptHelp
 
 
 class HelpPageIndex(HelpObjectIndex, indexes.Indexable):
+    template_name = "search/searchHelpPage.html"
+
     def get_model(self):
         return models.HelpPage

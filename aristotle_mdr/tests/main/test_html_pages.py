@@ -402,6 +402,21 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         response = self.client.get(reverse('aristotle:supersede',args=[self.item3.id]))
         self.assertEqual(response.status_code,200)
 
+    def test_editor_can_remove_supersede_relation(self):
+        self.login_editor()
+        self.item2 = self.itemType.objects.create(name="supersede this",workgroup=self.wg1)
+        self.item1.superseded_by = self.item2
+        self.item1.save()
+        
+        self.assertTrue(self.item1 in self.item2.supersedes.all())
+        response = self.client.post(
+            reverse('aristotle:supersede',args=[self.item1.id]),{'newerItem':""})
+        self.assertEqual(response.status_code,302)
+        self.item1 = self.itemType.objects.get(id=self.item1.id) # Stupid cache
+        print self.item1.superseded_by, response
+        self.assertTrue(self.item1.superseded_by == None)
+        self.assertTrue(self.item2.supersedes.count() == 0)
+
     def test_editor_can_use_ready_to_review(self):
         self.login_editor()
         response = self.client.get(reverse('aristotle:mark_ready_to_review',args=[self.item1.id]))
