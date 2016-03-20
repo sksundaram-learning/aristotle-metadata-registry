@@ -35,7 +35,6 @@ CKEDITOR_UPLOAD_PATH = 'uploads/'
 # Required for admindocs, see: https://code.djangoproject.com/ticket/21386
 SITE_ID=None
 
-LOCALE_PATHS =[os.path.join(os.path.dirname(__file__), "locale")]
 
 ALLOWED_HOSTS = []
 SOUTH_TESTS_MIGRATE = False
@@ -75,8 +74,8 @@ USE_I18N = True
 
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
     'django.middleware.locale.LocaleMiddleware',
+    'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
