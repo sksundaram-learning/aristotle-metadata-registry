@@ -48,7 +48,7 @@ setup(
         'Whoosh',
 
         #Rich text editors
-        'django-ckeditor',
+        'django-ckeditor>=5.0.0',
 
         # Revision control
         "django-reversion>=1.10",

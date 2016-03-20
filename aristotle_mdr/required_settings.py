@@ -35,6 +35,8 @@ CKEDITOR_UPLOAD_PATH = 'uploads/'
 # Required for admindocs, see: https://code.djangoproject.com/ticket/21386
 SITE_ID=None
 
+LOCALE_PATHS =[os.path.join(os.path.dirname(__file__), "locale")]
+
 ALLOWED_HOSTS = []
 SOUTH_TESTS_MIGRATE = False
 MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
