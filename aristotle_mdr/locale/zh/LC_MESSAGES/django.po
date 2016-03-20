@@ -12,15 +12,15 @@ msgstr ""
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Language: \n"
 
 #: aristotle_mdr/contrib/browse/views.py:27
 #, fuzzy
 msgid "No name"
-msgstr "简称"
+msgstr "无名"
 
 #: aristotle_mdr/contrib/help/forms.py:20 aristotle_mdr/forms/search.py:20
 #, fuzzy
@@ -109,43 +109,51 @@ msgid "Item type"
 msgstr "物品种类"
 
 #: aristotle_mdr/contrib/help/models.py:24
+#, fuzzy
 msgid "Add an app for app specific help, required for concept help"
-msgstr ""
+msgstr "添加应用程序特定的帮助应用程序，用于帮助观念需要"
 
 #: aristotle_mdr/contrib/help/models.py:27
+#, fuzzy
 msgid "A short title for the help page"
-msgstr ""
+msgstr "短标题帮助页面"
 
 #: aristotle_mdr/contrib/help/models.py:31
+#, fuzzy
 msgid "A long help definition for an object or topic"
-msgstr ""
+msgstr "对象或主题的长期帮助下定义"
 
 #: aristotle_mdr/contrib/help/models.py:57
+#, fuzzy
 msgid "A short description of the concept"
-msgstr ""
+msgstr "这个概念的简短描述"
 
 #: aristotle_mdr/contrib/help/models.py:61
+#, fuzzy
 msgid ""
 "An official description of the concept, e.g. the ISO/IEC definition for an "
 "Object Class"
-msgstr ""
+msgstr "概念的官方说明，如ISO / IEC定义对象类"
 
 #: aristotle_mdr/contrib/help/models.py:65
+#, fuzzy
 msgid "The reference document that describes this concept type"
-msgstr ""
+msgstr "描述这个概念类型参考文件"
 
 #: aristotle_mdr/contrib/help/models.py:69
+#, fuzzy
 msgid "An link to an official source for a description of the concept"
-msgstr ""
+msgstr "一份官方来源的链接，这个概念的描述"
 
 #: aristotle_mdr/contrib/help/models.py:73
+#, fuzzy
 msgid "Instructions for creating good content of this type"
-msgstr ""
+msgstr "有关创建这种类型的好内容"
 
 #: aristotle_mdr/contrib/help/models.py:102
-#, python-format
+#, python-format, fuzzy
 msgid "Help for concept type %s"
-msgstr ""
+msgstr "帮助概念型 %s"
 
 #: aristotle_mdr/contrib/help/templates/aristotle_mdr_help/all_help.html:28
 #: aristotle_mdr/contrib/help/templates/aristotle_mdr_help/base.html:25
@@ -161,11 +169,12 @@ msgstr "搜索"
 #: aristotle_mdr/contrib/help/templates/aristotle_mdr_help/base.html:21
 #, fuzzy
 msgid "Search help"
-msgstr "搜索"
+msgstr "搜索帮助"
 
 #: aristotle_mdr/contrib/help/templates/aristotle_mdr_help/concept_help.html:20
+#, fuzzy
 msgid "Click to view the official source"
-msgstr ""
+msgstr "点击查看官方消息"
 
 #: aristotle_mdr/forms/admin.py:23 aristotle_mdr/forms/admin.py:24
 #: aristotle_mdr/forms/admin.py:25 aristotle_mdr/forms/admin.py:26
@@ -210,9 +219,7 @@ msgstr "更改状态"
 msgid ""
 "%(num_items)s items registered in %(num_ra)s registration authorities. \n"
 "Some items failed, they had the id's: %(bad_ids)s"
-msgstr ""
-"%(num_items)s 在 %(num_ra)s 登记机关登记的项目。有些项目失败了，他们有ID的： "
-"%(bad_ids)s"
+msgstr "%(num_items)s 在 %(num_ra)s 登记机关登记的项目。有些项目失败了，他们有ID的： %(bad_ids)s"
 
 #: aristotle_mdr/forms/creation_wizards.py:42
 #, fuzzy
@@ -233,23 +240,23 @@ msgstr "您没有权限的项目移动到该工作组。"
 #, fuzzy
 msgid ""
 "The object you are editing has been changed, review the changes before "
-"continuing then if you wish to save your changes click the Save button below."
-msgstr ""
-"您正在编辑的对象已经改变，继续审查前再更改，如果你想保存更改，请单击下面的保"
-"存按钮。"
+"continuing then if you wish to save your changes click the Save button "
+"below."
+msgstr "您正在编辑的对象已经改变，继续审查前再更改，如果你想保存更改，请单击下面的保存按钮。"
 
 #: aristotle_mdr/forms/creation_wizards.py:72
 #, fuzzy
 msgid ""
-"Unable to determine if this save will overwrite an existing save. Please try "
-"again. "
+"Unable to determine if this save will overwrite an existing save. Please try"
+" again. "
 msgstr "无法确定是否该救将覆盖现有的保存。请再试一次。"
 
 #: aristotle_mdr/forms/creation_wizards.py:179
 #: aristotle_mdr/forms/creation_wizards.py:340
 #, fuzzy
 msgid ""
-"I've reviewed these items, and none of them meet my needs. Make me a new one."
+"I've reviewed these items, and none of them meet my needs. Make me a new "
+"one."
 msgstr "我查看了这些项目，其中没有满足我的需求。让我一个新的。"
 
 #: aristotle_mdr/forms/creation_wizards.py:259
@@ -420,8 +427,7 @@ msgid ""
 "'Registration authorities' specifies that only registration authorities "
 "associated with this workgroup may control their visibility."
 msgstr ""
-"指定的工作组的内容的“所有者”。选择“注册表”允许任何登记机关进步做出公开的项"
-"目，“登记管理机关”指定只与此相关的工作组登记机构可以控制自己的知名度。"
+"指定的工作组的内容的“所有者”。选择“注册表”允许任何登记机关进步做出公开的项目，“登记管理机关”指定只与此相关的工作组登记机构可以控制自己的知名度。"
 
 #: aristotle_mdr/models.py:382
 #, fuzzy
@@ -916,18 +922,14 @@ msgstr "此项目的可见性仍然受限于当前的工作组。"
 #, fuzzy
 msgid ""
 "\n"
-"                <p>You can control the visibility of this item by indicating "
-"its review status.\n"
-"                If an item is marked \"ready for review\", registrars will "
-"be able to see this item and\n"
-"                begin the standardisation process according to their "
-"registration authority.\n"
+"                <p>You can control the visibility of this item by indicating its review status.\n"
+"                If an item is marked \"ready for review\", registrars will be able to see this item and\n"
+"                begin the standardisation process according to their registration authority.\n"
 "                </p>\n"
 "                "
 msgstr ""
 "\n"
-"<p>您可以通过指示其审核状态控制该项目的知名度。如果一个项目被标记为“准备复"
-"审”，注册商将可以看到这个项目，并根据其登记机关开始标准化进程。 </p>"
+"<p>您可以通过指示其审核状态控制该项目的知名度。如果一个项目被标记为“准备复审”，注册商将可以看到这个项目，并根据其登记机关开始标准化进程。 </p>"
 
 #: aristotle_mdr/templates/aristotle_mdr/concepts/visibilityInfoBar.html:51
 #, fuzzy
@@ -948,16 +950,11 @@ msgstr "克隆"
 #, fuzzy
 msgid ""
 "\n"
-"            Reusing existing metadata helps users find and compare similar "
-"items. Cloning and item should only be done where a similar but clearly "
-"different item exists and can be used as a template for quickly creating a "
-"new item in the registry.\n"
+"            Reusing existing metadata helps users find and compare similar items. Cloning and item should only be done where a similar but clearly different item exists and can be used as a template for quickly creating a new item in the registry.\n"
 "            "
 msgstr ""
 "\n"
-"重用现有的元数据可以帮助用户查找和比较类似物品。其中，一个类似的但明显不同的"
-"产品存在，并且可以被用作用于在注册表中快速建立一个新的项的模板克隆和项目只应"
-"完成。"
+"重用现有的元数据可以帮助用户查找和比较类似物品。其中，一个类似的但明显不同的产品存在，并且可以被用作用于在注册表中快速建立一个新的项的模板克隆和项目只应完成。"
 
 #: aristotle_mdr/templates/aristotle_mdr/create/concept_editor.html:8
 #, fuzzy
@@ -978,27 +975,24 @@ msgid "Change message"
 msgstr "变更信息"
 
 #: aristotle_mdr/templates/aristotle_mdr/create/concept_editor.html:23
+#, fuzzy
 msgctxt "creating items"
 msgid "Tips and help"
-msgstr ""
+msgstr "提示和帮助"
 
 #: aristotle_mdr/templates/aristotle_mdr/create/concept_editor.html:144
 #, fuzzy
 msgid ""
 "\n"
-"                If it is left blank an automatic messages stating which "
-"fields\n"
+"                If it is left blank an automatic messages stating which fields\n"
 "                have been changed will be generated on your behalf.\n"
 "                </p>\n"
-"                <p>However, stating <em>why</em> values in fields have "
-"changed\n"
-"                can be much more useful than knowing that a field has "
-"changed.\n"
+"                <p>However, stating <em>why</em> values in fields have changed\n"
+"                can be much more useful than knowing that a field has changed.\n"
 "                "
 msgstr ""
 "\n"
-"如果是空白的自动消息，指出哪些字段已被更改将代表您生成。 </p><p>然而，说明"
-"<em>为什么</em>在字段中的值已经改变可以比知道一个字段已经改变更为有用。"
+"如果是空白的自动消息，指出哪些字段已被更改将代表您生成。 </p><p>然而，说明<em>为什么</em>在字段中的值已经改变可以比知道一个字段已经改变更为有用。"
 
 #: aristotle_mdr/templates/aristotle_mdr/create/concept_wizard_wrapper.html:25
 #: aristotle_mdr/templates/aristotle_mdr/create/de_template_wrapper.html:46
@@ -1029,7 +1023,7 @@ msgstr "下一个"
 #: aristotle_mdr/templates/aristotle_mdr/create/create_list.html:5
 #, fuzzy
 msgid "Create New Items"
-msgstr "创建新的"
+msgstr "创建新项目"
 
 #: aristotle_mdr/templates/aristotle_mdr/create/create_list.html:16
 #: aristotle_mdr/templates/aristotle_mdr/header.html:91
@@ -1045,18 +1039,19 @@ msgid "Create new"
 msgstr "创建新的"
 
 #: aristotle_mdr/templates/aristotle_mdr/create/create_list.html:25
+#, fuzzy
 msgid "Help"
-msgstr ""
+msgstr "帮帮我"
 
 #: aristotle_mdr/templates/aristotle_mdr/create/create_list.html:26
 #, fuzzy
 msgid "Basic description"
-msgstr "描述"
+msgstr "基本描述"
 
 #: aristotle_mdr/templates/aristotle_mdr/create/create_list.html:39
 #, fuzzy
 msgid "Get more help on this item"
-msgstr "克隆此项目"
+msgstr "得到更多的帮助就这一项目"
 
 #: aristotle_mdr/templates/aristotle_mdr/header.html:59
 #, fuzzy
@@ -1279,11 +1274,9 @@ msgstr "请更正以下错误。"
 #: aristotle_mdr/templates/registration/password_change_form.html:18
 #, fuzzy
 msgid ""
-"Please enter your old password, for security's sake, and then enter your new "
-"password twice so we can verify you typed it in correctly."
-msgstr ""
-"请输入您的旧密码，为了安全起见，然后输入两次新密码，以便我们确认您的输入正确"
-"无误。"
+"Please enter your old password, for security's sake, and then enter your new"
+" password twice so we can verify you typed it in correctly."
+msgstr "请输入您的旧密码，为了安全起见，然后输入两次新密码，以便我们确认您的输入正确无误。"
 
 #: aristotle_mdr/templates/registration/password_change_form.html:47
 #, fuzzy
@@ -1341,14 +1334,12 @@ msgstr "注意："
 #, fuzzy
 msgid ""
 "\n"
-"        Fields/entries marked with <sup class=\"follow\">*</sup> are not "
-"under reversion control.\n"
+"        Fields/entries marked with <sup class=\"follow\">*</sup> are not under reversion control.\n"
 "        It may be that not all marked information are correct.\n"
 "    "
 msgstr ""
 "\n"
-"标有<sup class=\"follow\">*的</sup>字段/条目不复归控制之下。这可能是因为并不"
-"是所有的标志信息是正确的。"
+"标有<sup class=\"follow\">*的</sup>字段/条目不复归控制之下。这可能是因为并不是所有的标志信息是正确的。"
 
 #: aristotle_mdr/templates/search/search.html:21
 #, fuzzy
@@ -1426,15 +1417,18 @@ msgstr "和 %s"
 
 #: aristotle_mdr/templatetags/aristotle_tags.py:358
 #: aristotle_mdr/templatetags/aristotle_tags.py:360
+#, fuzzy
 msgid "model:"
-msgstr ""
+msgstr "模型："
 
 #: aristotle_mdr/templatetags/aristotle_tags.py:367
 #, fuzzy, python-format
 msgid "No help text for the field '%(field)s' found for the model '%(model)s'"
 msgstr "没有为外地&#39;%(field)s“发现模型帮助文本”%(model)s“"
 
-#. Translators: The '(clone)' prefix is a noun, indicating an object is a clone of another - for example "Person-Sex" compared to "Person-Sex (clone)"
+#. Translators: The '(clone)' prefix is a noun, indicating an object is a
+#. clone of another - for example "Person-Sex" compared to "Person-Sex
+#. (clone)"
 #: aristotle_mdr/utils/utils.py:34
 #, fuzzy
 msgid " (clone)"
@@ -1450,19 +1444,25 @@ msgstr "更改 %s。"
 msgid "and"
 msgstr "和"
 
-#. Translators: A message in the version history of an item saying that an object with the name (name) of the type (object) has been created in the registry.
+#. Translators: A message in the version history of an item saying that an
+#. object with the name (name) of the type (object) has been created in the
+#. registry.
 #: aristotle_mdr/utils/utils.py:82
 #, fuzzy, python-format
 msgid "Added %(name)s \"%(object)s\"."
 msgstr "新增 %(name)s “%(object)s”。"
 
-#. Translators: A message in the version history of an item saying that an object with the name (name) of the type (object) has been changed in the registry.
+#. Translators: A message in the version history of an item saying that an
+#. object with the name (name) of the type (object) has been changed in the
+#. registry.
 #: aristotle_mdr/utils/utils.py:87
 #, fuzzy, python-format
 msgid "Changed %(list)s for %(name)s \"%(object)s\"."
 msgstr "更改为 %(list)s  %(name)s “%(object)s”。"
 
-#. Translators: A message in the version history of an item saying that an object with the name (name) of the type (object) has been deleted from the registry.
+#. Translators: A message in the version history of an item saying that an
+#. object with the name (name) of the type (object) has been deleted from the
+#. registry.
 #: aristotle_mdr/utils/utils.py:93
 #, fuzzy, python-format
 msgid "Deleted %(name)s \"%(object)s\"."
@@ -1484,18 +1484,19 @@ msgid "This post is closed. Your comment was not added."
 msgstr "这个帖子被关闭。未添加您的评论。"
 
 #: aristotle_mdr/views/views.py:317
-#, python-format
+#, python-format, fuzzy
 msgid "%s added to favourites."
-msgstr ""
+msgstr "%s 添加到您的收藏夹。"
 
 #: aristotle_mdr/views/views.py:319
 #, fuzzy, python-format
 msgid "%s removed from favourites."
-msgstr "从收藏夹中删除%(num_items)s 项目"
+msgstr "%s 从收藏夹中删除。"
 
 #: aristotle_mdr/views/views.py:320
+#, fuzzy
 msgid " Review your favourites from the user menu."
-msgstr ""
+msgstr "回顾从用户菜单中选择您的最爱。"
 
 #: aristotle_mdr/views/wizards.py:124
 #, fuzzy
@@ -1644,7 +1645,6 @@ msgstr "新ValueDomain&#39;（名称）&#39;保存- <a href='{url}'>ID：{ID}</a
 msgid "New Data Element '{name}' Saved - <a href='{url}'>id:{id}</a>"
 msgstr "新的数据元素“（名称）&#39;保存- <a href='{url}'>ID：{ID}</a>"
 
-#, fuzzy
 #~ msgctxt "creating items"
 #~ msgid "Tips"
 #~ msgstr "提示"
