@@ -182,7 +182,6 @@ msgstr "Klicken Sie auf die offizielle Quelle zu sehen"
 
 #: aristotle_mdr/forms/admin.py:23 aristotle_mdr/forms/admin.py:24
 #: aristotle_mdr/forms/admin.py:25 aristotle_mdr/forms/admin.py:26
-#, fuzzy
 msgid "workgroups"
 msgstr "Arbeitsgruppen"
 
@@ -194,54 +193,46 @@ msgstr "Zulassungsbehörden"
 #: aristotle_mdr/forms/bulk_actions.py:115
 #, fuzzy
 msgid "Add bookmark"
-msgstr "Lesezeichen hinzufügen"
+msgstr "Füge Bookmark hinzu"
 
 #: aristotle_mdr/forms/bulk_actions.py:123
 #, python-format, fuzzy
 msgid ""
 "%(num_items)s items favourited. \n"
 "Some items failed, they had the id's: %(bad_ids)s"
-msgstr ""
-"%(num_items)s Artikel favorisiert. Einige Elemente konnten sie die ids "
-"hatte: %(bad_ids)s"
+msgstr "Einige Elemente haben nicht funktioniert, sie hatten die ID's: %(bad_ids)s"
 
 #: aristotle_mdr/forms/bulk_actions.py:133
 #, fuzzy
 msgid "Remove bookmark"
-msgstr "Lesezeichen entfernen"
+msgstr "Entferne Bookmark"
 
 #: aristotle_mdr/forms/bulk_actions.py:138
 #, python-format, fuzzy
 msgid "%(num_items)s items removed from favourites"
-msgstr "%(num_items)s Elemente aus den Favoriten entfernt"
+msgstr "%(num_items)s Elemente wurden von den Favouriten entfernt"
 
 #: aristotle_mdr/forms/bulk_actions.py:144
 #, fuzzy
 msgid "Change state"
-msgstr "ÄndStat"
+msgstr "Ändere Status"
 
 #: aristotle_mdr/forms/bulk_actions.py:179
 #, python-format, fuzzy
 msgid ""
 "%(num_items)s items registered in %(num_ra)s registration authorities. \n"
 "Some items failed, they had the id's: %(bad_ids)s"
-msgstr ""
-"%(num_items)s Artikel in %(num_ra)s Zulassungsbehörden registriert. Einige "
-"Elemente konnten sie die ids hatte: %(bad_ids)s"
+msgstr "SEinige Elemente haben nicht funktioniert, sie hatten die ID's: %(bad_ids)s"
 
 #: aristotle_mdr/forms/creation_wizards.py:42
 #, fuzzy
 msgid "You do not have permission to move an item between workgroups."
-msgstr ""
-"Sie haben keine Berechtigung, ein Element zwischen Arbeitsgruppen zu "
-"bewegen."
+msgstr "Sie haben nicht die Erlaubnis ein Element zwischen Arbeitsgruppen zu bewegen"
 
 #: aristotle_mdr/forms/creation_wizards.py:43
 #, fuzzy
 msgid "You do not have permission to remove an item from this workgroup."
-msgstr ""
-"Sie haben keine Berechtigung, ein Element aus dieser Arbeitsgruppe zu "
-"entfernen."
+msgstr "Sie haben nicht die Erlaubnis, um ein Element von dieser Arbeitsgruppe zu entfernen"
 
 #: aristotle_mdr/forms/creation_wizards.py:44
 #, fuzzy
@@ -430,7 +421,6 @@ msgstr "Registrars"
 #: aristotle_mdr/models.py:218 aristotle_mdr/models.py:354
 #: aristotle_mdr/models.py:390
 #: aristotle_mdr/templates/aristotle_mdr/helpers/paginated_workgroup_list.html:27
-#, fuzzy
 msgid "Registration Authorities"
 msgstr "Registrierungsstellen"
 
