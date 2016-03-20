@@ -33,6 +33,9 @@ def help_doc(item, field='brief', request=None):
 @register.simple_tag
 def relink(help_item, field):
     text = getattr(help_item, field)
+    if not text:
+        return ""
+
     import re
 
     def make_link(match):
