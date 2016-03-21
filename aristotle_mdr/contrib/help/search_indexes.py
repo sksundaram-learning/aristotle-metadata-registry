@@ -13,7 +13,7 @@ class HelpObjectIndex(indexes.SearchIndex):
     created = indexes.DateTimeField(model_attr='created')
     name = indexes.CharField(model_attr='title')
     facet_model_ct = indexes.IntegerField(faceted=True)
-    is_public = indexes.BooleanField()
+    is_public = indexes.BooleanField(model_attr='is_public')
 
     restriction = indexes.IntegerField(faceted=True)
 
@@ -25,9 +25,6 @@ class HelpObjectIndex(indexes.SearchIndex):
         """Used when the entire index for model is updated."""
 
         return self.get_model().objects.filter(modified__lte=timezone.now())
-
-    def prepare_is_public(self, obj):
-        return True
 
     def prepare_restriction(self, obj):
         return RESTRICTION['Public']
