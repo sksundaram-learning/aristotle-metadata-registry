@@ -1,5 +1,5 @@
 from django.conf.urls import patterns, url
-from aristotle_mdr.contrib.help import views, forms
+from aristotle_mdr.contrib.help import views
 
 
 urlpatterns = patterns(
