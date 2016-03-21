@@ -1,6 +1,6 @@
 import os
 import sys
-from aristotle_mdr.tests.settings import *
+from aristotle_mdr.required_settings import *
 
 BASE = os.path.dirname(os.path.dirname(__file__))
 
