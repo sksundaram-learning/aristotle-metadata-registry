@@ -1,1 +1,0 @@
-from aristotle_mdr.contrib.browse.tests import test_browse
