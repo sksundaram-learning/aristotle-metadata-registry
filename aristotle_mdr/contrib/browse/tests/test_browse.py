@@ -19,7 +19,7 @@ class LoggedInViewConceptBrowsePages(utils.LoggedInViewPages):
     
     def setUp(self):
         super(LoggedInViewConceptBrowsePages, self).setUp()
-
+        1/0
         self.item1 = self.itemType.objects.create(name="Test Item 1 (visible to tested viewers)",definition=" ",workgroup=self.wg1,**self.defaults)
         self.item2 = self.itemType.objects.create(name="Test Item 2 (NOT visible to tested viewers)",definition=" ",workgroup=self.wg2,**self.defaults)
         self.item3 = self.itemType.objects.create(name="Test Item 3 (visible to tested viewers)",definition=" ",workgroup=self.wg1,**self.defaults)
