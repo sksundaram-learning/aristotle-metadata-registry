@@ -232,45 +232,6 @@ def registrationHistory(request, iid):
     return render(request, "aristotle_mdr/registrationHistory.html", {'item': item, 'history': out})
 
 
-def edit_item(request, iid, *args, **kwargs):
-    item = get_object_or_404(MDR._concept, pk=iid).item
-    if not user_can_edit(request.user, item):
-        if request.user.is_anonymous():
-            return redirect(reverse('friendly_login') + '?next=%s' % request.path)
-        else:
-            raise PermissionDenied
-
-    base_form = MDRForms.wizards.subclassed_edit_modelform(item.__class__)
-    if request.method == 'POST':  # If the form has been submitted...
-        form = base_form(request.POST, instance=item, user=request.user)
-        new_wg = request.POST.get('workgroup', None)
-        workgroup_changed = not(str(item.workgroup.pk) == (new_wg))
-
-        if form.is_valid():
-            workgroup_changed = item.workgroup.pk != form.cleaned_data['workgroup'].pk
-
-            with transaction.atomic(), reversion.revisions.create_revision():
-                change_comments = form.data.get('change_comments', None)
-                item = form.save()
-                reversion.revisions.set_user(request.user)
-                if not change_comments:
-                    change_comments = construct_change_message(request, form, None)
-                reversion.revisions.set_comment(change_comments)
-                return HttpResponseRedirect(url_slugify_concept(item))
-    else:
-        form = base_form(instance=item, user=request.user)
-    return render(
-        request,
-        "aristotle_mdr/actions/advanced_editor.html",
-        {
-            "item": item,
-            "form": form,
-            'model': item._meta.model_name,
-            'app_label': item._meta.app_label
-        }
-    )
-
-
 def unauthorised(request, path=''):
     if request.user.is_anonymous():
         return render(request, "401.html", {"path": path, "anon": True, }, status=401)

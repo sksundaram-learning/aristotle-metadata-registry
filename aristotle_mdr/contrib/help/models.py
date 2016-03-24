@@ -33,6 +33,10 @@ class HelpBase(TimeStampedModel):
     language = models.CharField(
         max_length=7, choices=LANGUAGES
     )
+    is_public = models.BooleanField(
+        default=True,
+        help_text=_("Indicates if a help topic is available to non-registered users."),
+    )
     unique_together = ("app_label", "title", "language")
 
 
