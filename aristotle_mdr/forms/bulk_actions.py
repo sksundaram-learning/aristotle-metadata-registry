@@ -188,7 +188,7 @@ class ChangeStateForm(ChangeStatusForm, BulkActionForm):
                 'num_ra': len(ras),
                 'bad_ids': ",".join(bad_items)
             }
-            reversion.revisions.set_comment(changeDetails+"\n\n"+message)
+            reversion.revisions.set_comment(changeDetails + "\n\n" + message)
             return message
 
     @classmethod
@@ -264,7 +264,7 @@ class ChangeWorkgroupForm(BulkActionForm):
                     'num_items': len(success),
                     'bad_ids': ",".join(bad_items)
                 }
-            reversion.revisions.set_comment(changeDetails+"\n\n"+message)
+            reversion.revisions.set_comment(changeDetails + "\n\n" + message)
             return message
 
     @classmethod
