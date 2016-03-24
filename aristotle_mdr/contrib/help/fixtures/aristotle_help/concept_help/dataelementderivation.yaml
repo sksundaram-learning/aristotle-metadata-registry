@@ -1,0 +1,23 @@
+- model: aristotle_mdr_help.concepthelp
+  fields:
+    app_label: aristotle_mdr
+    concept_type: dataelementderivation
+    language: en
+    brief: application of a derivation rule to one or more input
+        [[data element|s]] to derive one or more output data elements.
+    offical_definition: >
+        application of a derivation rule to one or more input [[data element|s]]
+        to derive one or more output data elements.
+    official_reference: ISO/IEC 11179 - Clause 3.2.33
+    official_link:
+    body: >
+        <p>A data element derivation is a formal description of how a particular
+        [[data element]] can be calculated based on the values of other
+        data elements.
+        </p>
+        <p>For example, a data element describing a
+        <em>Person-Body Mass Index, BMI Value</em> can be derived from
+        the data elements <em>Person-Weight, Kg</em> and
+        <em>Person-Height, cm</em> according to the derivation rule
+        <tt>BMI = Weight/Height<sup>2</sup></tt>.
+        </p> 

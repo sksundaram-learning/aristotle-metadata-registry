@@ -62,7 +62,7 @@ Including additional items when downloading a custom concept type
 
 .. automethod:: aristotle_mdr.models.concept.get_download_items
 
-For example::
+For example:
 
 .. literalinclude:: /../aristotle_mdr/tests/apps/extension_test/models.py
     :caption: mymodule.models.Questionnaire.get_download_items

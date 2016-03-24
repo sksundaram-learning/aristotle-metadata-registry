@@ -118,42 +118,27 @@ class TestSearch(utils.LoggedInViewPages,TestCase):
         self.assertTrue('facet_model_ct' in facets.keys())
         self.assertTrue('statuses' in facets.keys())
 
-    def test_registrar_search(self):
+    def test_registrar_favourite_in_list(self):
         self.logout()
+        
+        response = self.client.get(reverse('aristotle:search')+"?q=xman")
+        self.assertTrue('div class="action"' not in response.content)
+        
         response = self.client.post(reverse('friendly_login'),
                     {'username': 'stryker', 'password': 'mutantsMustDie'})
 
         self.assertEqual(response.status_code,302) # logged in
-        self.assertTrue(perms.user_is_registrar(self.registrar,self.ra))
-
-        with reversion.create_revision():
-            dp = models.ObjectClass.objects.create(name="deadpool",
-                    definition="not really an xman, no matter how much he tries",
-                    workgroup=self.xmen_wg,readyToReview=False)
-        dp = models.ObjectClass.objects.get(pk=dp.pk) # Un-cache
-        self.assertFalse(perms.user_can_view(self.registrar,dp))
-        self.assertFalse(dp.is_public())
 
         response = self.client.get(reverse('aristotle:search')+"?q=xman")
+        self.assertTrue('This item is in your favourites list' not in response.content)
 
-        self.assertFalse(dp in [x.object for x in response.context['page'].object_list])
-        for i in response.context['page'].object_list:
-            self.assertTrue(perms.user_can_view(self.registrar,i.object))
-
-        response = self.client.get(reverse('aristotle:search')+"?q=deadpool")
-        self.assertEqual(len(response.context['page'].object_list),0)
-
-        with reversion.create_revision():
-            dp.readyToReview = True
-            dp.save()
-        dp = models.ObjectClass.objects.get(pk=dp.pk) # Un-cache
-        self.assertTrue(perms.user_can_view(self.registrar,dp))
-
-        # Stryker should be able to find items that are "ready for review" in his RA only.
-        response = self.client.get(reverse('aristotle:search')+"?q=deadpool")
-        self.assertEqual(len(response.context['page'].object_list),1)
-        self.assertEqual(response.context['page'].object_list[0].object.item,dp)
-        self.assertTrue(perms.user_can_view(self.registrar,response.context['page'].object_list[0].object))
+        i = self.xmen_wg.items.first()
+        
+        self.registrar.profile.favourites.add(i)
+        self.assertTrue(i in self.registrar.profile.favourites.all())
+        
+        response = self.client.get(reverse('aristotle:search')+"?q=xman")
+        self.assertTrue('This item is in your favourites list' in response.content)
 
     def test_registrar_search_after_adding_new_ra_to_workgroup(self):
         self.logout()
@@ -330,6 +315,52 @@ class TestSearch(utils.LoggedInViewPages,TestCase):
 
         self.assertTrue(int(dp_result.statuses[0]) == int(models.STATES.standard))
 
+    def test_visibility_restriction_facets(self):
+        # See issue #351
+        self.logout()
+        
+        response = self.client.get(reverse('aristotle:search')+"?q=xman")
+        self.assertTrue('Restriction' not in response.content)
+
+        response = self.client.post(reverse('friendly_login'),
+                    {'username': 'stryker', 'password': 'mutantsMustDie'})
+
+        self.assertEqual(response.status_code,302) # logged in
+        self.assertTrue(perms.user_is_registrar(self.registrar,self.ra))
+
+        with reversion.create_revision():
+            dp = models.ObjectClass.objects.create(name="deadpool",
+                    definition="not really an xman, no matter how much he tries",
+                    workgroup=self.xmen_wg,readyToReview=True)
+        dp = models.ObjectClass.objects.get(pk=dp.pk) # Un-cache
+        self.assertTrue(perms.user_can_view(self.registrar,dp))
+        self.assertFalse(dp.is_public())
+
+        from django.utils import timezone
+        import datetime
+
+        self.ra.register(dp,models.STATES.candidate,self.registrar,
+            registrationDate=timezone.now()+datetime.timedelta(days=-7)
+        )
+
+        response = self.client.get(reverse('aristotle:search')+"?q=xman")
+        self.assertTrue('Restriction' in response.content)
+        
+
+        response = self.client.get(reverse('aristotle:search')+"?q=xman&res=1")
+        self.assertTrue('Restriction' not in response.content)
+
+        self.assertTrue('Item visibility state is Locked' in response.content)
+
+        self.assertEqual(len(response.context['page'].object_list),1)
+        dp_result = response.context['page'].object_list[0]
+        self.assertTrue(dp_result.object.name=="deadpool")
+        self.assertTrue(len(dp_result.statuses) == 1)
+        self.assertTrue(dp_result.object.is_locked())
+        self.assertFalse(dp_result.object.is_public())
+
+        self.assertTrue(int(dp_result.statuses[0]) == int(models.STATES.candidate))
+
 class TestTokenSearch(TestCase):
     def tearDown(self):
         call_command('clear_index', interactive=False, verbosity=0)
@@ -436,3 +467,20 @@ class TestSearchDescriptions(TestCase):
         self.assertTrue('Item type is Object Classes' in gen(form))
         self.assertTrue('registration authority is %s'%ra.name.lower() in gen(form).lower())
         self.assertTrue('and' in description)
+
+        filters = {
+            'models':['aristotle_mdr.objectclass'],
+            'res':0
+        }
+        form = PSF(filters)
+        
+        if not form.is_valid(): # pragma: no cover
+            # If this branch happens, we messed up the test bad.
+            print form.errors
+            self.assertTrue('programmer' is 'good')
+
+        description = gen(form)
+        self.assertTrue('Item type is Object Classes' in description)
+        self.assertTrue('and' in description)
+        self.assertTrue('Item visibility state is Public' in description)
+

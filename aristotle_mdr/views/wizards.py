@@ -16,6 +16,8 @@ from django.utils.html import strip_tags
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
+from aristotle_mdr.contrib.help.models import ConceptHelp
+
 from formtools.wizard.views import SessionWizardView
 from reversion import revisions as reversion
 
@@ -75,17 +77,15 @@ class PermissionWizard(SessionWizardView):
         return kwargs
 
     def help_guide(self, model=None):
-        if model is None:
-            model=self.model
-        from django.template import TemplateDoesNotExist
-        try:
-            from django.template.loader import get_template
-            template_name = '%s/create/tips/%s.html' % (model._meta.app_label, model._meta.model_name)
-            get_template(template_name)
-            return template_name
-        except TemplateDoesNotExist:
-            # there is no extra content for this item, and thats ok.
-            return None
+        # Refactored out as part of help changes
+        # TODO: Need to permanently remove
+        return None
+
+    def get_context_data(self, form, **kwargs):
+        context = super(PermissionWizard, self).get_context_data(form=form, **kwargs)
+        context.update({'model': self.model._meta.model_name,
+                        'app_label': self.model._meta.app_label})
+        return context
 
 
 class ConceptWizard(PermissionWizard):
@@ -133,6 +133,11 @@ class ConceptWizard(PermissionWizard):
                 context.update({'similar_items': self.find_similar()})
             context['step_title'] = _('Select or create')
         context.update({'model_name': self.model._meta.verbose_name,
+                        'model_name_plural': self.model._meta.verbose_name_plural,
+                        'help': ConceptHelp.objects.filter(
+                            app_label=self.model._meta.app_label,
+                            concept_type=self.model._meta.model_name
+                        ).first(),
                         'template_name': self.template_name,
                         'help_guide': self.help_guide(),
                         'current_step': self.steps.current,
@@ -141,6 +146,8 @@ class ConceptWizard(PermissionWizard):
 
     @reversion.create_revision()
     def done(self, form_list, **kwargs):
+        reversion.set_user(self.request.user)
+        reversion.set_comment("Added via concept wizard")
         item = None
 
         for form in form_list:
@@ -196,6 +203,7 @@ class MultiStepAristotleWizard(PermissionWizard):
     We can reuse a lot of the functionality as DE and DECs have a lot of the same underlying components.
     This should not be extended for creating other type of Aristotle/11179 concepts - make a fresh wizard.
     """
+
     def get_object_class(self):
         if hasattr(self, '_object_class'):
             return self._object_class
@@ -425,6 +433,9 @@ class DataElementConceptWizard(MultiStepAristotleWizard):
 
     @reversion.create_revision()
     def done(self, form_list, **kwargs):
+        reversion.set_user(self.request.user)
+        reversion.set_comment("Added via data element concept wizard")
+
         oc = self.get_object_class()
         pr = self.get_property()
         dec = None
@@ -751,6 +762,9 @@ class DataElementWizard(MultiStepAristotleWizard):
 
     @reversion.create_revision()
     def done(self, form_list, **kwargs):
+        reversion.set_user(self.request.user)
+        reversion.set_comment("Added via data element wizard")
+
         oc = self.get_object_class()
         pr = self.get_property()
         vd = self.get_value_domain()

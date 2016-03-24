@@ -1,0 +1,41 @@
+{% extends "aristotle_mdr_browse/base.html" %}
+{% load aristotle_tags aristotle_help %}
+
+{% block breadcumbs %}
+    <li><a href="{% url 'browse_apps'  %}">Concept browser</a></li>
+    <li><a href="{% url 'browse_models' app.label %}">{{app.verbose_name}}</a></li>
+    <li class="active">{{ model.get_verbose_name_plural }}</li>
+{% endblock %}
+
+{% block object_list %}
+    <p>
+        <em>{{ model.get_verbose_name }} - </em>
+        {% help_doc model 'brief' %} 
+        - <a href="{% url 'concept_help' app.label model_name %}">Read more about {{ model.get_verbose_name_plural }}</a>
+    </p>
+
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Name</th>
+            <th>Definition</th>
+            <th>Modified</th>
+        </tr>
+        </thead>
+        <tbody>
+      {% for obj in object_list.all %}
+        <tr>
+            <td>
+                <a href="{{obj.get_absolute_url}}">{{ obj.name }}</a>
+            </td>
+            <td>
+                {{ obj.definition | striptags | truncatewords:20 }}
+            </td>
+            <td>
+                {{ obj.modified }}
+            </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+{% endblock %}

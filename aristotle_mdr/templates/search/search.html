@@ -50,7 +50,7 @@
                     {{ form.myWorkgroups_only.label }}
                 </label>
             {% endif %}
-            <span style="display:inline-block"><i class="fa fa-life-ring fa-fw"></i> <a href="{% url 'aristotle:help' 'advanced_search' %}">Advanced help</a></span>
+            <span style="display:inline-block"><i class="fa fa-life-ring fa-fw"></i> <a href="{% url 'help_page' 'advanced-search' %}">Advanced help</a></span>
         </div>
         <nav class="navbar navbar-default searchAdvanced" role="navigation">
           <div class="container-fluid">
@@ -214,12 +214,6 @@
     {#  ----- MAIN RESULTS PAGE STARTS HERE ----- #}
     {% if query or form.filter_search %}
         {% if page.object_list %}
-            {% if form.applied_filters %}
-            <div>
-                Showing only items where
-                {% search_describe_filters form %}
-            </div>
-            {% endif %}
         <div class="col-md-3 panel panel-default facets">
             <div class='panel-heading'>Refine your results</div>
             <dl class="panel-body">
@@ -288,6 +282,7 @@
             </dl>
         </div>
         <div class="col-md-9">
+
             {% if form.auto_broaden_search %}
                 <div class="alert alert-warning" role="alert">
                     <p>There were no results for "{{ form.q.value }}" with your requested filters.
@@ -298,6 +293,13 @@
                 </div>
             {% endif %}
             <h3>Results</h3>
+            {% if form.applied_filters %}
+            <div>
+                Showing only items where
+                {% search_describe_filters form %}
+            </div>
+            {% endif %}
+
             <p>
                 {% if page.has_other_pages %}
                 Showing {{ page.start_index }} - {{ page.end_index }} of {{ page.paginator.count }} results.
@@ -312,12 +314,19 @@
             <ol start="{{ page.start_index }}"
                 class="searchResults {% ternary user.is_active 'active' '' %}">
             {% for result in page.object_list %}
-                {% if result.object.name %}
+                {% if result %}
                 <li>
-                    {% if user.is_active %}
+                    {% if user.is_active and result.object.concept %}
+                    <div class="action">
                         <input type='checkbox' id="id_items_{{result.object.id}}" name="items" value='{{ result.object.id }}' title='select to add to favourites'>
+                        {% if result.object.concept in request.user.profile.favourites.all %}
+                            <i class="fa fa-bookmark" title="{% trans 'This item is in your favourites list' %}"></i>
+                        {% endif %}
+                    </div>
+                    {% else %}
+                    <div></div>
                     {% endif %}
-                    {% include "search/searchItem.html" with item=result.object %}
+                    {% include result.searchindex.template_name with item=result.object %}
                 </li>
                 {% endif %}
             {% empty %}

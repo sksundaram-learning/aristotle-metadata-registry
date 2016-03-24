@@ -1,31 +1,55 @@
 {% extends 'aristotle_mdr/base.html' %}
-{% load aristotle_tags i18n %}
-
-{% block title %}Creation List{% endblock %}
+{% load aristotle_tags aristotle_help i18n %}
 
 {% block content %}
+<h1>{% block title %}{% trans "Create New Items" %}{% endblock %}</h1>
 
 <p>
     Below is a list of all concepts managed within this registry, as submitter you
     can create and propose a new object in your workgroups by clicking the links below.
+    Each item has a basic description, but to get more information on a
+    concept type click the question mark link
+    (<i class="fa fa-question-circle"></i>)
+    next to its name.
     {% if user.is_staff %}
         You may be able to make additional items through the
         <a href="{% url 'admin:index' %}">{% trans 'Management interface' %}</a>.
     {% endif %}
 </p>
 {% for app,app_models in models.items %}
-<h2>{{ app_models.app }}</h2>
-    <ul>
-    {% for m,model in app_models.models %}
-        {% if model.help_name %}
-        <li>
-            <a href="{% url 'aristotle:createItem' m.app_label m.model %}">
-                {{ model.get_verbose_name }}
-            </a>
-        </li>
-        {% endif %}
-    {% endfor %}
-    </ul>
+<h3>{{ app_models.app }}</h3>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>{% trans "Create new" %}</th>
+                <th>{% trans "Help" %}</th>
+                <th>{% trans "Basic description" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for m,model in app_models.models %}
+            {% if model.concept %}
+            <tr>
+                <td>
+                    <a href="{% url 'aristotle:createItem' m.app_label m.model %}">
+                        {{ model.get_verbose_name }}
+                    </a>
+                </td>
+                <td>
+                                        <a title="{% trans 'Get more help on this item' %}"
+                        href="{% url 'concept_help' m.app_label m.model %}">
+                        <i class="fa fa-question-circle"></i>
+                    </a>
+
+                </td>
+                <td>
+                    {% help_doc model %}
+                </td>
+            </tr>
+            {% endif %}
+        {% endfor %}
+        </tbody>
+    </table>
 {% endfor %}
 
 {% endblock %}

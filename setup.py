@@ -36,6 +36,7 @@ setup(
     install_requires = [
         "Django>=1.8,<1.9",
         'pytz',
+        'pyyaml',
 
         'django-model-utils==2.3.1',
         'django-notifications-hq>=1.0', #At least 0.8 for live notifications.
@@ -47,7 +48,7 @@ setup(
         'Whoosh',
 
         #Rich text editors
-        'django-ckeditor==4.5.1',
+        'django-ckeditor>=5.0.0',
 
         # Revision control
         "django-reversion>=1.10",
@@ -65,6 +66,10 @@ setup(
 
         'xhtml2pdf',
         #'django-tastypie'
+
+        # technically for help, but thats required
+        'django-autoslug',
+
     ],
 
 )

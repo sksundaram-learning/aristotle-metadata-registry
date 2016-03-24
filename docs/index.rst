@@ -35,6 +35,7 @@ Table of Contents
    ./installing/index.rst
    features.rst
    ./extensions/index.rst
+   ./user_help/index.rst
 
 
 Indices and tables
