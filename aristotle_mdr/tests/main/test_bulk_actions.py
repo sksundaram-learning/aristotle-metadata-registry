@@ -52,7 +52,38 @@ class BulkWorkgroupActionsPage(utils.LoggedInViewPages, TestCase):
         self.assertEqual(response.redirect_chain[0][1], 302)
 
     def test_bulk_change_workgroup(self):
-        pass
+        self.new_workgroup = models.Workgroup.objects.create(name="new workgroup")
+        self.new_workgroup.submitters.add(self.editor)
+        self.login_superuser()
+        
+        response = self.client.post(
+            reverse('aristotle:bulk_action'),
+            {
+                'bulkaction': 'move_workgroup',
+                'items': [self.item1.id, self.item2.id],
+                'workgroup': [self.new_workgroup.id],
+                "confirmed": True
+            }
+        )
+
+        self.assertTrue(self.item1.concept in self.new_workgroup.items.all())
+        self.assertTrue(self.item2.concept in self.new_workgroup.items.all())
+
+        self.logout()
+        self.login_editor()
+
+        response = self.client.post(
+            reverse('aristotle:bulk_action'),
+            {
+                'bulkaction': 'move_workgroup',
+                'items': [self.item1.id, self.item2.id],
+                'workgroup': [self.wg1.id],
+                "confirmed": True
+            }
+        )
+
+        self.assertTrue(self.item1.concept in self.new_workgroup.items.all())
+        self.assertTrue(self.item2.concept in self.new_workgroup.items.all())
 
     def test_bulk_remove_favourite(self):
         self.login_editor()
