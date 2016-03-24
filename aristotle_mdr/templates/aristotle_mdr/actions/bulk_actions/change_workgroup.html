@@ -1,12 +1,14 @@
-{% extends "aristotle_mdr/base.html" %}
+{% extends "aristotle_mdr/actions/bulk_actions/base.html" %}
 
 {% block title %}Move multiple items to workgroup{% endblock %}
+
 {% block content %}
-{{ form.media }}
 <form method="post" action="{% url 'aristotle:bulk_action' %}?next={{next}}">{% csrf_token %}
     <input type="hidden" name="bulkaction" value="move_workgroup"/>
     <div class="modal-body">
-        <header>This form allows you to change the status of items in your registration authorities.
+        <header>This form allows you to move items between workgroups.<br>
+        Select a workgroup below, and all items you have permission to move will
+        be moved into the selected workgroup.
         </header>
         <div>
             {{ form.items.label }}
@@ -24,8 +26,8 @@
         </div>
         <div id="comments">
             <span>
-                {{ form.comments.label }}:
-                {{ form.comments.errors }}
+                {{ form.changeDetails.label }}:
+                {{ form.changeDetails.errors }}
             </span>
             <span>
                 {{ form.comments }}
@@ -37,5 +39,4 @@
         <button type="submit" name="confirmed" class="btn btn-primary" value="Change">Move to workgroup</button>
     </div>
 </form>
-{% include 'autocomplete_light/static.html' %}
 {% endblock %}

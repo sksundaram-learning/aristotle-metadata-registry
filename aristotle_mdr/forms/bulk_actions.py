@@ -206,11 +206,11 @@ class ChangeWorkgroupForm(BulkActionForm):
         super(ChangeWorkgroupForm, self).__init__(*args, **kwargs)
 
         wgs = [(wg.id, wg.name) for wg in self.user.profile.workgroups]
-        self.fields['workgroup']=forms.ChoiceField(
+        self.fields['workgroup']=forms.ModelChoiceField(
             label="Workgroup to move items to",
-            choices=wgs
+            queryset=self.user.profile.workgroups
         )
-        self.fields['comments']=forms.CharField(
+        self.fields['changeDetails']=forms.CharField(
             label="Change notes (optional)",
             required=False,
             widget=forms.Textarea
@@ -221,6 +221,7 @@ class ChangeWorkgroupForm(BulkActionForm):
         from aristotle_mdr.perms import user_can_remove_from_workgroup, user_can_move_to_workgroup
         new_workgroup = self.cleaned_data['workgroup']
         changeDetails = self.cleaned_data['changeDetails']
+        items = self.cleaned_data['items']
 
         if not user_can_move_to_workgroup(self.user, new_workgroup):
             raise PermissionDenied
@@ -247,13 +248,22 @@ class ChangeWorkgroupForm(BulkActionForm):
             failed = list(set(failed))
             success = list(set(success))
             bad_items = sorted([str(i.id) for i in failed])
-            message = _(
-                "%(num_items)s items moved into the workgroup '%(new_wg)s'. \n"
-                "Some items failed, they had the id's: %(bad_ids)s"
-            ) % {
-                'num_items': len(success),
-                'bad_ids': ",".join(bad_items)
-            }
+            if not bad_items:
+                message = _(
+                    "%(num_items)s items moved into the workgroup '%(new_wg)s'. \n"
+                ) % {
+                    'new_wg': new_workgroup.name,
+                    'num_items': len(success),
+                }
+            else:
+                message = _(
+                    "%(num_items)s items moved into the workgroup '%(new_wg)s'. \n"
+                    "Some items failed, they had the id's: %(bad_ids)s"
+                ) % {
+                    'new_wg': new_workgroup.name,
+                    'num_items': len(success),
+                    'bad_ids': ",".join(bad_items)
+                }
             reversion.revisions.set_comment(changeDetails+"\n\n"+message)
             return message
 

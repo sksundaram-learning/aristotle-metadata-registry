@@ -51,6 +51,9 @@ class BulkWorkgroupActionsPage(utils.LoggedInViewPages, TestCase):
         self.assertEqual(len(response.redirect_chain), 1)
         self.assertEqual(response.redirect_chain[0][1], 302)
 
+    def test_bulk_change_workgroup(self):
+        pass
+
     def test_bulk_remove_favourite(self):
         self.login_editor()
 
