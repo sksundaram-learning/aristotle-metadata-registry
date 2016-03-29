@@ -94,7 +94,7 @@ or reviewing the `documentation <http://aristotle-metadata-registry.readthedocs.
 About the badges (plus some extras):
 ++++++++++++++++++++++++++++++++++++
 * |build-status| - Travis-CI, showing the details of the continuous testing suite
-* |docs| - Rad the docs, with details on installing, configuring and extending Aristotle-MDR
+* |docs| - Read the docs, with details on installing, configuring and extending Aristotle-MDR
 * |coveralls| - Coveralls, showing in-depth code coverage
 * |codecov| - Codecov.io, showing even greater in-depth code coverage with branch coverage
 * |demoserver| - A link to a live demo and development server
