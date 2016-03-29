@@ -17,7 +17,7 @@ building on the Django web framework and the mature model of the 11179 standard,
 agencies to easily run their own metadata registries while also having the ability
 to extend the information model and tap into the permissions and roles of ISO 11179.
 
-By allowing organisations to run their own independant registries they are able to
+By allowing organisations to run their own independent registries they are able to
 expose authoritative metadata along with the governance processes behind its creation,
 and by building upon known and open systems agencies, can deliver a stable platform
 for the sharing of metadata.
@@ -54,7 +54,7 @@ Quick start
 
 #. Run ``python manage.py migrate`` to create the Aristotle-MDR Database.
 
-#. Install `lessc` for your system (eg. ``apt-get install node-less``) or
+#. Install `lessc` for your system (e.g. ``apt-get install node-less``) or
    configure django-static-precompiler to use your LESS pre-processor of choice.
    (This step is not required if you are running from PythonAnywhere)
 
@@ -68,7 +68,7 @@ Quick start
 For a complete example of how to successfully include Aristotle, see the `tests/settings.py` settings file.
 
 **A live Aristotle-MDR instance is available for review on PythonAnywhere at:** `http://aristotle.pythonanywhere.com/ <http://aristotle.pythonanywhere.com/>`_.
-Be aware, this is an active development instance and may sporadically be unavailble.
+Be aware, this is an active development instance and may sporadically be unavailable.
 
 Screenshots for users
 ---------------------
@@ -96,7 +96,7 @@ About the badges (plus some extras):
 * |build-status| - Travis-CI, showing the details of the continuous testing suite
 * |docs| - Rad the docs, with details on installing, configuring and extending Aristotle-MDR
 * |coveralls| - Coveralls, showing in-depth code coverage
-* |codecov| - Codecov.io, showing even more in-depther code coverage with branch coverage
+* |codecov| - Codecov.io, showing even greater in-depth code coverage with branch coverage
 * |demoserver| - A link to a live demo and development server
 * |gitter| - Gitter, a git-powered chat room for developers
 * |waffleio| - Waffle.io bugs ready to be actioned.
