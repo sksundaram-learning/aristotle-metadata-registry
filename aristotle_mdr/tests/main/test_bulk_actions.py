@@ -51,7 +51,7 @@ class BulkWorkgroupActionsPage(utils.LoggedInViewPages, TestCase):
         self.assertEqual(len(response.redirect_chain), 1)
         self.assertEqual(response.redirect_chain[0][1], 302)
 
-    def test_bulk_change_workgroup(self):
+    def test_bulk_change_workgroup_for_superuser(self):
         self.new_workgroup = models.Workgroup.objects.create(name="new workgroup")
         self.new_workgroup.submitters.add(self.editor)
         self.login_superuser()
