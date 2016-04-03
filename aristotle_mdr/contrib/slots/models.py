@@ -19,20 +19,20 @@ from model_utils.models import TimeStampedModel
 from aristotle_mdr import models as MDR
 
 
-CARDINALITY = Choices(
-    (0, 'singleton', _('Singleton (0..1)')),
-    (1, 'repeatable', _('Repeatable (0..n)')),
-)
-
 class SlotDefinition(TimeStampedModel):
+    CARDINALITY = Choices(
+        (0, 'singleton', _('Singleton (0..1)')),
+        (1, 'repeatable', _('Repeatable (0..n)')),
+    )
+
     app_label = models.CharField(
         max_length=256,
         help_text=_('Add an app for app specific help, required for concept help')
         )
     concept_type = models.CharField(max_length=256)
-    slot_name = models.CharField(max_length=256) # Or some other sane length
-    help_text = models.TextField(max_length=256) # Or some other sane length
-    datatype = models.ForeignKey(MDR.DataType, null=True, blank=True) # What! So meta
+    slot_name = models.CharField(max_length=256)  # Or some other sane length
+    help_text = models.TextField(max_length=256)  # Or some other sane length
+    datatype = models.ForeignKey(MDR.DataType, null=True, blank=True)  # What! So meta
     cardinality = models.IntegerField(
         choices=CARDINALITY,
         default=CARDINALITY.singleton,
@@ -49,6 +49,7 @@ class SlotDefinition(TimeStampedModel):
 
     def model_class(self):
         return ContentType.objects.get(app_label=self.app_label, model=self.concept_type)
+
 
 class Slot(TimeStampedModel):
     # on save confirm the concept and model are correct, otherwise reject

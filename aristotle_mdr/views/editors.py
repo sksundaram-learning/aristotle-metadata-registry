@@ -86,10 +86,6 @@ class EditItemView(PermissionFormView):
                 slot_formset = self.get_slots_formset()(request.POST, request.FILES, item.concept)
 
                 if slot_formset.is_valid():
-                    for f in slot_formset: 
-                        cd = f.cleaned_data
-                        print cd
-                    #1/0
                     # Save the slots
                     slot_formset.save()
 
@@ -97,9 +93,9 @@ class EditItemView(PermissionFormView):
                     reversion.revisions.set_user(request.user)
                     change_comments = form.data.get('change_comments', None)
                     if not change_comments:
-                        change_comments = construct_change_message(request, form,  [slot_formset])
+                        change_comments = construct_change_message(request, form, [slot_formset])
                     reversion.revisions.set_comment(change_comments)
- 
+
                     return HttpResponseRedirect(url_slugify_concept(self.item))
 
         return self.form_invalid(form)
@@ -107,13 +103,13 @@ class EditItemView(PermissionFormView):
     def get_slots_formset(self):
         from aristotle_mdr.contrib.slots.models import Slot
         return inlineformset_factory(
-            MDR._concept, Slot, 
-            can_delete=True,  # dont need can_order is we have an order field
+            MDR._concept, Slot,
+            can_delete=True,
             fields=('concept', 'type', 'value'),
             extra=1
             )
 
-    def get_context_data(self,form,**kwargs):
+    def get_context_data(self, form, **kwargs):
         from aristotle_mdr.contrib.slots.models import Slot
         context = super(EditItemView, self).get_context_data(form=form, **kwargs)
         context['slots_FormSet'] = self.get_slots_formset()(
