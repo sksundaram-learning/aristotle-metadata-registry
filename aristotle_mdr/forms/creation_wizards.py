@@ -129,9 +129,11 @@ class ConceptForm(WorkgroupVerificationMixin, UserAwareModelForm):
             field.name for field in self._meta.model._meta.fields
             if field not in MDR.concept._meta.fields
             ]
+        fields = []
         for name in self.fields:
             if name in obj_field_names:
-                yield self[name]
+                fields.append(self[name])
+        return fields
 
 
 class Concept_1_Search(UserAwareForm):

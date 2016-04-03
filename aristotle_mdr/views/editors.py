@@ -120,7 +120,7 @@ class EditItemView(PermissionFormView):
             queryset=Slot.objects.filter(concept=self.item.id),
             instance=self.item.concept
             )
-        context['show_slots_tab'] = False
+        context['show_slots_tab'] = True
         return context
 
 

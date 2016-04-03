@@ -18,9 +18,11 @@
         <li role="presentation">
             <a href="#tab_names" aria-controls="profile" role="tab" data-toggle="tab">Names & References</a>
         </li>
+        {% if form.object_specific_fields %}
         <li role="presentation">
-            <a href="#tab_objSpecific" aria-controls="messages" role="tab" data-toggle="tab">{{ model_name|title }} {% trans 'Components' context 'For making an item' %}</a>
+            <a href="#tab_objSpecific" aria-controls="messages" role="tab" data-toggle="tab">{# { model_name|title } #} {% trans 'Components' context 'For making an item' %}</a>
         </li>
+        {% endif %}
         {% if show_slots_tab %}
         <li role="presentation">
             <a href="#tab_slots" aria-controls="messages" role="tab" data-toggle="tab">{% trans 'Slots' context 'When saving changes to an item' %}</a>
@@ -140,11 +142,6 @@
                 {% if field.errors %}
                     </span>
                 {% endif %}
-            </div>
-        {% empty %}
-            <div class="alert alert-success">
-                <strong>There are no additional fields required to make this {{ model_name }}.</strong>
-                You are ready to submit.
             </div>
         {% endfor %}
         </div>
