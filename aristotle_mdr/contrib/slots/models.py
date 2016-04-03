@@ -31,7 +31,7 @@ class SlotDefinition(TimeStampedModel):
         )
     concept_type = models.CharField(max_length=256)
     slot_name = models.CharField(max_length=256)  # Or some other sane length
-    help_text = models.TextField(max_length=256)  # Or some other sane length
+    help_text = models.TextField(max_length=256, null=True, blank=True)  # Or some other sane length
     datatype = models.ForeignKey(MDR.DataType, null=True, blank=True)  # What! So meta
     cardinality = models.IntegerField(
         choices=CARDINALITY,
