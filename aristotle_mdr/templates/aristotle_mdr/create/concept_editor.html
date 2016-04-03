@@ -1,6 +1,13 @@
 {% load i18n aristotle_help %}
 
 {{ form.errors }}
+    {% with formset=slots_FormSet %}
+        {% if formset.errors %}
+        <div class="alert alert-danger">
+            {{formset.errors}}
+        </div>
+        {% endif %}
+    {% endwith %}
 
 <div role="tabpanel">
     <ul class="nav nav-tabs" role="tablist">
@@ -14,6 +21,11 @@
         <li role="presentation">
             <a href="#tab_objSpecific" aria-controls="messages" role="tab" data-toggle="tab">{{ model_name|title }} {% trans 'Components' context 'For making an item' %}</a>
         </li>
+        {% if show_slots_tab %}
+        <li role="presentation">
+            <a href="#tab_slots" aria-controls="messages" role="tab" data-toggle="tab">{% trans 'Slots' context 'When saving changes to an item' %}</a>
+        </li>
+        {% endif %}
         {% if form.change_comments %}
         <li role="presentation">
             <a href="#tab_changeComments" aria-controls="messages" role="tab" data-toggle="tab"><strong>{% trans 'Change message' context 'When saving changes to an item' %}</strong></a>
@@ -137,6 +149,18 @@
         {% endfor %}
         </div>
         {% endif %}
+        {% if show_slots_tab %}
+        <div role="tabpanel" class="tab-pane" id="tab_slots">
+            <div class="alert alert-info">
+                <p>Slots can be used to annotate metadata with additional key-value pairs.
+                Below are the slots that have been configured to be used with
+                your registry for this particular metadata type.
+                </p>
+            </div>
+            {% include 'aristotle_mdr/slots/slots_editor_tab.html' %}
+        </div>
+        {% endif %}
+
         {% if form.change_comments %}
         <div role="tabpanel" class="tab-pane" id="tab_changeComments">
             <div class="alert alert-info">

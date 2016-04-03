@@ -123,6 +123,24 @@
         {% endif %}
     </div>
     {% endif %}
+    {% if item.slots.exists %}
+    <div>
+    <h2>Additional Attributes</h2>
+    <table class="table">
+    {% for slot in item.slots.all %}
+    <tr>
+        <td>
+            {{ slot.type.slot_name }}
+            <small>{{slot.type.help_text}}</small>
+        </td>
+        <td>
+            {{ slot.value }}
+        </td>
+    </tr>
+    {% endfor %}
+    </table>
+    </div>
+    {% endif %}
     <h2>Related content</h2>
         {% block relationships %}{% endblock %}
         {% for extension in config.CONTENT_EXTENSIONS %}

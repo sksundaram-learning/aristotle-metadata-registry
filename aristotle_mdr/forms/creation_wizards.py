@@ -110,6 +110,7 @@ class ConceptForm(WorkgroupVerificationMixin, UserAwareModelForm):
         if not self.user.is_superuser:
             self.fields['workgroup'].queryset = self.user.profile.editable_workgroups
         self.fields['name'].widget = forms.widgets.TextInput()
+        self.show_slots_tab = True
 
     def concept_fields(self):
         # version/workgroup are displayed with name/definition

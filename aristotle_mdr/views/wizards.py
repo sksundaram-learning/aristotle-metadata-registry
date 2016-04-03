@@ -83,8 +83,10 @@ class PermissionWizard(SessionWizardView):
 
     def get_context_data(self, form, **kwargs):
         context = super(PermissionWizard, self).get_context_data(form=form, **kwargs)
-        context.update({'model': self.model._meta.model_name,
-                        'app_label': self.model._meta.app_label})
+        context.update({
+            'model': self.model._meta.model_name,
+            'app_label': self.model._meta.app_label,
+        })
         return context
 
 
