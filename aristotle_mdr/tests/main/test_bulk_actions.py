@@ -1,5 +1,6 @@
-from django.test import TestCase
+from django.conf import settings
 from django.core.urlresolvers import reverse
+from django.test import TestCase, override_settings
 import aristotle_mdr.models as models
 import aristotle_mdr.perms as perms
 import aristotle_mdr.tests.utils as utils
@@ -84,6 +85,49 @@ class BulkWorkgroupActionsPage(utils.LoggedInViewPages, TestCase):
 
         self.assertTrue(self.item1.concept in self.new_workgroup.items.all())
         self.assertTrue(self.item2.concept in self.new_workgroup.items.all())
+
+    @override_settings(ARISTOTLE_SETTINGS=dict(settings.ARISTOTLE_SETTINGS, WORKGROUP_CHANGES=['submitter']))
+    def test_bulk_change_workgroup_for_editor__for_some_items(self):
+        self.new_workgroup = models.Workgroup.objects.create(name="new workgroup")
+        self.new_workgroup.submitters.add(self.editor)
+        self.login_editor()
+        
+        self.assertTrue(self.item1.concept not in self.new_workgroup.items.all())
+        self.assertTrue(self.item2.concept not in self.new_workgroup.items.all())
+        self.assertTrue(self.item4.concept not in self.new_workgroup.items.all())
+
+        response = self.client.post(
+            reverse('aristotle:bulk_action'),
+            {
+                'bulkaction': 'move_workgroup',
+                'items': [self.item1.id, self.item2.id, self.item4.id],
+                'workgroup': [self.new_workgroup.id],
+                "confirmed": True
+            }
+        )
+
+        self.assertTrue(self.item1.concept in self.new_workgroup.items.all())
+        self.assertTrue(self.item2.concept in self.new_workgroup.items.all())
+        self.assertTrue(self.item4.concept not in self.new_workgroup.items.all())
+
+        self.logout()
+        self.login_superuser()
+
+
+        response = self.client.post(
+            reverse('aristotle:bulk_action'),
+            {
+                'bulkaction': 'move_workgroup',
+                'items': [self.item1.id, self.item2.id, self.item4.id],
+                'workgroup': [self.wg1.id],
+                "confirmed": True
+            }
+        )
+
+        self.assertTrue(self.item1.concept in self.wg1.items.all())
+        self.assertTrue(self.item2.concept in self.wg1.items.all())
+        self.assertTrue(self.item4.concept in self.wg1.items.all())
+
 
     def test_bulk_remove_favourite(self):
         self.login_editor()

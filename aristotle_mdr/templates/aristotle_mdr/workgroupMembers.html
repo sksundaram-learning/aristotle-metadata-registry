@@ -33,7 +33,7 @@ conversations and retire a workgroup. They can also create and edit content
 <em>that has been not progressed to a locked state</em>.
 </p>
 </dd>
-<dt>Super-editors {% if user_is_admin %}<a data-toggle="modal" data-target="#addMember" href="{% url 'aristotle:addWorkgroupMembers' workgroup.id %}?role=Super-Editor" class="inline_action">Add</a>{% endif %}</dt>
+<dt>Stewards {% if user_is_admin %}<a data-toggle="modal" data-target="#addMember" href="{% url 'aristotle:addWorkgroupMembers' workgroup.id %}?role=Super-Editor" class="inline_action">Add</a>{% endif %}</dt>
 <dd class="row">
 <ul class="col-sm-5 col-sm-offset-1">
 {% for member in workgroup.stewards.all %}
@@ -46,8 +46,7 @@ conversations and retire a workgroup. They can also create and edit content
 </ul>
 <p class="col-sm-6">
 Stewards are trusted editors that can create and edit content that has been
-progressed to a locked state{#, but cannot edit content that is public . They also have
-the permissions of submitters #}.</p>
+progressed to a locked state {#, but cannot edit content that is public . They also have the permissions of submitters #}.</p>
 </dd>
 <dt>Submitters {% if user_is_admin %}<a data-toggle="modal" data-target="#addMember" href="{% url 'aristotle:addWorkgroupMembers' workgroup.id %}?role=Editor" class="inline_action">Add</a>{% endif %}</dt>
 <dd class="row">
