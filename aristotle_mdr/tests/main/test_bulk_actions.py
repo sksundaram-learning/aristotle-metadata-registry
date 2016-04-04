@@ -80,11 +80,14 @@ class BulkWorkgroupActionsPage(utils.LoggedInViewPages, TestCase):
                 'items': [self.item1.id, self.item2.id],
                 'workgroup': [self.wg1.id],
                 "confirmed": True
-            }
+            },
+            follow=True
         )
 
         self.assertTrue(self.item1.concept in self.new_workgroup.items.all())
         self.assertTrue(self.item2.concept in self.new_workgroup.items.all())
+
+        self.assertTrue("Forbbiden" in response.content)
 
     @override_settings(ARISTOTLE_SETTINGS=dict(settings.ARISTOTLE_SETTINGS, WORKGROUP_CHANGES=['submitter']))
     def test_bulk_change_workgroup_for_editor__for_some_items(self):
@@ -103,12 +106,17 @@ class BulkWorkgroupActionsPage(utils.LoggedInViewPages, TestCase):
                 'items': [self.item1.id, self.item2.id, self.item4.id],
                 'workgroup': [self.new_workgroup.id],
                 "confirmed": True
-            }
+            },
+            follow=True
         )
 
         self.assertTrue(self.item1.concept in self.new_workgroup.items.all())
         self.assertTrue(self.item2.concept in self.new_workgroup.items.all())
         self.assertTrue(self.item4.concept not in self.new_workgroup.items.all())
+
+        self.assertTrue("Some items failed, they had the id&#39;s: %(bad_ids)s" % {
+            'bad_ids': ",".join(map(str,[self.item4.pk]))
+        } in response.content)
 
         self.logout()
         self.login_superuser()
@@ -121,13 +129,15 @@ class BulkWorkgroupActionsPage(utils.LoggedInViewPages, TestCase):
                 'items': [self.item1.id, self.item2.id, self.item4.id],
                 'workgroup': [self.wg1.id],
                 "confirmed": True
-            }
+            },
+            follow=True
         )
 
         self.assertTrue(self.item1.concept in self.wg1.items.all())
         self.assertTrue(self.item2.concept in self.wg1.items.all())
         self.assertTrue(self.item4.concept in self.wg1.items.all())
 
+        self.assertTrue("Some items failed, they had the id&#39;s" not in response.content)
 
     def test_bulk_remove_favourite(self):
         self.login_editor()
