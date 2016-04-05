@@ -1,13 +1,12 @@
 {% load i18n aristotle_help %}
 
-{{ form.errors }}
-    {% with formset=slots_FormSet %}
-        {% if formset.errors %}
-        <div class="alert alert-danger">
-            {{formset.errors}}
-        </div>
-        {% endif %}
-    {% endwith %}
+{% if form.errors or slots_FormSet.errors or slots_FormSet.non_form_errors %}
+    <div class="alert alert-danger">
+    {{ form.errors.as_ul }}
+    {{slots_FormSet.errors.as_ul}}
+    {{slots_FormSet.non_form_errors.as_ul}}
+    </div>
+{% endif %}
 
 <div role="tabpanel">
     <ul class="nav nav-tabs" role="tablist">
@@ -30,7 +29,7 @@
         {% endif %}
         {% if form.change_comments %}
         <li role="presentation">
-            <a href="#tab_changeComments" aria-controls="messages" role="tab" data-toggle="tab"><strong>{% trans 'Change message' context 'When saving changes to an item' %}</strong></a>
+            <a href="#tab_changeComments" aria-controls="messages" role="tab" data-toggle="tab">{% trans 'Change message' context 'When saving changes to an item' %}</a>
         </li>
         {% endif %}
         <li role="presentation">

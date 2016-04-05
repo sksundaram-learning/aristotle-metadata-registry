@@ -10,27 +10,20 @@
 
 <a class="sr-only" onclick="addSlot()" href="?extra=1" accesskey='r'>Add a slot (adding a slot does not save changes)</a>
     {% with formset=slots_FormSet %}
-        {% if formset.errors %}
-        <div class="alert alert-danger">
-            {{formset.errors}}
-        </div>
-        {% endif %}
 
-    {% csrf_token %}
     {{ formset.management_form }}
-    {{ formset.non_form_errors.as_ul }}
     <table id="" class="form table  table-hover">
     {% with formset.forms.0 as slot_form %}
       <thead><tr>
-          {# <th></th> #}
-        {% for field in slot_form.visible_fields %}
-        <th>{{ field.label|capfirst }}</th>
-        {% endfor %}
+            <th>{% trans 'Slot name' %}</th>
+            <th>{% trans 'Value' %}</th>
+            <th>{% trans 'Delete' %}</th>
       </tr></thead>
     {% endwith %}
     <tbody id="slotsTable">
     {% for slot_form in formset.forms %}
       <tr class="moveablerow">
+
           {# <td title="Drag to reorder"><i class="fa fa-bars grabber"></i></td> #}
           {% for field in slot_form.visible_fields %}
             <td>
@@ -52,6 +45,27 @@
         <i class="fa fa-plus-circle"></i> Add a slot</a>
 
 {% endwith %}
+    <h3>Slots available for this metadata item</h3>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>{% trans 'Slot name' %}</th>
+                <th>{% trans 'Details' %}</th>
+                <th>{% trans 'Cardinality' %}</th>
+                <th>{% trans 'Data type' %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for slot in concept_slots %}
+            <tr>
+                <td>{{slot.slot_name}}</td>
+                <td>{{slot.help_text}}</td>
+                <td>{{slot.get_cardinality_display}}</td>
+                <td><a href="{{ slot.datatype.get_absolute_url }}">{{slot.datatype}}</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 
         <script src="{{ STATIC_URL }}aristotle_mdr/aristotle.moveable.js"></script>
 {% endblock %}

@@ -4,7 +4,9 @@ from aristotle_mdr.contrib.slots import models
 
 
 class SlotDefinitionAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('slot_name', 'help_text', 'app_label', 'concept_type', 'datatype', 'cardinality')
+    list_filter = ('app_label', 'concept_type', 'datatype', 'cardinality')
+    search_fields = ('slot_name', 'help_text')
 
 
 admin.site.register(models.SlotDefinition, SlotDefinitionAdmin)

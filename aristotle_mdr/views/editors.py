@@ -4,6 +4,7 @@ from django.conf import settings
 from django.core.exceptions import PermissionDenied, ImproperlyConfigured
 from django.core.urlresolvers import reverse
 from django.db import transaction
+from django.forms import ValidationError, ModelForm
 from django.forms.models import modelformset_factory, inlineformset_factory
 from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.shortcuts import render, redirect, get_object_or_404
@@ -74,6 +75,7 @@ class EditItemView(PermissionFormView):
 
     def post(self, request, *args, **kwargs):
         form = self.get_form()
+        slot_formset = None
 
         new_wg = request.POST.get('workgroup', None)
         workgroup_changed = not(str(self.item.workgroup.pk) == (new_wg))
@@ -82,10 +84,11 @@ class EditItemView(PermissionFormView):
             workgroup_changed = self.item.workgroup.pk != form.cleaned_data['workgroup'].pk
 
             with transaction.atomic(), reversion.revisions.create_revision():
-                item = form.save()
+                item = form.save(commit=False)
                 slot_formset = self.get_slots_formset()(request.POST, request.FILES, item.concept)
 
                 if slot_formset.is_valid():
+
                     # Save the slots
                     slot_formset.save()
 
@@ -96,27 +99,34 @@ class EditItemView(PermissionFormView):
                         change_comments = construct_change_message(request, form, [slot_formset])
                     reversion.revisions.set_comment(change_comments)
 
+                    item.save()
                     return HttpResponseRedirect(url_slugify_concept(self.item))
 
-        return self.form_invalid(form)
+        return self.form_invalid(form, slot_formset)
 
     def get_slots_formset(self):
-        from aristotle_mdr.contrib.slots.models import Slot
-        return inlineformset_factory(
-            MDR._concept, Slot,
-            can_delete=True,
-            fields=('concept', 'type', 'value'),
-            extra=1
-            )
+        from aristotle_mdr.contrib.slots.forms import slot_inlineformset_factory
+        return slot_inlineformset_factory(model = self.model)
+
+    def form_invalid(self, form, slots_FormSet=None):
+        """
+        If the form is invalid, re-render the context data with the
+        data-filled form and errors.
+        """
+        return self.render_to_response(self.get_context_data(form=form, slots_FormSet=slots_FormSet))
 
     def get_context_data(self, form, **kwargs):
-        from aristotle_mdr.contrib.slots.models import Slot
+        from aristotle_mdr.contrib.slots.models import Slot, SlotDefinition
         context = super(EditItemView, self).get_context_data(form=form, **kwargs)
-        context['slots_FormSet'] = self.get_slots_formset()(
-            queryset=Slot.objects.filter(concept=self.item.id),
-            instance=self.item.concept
-            )
+        if kwargs.get('slots_FormSet', None):
+            context['slots_FormSet'] = kwargs['slots_FormSet']
+        else:
+            context['slots_FormSet'] = self.get_slots_formset()(
+                queryset=Slot.objects.filter(concept=self.item.id),
+                instance=self.item.concept
+                )
         context['show_slots_tab'] = True
+        context['concept_slots'] = SlotDefinition.objects.filter(app_label=self.model._meta.app_label, concept_type=self.model._meta.model_name)
         return context
 
 

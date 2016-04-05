@@ -40,7 +40,7 @@ class SlotDefinition(TimeStampedModel):
     )
 
     def __str__(self):
-        return "{0.app_label}.{0.concept_type} - {0.slot_name}".format(self)
+        return "{0.slot_name}".format(self)
 
     def clean(self):
         print ContentType.objects.filter(model=self.concept_type).all()
@@ -59,8 +59,11 @@ class Slot(TimeStampedModel):
     value = models.CharField(max_length=256)
 
     def clean(self):
-        if not self.concept.__class__ != self.type.model_class():
+        if hasattr(self, 'type') and self.type is not None and not self.concept.__class__ != self.type.model_class():
             raise ValidationError('This slot is not allowed on this model')
+
+    def __str__(self):
+        return "{0.type}.{0.value}".format(self)
 
     """
     def validate_unique(self, exclude=None):

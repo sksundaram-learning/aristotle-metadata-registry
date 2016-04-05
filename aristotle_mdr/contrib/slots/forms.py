@@ -1,196 +1,48 @@
 from __future__ import division
 
-import autocomplete_light
-
-from django import forms
+from django.forms import ValidationError, ModelForm
+from django.forms.models import inlineformset_factory
 from django.utils.translation import ugettext_lazy as _
-from django.utils import timezone
-from bootstrap3_datetime.widgets import DateTimePicker
-
-import aristotle_mdr.models as MDR
-from aristotle_mdr.perms import user_can_edit, user_can_view
-from aristotle_mdr.forms.creation_wizards import UserAwareForm
+from aristotle_mdr import models as MDR
 
 
-class UserSelfEditForm(forms.Form):
-    template = "aristotle_mdr/userEdit.html"
+# TODO: Fix this method, it is a hot mess!... But it works.
+# But it will require Django 1.9 - https://docs.djangoproject.com/en/1.9/topics/forms/formsets/#passing-custom-parameters-to-formset-forms
+# Or some funky functional stuff - http://stackoverflow.com/a/624013/764357
+def slot_inlineformset_factory(model):
+    from aristotle_mdr.contrib.slots.models import Slot, SlotDefinition
+    class SlotForm(ModelForm):
+        class Meta:
+            model = Slot
+            fields = ('concept', 'type', 'value')
+        def __init__(self, *args, **kwargs):
+            super(SlotForm, self).__init__(*args, **kwargs)
+            self.fields['type'].queryset = SlotDefinition.objects.filter(app_label = model._meta.app_label, concept_type = model._meta.model_name)
 
-    first_name = forms.CharField(required=False, label=_('First Name'))
-    last_name = forms.CharField(required=False, label=_('Last Name'))
-    email = forms.EmailField(required=False, label=_('Email Address'))
-
-
-# For stating that an item deprecates other items.
-class DeprecateForm(forms.Form):
-    olderItems = forms.ModelMultipleChoiceField(
-        queryset=MDR._concept.objects.all(),
-        label="Supersede older items",
-        required=False,
-        widget=autocomplete_light.MultipleChoiceWidget('Autocomplete_concept')
-    )
-
-    def __init__(self, *args, **kwargs):
-        self.item = kwargs.pop('item')
-        self.qs = kwargs.pop('qs')
-        self.user = kwargs.pop('user')
-        super(DeprecateForm, self).__init__(*args, **kwargs)
-        if self.item.get_autocomplete_name() in autocomplete_light.registry.keys():
-            form_widget = autocomplete_light.MultipleChoiceWidget(self.item.get_autocomplete_name())
-        else:
-            # if there is no autocomplete for this item, then just give a select
-            # TODO: when autocomplete respects queryset these can be done automatically
-            form_widget = forms.SelectMultiple
-        self.fields['olderItems'] = forms.ModelMultipleChoiceField(
-            queryset=self.qs,
-            label=_("Supersede older items"),
-            required=False,
-            initial=self.item.supersedes.all(),
-            widget=form_widget
+    base_formset = inlineformset_factory(
+        MDR._concept, Slot,
+        can_delete=True,
+        fields=('concept', 'type', 'value'),
+        extra=1,
+        form=SlotForm
         )
 
-    def clean_olderItems(self):
-        olderItems = self.cleaned_data['olderItems']
-        if self.item in olderItems:
-            raise forms.ValidationError("An item may not supersede itself")
-        for i in olderItems:
-            if not user_can_edit(self.user, i):
-                raise forms.ValidationError("You cannot supersede an item that you do not have permission to edit")
-        return olderItems
+    class SlotFormset(base_formset):
+        def clean(self):
+            slot_types_seen = set()
+            for form in self.forms:
+                if 'type' in form.cleaned_data.keys():
+                    item = form.cleaned_data['concept'].item
+                    slot_type = form.cleaned_data['type']
 
+                    # Keep track of slot_types for cardinality
+                    slot_type_in_form = slot_type in slot_types_seen
+                    slot_types_seen.add(slot_type)
 
-# For superseding an item with a newer one.
-class SupersedeForm(forms.Form):
-    newerItem = forms.ModelChoiceField(
-        queryset=MDR._concept.objects.all(),
-        empty_label="None",
-        label=_("Superseded by"),
-        required=False,
-        widget=autocomplete_light.ChoiceWidget('Autocomplete_concept')
-    )
+                    model = item.__class__
+                    if not (slot_type.app_label == model._meta.app_label and slot_type.concept_type == model._meta.model_name):
+                        raise ValidationError(_("The selected slot type '%(slot_name)s' is not allowed on this concept type") % {'slot_name': slot_type.slot_name})
 
-    def __init__(self, *args, **kwargs):
-        self.item = kwargs.pop('item')
-        self.qs = kwargs.pop('qs')
-        self.user = kwargs.pop('user')
-        super(SupersedeForm, self).__init__(*args, **kwargs)
-        if self.item.get_autocomplete_name() in autocomplete_light.registry.keys():
-            form_widget = autocomplete_light.ChoiceWidget(self.item.get_autocomplete_name())
-        else:
-            # if there is no autocomplete for this item, then just give a select
-            # TODO: when autocomplete respects queryset these can be done automatically
-            form_widget = forms.Select
-        self.fields['newerItem']=forms.ModelChoiceField(
-            queryset=self.qs,
-            empty_label="None",
-            label=_("Superseded by"),
-            initial=self.item.superseded_by,
-            required=False,
-            widget=form_widget
-        )
-
-    def clean_newerItem(self):
-        item = self.cleaned_data['newerItem']
-        if not item:
-            return None
-        if self.item.id == item.id:
-            raise forms.ValidationError("An item may not supersede itself")
-        if not user_can_edit(self.user, item):
-            raise forms.ValidationError("You cannot supersede with an item that you do not have permission to edit")
-        return item
-
-
-class ChangeStatusForm(UserAwareForm):
-    state = forms.ChoiceField(choices=MDR.STATES, widget=forms.RadioSelect)
-    registrationDate = forms.DateField(
-        required=False,
-        label=_("Registration date"),
-        widget=DateTimePicker(options={"format": "YYYY-MM-DD"}),
-        initial=timezone.now()
-    )
-    cascadeRegistration = forms.ChoiceField(
-        initial=False,
-        choices=[(0, 'No'), (1, 'Yes')],
-        label=_("Do you want to update the registration of associated items?")
-    )
-    changeDetails = forms.CharField(
-        max_length=512,
-        required=False,
-        label=_("Why is the status being changed for these items?"),
-        widget=forms.Textarea
-    )
-
-    def add_registration_authority_field(self):
-        ras = [(ra.id, ra.name) for ra in self.user.profile.registrarAuthorities]
-        self.fields['registrationAuthorities']=forms.MultipleChoiceField(
-            label="Registration Authorities",
-            choices=ras,
-            widget=forms.CheckboxSelectMultiple
-        )
-
-    # Thanks to http://jacobian.org/writing/dynamic-form-generation/
-    def __init__(self, *args, **kwargs):
-        # self.user = kwargs.pop('user')
-        super(ChangeStatusForm, self).__init__(*args, **kwargs)
-        self.add_registration_authority_field()
-
-    def clean_cascadeRegistration(self):
-        return self.cleaned_data['cascadeRegistration'] == "1"
-
-    def clean_registrationAuthorities(self):
-        return [
-            MDR.RegistrationAuthority.objects.get(id=int(ra)) for ra in self.cleaned_data['registrationAuthorities']
-        ]
-
-    def clean_state(self):
-        state = self.cleaned_data['state']
-        state = int(state)
-        MDR.STATES[state]
-        return state
-
-
-# Thanks http://stackoverflow.com/questions/6958708/grappelli-to-hide-sortable-field-in-inline-sortable-django-admin
-class PermissibleValueForm(forms.ModelForm):
-    def __init__(self, *args, **kwargs):
-        super(PermissibleValueForm, self).__init__(*args, **kwargs)
-        self.fields['order'].widget = forms.HiddenInput()
-
-    class Meta:
-        model = MDR.PermissibleValue
-        fields = "__all__"
-
-
-class CompareConceptsForm(forms.Form):
-    item_a = forms.ModelChoiceField(
-        queryset=MDR._concept.objects.none(),
-        empty_label="None",
-        label=_("First item"),
-        required=True,
-        widget=autocomplete_light.ChoiceWidget('Autocomplete_concept')
-    )
-    item_b = forms.ModelChoiceField(
-        queryset=MDR._concept.objects.none(),
-        empty_label="None",
-        label=_("Second item"),
-        required=True,
-        widget=autocomplete_light.ChoiceWidget('Autocomplete_concept')
-    )
-
-    def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop('user')
-        self.qs = kwargs.pop('qs').visible(self.user)
-        super(CompareConceptsForm, self).__init__(*args, **kwargs)
-
-        self.fields['item_a'] = forms.ModelChoiceField(
-            queryset=self.qs,
-            empty_label="None",
-            label=_("First item"),
-            required=True,
-            widget=autocomplete_light.ChoiceWidget('Autocomplete_concept')
-        )
-        self.fields['item_b']=forms.ModelChoiceField(
-            queryset=self.qs,
-            empty_label="None",
-            label=_("Second item"),
-            required=True,
-            widget=autocomplete_light.ChoiceWidget('Autocomplete_concept')
-        )
+                    if slot_type.cardinality == SlotDefinition.CARDINALITY.singleton and slot_type_in_form:
+                        raise ValidationError(_("The selected slot type '%(slot_name)s' is only allowed to be included once") % {'slot_name': slot_type.slot_name})
+    return SlotFormset
