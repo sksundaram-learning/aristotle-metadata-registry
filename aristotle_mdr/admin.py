@@ -105,8 +105,6 @@ class ConceptAdmin(CompareVersionAdmin, admin.ModelAdmin):
     search_fields = ['name', 'synonyms']
     inlines = [StatusInline]
 
-    change_list_template = "admin/change_list_filter_sidebar.html"
-    change_list_filter_template = "admin/filter_listing.html"
     date_hierarchy = 'created'  # ,'modified']
 
     fieldsets = [
