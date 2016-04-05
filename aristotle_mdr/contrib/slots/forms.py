@@ -4,20 +4,24 @@ from django.forms import ValidationError, ModelForm
 from django.forms.models import inlineformset_factory
 from django.utils.translation import ugettext_lazy as _
 from aristotle_mdr import models as MDR
+from aristotle_mdr.contrib.slots.models import Slot, SlotDefinition
 
 
 # TODO: Fix this method, it is a hot mess!... But it works.
 # But it will require Django 1.9 - https://docs.djangoproject.com/en/1.9/topics/forms/formsets/#passing-custom-parameters-to-formset-forms
 # Or some funky functional stuff - http://stackoverflow.com/a/624013/764357
 def slot_inlineformset_factory(model):
-    from aristotle_mdr.contrib.slots.models import Slot, SlotDefinition
+
     class SlotForm(ModelForm):
         class Meta:
             model = Slot
             fields = ('concept', 'type', 'value')
+
         def __init__(self, *args, **kwargs):
             super(SlotForm, self).__init__(*args, **kwargs)
-            self.fields['type'].queryset = SlotDefinition.objects.filter(app_label = model._meta.app_label, concept_type = model._meta.model_name)
+            self.fields['type'].queryset = SlotDefinition.objects.filter(
+                app_label=model._meta.app_label, concept_type=model._meta.model_name
+            )
 
     base_formset = inlineformset_factory(
         MDR._concept, Slot,

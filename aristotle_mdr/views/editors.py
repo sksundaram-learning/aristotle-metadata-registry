@@ -106,7 +106,7 @@ class EditItemView(PermissionFormView):
 
     def get_slots_formset(self):
         from aristotle_mdr.contrib.slots.forms import slot_inlineformset_factory
-        return slot_inlineformset_factory(model = self.model)
+        return slot_inlineformset_factory(model=self.model)
 
     def form_invalid(self, form, slots_FormSet=None):
         """
