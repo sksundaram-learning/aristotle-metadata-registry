@@ -114,7 +114,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         response = self.client.get(reverse('aristotle:edit_item',args=[self.item1.id]))
         self.assertEqual(response.status_code,200)
 
-        updated_item = utils.modeL_to_dict_with_change_time(response.context['item'])
+        updated_item = utils.model_to_dict_with_change_time(response.context['item'])
         updated_name = updated_item['name'] + " updated!"
         updated_item['name'] = updated_name
         response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
@@ -127,7 +127,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         response = self.client.get(reverse('aristotle:edit_item',args=[self.item1.id]))
         self.assertEqual(response.status_code,200)
 
-        updated_item = utils.modeL_to_dict_with_change_time(response.context['item'])
+        updated_item = utils.model_to_dict_with_change_time(response.context['item'])
         updated_name = updated_item['name'] + " updated!"
         updated_item['name'] = updated_name
         change_comment = "I changed this because I can"
@@ -142,6 +142,128 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.assertEqual(response.status_code,200)
         self.assertTrue(change_comment in response.content)
 
+    def test_submitter_can_save_via_edit_page_with_slots(self):
+        self.login_editor()
+        response = self.client.get(reverse('aristotle:edit_item',args=[self.item1.id]))
+        self.assertEqual(response.status_code,200)
+
+        self.assertEqual(self.item1.slots.count(),0)
+
+        from aristotle_mdr.contrib.slots.models import SlotDefinition, Slot
+        slot_def = SlotDefinition.objects.create(
+            app_label=self.itemType._meta.app_label,
+            concept_type=self.itemType._meta.model_name,
+            slot_name="extra",
+            cardinality=SlotDefinition.CARDINALITY.singleton
+        )
+
+        updated_item = utils.model_to_dict_with_change_time(response.context['item'])
+        updated_name = updated_item['name'] + " updated!"
+        updated_item['name'] = updated_name
+
+        # Add slots management form
+        updated_item['slots-TOTAL_FORMS'] = 1
+        updated_item['slots-INITIAL_FORMS'] = 0
+        updated_item['slots-MIN_NUM_FORMS'] = 0
+        updated_item['slots-MAX_NUM_FORMS'] = 1
+
+        updated_item['slots-0-concept'] = self.item1.pk
+        updated_item['slots-0-type'] = slot_def.pk
+        updated_item['slots-0-value'] = 'test slot value'
+
+        response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
+        self.item1 = self.itemType.objects.get(pk=self.item1.pk)
+
+        self.assertRedirects(response,url_slugify_concept(self.item1))
+        self.assertEqual(self.item1.slots.count(),1)
+
+        response = self.client.get(reverse('aristotle:edit_item',args=[self.item1.id]))
+        self.assertTrue('test slot value' in response.content)
+
+
+    def test_submitter_cannot_save_via_edit_page_with_slots_that_are_duplicates(self):
+        self.login_editor()
+        response = self.client.get(reverse('aristotle:edit_item',args=[self.item1.id]))
+        self.assertEqual(response.status_code,200)
+
+        self.assertEqual(self.item1.slots.count(),0)
+
+        from aristotle_mdr.contrib.slots.models import SlotDefinition, Slot
+        slot_def = SlotDefinition.objects.create(
+            app_label=self.itemType._meta.app_label,
+            concept_type=self.itemType._meta.model_name,
+            slot_name="extra",
+            cardinality=SlotDefinition.CARDINALITY.singleton
+        )
+
+        updated_item = utils.model_to_dict_with_change_time(response.context['item'])
+        updated_name = updated_item['name'] + " updated!"
+        updated_item['name'] = updated_name
+
+        # Add slots management form
+        updated_item['slots-TOTAL_FORMS'] = 2
+        updated_item['slots-INITIAL_FORMS'] = 0
+        updated_item['slots-MIN_NUM_FORMS'] = 0
+        updated_item['slots-MAX_NUM_FORMS'] = 2
+
+        updated_item['slots-0-concept'] = self.item1.pk
+        updated_item['slots-0-type'] = slot_def.pk
+        updated_item['slots-0-value'] = 'test slot value'
+        updated_item['slots-1-concept'] = self.item1.pk
+        updated_item['slots-1-type'] = slot_def.pk
+        updated_item['slots-1-value'] = 'test slot value2'
+
+        response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
+        self.item1 = self.itemType.objects.get(pk=self.item1.pk)
+
+        self.assertEqual(response.status_code,200)
+        self.assertEqual(self.item1.slots.count(),0)
+        
+        self.assertTrue("The selected slot type &#39;%(slot_name)s&#39; is only allowed to be included once" % {'slot_name': slot_def.slot_name} in response.content)
+
+    def test_submitter_cannot_save_via_edit_page_with_slots_that_are_for_a_different_metadata_type(self):
+        self.login_editor()
+
+        from aristotle_mdr.contrib.slots.models import SlotDefinition, Slot
+        if self.itemType._meta.model_name == "property":
+            other_type = "objectclass"
+        else:
+            other_type = "property"
+        slot_def = SlotDefinition.objects.create(
+            app_label=self.itemType._meta.app_label,
+            concept_type=other_type,
+            slot_name="extra slot not available",
+            cardinality=SlotDefinition.CARDINALITY.singleton
+        )
+
+        response = self.client.get(reverse('aristotle:edit_item',args=[self.item1.id]))
+        self.assertEqual(response.status_code,200)
+
+        self.assertEqual(self.item1.slots.count(),0)
+        self.assertTrue(slot_def.slot_name not in response.content)
+        
+        updated_item = utils.model_to_dict_with_change_time(response.context['item'])
+        updated_name = updated_item['name'] + " updated!"
+        updated_item['name'] = updated_name
+
+        # Add slots management form
+        updated_item['slots-TOTAL_FORMS'] = 1
+        updated_item['slots-INITIAL_FORMS'] = 0
+        updated_item['slots-MIN_NUM_FORMS'] = 0
+        updated_item['slots-MAX_NUM_FORMS'] = 1
+
+        updated_item['slots-0-concept'] = self.item1.pk
+        updated_item['slots-0-type'] = slot_def.pk
+        updated_item['slots-0-value'] = 'test slot value'
+
+        response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
+        self.item1 = self.itemType.objects.get(pk=self.item1.pk)
+
+        self.assertEqual(response.status_code,200)
+        self.assertEqual(self.item1.slots.count(),0)
+        
+        self.assertTrue("Select a valid choice. That choice is not one of the available choices" in response.content)
+
     def test_submitter_cannot_save_via_edit_page_if_other_saves_made(self):
         from datetime import timedelta
         self.login_editor()
@@ -150,7 +272,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.assertEqual(response.status_code,200)
 
         # fake that we fetched the page seconds before modification
-        updated_item = utils.modeL_to_dict_with_change_time(response.context['item'],fetch_time=modified-timedelta(seconds=5))
+        updated_item = utils.model_to_dict_with_change_time(response.context['item'],fetch_time=modified-timedelta(seconds=5))
         updated_name = updated_item['name'] + " updated!"
         updated_item['name'] = updated_name
         change_comment = "I changed this because I can"
@@ -198,7 +320,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         response = self.client.get(reverse('aristotle:edit_item',args=[self.item1.id]))
         self.assertEqual(response.status_code,200)
 
-        updated_item = utils.modeL_to_dict_with_change_time(response.context['item'])
+        updated_item = utils.model_to_dict_with_change_time(response.context['item'])
 
         updated_item['workgroup'] = str(self.wg_other.pk)
 
@@ -233,7 +355,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.login_editor()
         response = self.client.get(reverse('aristotle:edit_item',args=[self.item1.id]))
         self.assertEqual(response.status_code,200)
-        updated_item = utils.modeL_to_dict_with_change_time(response.context['item'])
+        updated_item = utils.model_to_dict_with_change_time(response.context['item'])
         updated_item['workgroup'] = str(self.wg_other.pk)
 
         response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
@@ -263,13 +385,13 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.login_superuser()
         response = self.client.get(reverse('aristotle:edit_item',args=[self.item1.id]))
         self.assertEqual(response.status_code,200)
-        updated_item = utils.modeL_to_dict_with_change_time(self.item1)
+        updated_item = utils.model_to_dict_with_change_time(self.item1)
         updated_item['workgroup'] = str(self.wg_other.pk)
 
         response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
         self.assertEqual(response.status_code,302)
 
-        updated_item = utils.modeL_to_dict_with_change_time(self.item1)
+        updated_item = utils.model_to_dict_with_change_time(self.item1)
         updated_item['workgroup'] = str(self.wg2.pk)
         response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
         self.assertEqual(response.status_code,302)
@@ -284,7 +406,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.login_editor()
         response = self.client.get(reverse('aristotle:edit_item',args=[self.item1.id]))
         self.assertEqual(response.status_code,200)
-        updated_item = utils.modeL_to_dict_with_change_time(response.context['item'])
+        updated_item = utils.model_to_dict_with_change_time(response.context['item'])
         updated_item['workgroup'] = str(self.wg_other.pk)
         response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
         self.assertEqual(response.status_code,200)
@@ -337,18 +459,21 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.assertEqual(response.status_code,302)
         response = self.client.get(reverse('aristotle:clone_item',args=[self.item2.id]))
         self.assertEqual(response.status_code,302)
+
     def test_viewer_cannot_view_clone_page(self):
         self.login_viewer()
         response = self.client.get(reverse('aristotle:clone_item',args=[self.item1.id]))
         self.assertEqual(response.status_code,403)
         response = self.client.get(reverse('aristotle:clone_item',args=[self.item2.id]))
         self.assertEqual(response.status_code,403)
+
     def test_submitter_can_view_clone_page(self):
         self.login_editor()
         response = self.client.get(reverse('aristotle:clone_item',args=[self.item1.id]))
         self.assertEqual(response.status_code,200)
         response = self.client.get(reverse('aristotle:clone_item',args=[self.item2.id]))
         self.assertEqual(response.status_code,403)
+
     def test_submitter_can_save_via_clone_page(self):
         self.login_editor()
         response = self.client.get(reverse('aristotle:clone_item',args=[self.item1.id]))
@@ -542,7 +667,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         response = self.client.get(reverse('aristotle:edit_item',args=[self.item1.id]))
         self.assertEqual(response.status_code,200)
         
-        updated_item = utils.modeL_to_dict_with_change_time(response.context['item'])
+        updated_item = utils.model_to_dict_with_change_time(response.context['item'])
         updated_name = updated_item['name'] + " updated!"
         updated_item['name'] = updated_name
         change_comment = "I changed this because I can"
@@ -563,7 +688,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
 
         response = self.client.get(reverse('aristotle:edit_item',args=[self.item1.id]))
         self.assertEqual(response.status_code,200)
-        updated_item = utils.modeL_to_dict_with_change_time(response.context['item'])
+        updated_item = utils.model_to_dict_with_change_time(response.context['item'])
         updated_name_again = updated_item['name'] + " updated!"
         updated_item['name'] = updated_name_again
         change_comment = "I changed this again because I can"

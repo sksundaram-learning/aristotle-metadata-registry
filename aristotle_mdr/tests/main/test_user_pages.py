@@ -282,7 +282,7 @@ class UserDashRecentItems(utils.LoggedInViewPages, TestCase):
         )
 
         # Lets update an item so there is some recent history
-        updated_item = utils.modeL_to_dict_with_change_time(item)
+        updated_item = utils.model_to_dict_with_change_time(item)
         updated_name = updated_item['name'] + " updated!"
         updated_item['name'] = updated_name
         response = self.client.post(reverse('aristotle:edit_item', args=[item.id]), updated_item)

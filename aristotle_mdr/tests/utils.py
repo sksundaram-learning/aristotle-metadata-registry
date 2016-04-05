@@ -23,7 +23,7 @@ def model_to_dict(item):
     return dict((k, v) for (k, v) in mtd(item).items() if v is not None)
 
 
-def modeL_to_dict_with_change_time(item, fetch_time=None):
+def model_to_dict_with_change_time(item, fetch_time=None):
     """
     This constructs a dictionary from a model, with a last_fetched value as well
     that is needed for checking in edit forms to prevent overrides of other saves.
@@ -32,6 +32,13 @@ def modeL_to_dict_with_change_time(item, fetch_time=None):
         fetch_time = timezone.now()
     d = model_to_dict(item)
     d['last_fetched'] = str(fetch_time)
+    
+    # Add slots management form
+    d['slots-TOTAL_FORMS'] = 0
+    d['slots-INITIAL_FORMS'] = 0
+    d['slots-MIN_NUM_FORMS'] = 0
+    d['slots-MAX_NUM_FORMS'] = 0
+
     return d
 
 
