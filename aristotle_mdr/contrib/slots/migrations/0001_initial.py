@@ -35,9 +35,9 @@ class Migration(migrations.Migration):
                 ('app_label', models.CharField(help_text='Add an app for app specific help, required for concept help', max_length=256)),
                 ('concept_type', models.CharField(max_length=256)),
                 ('slot_name', models.CharField(max_length=256)),
-                ('help_text', models.TextField(max_length=256)),
+                ('help_text', models.TextField(max_length=256, null=True, blank=True)),
                 ('cardinality', models.IntegerField(default=0, help_text='Specifies if the slot can be stored multiple times.', choices=[(0, 'Singleton (0..1)'), (1, 'Repeatable (0..n)')])),
-                ('datatype', models.ForeignKey(to='aristotle_mdr.DataType')),
+                ('datatype', models.ForeignKey(blank=True, to='aristotle_mdr.DataType', null=True)),
             ],
             options={
                 'abstract': False,

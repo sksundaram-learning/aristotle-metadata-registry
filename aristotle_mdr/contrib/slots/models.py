@@ -64,14 +64,3 @@ class Slot(TimeStampedModel):
 
     def __str__(self):
         return "{0.type}.{0.value}".format(self)
-
-    """
-    def validate_unique(self, exclude=None):
-        pass
-        qs = ConceptHelp.objects.exclude(pk=self.pk).filter(
-            app_label=self.app_label,
-            concept_type=self.concept_type,
-            language=self.language)
-        if qs.exists():
-            raise ValidationError('App / Concept / Language must be unique per site')
-        """
