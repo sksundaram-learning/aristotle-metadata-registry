@@ -12,13 +12,13 @@
 
 {% if registrationAuthorities.count > 0 %}
 <p>
-    Below is a complete listing of the <a href="{% url 'aristotle:about' 'registrationauthority' %}">registration authorities</a>
+    Below is a complete listing of the <a href="{% url 'help_page' 'registration-authorities' %}">registration authorities</a>
     partcipating in the registry mainitained by this site.
 </p>
     <ul>
         {% for ra in registrationAuthorities %}
         <li>
-        <a href="{% url 'aristotle:registrationAuthority' ra.id %}">{{ ra.name }}</a>
+        <a href="{% url 'aristotle:registrationAuthority' ra.id '' %}">{{ ra.name }}</a>
         <div>
             {{ ra.definition | striptags |truncatewords:50 }}
         </div>
