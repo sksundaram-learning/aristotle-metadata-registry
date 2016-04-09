@@ -281,17 +281,6 @@ def aboutLink(item):
 
 
 @register.simple_tag
-def itemURL(item):
-    # app_name = item._meta.app_label
-    model_name = item._meta.model_name
-    name = slugify(item.name)[:50]
-    return reverse(
-        "aristotle:item",
-        kwargs={'iid': item.pk, 'model_slug': model_name, 'name_slug': name}
-    )
-
-
-@register.simple_tag
 def downloadMenu(item):
     """
     Returns the complete download menu for a partcular item. It accepts the id of
@@ -353,17 +342,23 @@ def bootstrap_modal(_id, size=None):
 @register.simple_tag
 def doc(item, field=None):
     """Gets the appropriate help text or docstring for a model or field.
-    Accepts 2 or 3 string arguments:
-    If 2, returns the docstring for the given model in the specified app.
-    If 3, returns the help_text for the field on the given model in the specified app.
+    Accepts 1 or 2 string arguments:
+    If 1, returns the docstring for the given model in the specified app.
+    If 2, returns the help_text for the field on the given model in the specified app.
     """
 
     from django.contrib.contenttypes.models import ContentType
+    from aristotle_mdr.utils.doc_parse import parse_rst, parse_docstring
 
-    # ct =  ContentType.objects.get(app_label=app_label, model=model_name).model_class()
     ct = item
     if field is None:
-        return _(ct.__doc__)
+        model_name = ct._meta.model_name
+        title, body, metadata = parse_docstring(ct.__doc__)
+        if title:
+            title = parse_rst(title, 'model', _('model:') + model_name)
+        if body:
+            body = parse_rst(body, 'model', _('model:') + model_name)
+        return title
     else:
         if ct._meta.get_field(field).help_text:
             return _(ct._meta.get_field(field).help_text)
@@ -384,3 +379,18 @@ def template_path(item, _type):
     from aristotle_mdr.utils import get_download_template_path_for_item
     _type, subpath=_type.split(',')
     return get_download_template_path_for_item(item, _type, subpath)
+
+
+@register.filter
+def owned_by_registry(item):
+    return item.workgroup.ownership == MDR.WORKGROUP_OWNERSHIP.registry
+
+
+@register.filter
+def owned_by_ra(item, ra_id):
+    if item.workgroup.ownership == MDR.WORKGROUP_OWNERSHIP.registry:
+        return False
+
+    ra = MDR.RegistrationAuthority.objects.get(pk=ra_id)
+
+    return ra in item.workgroup.registrationAuthorities.all()

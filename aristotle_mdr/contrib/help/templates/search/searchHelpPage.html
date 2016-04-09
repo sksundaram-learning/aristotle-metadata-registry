@@ -1,0 +1,6 @@
+{% load humanize %}
+<div class="result">
+<a href="{% url 'help_page' item.slug %}">{{ item.title }}</a>
+<span class="item_type">(Help page)</span>
+<span class="attr"><span class="time">Created: {{ item.created }}</span> | <span class="time">Last modified: {{ item.modified|naturaltime }}</span></span>
+{{ item.body|truncatewords:20|striptags }}</div>

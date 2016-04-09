@@ -20,6 +20,7 @@ from random import getrandbits
 import hashlib
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+name = "newly created" # Forward-declaration placeholder
 PIP_MSG = "You can finish installing by running - pip install -r requirements.txt - from the %s directory"%name
 
 optional_modules = [
@@ -30,12 +31,14 @@ optional_modules = [
 ]
 
 def valid_input(prompt,match):
+
     try:
-        input = raw_input
+        # Ensure input compatability across Python 2/3
+        input_func = vars(__builtins__).get('raw_input', input)
     except:
         pass
     for i in range(5):
-        check = input(prompt)
+        check = input_func(prompt)
         if re.match(match, check):
             return check
     raise Exception
@@ -99,7 +102,7 @@ def setup_mdr(name="",extensions=[],force_install=False,dry_install=False):
 
 def generate_secret_key(name):
     key = "Change-this-key-as-soon-as-you-can"
-    gen_key = hashlib.sha224(str(getrandbits(128))).hexdigest() # This is probably not cryptographically secure, not for production.
+    gen_key = hashlib.sha224(str(getrandbits(128)).encode('utf-8')).hexdigest() # This is probably not cryptographically secure, not for production.
     fname = './%s/%s/settings.py'%(name,name)
     with open(fname) as f:
         s = f.read()
@@ -170,10 +173,10 @@ def main(argv=None):
         try:
             opts, args = getopt.getopt(argv[1:], "n:dfh", ["dry","force","help","name=",])
             opts = dict(opts)
-        except getopt.error, msg:
+        except getopt.error as msg:
              raise Usage(msg)
         # more code, unchanged
-    except Usage, err:
+    except Usage as err:
         print >>sys.stderr, err.msg
         print >>sys.stderr, "for help use --help"
         return 2

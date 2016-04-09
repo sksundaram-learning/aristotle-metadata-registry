@@ -1,9 +1,9 @@
 {% extends template_name %}
 {% load aristotle_tags i18n %}
 {% block formarea %}
-
     {% if wizard.form.errors %}
         <div class="alert alert-danger">
+
         There were errors saving your {{ model_name }}, please review the errors shown below.
         {{ wizard.form.errors }}
             {% if duplicate_items or similar_items %}
@@ -66,8 +66,8 @@
             </div>
         </div>
     {% else %}
-        <p>
-            No matching items were found for reuse, so a new one will be created.
+        <p class='well'>
+            No matching items were found for reuse, so this wizard will help you create a new one.
         </p>
     {% endif %}
     <div class="row">

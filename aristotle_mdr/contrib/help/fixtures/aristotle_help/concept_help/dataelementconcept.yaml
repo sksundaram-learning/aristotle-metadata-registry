@@ -1,0 +1,27 @@
+- model: aristotle_mdr_help.concepthelp
+  fields:
+    app_label: aristotle_mdr
+    concept_type: dataelementconcept
+    language: en
+    brief: A valid pairing of an [[object class]] and a [[property]] to define a measurable
+        attribute of the object, idea or event being observed.
+    offical_definition: >
+        Concept that is an association of a [[Property]] with an [[Object Class]]
+    official_reference: ISO/IEC 11179 - Clause 3.2.29
+    official_link:
+    body: >
+        <p>A data element concept represents the union of an [[objectclass]] and a
+        [[property]]. Examples of data element concepts include concepts such as,
+        <em>Person</em> &mdash; <em>date of birth</em>, <em>Person</em> &mdash;
+        <em>country of birth</em>, and <em>Person</em> &mdash; <em>religious
+        affiliation</em>.</p>
+        
+        <p>A data element concept is solely a conceptual description
+        and does not include values for measurement or collection.
+        Values are described by a [[valuedomain]], which in combination with
+        the data element concept forms a [[dataelement]].</p>
+        
+        <p>A [[conceptualdomain]] may also be associated with a data element concept,
+        thereby providing meaning to the values associated with the concept.
+        A one-to-many relationship may be formed between a data element concept
+        and suitable conceptual domains.</p>

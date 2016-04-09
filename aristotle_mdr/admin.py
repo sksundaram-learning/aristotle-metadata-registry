@@ -13,7 +13,8 @@ from reversion_compare.admin import CompareVersionAdmin
 import reversion
 
 from aristotle_mdr.register import register_concept
-reversion.revisions.register(MDR._concept)
+reversion.revisions.register(MDR.Status)
+reversion.revisions.register(MDR._concept, follow=['statuses', 'workgroup'])
 reversion.revisions.register(MDR.Workgroup)
 
 
@@ -104,8 +105,6 @@ class ConceptAdmin(CompareVersionAdmin, admin.ModelAdmin):
     search_fields = ['name', 'synonyms']
     inlines = [StatusInline]
 
-    change_list_template = "admin/change_list_filter_sidebar.html"
-    change_list_filter_template = "admin/filter_listing.html"
     date_hierarchy = 'created'  # ,'modified']
 
     fieldsets = [
@@ -266,13 +265,19 @@ register_concept(
 register_concept(
     MDR.DataElementConcept,
     name_suggest_fields=['objectClass', 'property'],
-    extra_fieldsets=[('Components', {'fields': ['objectClass', 'property']})]
+    extra_fieldsets=[('Components', {'fields': ['objectClass', 'property']})],
+    reversion={
+        'follow': ['objectClass', 'property'],
+    }
 )
 
 register_concept(
     MDR.DataElement,
     name_suggest_fields=['dataElementConcept', 'valueDomain'],
-    extra_fieldsets=[('Components', {'fields': ['dataElementConcept', 'valueDomain']})]
+    extra_fieldsets=[('Components', {'fields': ['dataElementConcept', 'valueDomain']})],
+    reversion={
+        'follow': ['dataElementConcept', 'valueDomain'],
+    }
 )
 
 register_concept(

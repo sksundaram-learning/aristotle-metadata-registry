@@ -20,8 +20,8 @@
    {% block header %}
     {% include 'aristotle_mdr/header.html' %}
    {% endblock %}
-   <div id='content' class="container">
         {% if messages %}
+        <div class="row">
         <div class="alert alert-info" role="alert">
         <button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
             <ul class="messages">
@@ -30,7 +30,9 @@
                 {% endfor %}
             </ul>
         </div>
+        </div>
         {% endif %}
+   <div id='content' class="container">
 
         {% block content %}
         {% endblock %}
