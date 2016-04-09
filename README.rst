@@ -1,6 +1,6 @@
-=====
+===========================================
 Aristotle Metadata Registry (Aristotle-MDR)
-=====
+===========================================
 
 |aristotle-logo|
 
@@ -25,7 +25,7 @@ for the sharing of metadata.
 Extensions
 ++++++++++
 Aristotle-MDR aims to be compliant to the core model described within ISO/IEC 11179,
-however `a number of extensions are available to extend functionality and add additional content types <https://github.com/aristotle-mdr//aristotle-metadata-registry/wiki/Available-Extensions>`_.
+however `a number of extensions are available to extend functionality and add additional content types <https://github.com/aristotle-mdr/aristotle-metadata-registry/wiki/Available-Extensions>`_.
 
 
 Quick start

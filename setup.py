@@ -9,15 +9,15 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
     name='aristotle-metadata-registry',
-    version='1.1.1',
+    version='1.2.0',
     packages=['aristotle_mdr'],
     include_package_data=True,
-    license='Aristotle-MDR Modified BSD Licence',  # example license
+    license='Aristotle-MDR Modified BSD Licence',
     description='Aristotle-MDR is an open-source metadata registry as laid out by the requirements of the IEC/ISO 11179:2013 specification.',
     long_description=README,
     url='https://github.com/aristotle-mdr/aristotle-metadata-registry',
     author='Samuel Spencer',
-    author_email='sam@sqbl.org',
+    author_email='sam@aristotlemetadata.com',
     classifiers=[
         'Development Status :: 3 - Alpha',
 
