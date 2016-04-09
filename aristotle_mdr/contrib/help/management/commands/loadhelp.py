@@ -212,13 +212,4 @@ class Command(loaddata):
             #        (fixture_name, humanize(fixture_dir)))
             fixture_files.extend(fixture_files_in_dir)
 
-        if fixture_name != 'initial_data' and not fixture_files:
-            # Warning kept for backwards-compatibility; why not an exception?
-            warnings.warn("No fixture named '%s' found." % fixture_name)
-        elif fixture_name == 'initial_data' and fixture_files:
-            warnings.warn(
-                'initial_data fixtures are deprecated. Use data migrations instead.',
-                RemovedInDjango19Warning
-            )
-
         return fixture_files
