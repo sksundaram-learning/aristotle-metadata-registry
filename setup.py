@@ -67,7 +67,7 @@ setup(
         'xhtml2pdf',
         #'django-tastypie'
 
-        # technically for help, but thats required
+        # required for help, but thats required
         'django-autoslug',
 
     ],
