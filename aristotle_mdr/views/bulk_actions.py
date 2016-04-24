@@ -29,7 +29,7 @@ from haystack.views import SearchView
 
 """
 Dear future Sam,
-Finish this off, move it to CBVs
+Finish this off, move it to CBVs for issue 283
 Develop a code for codfying the queryset, check against 'visible' because they will always be concepts
 
 Then pass this into the form. It should work? Probably.
@@ -41,6 +41,7 @@ legal_queryset_bases = {
     "wkgrp": MDR.Workgroup,
     "regauth": MDR.RegistrationAuthority,
 }
+
 
 # TODO: Check permissions for this
 @login_required
@@ -93,8 +94,7 @@ class BulkAction(FormView):
             )
         return HttpResponseRedirect(url)
 
-    
-    
+
 def bulk_action(request):
     url = request.GET.get("next", "/")
     message = ""
