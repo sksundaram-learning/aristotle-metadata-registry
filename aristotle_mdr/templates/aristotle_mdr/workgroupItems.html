@@ -7,6 +7,13 @@
 {% csrf_token %}
 {% include "aristotle_mdr/helpers/paginated_list.html" with page=page %}
 {% include "aristotle_mdr/helpers/list_action_bar.html" with wrap=True %}
+<input type="hidden" name="qs" value="workgroup:pk={{item.pk}}">
+<label Select all><input name="all" type="checkbox"></label>
+{% comment %}
+user.profile.workgroup
+workgroup:pk=1
+__user__
+{% endcomment %}
 </form>
 
 {% endblock %}
