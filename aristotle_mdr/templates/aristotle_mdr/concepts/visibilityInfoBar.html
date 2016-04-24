@@ -24,6 +24,7 @@
         {% trans 'This item is under active development. Content may change frequently.'%}
     </div>
 {% endif %}
+{% if item.statuses.count == 0 %}
 {% if user|in_workgroup:item.workgroup or user.is_superuser or user.profile.is_registrar %}
     <div id="review" class=" alert alert-info">
         <button id="togglerVisiblity" class="pull-right btn btn-xs btn-primary" type="button" data-toggle="collapse" data-target="#collapseMoreVisibilityInfo" aria-expanded="false" aria-controls="collapseMoreVisibilityInfo">
@@ -95,5 +96,6 @@
         </div>{# end of collapseMoreVisibilityInfo #}
     </div>
     {% bootstrap_modal "r2r_modals" %}
+{% endif %}
 {% endif %}
 </div>
