@@ -57,7 +57,7 @@ class BrowseModels(AppBrowser):
 
 class BrowseConcepts(AppBrowser):
     _model = None
-    paginate_by = 5
+    paginate_by = 25
 
     @property
     def model(self):

@@ -48,6 +48,7 @@ Showing {{ page.paginator.count }} results.
                 <i class="fa fa-flag-o fa-fw" title="In progress"></i>
             {% endif %}
 
+            {% if request.user.is_active %}
             {% with is_favourite=item|is_in:favourites %}
                 <a href="{% url 'aristotle:toggleFavourite' item.id %}?next={{ request.path }}"
                     title="{% ternary is_favourite 'Remove from my favourite items' 'Add to my favourite items' %}"
@@ -59,6 +60,7 @@ Showing {{ page.paginator.count }} results.
                     {% endif %}
                 </a>
             {% endwith %}
+            {% endif %}
         </td>
         <td>
         {% include "aristotle_mdr/helpers/itemLink.html" with item=item %}</td>
