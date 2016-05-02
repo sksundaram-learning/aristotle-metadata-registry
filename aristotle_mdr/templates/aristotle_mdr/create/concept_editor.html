@@ -214,7 +214,7 @@
                        recorded.
                        
                        For more information on {{model_name_plural}}, read the
-                        <a href="{% url 'concept_help' app_label model %}">
+                        <a href="{% url 'aristotle_help:concept_help' app_label model %}">
                         help page.</a>
                     </dd>
                 </dl>
@@ -223,7 +223,7 @@
             {% if help %}
                 <h4>Help on {{ model_name_plural }}</h4>
                 <strong>For more information on {{model_name_plural}}, read the
-                <a href="{% url 'concept_help' app_label model %}">
+                <a href="{% url 'aristotle_help:concept_help' app_label model %}">
                 help page.</strong>
                 </a>
                 <p>
