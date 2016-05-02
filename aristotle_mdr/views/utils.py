@@ -6,13 +6,14 @@ from django.db.models import Count, Q
 from django.shortcuts import render
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
+from django.db.models.functions import Lower
 
 
 paginate_sort_opts = {
-    "mod_asc": "modified",
-    "mod_desc": "-modified",
-    "name_asc": "name",
-    "name_desc": "-name",
+    "mod_asc": ["modified"],
+    "mod_desc": ["-modified"],
+    "name_asc": [Lower("name").asc()],
+    "name_desc": [Lower("name").desc()],
 }
 
 
@@ -24,7 +25,7 @@ def paginated_list(request, items, template, extra_context={}):
         sort_by="mod_desc"
 
     paginator = Paginator(
-        items.order_by(paginate_sort_opts.get(sort_by)),
+        items.order_by(*paginate_sort_opts.get(sort_by)),
         request.GET.get('pp', 20)  # per page
     )
 
