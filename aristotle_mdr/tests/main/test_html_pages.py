@@ -576,7 +576,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
     def test_help_page_exists(self):
         self.logout()
         response = self.client.get(
-            reverse('concept_help',args=[self.itemType._meta.app_label,self.itemType._meta.model_name])
+            reverse('aristotle_help:concept_help',args=[self.itemType._meta.app_label,self.itemType._meta.model_name])
         )
         self.assertEqual(response.status_code,200)
 
