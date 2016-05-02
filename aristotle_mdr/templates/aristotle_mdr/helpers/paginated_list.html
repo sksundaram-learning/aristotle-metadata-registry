@@ -11,7 +11,7 @@ Showing {{ page.paginator.count }} results.
     <tr>
         <th></th>
         <th></th>
-        <th>{% trans 'Concept' %}
+        <th>
             {% if sort == "name_asc" %}
             <a href="?{% paginator_get request page.number pop='sort' %}&sort=name_desc"><i class="fa fa-sort-asc"></i></a>
             {% elif sort == "name_desc" %}
@@ -19,8 +19,9 @@ Showing {{ page.paginator.count }} results.
             {% else %}
             <a href="?{% paginator_get request page.number pop='sort' %}&sort=name_desc"><i class="fa fa-sort"></i></a>
             {% endif %}
+            {% trans 'Name' %}
         </th>
-        <th>Type</th>
+        <th>{% trans 'Details' %}</th>
         <th>
         {% if sort == "mod_asc" %}
         <a href="?{% paginator_get request page.number pop='sort' %}&sort=mod_desc"><i class="fa fa-sort-asc"></i></a>
@@ -47,7 +48,7 @@ Showing {{ page.paginator.count }} results.
                 <i class="fa fa-flag-o fa-fw" title="In progress"></i>
             {% endif %}
 
-            {% with is_favourite=item|is_in:favourites%}
+            {% with is_favourite=item|is_in:favourites %}
                 <a href="{% url 'aristotle:toggleFavourite' item.id %}?next={{ request.path }}"
                     title="{% ternary is_favourite 'Remove from my favourite items' 'Add to my favourite items' %}"
                     >
@@ -61,7 +62,9 @@ Showing {{ page.paginator.count }} results.
         </td>
         <td>
         {% include "aristotle_mdr/helpers/itemLink.html" with item=item %}</td>
-        <td>{{ item.get_verbose_name }}</td>
+        <td>
+        {% include "aristotle_mdr/helpers/inlineDetails.html" with item=item %}
+</td>
         <td>{{ item.modified }}</td>
     </tr>
     {% endfor %}

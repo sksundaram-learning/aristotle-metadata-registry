@@ -3,17 +3,6 @@
 {% block page %}
 <h1>{% block title %}{{ workgroup.name }} - Items{% endblock %}</h1>
 
-<form action="{% url 'aristotle:bulk_action' %}?next={{ request.path }}" method="POST">
-{% csrf_token %}
-{% include "aristotle_mdr/helpers/paginated_list.html" with page=page %}
-{% include "aristotle_mdr/helpers/list_action_bar.html" with wrap=True %}
-<input type="hidden" name="qs" value="workgroup:pk={{item.pk}}">
-<label Select all><input name="all" type="checkbox"></label>
-{% comment %}
-user.profile.workgroup
-workgroup:pk=1
-__user__
-{% endcomment %}
-</form>
+{% include "aristotle_mdr/helpers/bulk_action_paginated_list.html" %}
 
 {% endblock %}
