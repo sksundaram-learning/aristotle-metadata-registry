@@ -4,7 +4,7 @@
 {% block breadcumbs %}
     <li><a href="{% url 'aristotle_help:help_base' %}">Help</a></li>
     <li><a href="{% url 'aristotle_help:help_concepts' %}">Concepts</a></li>
-    <li><a href="{% url 'concept_app_help' app.label %}">{{ app.verbose_name }}</a></li>
+    <li><a href="{% url 'aristotle_help:concept_app_help' app.label %}">{{ app.verbose_name }}</a></li>
     <li class="active">{{ model.get_verbose_name_plural }}</li>
 {% endblock %}
 

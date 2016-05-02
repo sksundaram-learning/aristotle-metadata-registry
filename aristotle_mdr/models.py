@@ -1377,4 +1377,3 @@ def new_post_created(sender, **kwargs):
     for user in post.workgroup.members.all():
         if user != post.author:
             messages.new_post_created(post, user)
-
