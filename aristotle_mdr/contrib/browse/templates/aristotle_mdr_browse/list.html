@@ -1,5 +1,5 @@
 {% extends "aristotle_mdr_browse/base.html" %}
-{% load aristotle_tags aristotle_help %}
+{% load i18n aristotle_tags aristotle_help %}
 
 {% block breadcumbs %}
     <li><a href="{% url 'browse_apps'  %}">Concept browser</a></li>
@@ -14,28 +14,81 @@
         - <a href="{% url 'aristotle_help:concept_help' app.label model_name %}">Read more about {{ model.get_verbose_name_plural }}</a>
     </p>
 
-    <table class="table">
-        <thead>
-        <tr>
-            <th>Name</th>
-            <th>Definition</th>
-            <th>Modified</th>
-        </tr>
-        </thead>
-        <tbody>
-      {% for obj in object_list.all %}
-        <tr>
-            <td>
-                <a href="{{obj.get_absolute_url}}">{{ obj.name }}</a>
-            </td>
-            <td>
-                {{ obj.definition | striptags | truncatewords:20 }}
-            </td>
-            <td>
-                {{ obj.modified }}
-            </td>
-        </tr>
-      {% endfor %}
-      </tbody>
-    </table>
+
+{% if page_obj.has_other_pages %}
+Showing {{ page_obj.start_index }} - {{ page_obj.end_index }} of {{ page_obj.paginator.count }} results.
+{% else %}
+Showing {{ page_obj.paginator.count }} results.
+{% endif %}
+
+<form action="{% url 'aristotle:bulk_action' %}?next={{ request.path }}" method="POST">
+{% csrf_token %}
+<table class="table">
+<thead>
+    <tr>
+        <th></th>
+        <th></th>
+        <th>
+            {% if sort == "name_asc" %}
+            <a href="?{% paginator_get request page_obj.number pop='sort' %}&sort=name_desc"><i class="fa fa-sort-asc"></i></a>
+            {% elif sort == "name_desc" %}
+            <a href="?{% paginator_get request page_obj.number pop='sort' %}&sort=name_asc"><i class="fa fa-sort-desc"></i></a>
+            {% else %}
+            <a href="?{% paginator_get request page_obj.number pop='sort' %}&sort=name_desc"><i class="fa fa-sort"></i></a>
+            {% endif %}
+            {% trans 'Name' %}
+        </th>
+        <th>{% trans 'Details' %}</th>
+        <th>
+        {% if sort == "mod_asc" %}
+        <a href="?{% paginator_get request page_obj.number pop='sort' %}&sort=mod_desc"><i class="fa fa-sort-asc"></i></a>
+        {% elif sort == "mod_desc" %}
+        <a href="?{% paginator_get request page_obj.number pop='sort' %}&sort=mod_asc"><i class="fa fa-sort-desc"></i></a>
+        {% else %}
+        <a href="?{% paginator_get request page_obj.number pop='sort' %}&sort=mod_desc"><i class="fa fa-sort"></i></a>
+        {% endif %}
+        {% trans 'Last modified' %}</th>
+
+    </tr>
+</thead>
+<tbody>
+{% with favourites=request.user.profile.favourites.select_subclasses %}
+    {% for item in page_obj %}
+    <tr>
+        <td><input type="checkbox" id="id_items_{{item.id}}" name="items" value="{{item.id}}"></td>
+        <td>
+            {% if item.is_registered %}
+                <i class="fa fa-university fa-fw" title="Registered"></i>
+            {% elif item.readyToReview %}
+                <i class="fa fa-flag fa-fw" title="Ready to review"></i>
+            {% else %}
+                <i class="fa fa-flag-o fa-fw" title="In progress"></i>
+            {% endif %}
+
+            {% with is_favourite=item|is_in:favourites%}
+                <a href="{% url 'aristotle:toggleFavourite' item.id %}?next={{ request.path }}"
+                    title="{% ternary is_favourite 'Remove from my favourite items' 'Add to my favourite items' %}"
+                    >
+                    {% if item in favourites %}
+                        <i class="fa fa-bookmark fa-fw"></i>
+                    {% else %}
+                        <i class="fa fa-bookmark-o fa-fw"></i>
+                    {% endif %}
+                </a>
+            {% endwith %}
+        </td>
+        <td>
+        {% include "aristotle_mdr/helpers/itemLink.html" with item=item %}</td>
+        <td>
+        {% include "aristotle_mdr/helpers/inlineDetails.html" with item=item %}
+</td>
+        <td>{{ item.modified }}</td>
+    </tr>
+    {% endfor %}
+{% endwith %}
+</tbody>
+</table>
+{% include "aristotle_mdr/helpers/list_action_bar.html" with wrap=True %}
+</form>
+
 {% endblock %}
