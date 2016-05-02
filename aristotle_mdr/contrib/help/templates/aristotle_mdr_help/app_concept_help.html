@@ -4,8 +4,8 @@
 {% block title %}Concept Help - {{ app.verbose_name }}{% endblock %}
 
 {% block breadcumbs %}
-    <li><a href="{% url 'help_base' %}">Help</a></li>
-    <li><a href="{% url 'help_concepts' %}">Concepts</a></li>
+    <li><a href="{% url 'aristotle_help:help_base' %}">Help</a></li>
+    <li><a href="{% url 'aristotle_help:help_concepts' %}">Concepts</a></li>
     <li class="active">{{ app.verbose_name }}</li>
 {% endblock %}
 
@@ -14,11 +14,11 @@
     Below is a list of all help pages about the different concept types
     available in this registry, provided by the extension ''. Click the name for more information.
     To see a list of help pages for all concept types go to the
-    <a href="{% url 'help_concepts' %}">Concept help pages</a>.
+    <a href="{% url 'aristotle_help:help_concepts' %}">Concept help pages</a>.
 </p>
 <p>
     Generic help pages can be
-    found in the <a href="{% url 'help_base' %}">Help index page</a>.
+    found in the <a href="{% url 'aristotle_help:help_base' %}">Help index page</a>.
 </p>
     <table class="table">
         <thead>

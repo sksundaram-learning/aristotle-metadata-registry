@@ -4,7 +4,7 @@
 {% block title %}Help - {{ object.title }}{% endblock %}
 
 {% block breadcumbs %}
-    <li><a href="{% url 'help_base' %}">Help</a></li>
+    <li><a href="{% url 'aristotle_help:help_base' %}">Help</a></li>
     {% comment %}
     {% if app %}
     <li><a href="">{{ app.verbose_name }}</a></li>

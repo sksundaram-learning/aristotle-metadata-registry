@@ -123,43 +123,7 @@
         {% endif %}
     </div>
     {% endif %}
-    {% if item.slots.exists %}
-    <div>
-    <h2>Additional Attributes</h2>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>
-                    {% trans 'Slot name' %}
-                </th>
-                <th>
-                    {% trans 'Details' %}
-                </th>
-                <th>
-                    {% trans 'Cardinality' %}
-                </th>
-                <th>
-                    {% trans 'Value' %}
-                </th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for slot in item.slots.all %}
-            <tr>
-                <td>
-                    {{ slot.type.slot_name }}
-                </td>
-                <td>{{slot.type.help_text}}</td>
-                <td>{{slot.type.get_cardinality_display}}</td>
-                <td>
-                    {{ slot.value }}
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    </div>
-    {% endif %}
+    {% include "aristotle_mdr/slots/slots_display.html" %}
     <h2>Related content</h2>
         {% block relationships %}{% endblock %}
         {% for extension in config.CONTENT_EXTENSIONS %}

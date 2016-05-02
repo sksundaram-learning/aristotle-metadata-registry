@@ -14,7 +14,7 @@
 </p>
 <p>
     Help on different item types available in this registry can be
-    found in the <a href="{% url 'help_concepts' %}">Concept help pages</a>.
+    found in the <a href="{% url 'aristotle_help:help_concepts' %}">Concept help pages</a>.
 </p>
 
     <form id="quickSearch" action="{% url 'aristotle:search' %}" method="get"
@@ -43,7 +43,7 @@
       {% for obj in object_list %}
         <tr>
             <td>
-                <a href="{% url 'help_page' obj.slug %}">
+                <a href="{% url 'aristotle_help:help_page' obj.slug %}">
                     {{ obj.title }}</a>
             </td>
             <td>{{ obj.body|striptags|truncatewords:20 }}

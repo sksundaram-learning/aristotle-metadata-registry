@@ -11,7 +11,7 @@
     <p>
         <em>{{ model.get_verbose_name }} - </em>
         {% help_doc model 'brief' %} 
-        - <a href="{% url 'concept_help' app.label model_name %}">Read more about {{ model.get_verbose_name_plural }}</a>
+        - <a href="{% url 'aristotle_help:concept_help' app.label model_name %}">Read more about {{ model.get_verbose_name_plural }}</a>
     </p>
 
     <table class="table">

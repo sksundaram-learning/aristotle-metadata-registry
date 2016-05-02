@@ -64,3 +64,19 @@ class Slot(TimeStampedModel):
 
     def __str__(self):
         return "{0.type}.{0.value}".format(self)
+
+def concepts_with_similar_slots(user, _type=None, value=None, slot=None):
+    assert(slot is not None or _type is not None)
+    if slot is not None:
+        _type = slot.type
+        value = slot.value
+    
+    slots = MDR._concept.objects.visible(user).filter(slots__type=_type)
+
+    if value is not None:
+        slots = slots.filter(slots__value=value)
+
+    if slot is not None:
+        slots = slots.exclude(id=slot.concept.id)
+
+    return slots
