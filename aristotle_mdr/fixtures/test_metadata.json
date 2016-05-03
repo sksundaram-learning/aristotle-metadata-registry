@@ -216,7 +216,7 @@
     "fields": {
       "definition": "",
       "_is_locked": false,
-      "workgroup": 2,
+      "workgroup": 3,
       "created": "2016-05-02T22:23:10.597Z",
       "modified": "2016-05-02T22:23:10.597Z",
       "readyToReview": false,
@@ -230,7 +230,7 @@
     "fields": {
       "definition": "",
       "_is_locked": false,
-      "workgroup": 2,
+      "workgroup": 3,
       "created": "2016-05-02T22:23:10.612Z",
       "modified": "2016-05-02T22:23:10.612Z",
       "readyToReview": false,
@@ -773,71 +773,5 @@
     },
     "model": "aristotle_mdr.dataelement",
     "pk": 31
-  },
-  {
-    "fields": {
-      "favourites": [
-        
-      ],
-      "user": 2,
-      "savedActiveWorkgroup": null
-    },
-    "model": "aristotle_mdr.possumprofile",
-    "pk": 2
-  },
-  {
-    "fields": {
-      "favourites": [
-        
-      ],
-      "user": 3,
-      "savedActiveWorkgroup": null
-    },
-    "model": "aristotle_mdr.possumprofile",
-    "pk": 3
-  },
-  {
-    "fields": {
-      "favourites": [
-        
-      ],
-      "user": 4,
-      "savedActiveWorkgroup": null
-    },
-    "model": "aristotle_mdr.possumprofile",
-    "pk": 4
-  },
-  {
-    "fields": {
-      "favourites": [
-        
-      ],
-      "user": 5,
-      "savedActiveWorkgroup": null
-    },
-    "model": "aristotle_mdr.possumprofile",
-    "pk": 5
-  },
-  {
-    "fields": {
-      "favourites": [
-        
-      ],
-      "user": 6,
-      "savedActiveWorkgroup": null
-    },
-    "model": "aristotle_mdr.possumprofile",
-    "pk": 6
-  },
-  {
-    "fields": {
-      "favourites": [
-        
-      ],
-      "user": 7,
-      "savedActiveWorkgroup": null
-    },
-    "model": "aristotle_mdr.possumprofile",
-    "pk": 7
   }
 ]

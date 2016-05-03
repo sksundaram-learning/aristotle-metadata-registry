@@ -658,12 +658,14 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
     def test_editor_can_revert_item_and_status_goes_back_too(self):
         self.login_editor()
         
+        # REVISION 0
         from reversion import revisions as reversion
         with reversion.create_revision():
             self.item1.readyToReview = True
             self.item1.save()
         original_name = self.item1.name
         
+        # REVISION 1
         response = self.client.get(reverse('aristotle:edit_item',args=[self.item1.id]))
         self.assertEqual(response.status_code,200)
         
@@ -672,6 +674,8 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         updated_item['name'] = updated_name
         change_comment = "I changed this because I can"
         updated_item['change_comments'] = change_comment
+
+        # REVISION 2
         response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
         self.item1 = self.itemType.objects.get(pk=self.item1.pk)
         self.assertEqual(self.item1.name,updated_name)
@@ -686,6 +690,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.assertTrue(self.item1.statuses.all().count() == 1)
         self.assertTrue(self.item1.statuses.first().state == models.STATES.incomplete)
 
+        # REVISION 3
         response = self.client.get(reverse('aristotle:edit_item',args=[self.item1.id]))
         self.assertEqual(response.status_code,200)
         updated_item = utils.model_to_dict_with_change_time(response.context['item'])
@@ -693,17 +698,25 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         updated_item['name'] = updated_name_again
         change_comment = "I changed this again because I can"
         updated_item['change_comments'] = change_comment
+
+        # REVISION 4
         response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
         self.item1 = self.itemType.objects.get(pk=self.item1.pk)
         self.assertEqual(self.item1.name,updated_name_again)
 
+        # REVISION 5
         self.ra.register(self.item1,models.STATES.candidate,self.registrar)
         self.item1 = self.itemType.objects.get(pk=self.item1.pk) #decache
         self.assertTrue(self.item1.statuses.count() == 2)
         self.assertTrue(self.item1.statuses.last().state == models.STATES.candidate)
 
-        versions = list(reversion.Version.objects.filter(object_id=self.item1.id))
-        versions[4].revision.revert(delete=True) # The version that has the first status changes
+        from django.contrib.contenttypes.models import ContentType
+        ct = ContentType.objects.get_for_model(self.item1._meta.model)
+        versions = list(reversion.Version.objects.filter(
+            object_id=self.item1.id,
+            content_type_id=ct.id
+        ))
+        versions[2].revision.revert(delete=True) # The version that has the first status changes
 
         self.item1 = self.itemType.objects.get(pk=self.item1.pk) #decache
 
@@ -711,13 +724,16 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.assertTrue(self.item1.statuses.first().state == models.STATES.incomplete)
         self.assertEqual(self.item1.name,updated_name)
 
+        # Go back to the initial revision
         versions[0].revision.revert(delete=True)
         self.item1 = self.itemType.objects.get(pk=self.item1.pk) #decache
         self.assertTrue(self.item1.statuses.count() == 0)
         self.assertEqual(self.item1.name,original_name)
 
-        versions[9].revision.revert(delete=True) # Back to the latest version
+        
+        versions[4].revision.revert(delete=True) # Back to the latest version
         self.item1 = self.itemType.objects.get(pk=self.item1.pk) #decache
+        
         self.assertTrue(self.item1.statuses.count() == 2)
         self.assertTrue(self.item1.statuses.order_by('state')[0].state == models.STATES.incomplete)
         self.assertTrue(self.item1.statuses.order_by('state')[1].state == models.STATES.candidate)
