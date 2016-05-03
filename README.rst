@@ -31,7 +31,11 @@ however `a number of extensions are available to extend functionality and add ad
 Quick start
 -----------
 
-1. Add "aristotle_mdr" to your INSTALLED_APPS setting like this::
+1. Install using the pip package manager::
+
+    pip install aristotle-metadata-registry
+
+#. Add "aristotle_mdr" to your INSTALLED_APPS setting like this::
 
     INSTALLED_APPS = (
         ...

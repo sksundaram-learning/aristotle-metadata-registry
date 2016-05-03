@@ -31,15 +31,16 @@ For more information on configuring a more complete installation review the help
 
    On a linux machine, this can be done with the command::
 
-       wget https://raw.githubusercontent.com/aristotle-mdr/aristotle-metadata-registry/master/aristotle_easy_installer.py
+      pip install aristotle-metadata-registry
+      python -m aristotle_mdr.install.easy
 
-4. Run the easy installer: ``aristotle_easy_installer.py``. There are a number of command line arguments
+4. Run the easy installer: ``aristotle_mdr.install.easy``. There are a number of command line arguments
    that are explained in the help documentation which can be accessed from the command line::
 
-    aristotle_easy_installer.py --help
+    python -m aristotle_mdr.install.easy --help
 
-   This will download an example registry, and will prompt you for a new name, ask for a few
-   additional settings, install requirements, setup the database and set up the static files.
+   This will setup an example registry, and will prompt you for a new name, ask for a few
+   additional settings, install requirements, setup a database and set up the static files.
 
 5. If required, browse to the directory of your project that was named in the above directory,
     and edit the ``settings.py`` files to meet your requirements.
