@@ -14,9 +14,11 @@ admin.autodiscover()
 urlpatterns = patterns(
     '',
 
+    url(r'^', include('aristotle_mdr.contrib.slots.urls', app_name="aristotle_slots", namespace="aristotle_slots")),
+
     url(r'^', include('aristotle_mdr.urls.base')),
     url(r'^', include('aristotle_mdr.urls.aristotle', app_name="aristotle_mdr", namespace="aristotle")),
-    url(r'^help/', include('aristotle_mdr.contrib.help.urls')),
+    url(r'^help/', include('aristotle_mdr.contrib.help.urls', app_name="aristotle_help", namespace="aristotle_help")),
     url(r'^browse/', include('aristotle_mdr.contrib.browse.urls')),
 )
 handler403 = 'aristotle_mdr.views.unauthorised'

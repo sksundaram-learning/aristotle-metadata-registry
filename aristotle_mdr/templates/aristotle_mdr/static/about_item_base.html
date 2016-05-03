@@ -7,7 +7,7 @@
 <h1><a href="#">About: {% block item_name %}{% endblock %}</a></h1>
 <ol class="breadcrumb">
     <li><a href="{% url 'aristotle:aboutMain' %}">About</a></li>
-    <li><a href="{% url 'help_page' 'about-isoiec-11179' %}">ISO/IEC 11179</a></li>
+    <li><a href="{% url 'aristotle_help:help_page' 'about-isoiec-11179' %}">ISO/IEC 11179</a></li>
     {% block breadcrumbs %}
     {% endblock %}
 </ol>

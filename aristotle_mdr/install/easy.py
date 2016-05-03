@@ -13,24 +13,31 @@ Command line options:
 """
 from __future__ import unicode_literals, print_function
 
-import sys, os, pip, re
+
 import getopt
+import os
+import pip
+import re
+import sys
 from subprocess import call
 from random import getrandbits
 import hashlib
 
+
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
-name = "newly created" # Forward-declaration placeholder
-PIP_MSG = "You can finish installing by running - pip install -r requirements.txt - from the %s directory"%name
+name = "newly created"  # Forward-declaration placeholder
+PIP_MSG = "You can finish installing by running - pip install -r requirements.txt - from the %s directory" % name
+
 
 optional_modules = [
-    ("Aristotle Glossary Extension","#!aristotle_glossary!"),
-    ("Aristotle Dataset Extensions","#!aristotle_dse!"),
-    ("Aristotle DDI Downloaders","#!aristotle_ddi_utils!"),
-    ("Aristotle MDR API","#!aristotle_mdr_api!")
+    ("Aristotle Glossary Extension", "#!aristotle_glossary!"),
+    ("Aristotle Dataset Extensions", "#!aristotle_dse!"),
+    ("Aristotle DDI Downloaders", "#!aristotle_ddi_utils!"),
+    ("Aristotle MDR API", "#!aristotle_mdr_api!")
 ]
 
-def valid_input(prompt,match):
+
+def valid_input(prompt, match):
 
     try:
         # Ensure input compatability across Python 2/3
@@ -43,10 +50,11 @@ def valid_input(prompt,match):
             return check
     raise Exception
 
-def setup_mdr(name="",extensions=[],force_install=False,dry_install=False):
+
+def setup_mdr(name="", extensions=[], force_install=False, dry_install=False):
     name_regex = '^[a-z][a-z_]*$'
     if not re.match(name_regex, name):
-        name = valid_input("Enter the system name for your registry (lowercase letters and underscores ONLY): ",name_regex)
+        name = valid_input("Enter the system name for your registry (lowercase letters and underscores ONLY): ", name_regex)
 
     try:
         download_example_mdr()
@@ -59,17 +67,17 @@ def setup_mdr(name="",extensions=[],force_install=False,dry_install=False):
 
     rename_example_mdr(name)
 
-    yn = '^[YyNn]?$' # yes/no regex
+    yn = '^[YyNn]?$'  # yes/no regex
     if not extensions:
-        do_install = valid_input("Do you wish to install any additional Aristotle modules? (y/n): ", yn ).lower()
+        do_install = valid_input("Do you wish to install any additional Aristotle modules? (y/n): ", yn).lower()
         if do_install == 'y':
             print("Select extensions to install (y/n)")
             for display, ext_token in optional_modules:
-                do_ext = valid_input("  %s: "%display, yn ).lower()
+                do_ext = valid_input("  %s: " % display, yn).lower()
                 if do_ext == 'y':
                     extensions.append(ext_token)
     if extensions:
-        find_and_remove(name,extensions)
+        find_and_remove(name, extensions)
 
     # Update the settings key
     generate_secret_key(name)
@@ -102,28 +110,33 @@ def setup_mdr(name="",extensions=[],force_install=False,dry_install=False):
 
 def generate_secret_key(name):
     key = "Change-this-key-as-soon-as-you-can"
-    gen_key = hashlib.sha224(str(getrandbits(128)).encode('utf-8')).hexdigest() # This is probably not cryptographically secure, not for production.
-    fname = './%s/%s/settings.py'%(name,name)
+    # This is probably not cryptographically secure, not for production.
+    gen_key = hashlib.sha224(str(getrandbits(128)).encode('utf-8')).hexdigest()
+    fname = './%s/%s/settings.py' % (name, name)
     with open(fname) as f:
         s = f.read()
     s = s.replace(key, gen_key)
     with open(fname, "w") as f:
         f.write(s)
 
+
 def rename_example_mdr(name):
-    os.rename('example_mdr',name)
-    os.rename(os.path.join(name,'example_mdr'),os.path.join(name,name))
-    find_and_replace(name,'example_mdr',name)
+    os.rename('example_mdr', name)
+    os.rename(os.path.join(name, 'example_mdr'), os.path.join(name, name))
+    find_and_replace(name, 'example_mdr', name)
+
 
 def install_reqs(name):
-    #pip.main(['install', package])
-    call(["pip", 'install', '-r%s/requirements.txt'%name])
+    # pip.main(['install', package])
+    call(["pip", 'install', '-r%s/requirements.txt' % name])
     return call
 
+
 def collect_static(name):
-    call(["./%s/manage.py"%name, 'migrate'])
-    call(["./%s/manage.py"%name, 'collectstatic'])
+    call(["./%s/manage.py" % name, 'migrate'])
+    call(["./%s/manage.py" % name, 'collectstatic'])
     return call
+
 
 def download_example_mdr():
     print("Attempting to retrieve example registry")
@@ -132,22 +145,24 @@ def download_example_mdr():
     call(["svn", command, arg])
     return call
 
-def find_and_replace(mydir,old,new):
+
+def find_and_replace(mydir, old, new):
     """Really naive find and replace lovingly borrowed from stack overflow - http://stackoverflow.com/a/4205918/764357"""
     for dname, dirs, files in os.walk(mydir):
         for fname in files:
-            if fname.endswith(('py','txt','rst')):
+            if fname.endswith(('py', 'txt', 'rst')):
                 fpath = os.path.join(dname, fname)
                 with open(fpath) as f:
                     s = f.read()
-                s = s.replace(old,new)
+                s = s.replace(old, new)
                 with open(fpath, "w") as f:
                     f.write(s)
 
-def find_and_remove(mydir,extensions):
+
+def find_and_remove(mydir, extensions):
     for dname, dirs, files in os.walk(mydir):
         for fname in files:
-            if fname.endswith(('py','txt','rst')):
+            if fname.endswith(('py', 'txt', 'rst')):
                 fpath = os.path.join(dname, fname)
                 with open(fpath) as f:
                     s = f.read()
@@ -156,42 +171,46 @@ def find_and_remove(mydir,extensions):
                 with open(fpath, "w") as f:
                     f.write(s)
 
+
 class Usage(Exception):
     def __init__(self, msg):
         self.msg = msg
 
-def is_opt(opts,*args):
+
+def is_opt(opts, *args):
     for a in args:
         if a in opts.keys():
             return True
     return False
+
 
 def main(argv=None):
     if argv is None:
         argv = sys.argv
     try:
         try:
-            opts, args = getopt.getopt(argv[1:], "n:dfh", ["dry","force","help","name=",])
+            opts, args = getopt.getopt(argv[1:], "n:dfh", ["dry", "force", "help", "name=", ])
             opts = dict(opts)
         except getopt.error as msg:
-             raise Usage(msg)
+            raise Usage(msg)
         # more code, unchanged
     except Usage as err:
         print >>sys.stderr, err.msg
         print >>sys.stderr, "for help use --help"
         return 2
-    if is_opt(opts,'-h','--help'):
+    if is_opt(opts, '-h', '--help'):
         print(__doc__)
         return 0
     kwargs = {}
-    if is_opt(opts,'-n','--name'):
-        kwargs['name']=opts.get('-n',opts.get('--name'))
-    if is_opt(opts,'-d','--dry'):
+    if is_opt(opts, '-n', '--name'):
+        kwargs['name']=opts.get('-n', opts.get('--name'))
+    if is_opt(opts, '-d', '--dry'):
         kwargs['dry_install']=True
-    if is_opt(opts,'-f','--force'):
+    if is_opt(opts, '-f', '--force'):
         kwargs['force_install']=True
 
     return setup_mdr(**kwargs)
+
 
 if __name__ == "__main__":
     sys.exit(main())

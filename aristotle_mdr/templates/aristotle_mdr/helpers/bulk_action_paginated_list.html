@@ -1,0 +1,12 @@
+<form action="{% url 'aristotle:bulk_action' %}?next={{ request.path }}" method="POST">
+{% csrf_token %}
+{% include "aristotle_mdr/helpers/paginated_list.html" %}
+{% include "aristotle_mdr/helpers/list_action_bar.html" with wrap=True %}
+{% comment %}
+<input type="hidden" name="qs" value="workgroup:pk={{item.pk}}">
+<label Select all><input name="all" type="checkbox"></label>
+user.profile.workgroup
+workgroup:pk=1
+__user__
+{% endcomment %}
+</form>
