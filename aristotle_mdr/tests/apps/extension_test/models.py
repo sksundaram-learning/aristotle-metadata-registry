@@ -24,13 +24,17 @@ class Questionnaire(aristotle_mdr.models.concept):
     # Questionnaire is a test of a lazy developer who has done the bare minimum
     # To get an object in the system. This is a test of how little a dev can to
     # get a functional object. Ideally the string 'Questionnaire' should exist only here.
-    edit_page_excludes = ['questions']
+    edit_page_excludes = ['questions', 'respondent_classes']
     # template = "extension_test/concepts/question.html"  # Blank to test default template
     questions = models.ManyToManyField(
         Question,
         related_name="questionnaires",
         null=True,
         blank=True
+    )
+    respondent_classes = models.ManyToManyField(
+        aristotle_mdr.models.ObjectClass,
+        through='TargetRespondentClass'
     )
 
     # Start of get_download_items
@@ -46,3 +50,13 @@ class Questionnaire(aristotle_mdr.models.concept):
             ),
         ]
     # End of get_download_items
+
+
+class TargetRespondentClass(aristotle_mdr.models.aristotleComponent):
+    @property
+    def parentItem(self):
+        return self.questionnaire
+
+    questionnaire = models.ForeignKey('Questionnaire')
+    respondent_class = models.ForeignKey(aristotle_mdr.models.ObjectClass)
+    rationale = models.TextField(blank=True, null=True)
