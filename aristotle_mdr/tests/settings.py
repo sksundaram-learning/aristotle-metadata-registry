@@ -54,15 +54,6 @@ if 'TRAVIS' in os.environ:
             'NAME': ':memory:',
         }
 
-DATABASES['default'] = {
-    'ENGINE': 'django.db.backends.postgresql_psycopg2',
-    'NAME': 'aristotle_test_db',
-    'USER': 'postgres',
-    'PASSWORD': 'postgres',
-    'HOST': 'localhost',
-    'PORT': '',
-}
-
 class DisableMigrations(object):
 
     def __contains__(self, item):
