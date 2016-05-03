@@ -712,10 +712,12 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
 
         from django.contrib.contenttypes.models import ContentType
         ct = ContentType.objects.get_for_model(self.item1._meta.model)
-        versions = list(reversion.Version.objects.filter(
-            object_id=self.item1.id,
-            content_type_id=ct.id
-        ))
+        versions = list(
+            reversion.Version.objects.filter(
+                object_id=self.item1.id,
+                content_type_id=ct.id
+            ).order_by('revision__date_created')
+        )
         versions[2].revision.revert(delete=True) # The version that has the first status changes
 
         self.item1 = self.itemType.objects.get(pk=self.item1.pk) #decache
@@ -727,7 +729,6 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         # Go back to the initial revision
         versions[0].revision.revert(delete=True)
         self.item1 = self.itemType.objects.get(pk=self.item1.pk) #decache
-        print self.item1.statuses.count()
         self.assertTrue(self.item1.statuses.count() == 0)
         self.assertEqual(self.item1.name,original_name)
 
