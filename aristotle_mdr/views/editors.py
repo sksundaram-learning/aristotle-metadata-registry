@@ -141,7 +141,7 @@ class CloneItemView(PermissionFormView):
         return super(CloneItemView, self).dispatch(request, *args, **kwargs)
 
     def get_form_class(self):
-        return MDRForms.wizards.subclassed_modelform(self.model)
+        return MDRForms.wizards.subclassed_clone_modelform(self.model)
 
     def get_form_kwargs(self):
         kwargs = super(CloneItemView, self).get_form_kwargs()
