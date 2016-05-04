@@ -144,7 +144,7 @@ def register_concept_admin(concept_class, *args, **kwargs):
                 model=inline_field.related_model
                 extra=0
             extra_inlines.append(AutoInline)
- 
+
     class SubclassedConceptAdmin(ConceptAdmin):
         model = concept_class
         if extra_name_suggest_fields:
