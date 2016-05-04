@@ -133,7 +133,7 @@ def register_concept_admin(concept_class, *args, **kwargs):
         auto_fieldset = []
         auto_inlines = []
         for f in concept_class._meta.get_fields():
-            if f.name not in field_names and f.name not in concept_class.edit_page_excludes:
+            if f.name not in field_names and f.name not in concept_class.admin_page_excludes:
                 auto_fieldset.append(f.name)
 
         if auto_fieldset:

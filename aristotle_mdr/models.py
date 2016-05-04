@@ -664,6 +664,7 @@ class _concept(baseAristotleObject):
 
     comparator = comparators.Comparator
     edit_page_excludes = None
+    admin_page_excludes = None
 
     class Meta:
         # So the url_name works for items we can't determine.
