@@ -81,6 +81,7 @@ class QuestionnaireAdmin(AdminPageForConcept, TestCase):
         ))
         self.assertResponseStatusCodeEqual(response, 200)
         # print dir(response.context['adminform'].model_admin)
+
         auto_fields = response.context['adminform'].model_admin.fieldsets[-1]
         self.assertEqual(auto_fields[0], u'Extra fields for Questionnaire')
         self.assertEqual(auto_fields[1]['fields'], ['questions'])
