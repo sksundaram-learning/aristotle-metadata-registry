@@ -7,5 +7,5 @@ register = template.Library()
 
 
 @register.filter
-def order_by(qs,order):
+def order_by(qs, order):
     return qs.order_by(*(order.split(",")))
