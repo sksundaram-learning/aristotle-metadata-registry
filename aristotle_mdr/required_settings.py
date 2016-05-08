@@ -170,11 +170,3 @@ HAYSTACK_CONNECTIONS = {
         'INCLUDE_SPELLING': True,
     },
 }
-
-# Email settings required for password resets.
-if DEBUG:
-    EMAIL_HOST = 'smtp.gmail.com'
-    EMAIL_PORT = 587
-    EMAIL_HOST_USER = 'aristotle.email@gmail.com'
-    EMAIL_HOST_PASSWORD = 'aristotle.email1'
-    EMAIL_USE_TLS = True
