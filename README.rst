@@ -41,13 +41,12 @@ Quick start
         ...
         'haystack',
         'aristotle_mdr',
-        'grappelli',
         ...
     )
 
    To ensure that search indexing works properly ``haystack`` **must** be installed before `aristotle_mdr`.
    If you want to take advantage of Aristotle's access-key shortcut improvements for the admin interface,
-   make sure it is installed *before* ``grappelli``.
+   make sure it is installed *before* the django admin app.
 
 #. Include the Aristotle-MDR URLconf in your project ``urls.py``. Because Aristotle will
    form the majority of the interactions with the site, and the Aristotle includes a

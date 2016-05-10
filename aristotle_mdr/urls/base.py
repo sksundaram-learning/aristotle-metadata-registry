@@ -15,10 +15,9 @@ admin.autodiscover()
 urlpatterns = [
     url(r'^login/?$', friendly_redirect_login, name='friendly_login'),
     url(r'^logout/?$', 'django.contrib.auth.views.logout', {'next_page': '/'}),
-    url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
-    url(r'^admin/', include(admin.site.urls)),
+    url(r'^django/admin/doc/', include('django.contrib.admindocs.urls')),
+    url(r'^django/admin/', include(admin.site.urls)),
     url(r'^autocomplete/', include('autocomplete_light.urls')),
-    url(r'^grappelli/', include('grappelli.urls')),  # grappelli URLS
     url(r'^ckeditor/', include('aristotle_mdr.urls.ckeditor_uploader')),
     url(r'^account/notifications/', include(notifications.urls, namespace="notifications")),
     url(r'^account/password/reset/$', password_reset),  # , {'template_name': 'my_templates/password_reset.html'}
