@@ -14,7 +14,7 @@ For example, creating a new item within the registry requires as little code as:
 This code creates a new "Question" object in the registry that can be progressed
 like any standard item in Aristotle-MDR. Once the the appropriate admin pages are
 set up, from a usability and publication standpoint this would be indistinguishable
-from an Aristotle-MDR item, and would get a instantly get a number of
+from an Aristotle-MDR item, and would instantly get a number of
 :doc:`features that are available to all Aristotle 'concepts' without having to write any additional code </extensions/out_of_the_box_features>`
 
 Once synced with the database, this immediately creates a new item type that not only has
@@ -62,7 +62,7 @@ Including additional items when downloading a custom concept type
 
 .. automethod:: aristotle_mdr.models.concept.get_download_items
 
-For example::
+For example:
 
 .. literalinclude:: /../aristotle_mdr/tests/apps/extension_test/models.py
     :caption: mymodule.models.Questionnaire.get_download_items
@@ -122,7 +122,7 @@ For example, in code or in a template it is always safe to call an item like so:
 When in doubt about what object you are dealing with, calling ``item`` will ensure the
 expected item, and not the ``_concept`` parent, is used.
 In the very worst case a single additional query is made and the right item is used, in
-the best case an very cheap Python property is called and the item is returned straight back.
+the best case a very cheap Python property is called and the item is returned straight back.
 
 
 Setting up search, admin pages and autocompletes for new items types
@@ -141,7 +141,7 @@ be done through the creation and registration of classes in the ``admin.py``
 file of a Django app.
 
 Because of the intricate permissions around content with the Aristotle Registry,
-its recommended that admin pages for new items extend from the
+it's recommended that admin pages for new items extend from the
 ``aristotle.admin.ConceptAdmin`` class. This helps to ensure that there is a
 consistent ordering of fields, and information is exposed only to the correct
 users.
@@ -214,7 +214,7 @@ criteria including the registration status of an item, its workgroup or Registra
 Authority or the item type.
 
 In ``aristotle.search_indexes`` there is the convenience class ``conceptIndex`` that
-make indexing a new items within the search engine quite easy, and allows new item types to be searched using
+make indexing a new item within the search engine quite easy, and allows new item types to be searched using
 these criteria with a minimum of code. Inheriting from this class takes care of nearly
 all simple cases when searching for new items, like so::
 
@@ -279,7 +279,7 @@ Aristotle does not prevent you from doing so, however there are a few issues tha
 can arise when extending from non-abstract classes:
 
 * Due to the way that Django handles subclassing, all objects subclassed from a
-  concrete model, will also exist in the database as the subclass and an item that
+  concrete model will also exist in the database as the subclass and an item that
   belongs to the parent superclass.
 
   So a ``CountrySpecificDataElement`` would also be a ``DataElement``, so a query like this::
@@ -305,6 +305,7 @@ can arise when extending from non-abstract classes:
 
     Failure to include this may lead to broken code or pages that expose private items.
 
+
 Creating ``unmanagedContent`` types
 -----------------------------------
 
@@ -327,6 +328,18 @@ from this class can be done like so::
 
 For example, in Aristotle-MDR "Measure" is an ``unmanagedObject`` type, that is used
 to give extra context to `UnitOfMeasure` objects.
+
+
+Including documentation in new content types
+--------------------------------------------
+To make deploying new content easier, and encourage better documentation, Aristotle
+reuses help content built into the Django Web framework. When producing dynamic
+documentation, Aristotle uses the Python docstring of a ``concept``-inheriting class
+and the field level `help_text` to produce documentation.
+
+This can be seen on in the concept editor, administrator pages, item comparator 
+and can be accessed in html pages using the ``doc`` template tag in the ``aristotle_tags``
+module.
 
 
 A complete example of an Aristotle Extension

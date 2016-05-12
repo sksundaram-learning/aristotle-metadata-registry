@@ -90,6 +90,8 @@ class SupersedeForm(forms.Form):
 
     def clean_newerItem(self):
         item = self.cleaned_data['newerItem']
+        if not item:
+            return None
         if self.item.id == item.id:
             raise forms.ValidationError("An item may not supersede itself")
         if not user_can_edit(self.user, item):

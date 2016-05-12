@@ -8,15 +8,72 @@ from django.utils.translation import ugettext_lazy as _
 
 import aristotle_mdr.models as MDR
 from aristotle_mdr.forms import ChangeStatusForm
-from aristotle_mdr.perms import user_can_view, user_is_registrar
+from aristotle_mdr.perms import (
+    user_can_view,
+    user_is_registrar,
+    user_is_workgroup_manager,
+    user_can_move_any_workgroup
+)
 from aristotle_mdr.forms.creation_wizards import UserAwareForm
+
+
+class ForbiddenAllowedModelMultipleChoiceField(forms.ModelMultipleChoiceField):
+    def __init__(self, queryset, validate_queryset, required=True, widget=None,
+                 label=None, initial=None, help_text='', *args, **kwargs):
+        self.validate_queryset = validate_queryset
+        super(ForbiddenAllowedModelMultipleChoiceField, self).__init__(
+            queryset, None, required, widget, label, initial, help_text,
+            *args, **kwargs
+        )
+
+    def _check_values(self, value):
+        """
+        Given a list of possible PK values, returns a QuerySet of the
+        corresponding objects. Skips values if they are not in the queryset.
+        This allows us to force a limited selection to the client, while
+        ignoring certain additional values if given. However, this means
+        *extra checking must be done* to limit over exposure and invalid
+        data.
+        """
+        from django.core.exceptions import ValidationError
+        from django.utils.encoding import force_text
+
+        key = self.to_field_name or 'pk'
+        # deduplicate given values to avoid creating many querysets or
+        # requiring the database backend deduplicate efficiently.
+        try:
+            value = frozenset(value)
+        except TypeError:
+            # list of lists isn't hashable, for example
+            raise ValidationError(
+                self.error_messages['list'],
+                code='list',
+            )
+        true_value = []
+        for pk in value:
+            try:
+                self.validate_queryset.filter(**{key: pk})
+            except (ValueError, TypeError):
+                raise ValidationError(
+                    self.error_messages['invalid_pk_value'],
+                    code='invalid_pk_value',
+                    params={'pk': pk},
+                )
+        qs = self.validate_queryset.filter(**{'%s__in' % key: value})
+        pks = set(force_text(getattr(o, key)) for o in qs)
+        for val in value:
+            if force_text(val) not in pks:
+                raise ValidationError(
+                    self.error_messages['invalid_choice'],
+                    code='invalid_choice',
+                    params={'value': val},
+                )
+        return qs
 
 
 class BulkActionForm(UserAwareForm):
     classes = ""
     confirm_page = None
-    # queryset is all as we try to be nice and process what we can in bulk
-    # actions.
     all_in_queryset = forms.BooleanField(
         label=_("All items"),
         required=False,
@@ -25,9 +82,13 @@ class BulkActionForm(UserAwareForm):
     #     label=_("All items on page"),
     #     required=False,
     # )
-    items = forms.ModelMultipleChoiceField(
+    
+    # queryset is all as we try to be nice and process what we can in bulk
+    # actions.
+    items = ForbiddenAllowedModelMultipleChoiceField(
         queryset=MDR._concept.objects.all(),
-        label="Related items",
+        validate_queryset=MDR._concept.objects.all(),
+        label="Related items", 
         required=False,
     )
     item_label="Select some items"
@@ -36,26 +97,20 @@ class BulkActionForm(UserAwareForm):
     def __init__(self, *args, **kwargs):
         initial_items = kwargs.pop('items', [])
         super(BulkActionForm, self).__init__(*args, **kwargs)
-        # if 'user' in kwargs.keys():
-        #     self.user = kwargs.pop('user', None)
-        #     queryset = MDR._concept.objects.visible(self.user)
-        # else:
-        #     queryset = MDR._concept.objects.public()
+        if 'user' in kwargs.keys():
+            self.user = kwargs.pop('user', None)
+            queryset = MDR._concept.objects.visible(self.user)
+        else:
+            queryset = MDR._concept.objects.public()
 
-        # self.fields['items']=forms.ModelMultipleChoiceField(
-        #     label = self.item_label,
-        #     queryset = queryset,
-        #     initial = initial_items,
-        #     widget=autocomplete_light.MultipleChoiceWidget('Autocomplete_concept')
-        # )
-        self.fields['items']=forms.ModelMultipleChoiceField(
-            label = self.item_label,
-            queryset = self.queryset,
-            initial = initial_items,
-            required=False,
+        self.fields['items'] = ForbiddenAllowedModelMultipleChoiceField(
+            label=self.item_label,
+            validate_queryset=MDR._concept.objects.all(),
+            queryset=queryset,
+            initial=initial_items,
             widget=autocomplete_light.MultipleChoiceWidget('Autocomplete_concept')
         )
-    
+
     @property
     def items_to_change(self):
         print 'data',self.data
@@ -66,6 +121,7 @@ class BulkActionForm(UserAwareForm):
         else:
             items = self.cleaned_data.get('items')
         return items
+
     @classmethod
     def can_use(cls, user):
         return True
@@ -110,7 +166,7 @@ class RemoveFavouriteForm(BulkActionForm):
 
 
 class ChangeStateForm(ChangeStatusForm, BulkActionForm):
-    confirm_page = "aristotle_mdr/actions/bulk_change_status.html"
+    confirm_page = "aristotle_mdr/actions/bulk_actions/change_status.html"
     classes="fa-university"
     action_text = _('Change registration status')
     items_label="These are the items that will be be registered. Add or remove additional items with the autocomplete box.",
@@ -154,9 +210,85 @@ class ChangeStateForm(ChangeStatusForm, BulkActionForm):
                 'num_ra': len(ras),
                 'bad_ids': ",".join(bad_items)
             }
-            reversion.revisions.set_comment(message)
+            reversion.revisions.set_comment(changeDetails + "\n\n" + message)
             return message
 
     @classmethod
     def can_use(cls, user):
         return user_is_registrar(user)
+
+
+class ChangeWorkgroupForm(BulkActionForm):
+    confirm_page = "aristotle_mdr/actions/bulk_actions/change_workgroup.html"
+    classes="fa-users"
+    action_text = _('Change workgroup')
+    items_label="These are the items that will be moved between workgroups. Add or remove additional items with the autocomplete box.",
+
+    def __init__(self, *args, **kwargs):
+        super(ChangeWorkgroupForm, self).__init__(*args, **kwargs)
+
+        wgs = [(wg.id, wg.name) for wg in self.user.profile.workgroups]
+        self.fields['workgroup']=forms.ModelChoiceField(
+            label="Workgroup to move items to",
+            queryset=self.user.profile.workgroups
+        )
+        self.fields['changeDetails']=forms.CharField(
+            label="Change notes (optional)",
+            required=False,
+            widget=forms.Textarea
+        )
+
+    def make_changes(self):
+        import reversion
+        from aristotle_mdr.perms import user_can_remove_from_workgroup, user_can_move_to_workgroup
+        new_workgroup = self.cleaned_data['workgroup']
+        changeDetails = self.cleaned_data['changeDetails']
+        items = self.cleaned_data['items']
+
+        if not user_can_move_to_workgroup(self.user, new_workgroup):
+            raise PermissionDenied
+
+        move_from_checks = {}  # Cache workgroup permissions as we check them to speed things up
+
+        failed = []
+        success = []
+        with transaction.atomic(), reversion.revisions.create_revision():
+            reversion.revisions.set_user(self.user)
+            for item in items:
+                can_move = move_from_checks.get(item.workgroup.pk, None)
+                if can_move is None:
+                    can_move = user_can_remove_from_workgroup(self.user, item.workgroup)
+                    move_from_checks[item.workgroup.pk] = can_move
+
+                if not can_move:
+                    failed.append(item)
+                else:
+                    success.append(item)
+                    item.workgroup = new_workgroup
+                    item.save()
+
+            failed = list(set(failed))
+            success = list(set(success))
+            bad_items = sorted([str(i.id) for i in failed])
+            if not bad_items:
+                message = _(
+                    "%(num_items)s items moved into the workgroup '%(new_wg)s'. \n"
+                ) % {
+                    'new_wg': new_workgroup.name,
+                    'num_items': len(success),
+                }
+            else:
+                message = _(
+                    "%(num_items)s items moved into the workgroup '%(new_wg)s'. \n"
+                    "Some items failed, they had the id's: %(bad_ids)s"
+                ) % {
+                    'new_wg': new_workgroup.name,
+                    'num_items': len(success),
+                    'bad_ids': ",".join(bad_items)
+                }
+            reversion.revisions.set_comment(changeDetails + "\n\n" + message)
+            return message
+
+    @classmethod
+    def can_use(cls, user):
+        return user_can_move_any_workgroup(user)

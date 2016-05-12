@@ -110,6 +110,7 @@ class ConceptForm(WorkgroupVerificationMixin, UserAwareModelForm):
         if not self.user.is_superuser:
             self.fields['workgroup'].queryset = self.user.profile.editable_workgroups
         self.fields['name'].widget = forms.widgets.TextInput()
+        self.show_slots_tab = True
 
     def concept_fields(self):
         # version/workgroup are displayed with name/definition
@@ -128,9 +129,11 @@ class ConceptForm(WorkgroupVerificationMixin, UserAwareModelForm):
             field.name for field in self._meta.model._meta.fields
             if field not in MDR.concept._meta.fields
             ]
+        fields = []
         for name in self.fields:
             if name in obj_field_names:
-                yield self[name]
+                fields.append(self[name])
+        return fields
 
 
 class Concept_1_Search(UserAwareForm):
@@ -154,6 +157,19 @@ def subclassed_modelform(set_model):
 
 def subclassed_edit_modelform(set_model):
     class MyForm(ConceptForm, CheckIfModifiedMixin):
+        change_comments = forms.CharField(widget=forms.Textarea, required=False)
+
+        class Meta(ConceptForm.Meta):
+            model = set_model
+            if set_model.edit_page_excludes:
+                exclude = set_model.edit_page_excludes
+            else:
+                fields = '__all__'
+    return MyForm
+
+
+def subclassed_clone_modelform(set_model):
+    class MyForm(ConceptForm):
         change_comments = forms.CharField(widget=forms.Textarea, required=False)
 
         class Meta(ConceptForm.Meta):

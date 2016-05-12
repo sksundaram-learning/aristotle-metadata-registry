@@ -23,7 +23,7 @@ def model_to_dict(item):
     return dict((k, v) for (k, v) in mtd(item).items() if v is not None)
 
 
-def modeL_to_dict_with_change_time(item, fetch_time=None):
+def model_to_dict_with_change_time(item, fetch_time=None):
     """
     This constructs a dictionary from a model, with a last_fetched value as well
     that is needed for checking in edit forms to prevent overrides of other saves.
@@ -32,6 +32,13 @@ def modeL_to_dict_with_change_time(item, fetch_time=None):
         fetch_time = timezone.now()
     d = model_to_dict(item)
     d['last_fetched'] = str(fetch_time)
+    
+    # Add slots management form
+    d['slots-TOTAL_FORMS'] = 0
+    d['slots-INITIAL_FORMS'] = 0
+    d['slots-MIN_NUM_FORMS'] = 0
+    d['slots-MAX_NUM_FORMS'] = 0
+
     return d
 
 
@@ -143,81 +150,81 @@ class ManagedObjectVisibility(object):
         d = date(1999, 1, 1)
         self.assertEqual(self.item.check_is_public(when=d), False)
         self.assertEqual(self.item.check_is_locked(when=d), False)
-        self.assertEqual(self.item.current_statuses(when=d), [])
+        self.assertEqual(list(self.item.current_statuses(when=d)), [])
 
         d = date(2000, 1, 1)
         self.assertEqual(self.item.check_is_public(when=d), False)
         self.assertEqual(self.item.check_is_locked(when=d), False)
-        self.assertEqual(self.item.current_statuses(when=d), [s1])
+        self.assertEqual(list(self.item.current_statuses(when=d)), [s1])
 
         d = date(2005, 1, 1)
         self.assertEqual(self.item.check_is_public(when=d), True)
         self.assertEqual(self.item.check_is_locked(when=d), True)
-        self.assertEqual(self.item.current_statuses(when=d), [s2])
+        self.assertEqual(list(self.item.current_statuses(when=d)), [s2])
 
         d = date(2005, 6, 29)
         self.assertEqual(self.item.check_is_public(when=d), True)
         self.assertEqual(self.item.check_is_locked(when=d), True)
-        self.assertEqual(self.item.current_statuses(when=d), [s2])
+        self.assertEqual(list(self.item.current_statuses(when=d)), [s2])
 
         d = date(2005, 6, 30)
         self.assertEqual(self.item.check_is_public(when=d), False)
         self.assertEqual(self.item.check_is_locked(when=d), False)
-        self.assertEqual(self.item.current_statuses(when=d), [s1])
+        self.assertEqual(list(self.item.current_statuses(when=d)), [s1])
 
         d = date(2005, 7, 1)
         self.assertEqual(self.item.check_is_public(when=d), True)
         self.assertEqual(self.item.check_is_locked(when=d), True)
-        self.assertEqual(self.item.current_statuses(when=d), [s3])
+        self.assertEqual(list(self.item.current_statuses(when=d)), [s3])
 
         d = date(2006, 2, 1)
         self.assertEqual(self.item.check_is_public(when=d), False)
         self.assertEqual(self.item.check_is_locked(when=d), True)
-        self.assertEqual(self.item.current_statuses(when=d), [s4])
+        self.assertEqual(list(self.item.current_statuses(when=d)), [s4])
 
         d = date(2006, 3, 1)
         self.assertEqual(self.item.check_is_public(when=d), True)
         self.assertEqual(self.item.check_is_locked(when=d), True)
-        self.assertEqual(self.item.current_statuses(when=d), [s5])
+        self.assertEqual(list(self.item.current_statuses(when=d)), [s5])
 
         d = date(2006, 8, 1)
         self.assertEqual(self.item.check_is_public(when=d), False)
         self.assertEqual(self.item.check_is_locked(when=d), True)
-        self.assertEqual(self.item.current_statuses(when=d), [s4])
+        self.assertEqual(list(self.item.current_statuses(when=d)), [s4])
 
         d = date(2006, 10, 31)
         self.assertEqual(self.item.check_is_public(when=d), False)
         self.assertEqual(self.item.check_is_locked(when=d), True)
-        self.assertEqual(self.item.current_statuses(when=d), [s4])
+        self.assertEqual(list(self.item.current_statuses(when=d)), [s4])
 
         d = date(2006, 11, 1)
         self.assertEqual(self.item.check_is_public(when=d), True)
         self.assertEqual(self.item.check_is_locked(when=d), True)
-        self.assertEqual(self.item.current_statuses(when=d), [s6])
+        self.assertEqual(list(self.item.current_statuses(when=d)), [s6])
 
         d = date(2008, 07, 30)
         self.assertEqual(self.item.check_is_public(when=d), True)
         self.assertEqual(self.item.check_is_locked(when=d), True)
-        self.assertEqual(self.item.current_statuses(when=d), [s6])
+        self.assertEqual(list(self.item.current_statuses(when=d)), [s6])
 
         d = date(2008, 8, 1)
         self.assertEqual(self.item.check_is_public(when=d), True)
         self.assertEqual(self.item.check_is_locked(when=d), True)
-        self.assertEqual(self.item.current_statuses(when=d), [s3])
+        self.assertEqual(list(self.item.current_statuses(when=d)), [s3])
 
         self.assertEqual(self.item.check_is_public(), True)
         self.assertEqual(self.item.check_is_locked(), True)
-        self.assertEqual(self.item.current_statuses(), [s3])
+        self.assertEqual(list(self.item.current_statuses()), [s3])
 
         d = the_future - datetime.timedelta(days=1)
         self.assertEqual(self.item.check_is_public(when=d), True)
         self.assertEqual(self.item.check_is_locked(when=d), True)
-        self.assertEqual(self.item.current_statuses(when=d), [s3])
+        self.assertEqual(list(self.item.current_statuses(when=d)), [s3])
 
         d = the_future + datetime.timedelta(days=1)
         self.assertEqual(self.item.check_is_public(when=d), False)
         self.assertEqual(self.item.check_is_locked(when=d), True)
-        self.assertEqual(self.item.current_statuses(when=d), [s7])
+        self.assertEqual(list(self.item.current_statuses(when=d)), [s7])
 
     def test_object_is_public_after_ra_state_changes(self):
         self.assertEqual(self.item.is_public(), False)

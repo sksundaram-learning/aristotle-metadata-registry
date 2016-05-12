@@ -1,5 +1,8 @@
 import os
-from setuptools import setup
+from setuptools import setup, find_packages
+from aristotle_mdr import get_version
+
+VERSION = get_version()
 
 with open(os.path.join(os.path.dirname(__file__), 'README.rst')) as readme:
     README = readme.read()
@@ -8,16 +11,16 @@ with open(os.path.join(os.path.dirname(__file__), 'README.rst')) as readme:
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
-    name='django-aristotle-metadata-registry',
-    version='0.0.1a1',
-    packages=['aristotle_mdr'],
+    name='aristotle-metadata-registry',
+    version=VERSION,
+    packages=find_packages(),
     include_package_data=True,
-    license='Aristotle-MDR Modified BSD Licence',  # example license
+    license='Aristotle-MDR Modified BSD Licence',
     description='Aristotle-MDR is an open-source metadata registry as laid out by the requirements of the IEC/ISO 11179:2013 specification.',
     long_description=README,
     url='https://github.com/aristotle-mdr/aristotle-metadata-registry',
     author='Samuel Spencer',
-    author_email='sam@sqbl.org',
+    author_email='sam@aristotlemetadata.com',
     classifiers=[
         'Development Status :: 3 - Alpha',
 
@@ -36,10 +39,11 @@ setup(
     install_requires = [
         "Django>=1.8,<1.9",
         'pytz',
+        'pyyaml',
 
         'django-model-utils==2.3.1',
         'django-notifications-hq>=1.0', #At least 0.8 for live notifications.
-        'django-grappelli',
+        'django-grappelli==2.7.3', # Grapelli 2.8 is only Django 1.9
         'docutils',
 
         #Search requirements
@@ -47,16 +51,16 @@ setup(
         'Whoosh',
 
         #Rich text editors
-        'django-ckeditor==4.5.1',
+        'django-ckeditor>=5.0.0',
 
         # Revision control
-        "django-reversion>=1.10",
-        'django-reversion-compare>=0.5.6',
+        "django-reversion==1.10.1",
+        'django-reversion-compare>=0.6.1',
         'diff-match-patch',
 
         # Fancy UI stuff
         'django-static-precompiler',
-        'django-autocomplete-light',
+        'django-autocomplete-light==2.3.3',
         'django-bootstrap3',
         'django-bootstrap3-datetimepicker',
 
@@ -65,6 +69,10 @@ setup(
 
         'xhtml2pdf',
         #'django-tastypie'
+
+        # required for help, but thats required
+        'django-autoslug',
+
     ],
 
 )

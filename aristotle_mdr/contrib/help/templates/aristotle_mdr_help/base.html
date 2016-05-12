@@ -1,0 +1,38 @@
+{% extends "aristotle_mdr/base.html" %}
+{% load i18n static compile_static %}
+
+{% block extra_head_scripts %}
+    {# <link rel="stylesheet" href="{{ STATIC_URL }}{% compile 'aristotle_mdr/aristotle.help.less' %}" /> #}
+{% endblock %}
+
+
+{% block content %}
+
+    <ul class="breadcrumb">
+    {% block breadcumbs %}
+        <li class="active">Help</li>
+    {% endblock %}
+    </ul>
+
+    <div class="col-sm-2">
+    {% block sidebar %}
+    <form id="helpSearch" action="{% url 'aristotle:search' %}" method="get"
+    role="search">
+        <label style="display:none" for="searchHelp">{% trans 'Search help' %}</label>
+        <input type="hidden" name="models" value="aristotle_mdr_help.concepthelp"></input>
+        <input type="hidden" name="models" value="aristotle_mdr_help.helppage"></input>
+        <input type="text" class="form-control" id="searchHelp" name="q" accesskey="h"></input>
+        <button style="margin:2px auto" class="center-block btn btn-sm btn-primary" type="submit" title="{% trans 'Search' %}">
+            Search Help <i class="fa fa-search"></i>
+        </button>
+    </form>
+    {% endblock %}
+    </div>
+
+    <div class="col-sm-8">
+    <h1>{% block title %}Help{% endblock %}</h1>
+    {% block help_content %}
+    {% endblock %}
+    </div>
+
+{% endblock %}

@@ -1,5 +1,5 @@
-{% extends "admin/aristotle_admin_base.html" %}
-{% load i18n %}
+{% extends "admin/base.html" %}
+{% load i18n grp_tags %}
 {% load staticfiles compile_static %}
 
 {% block title %}{{ title }} - {{ config.SITE_NAME }}{% endblock %}
@@ -14,9 +14,78 @@
 
 
 {% block extrahead %}
-    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.js" type="text/javascript"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.js" type="text/javascript"></script>
     <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ STATIC_URL }}{% compile 'aristotle_mdr/aristotle.admin.less' %}" />
     <script src="{% static 'aristotle_mdr/aristotle.admin.js' %}" type="text/javascript"></script>
     {% include 'autocomplete_light/static.html' %}
+{% endblock %}
+
+{% block extrastyle %}
+    <style>
+        header#grp-header { position:relative;} 
+        #user-icon { display:inline !important; }
+        header#grp-header #grp-navigation h1#grp-admin-title { margin:0px; padding:0px; }
+        #grp-content { top:0px; }
+        header#grp-header #grp-navigation a { color:rgb(208, 209, 213) ; }
+    </style>
+{% endblock %}
+
+{% block admin_title %}
+    <h1 id="grp-admin-title">
+        <a href="{% url 'aristotle:home' %}" id="logo">
+            <img height="48px" src="{{ config.SITE_BRAND }}" alt="{{ config.SITE_NAME }}" title="{% trans 'Return to the main site' %} - {{ config.SITE_NAME }}">
+        </a>
+        {% if grappelli_admin_title %}
+            {{ grappelli_admin_title }}
+        {% else %}
+            {% get_admin_title %}
+        {% endif %}
+    </h1>
+{% endblock %}
+
+{% block userlinks %}
+    <!-- Documentation -->
+    {% url 'django-admindocs-docroot' as docsroot %}
+    {% if docsroot %}
+        <li><a href="{{ docsroot }}" title={% trans 'Browse live documentation' %}>{% trans 'Documentation' %}</a></li>
+    {% endif %}
+    <!-- Username -->
+    <li class="grp-user-options-container grp-collapse grp-closed {% if request.session.original_user %}grp-switch-user-is-target{% endif %}">
+        <a href="javascript://" class="user-options-handler grp-collapse-handler {% if request.session.original_user %}grp-switch-user-is-target{% else %}grp-switch-user-is-original{% endif %}"
+            title="{% trans 'Open user menu' %}">
+            {% if user.is_superuser %}
+                <i id="user-icon" class="fa fa-user-md fa-lg"></i>
+            {% else %}
+                <i id="user-icon" class="fa fa-user fa-lg"></i>
+            {% endif %}
+            {% firstof user.get_short_name user.get_username %}
+        </a>
+        <ul class="grp-user-options">
+            <!-- Change Password -->
+            <li><a href="{% url 'aristotle:userHome' %}"><i class="fa fa-home fa-fw"></i> {% trans 'My Dashboard'%}</a></li>
+            {% if user.has_usable_password %}
+                <li><a href="{% url 'admin:password_change' %}" class="grp-change-password"><i class="fa fa-cog fa-fw"></i> {% trans 'Change password' %}</a></li>
+            {% endif %}
+            <!-- Logout -->
+            <li><a href="{% url 'admin:logout' %}" class="grp-logout"><i class="fa fa-sign-out fa-fw"></i> {% trans 'Log out' %}</a></li>
+            <!-- Switch -->
+            {% switch_user_dropdown %}
+        </ul>
+    </li>
+    <li>
+        <a href="{% url 'notifications:all' %}">
+            {% if user.notifications.unread %}
+            <span class="fa fa-envelope fa-lg" title="{% trans 'New notifications' %}"></span>
+            {% else %}
+            <span class="fa fa-envelope-o fa-lg" title="{% trans 'No unread notifications' %}"></span>
+            {% endif %}
+        </a>
+    </li>
+    <li>
+        <a href="{% url 'django.contrib.auth.views.logout' %}?next={{request.path}}" title="{% trans 'Log out'%}">
+            <i class="fa fa-sign-out fa-fw"></i>
+            <span class="visible-xs-inline">{% trans 'Log out' %}</span>
+        </a>
+    </li>
 {% endblock %}

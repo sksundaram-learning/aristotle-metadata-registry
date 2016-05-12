@@ -8,7 +8,7 @@ from django.template.defaultfilters import slugify
 
 from aristotle_mdr import models as MDR
 from aristotle_mdr import forms as MDRForms
-from aristotle_mdr.views.utils import paginated_list
+from aristotle_mdr.views.utils import paginated_list, workgroup_item_statuses
 from aristotle_mdr.perms import user_in_workgroup, user_is_workgroup_manager
 
 
@@ -19,7 +19,12 @@ def workgroup(request, iid, name_slug):
         return redirect(wg.get_absolute_url())
     if not user_in_workgroup(request.user, wg):
         raise PermissionDenied
-    renderDict = {"item": wg, "workgroup": wg, "user_is_admin": user_is_workgroup_manager(request.user, wg)}
+    renderDict = {
+        "item": wg,
+        "workgroup": wg,
+        "user_is_admin": user_is_workgroup_manager(request.user, wg),
+        "counts": workgroup_item_statuses(wg)
+    }
     renderDict['recent'] = MDR._concept.objects.filter(workgroup=iid).select_subclasses().order_by('-modified')[:5]
     page = render(request, wg.template, renderDict)
     return page

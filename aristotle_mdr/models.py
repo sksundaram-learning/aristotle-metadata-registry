@@ -18,10 +18,10 @@ from model_utils import Choices, FieldTracker
 import reversion  # import revisions
 
 import datetime
-from ckeditor.fields import RichTextField
+from ckeditor_uploader.fields import RichTextUploadingField as RichTextField
 from aristotle_mdr import perms
 from aristotle_mdr import messages
-from aristotle_mdr.utils import url_slugify_concept, url_slugify_workgroup
+from aristotle_mdr.utils import url_slugify_concept, url_slugify_workgroup, url_slugify_registration_authoritity
 from aristotle_mdr import comparators
 
 from model_utils.fields import AutoLastModifiedField
@@ -91,11 +91,13 @@ class baseAristotleObject(TimeStampedModel):
         return "{name}".format(name=self.name)
 
     # Defined so we can access it during templates.
-    def get_verbose_name(self):
-        return self._meta.verbose_name.title()
+    @classmethod
+    def get_verbose_name(cls):
+        return cls._meta.verbose_name.title()
 
-    def get_verbose_name_plural(self):
-        return self._meta.verbose_name_plural.title()
+    @classmethod
+    def get_verbose_name_plural(cls):
+        return cls._meta.verbose_name_plural.title()
 
     # @property
     # def url_name(self):
@@ -116,6 +118,11 @@ class baseAristotleObject(TimeStampedModel):
     def can_view(self, user):
         # This should always be overridden
         raise NotImplementedError  # pragma: no cover
+
+    @classmethod
+    def meta(self):
+        # I know what I'm doing, get out the way.
+        return self._meta
 
 
 class unmanagedObject(baseAristotleObject):
@@ -210,6 +217,9 @@ class RegistrationAuthority(registryGroup):
     class Meta:
         verbose_name_plural = _("Registration Authorities")
 
+    def get_absolute_url(self):
+        return url_slugify_registration_authoritity(self)
+
     def can_view(self, user):
         return True
 
@@ -273,9 +283,9 @@ class RegistrationAuthority(registryGroup):
                     child_item, state, user, *args, **kwargs
                 )
                 if registered:
-                    seen_items['success'] = seen_items['success'] + [item]
+                    seen_items['success'] = seen_items['success'] + [child_item]
                 else:
-                    seen_items['failed'] = seen_items['failed'] + [item]
+                    seen_items['failed'] = seen_items['failed'] + [child_item]
         return seen_items
 
     def register(self, item, state, user, *args, **kwargs):
@@ -375,7 +385,6 @@ class Workgroup(registryGroup):
     registrationAuthorities = models.ManyToManyField(
         RegistrationAuthority,
         blank=True,
-        null=True,
         related_name="workgroups",
         verbose_name=_('Registration Authorities'),
     )
@@ -612,7 +621,8 @@ class ConceptQuerySet(InheritanceQuerySet):
 
 
 class ConceptManager(InheritanceManager):
-    """The ``ConceptManager`` is the default object manager for ``concept`` and
+    """
+    The ``ConceptManager`` is the default object manager for ``concept`` and
     ``_concept`` items, and extends from the django-model-utils
     ``InheritanceManager``.
 
@@ -653,6 +663,7 @@ class _concept(baseAristotleObject):
 
     comparator = comparators.Comparator
     edit_page_excludes = None
+    admin_page_excludes = None
 
     class Meta:
         # So the url_name works for items we can't determine.
@@ -693,8 +704,16 @@ class _concept(baseAristotleObject):
                 if ra.registrars.filter(pk=user.pk).exists():
                     return True
         if self.readyToReview:
-            for ra in self.workgroup.registrationAuthorities.all():
-                if ra.registrars.filter(pk=user.pk).exists():
+            if self.workgroup.ownership == WORKGROUP_OWNERSHIP.authority:
+                for ra in self.workgroup.registrationAuthorities.all():
+                    if ra.registrars.filter(pk=user.pk).exists():
+                        return True
+            else:
+                if self.workgroup.registrationAuthorities.count() > 0:
+                    for ra in self.workgroup.registrationAuthorities.all():
+                        if ra.registrars.filter(pk=user.pk).exists():
+                            return True
+                else:
                     return True
         return False
 
@@ -705,6 +724,14 @@ class _concept(baseAristotleObject):
         find the subclassed item.
         """
         return _concept.objects.get_subclass(pk=self.pk)
+
+    @property
+    def concept(self):
+        """
+        Returns the parent _concept that an item is built on.
+        If the item type is _concept, return itself.
+        """
+        return getattr(self, '_concept_ptr', self)
 
     @classmethod
     def get_autocomplete_name(self):
@@ -755,9 +782,12 @@ class _concept(baseAristotleObject):
         """
         if self.workgroup.ownership == WORKGROUP_OWNERSHIP.authority:
             authorities = self.workgroup.registrationAuthorities.all()
-            statuses = self.statuses.filter(
-                registrationAuthority__in=authorities
-            )
+            if authorities:
+                statuses = self.statuses.filter(
+                    registrationAuthority__in=authorities
+                )
+            else:
+                statuses = self.statuses.none()
         elif self.workgroup.ownership == WORKGROUP_OWNERSHIP.registry:
             statuses = self.statuses.all()
         statuses = self.current_statuses(qs=statuses, when=when)
@@ -811,16 +841,22 @@ class _concept(baseAristotleObject):
 
         states = qs.filter(
             registered_before_now & registation_still_valid
-        ).order_by("-registrationDate", "-created")
+        ).order_by("registrationAuthority", "-registrationDate", "-created")
 
-        current = []
-        seen_ras = []
-        for s in states:
-            ra = s.registrationAuthority
-            if ra not in seen_ras:
-                current.append(s)
-                seen_ras.append(ra)
-        return current
+        from django.db import connection
+        if connection.vendor == 'postgresql':
+            states = states.distinct('registrationAuthority')
+        else:
+            current_ids = []
+            seen_ras = []
+            for s in states:
+                ra = s.registrationAuthority
+                if ra not in seen_ras:
+                    current_ids.append(s.pk)
+                    seen_ras.append(ra)
+            # We hit again so we can return this as a queryset
+            states = states.filter(pk__in=current_ids)
+        return states
 
     def get_download_items(self):
         """
@@ -922,7 +958,8 @@ post_delete.connect(recache_concept_states, sender=Status)
 
 
 class ObjectClass(concept):
-    """Set of ideas, abstractions or things in the real world that are
+    """
+    Set of ideas, abstractions or things in the real world that are
     identified with explicit boundaries and meaning and whose properties and
     behaviour follow the same rules (3.2.88)
     """
@@ -933,7 +970,8 @@ class ObjectClass(concept):
 
 
 class Property(concept):
-    """Quality common to all members of an :model:`aristotle_mdr.ObjectClass`
+    """
+    Quality common to all members of an :model:`aristotle_mdr.ObjectClass`
     (3.2.100)
     """
     template = "aristotle_mdr/concepts/property.html"
@@ -947,8 +985,9 @@ class Measure(unmanagedObject):
 
 
 class UnitOfMeasure(concept):
-    """actual units in which the associated values are measured
-    [:model:`aristotle_mdr.ValueDomain`] (3.2.138)
+    """
+    actual units in which the associated values are measured
+    :model:`aristotle_mdr.ValueDomain` (3.2.138)
     """
 
     class Meta:
@@ -960,13 +999,15 @@ class UnitOfMeasure(concept):
 
 
 class DataType(concept):
-    """set of distinct values, characterized by properties of those values and
+    """
+    set of distinct values, characterized by properties of those values and
     by operations on those values (3.1.9)"""
     template = "aristotle_mdr/concepts/dataType.html"
 
 
 class ConceptualDomain(concept):
-    """Concept that expresses its description or valid instance meanings (3.2.21)
+    """
+    Concept that expresses its description or valid instance meanings (3.2.21)
     """
 
     # Implementation note: Since a Conceptual domain "must be either one or
@@ -1013,7 +1054,8 @@ class ValueMeaning(aristotleComponent):
 
 
 class ValueDomain(concept):
-    """set of permissible values (3.2.140)"""
+    """
+    set of permissible values (3.2.140)"""
 
     # Implementation note: Since a Value domain "must be either one or
     # both an Enumerated Valued or a Described_Value_Domain" there is
@@ -1099,7 +1141,8 @@ class SupplementaryValue(AbstractValue):
 
 
 class DataElementConcept(concept):
-    """Concept that is an association of a :model:`aristotle_mdr.Property`
+    """
+    Concept that is an association of a :model:`aristotle_mdr.Property`
     with an :model:`aristotle_mdr.ObjectClass` (3.2.29)"""
 
     # Redefine in this context as we need 'property' for the 11179 terminology.
@@ -1121,7 +1164,8 @@ class DataElementConcept(concept):
 # Yes this name looks bad - blame 11179:3:2013 for renaming "administered item"
 # to "concept".
 class DataElement(concept):
-    """Unit of data that is considered in context to be indivisible (3.2.28)"""
+    """
+    Unit of data that is considered in context to be indivisible (3.2.28)"""
 
     template = "aristotle_mdr/concepts/dataElement.html"
     dataElementConcept = models.ForeignKey(
@@ -1144,9 +1188,10 @@ class DataElement(concept):
 
 
 class DataElementDerivation(concept):
-    """Application of a derivation rule to one or more
-    input :model:`aristotle_mdr.DataElement`s to derive one or more
-    output :model:`aristotle_mdr.DataElement`s (3.2.33)"""
+    """
+    Application of a derivation rule to one or more
+    input :model:`aristotle_mdr.DataElement`\s to derive one or more
+    output :model:`aristotle_mdr.DataElement`\s (3.2.33)"""
 
     derives = models.ForeignKey(
         DataElement,
@@ -1157,8 +1202,7 @@ class DataElementDerivation(concept):
     inputs = models.ManyToManyField(
         DataElement,
         related_name="input_to_derivation",
-        blank=True,
-        null=True
+        blank=True
     )
     derivation_rule = models.TextField(blank=True)
 
@@ -1216,12 +1260,10 @@ class PossumProfile(models.Model):
         if self.user.is_superuser:
             return Workgroup.objects.all()
         else:
-            # return (self.user.submitter_in.all() |
-            #     self.user.steward_in.all()
-            # ).distinct().filter(archived=False)
-            return Workgroup.objects.filter(archived=False).filter(
-                Q(submitters__pk=self.user.pk) | Q(stewards__pk=self.user.pk)
-            )
+            return (
+                self.user.submitter_in.all() |
+                self.user.steward_in.all()
+            ).distinct().filter(archived=False)
 
     @property
     def is_registrar(self):
@@ -1237,7 +1279,7 @@ class PossumProfile(models.Model):
     def registrarAuthorities(self):
         "NOTE: This is a list of Authorities the user is a *registrar* in!."
         if self.user.is_superuser:
-                return RegistrationAuthority.objects.all()
+            return RegistrationAuthority.objects.all()
         else:
             return self.user.registrar_in.all()
 
@@ -1272,72 +1314,6 @@ post_save.connect(create_user_profile, sender=User)
 #  items = models.ManyToManyField(_concept,related_name='in_collections')
 #  owner = models.ManyToManyField(User, related_name='owned_collections')
 #  viewer = models.ManyToManyField(User, related_name='subscribed_collections')
-
-def defaultData():
-    system = User.objects.get(username="aristotle")
-    iso, c = RegistrationAuthority.objects.get_or_create(
-        name="ISO/IEC",
-        definition="ISO/IEC"
-    )
-    iso_wg, c = Workgroup.objects.get_or_create(name="ISO/IEC Workgroup")
-    dataTypes = [
-        ("Boolean", ("A binary value expressed using a string (e.g. true or "
-                     "false).")),
-        ("Currency", ("A numeric value expressed using a particular medium of "
-                      "exchange.")),
-        ("Date/Time", ("A specific instance of time expressed in numeric "
-                       "form.")),
-        ("Number", ("A sequence of numeric characters which may contain "
-                    "decimals, excluding codes with 'leading' characters "
-                    "e.g. '01','02','03'. ")),
-        ("String", ("A sequence of alphabetic and/or numeric characters, "
-                    "including 'leading' characters e.g. '01','02','03'.")),
-    ]
-    print("making datatypes:  ", end="")
-    for name, desc in dataTypes:
-        dt, created = DataType.objects.get_or_create(
-            name=name,
-            definition=desc,
-            workgroup=iso_wg
-        )
-        iso.register(dt, STATES.standard, system, datetime.date(2000, 1, 1))
-        print("{name} ".format(name=name), end="")
-    print("")
-
-    sys_wg, c = Workgroup.objects.get_or_create(name="System Workgroup")
-    unitsOfMeasure = [
-        ("Length", [
-            ("Centimetre", "cm"),
-            ("Millimetre", "mm"),
-        ]),
-        ("Temperature", [
-            ("Degree", "Celsius"),
-        ]),
-        ("Time", [
-            ("Second", "s"),
-            ("Minute", "min"),
-            ("Hour", "h"),
-            ("Day", "D"),
-            ("Year", "Y"),
-        ]),
-        ("Weight", [
-            ("Gram", "g"),
-            ("Kilogram", "Kg"),
-        ]),
-    ]
-    for measure, units in unitsOfMeasure:
-        m, created = Measure.objects.get_or_create(name=measure, definition="")
-        print("making measure: {name}".format(name=measure), end="")
-        print("  : units of measure:  ", end="")
-        for name, symbol in units:
-            u, created = UnitOfMeasure.objects.get_or_create(
-                name=name,
-                symbol=symbol,
-                measure=m,
-                workgroup=sys_wg
-            )
-            print("{name}".format(name=name), end="")
-        print("")
 
 
 @receiver(post_save)
@@ -1401,209 +1377,3 @@ def new_post_created(sender, **kwargs):
     for user in post.workgroup.members.all():
         if user != post.author:
             messages.new_post_created(post, user)
-
-
-# Loads example data, this is never used in formal testing.
-def exampleData():  # pragma: no cover
-
-    sys_wg, c = Workgroup.objects.get_or_create(name="System Workgroup")
-    unitsOfMeasure = [
-        ("Length", [
-            ("Millimetre", "mm"),
-        ]),
-        ("Time", [
-            ("Hour and minute", ""),
-            ("Week", ""),
-        ]),
-    ]
-    for measure, units in unitsOfMeasure:
-        m, created = Measure.objects.get_or_create(name=measure, definition="")
-        print("making measure: {name}".format(name=measure), end="")
-        print("  : units of measure:  ", end="")
-        for name, symbol in units:
-            u, created = UnitOfMeasure.objects.get_or_create(
-                name=name,
-                symbol=symbol,
-                measure=m,
-                workgroup=sys_wg
-            )
-            print("{name}".format(name=name), end="")
-        print("")
-    # defaultData()
-    print("configuring users")
-
-    if not User.objects.filter(username__iexact='possum').first():
-        user = User.objects.create_superuser('possum', '', 'pilches')
-        print("making superuser")
-
-    # Set up based workgroup and workers.
-    pw, c = Workgroup.objects.get_or_create(name="Possum Workgroup")
-    users = [
-        ('vicky', 'Viewer'),
-        ('stewie', 'Steward'),
-        ('mandy', 'Manager'),
-        ('suzie', 'Submitter'),
-    ]
-    for name, role in users:
-        user = User.objects.filter(username__iexact=name).first()
-        if not user:
-            user = User.objects.create_user(name, '', role)
-            print("making user: {name}".format(name=name))
-        user.first_name = name.title()
-        user.last_name = role
-        print("updated user's name to {fn} {ln}".format(
-            fn=user.first_name,
-            ln=user.last_name
-        ))
-        pw.giveRoleToUser(role.lower(), user)
-        user.save()
-
-    oldoc, c = ObjectClass.objects.get_or_create(
-        name="Person",
-        workgroup=pw,
-        definition="A human being, whether man or woman."
-    )
-    oc, c = ObjectClass.objects.get_or_create(
-        name="Person",
-        workgroup=pw,
-        definition="A human being, whether man, woman or child."
-    )
-    oc.synonyms = "People"
-    oc.readyToReview = True
-    oc.save()
-    oldoc.superseded_by = oc
-    oldoc.save()
-    p, c = Property.objects.get_or_create(
-        name="Age",
-        workgroup=pw,
-        definition="The length of life or existence."
-    )
-    dec, c = DataElementConcept.objects.get_or_create(
-        name="Person-Age",
-        workgroup=pw,
-        definition="The age of the person.",
-        objectClass=oc,
-        property=p
-    )
-    dec, c = DataElementConcept.objects.get_or_create(
-        name="Person-Age",
-        workgroup=pw,
-        definition="The age of the person.",
-        objectClass=oc,
-        property=p
-    )
-    W, c = Property.objects.get_or_create(
-        name="Weight",
-        workgroup=pw,
-        definition="The weight of an object."
-    )
-    H, c = Property.objects.get_or_create(
-        name="Height",
-        workgroup=pw,
-        definition=("The height of an object, usually measured from the "
-                    "ground to its highest point.")
-    )
-    WW, c = DataElementConcept.objects.get_or_create(
-        name="Person-Weight",
-        workgroup=pw,
-        definition="The weight of the person.",
-        objectClass=oc,
-        property=W
-    )
-    HH, c = DataElementConcept.objects.get_or_create(
-        name="Person-Height",
-        workgroup=pw,
-        definition="The height of the person.",
-        objectClass=oc,
-        property=H
-    )
-
-    vd, c = ValueDomain.objects.get_or_create(
-        name="Total years N[NN]",
-        workgroup=pw,
-        definition="Total number of completed years.",
-        format="X[XX]",
-        maximum_length=3,
-        unit_of_measure=UnitOfMeasure.objects.filter(
-            name__iexact='Week'
-        ).first(),
-        data_type=DataType.objects.filter(name__iexact='Number').first(),
-    )
-    de, c = DataElement.objects.get_or_create(
-        name="Person-age, total years N[NN]",
-        workgroup=pw,
-        definition=("The age of the person in (completed) years at a specific "
-                    "point in time."),
-        dataElementConcept=dec,
-        valueDomain=vd
-    )
-    p, c = Property.objects.get_or_create(
-        name="Sex",
-        workgroup=pw,
-        definition="A gender."
-    )
-    dec, c = DataElementConcept.objects.get_or_create(
-        name="Person-Sex",
-        workgroup=pw,
-        definition="The sex of the person.",
-        objectClass=oc,
-        property=p
-    )
-    vd, c = ValueDomain.objects.get_or_create(
-        name="Sex Code",
-        workgroup=pw,
-        definition="A code for sex.",
-        format="X",
-        maximum_length=3,
-        unit_of_measure=UnitOfMeasure.objects.filter(
-            name__iexact='Week'
-        ).first(),
-        data_type=DataType.objects.filter(name__iexact='Number').first(),
-    )
-    for val, mean in [(1, 'Male'), (2, 'Female')]:
-        codeVal = PermissibleValue(
-            value=val,
-            meaning=mean,
-            valueDomain=vd,
-            order=1
-        )
-        codeVal.save()
-    de, c = DataElement.objects.get_or_create(
-        name="Person-sex, Code N",
-        workgroup=pw,
-        definition="The sex of the person with a code.",
-    )
-    de.dataElementConcept = dec
-    de.valueDomain = vd
-    de.save()
-
-    print("Configuring registration authority")
-    ra, c = RegistrationAuthority.objects.get_or_create(
-        name="Welfare",
-        definition="Welfare Authority"
-    )
-    ra, c = RegistrationAuthority.objects.get_or_create(
-        name="Health",
-        definition="Health Authority"
-    )
-    users = [('reggie', 'Registrar'),
-             ]
-    pw.registrationAuthorities.add(ra)
-    pw.save()
-    for name, role in users:
-        user = User.objects.filter(username__iexact=name).first()
-        if not user:
-            user = User.objects.create_user(name, '', role)
-            print("making user: {name}".format(name=name))
-        user.first_name = name.title()
-        user.last_name = role
-        ra.giveRoleToUser(role, user)
-        user.save()
-
-    # Let's register a thing :/
-    reg, c = Status.objects.get_or_create(
-        concept=oc,
-        registrationAuthority=ra,
-        registrationDate=datetime.date(2009, 4, 28),
-        state=STATES.standard
-    )

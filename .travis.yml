@@ -1,6 +1,5 @@
 language: python
 python:
-#  - "2.6" # unsupported due to reportlab, which is needed for PDF downloads, not supporting 2.6.
   - "2.7"
 #  - "3.3" # No 3 support for notifications, yet.
 
@@ -40,7 +39,7 @@ before_install:
 before_script:
 #  - mysql -e 'create database aristotle_test_db;'
   - psql -c 'create database aristotle_test_db;' -U postgres
-  - pep8 --exclude=migrations,tests --ignore=E501,E225,E123 aristotle_mdr
+  - pep8 --exclude=migrations,tests,example_mdr --ignore=E501,E225,E123 aristotle_mdr
 
 install:
   - if [[ $DB == postgres ]]; then pip install -q psycopg2 --quiet; fi
