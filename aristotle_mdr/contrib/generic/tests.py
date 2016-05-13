@@ -18,6 +18,6 @@ class TestGenericPagesLoad(utils.LoggedInViewPages, TestCase):
 
         wg = Workgroup.objects.create(name="Setup WG")
         q = Questionnaire.objects.create(name='test questionnaire', workgroup=wg)
-        url = reverse('questionnaire_add_question', kwargs={'iid': q.id})
+        url = reverse('extension_test:questionnaire_add_question', kwargs={'iid': q.id})
         response = self.client.get(url)
         self.assertRedirects(response, reverse('friendly_login') + "?next=" + url)
