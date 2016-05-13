@@ -68,6 +68,8 @@ class BulkAction(FormView):
             items = []
             if form.is_valid():
                 items = form.cleaned_data['items']
+            print form.items_to_change
+            1/0
 
             confirmed = request.POST.get("confirmed", None)
 
@@ -109,7 +111,23 @@ def bulk_action(request):
         if action_form.confirm_page is None:
             # if there is no confirm page or extra details required, do the action and redirect
             form = action_form(request.POST, user=request.user)  # A form bound to the POST data
+
             if form.is_valid():
+                to_change = form.items_to_change
+                if to_change.count() > 10:
+                    new_form = request.POST.copy()
+                    new_form.setlist('items', form.items_to_change.values_list('id', flat=True))
+                    form = action_form(new_form, user=request.user, items=[])
+                    return render(
+                        request,
+                        "aristotle_mdr/actions/bulk_actions/lots_of_things.html",
+                        {
+                            "items": to_change,
+                            "form": form,
+                            "next": url,
+                            "action": action,
+                        }
+                    )
                 message = form.make_changes()
                 messages.add_message(request, messages.INFO, message)
             else:
@@ -122,6 +140,10 @@ def bulk_action(request):
                 items = form.cleaned_data['items']
 
             confirmed = request.POST.get("confirmed", None)
+            if form.items_to_change:
+                new_form = request.POST.copy()
+                new_form.setlist('items', form.items_to_change.values_list('id', flat=True))
+                request.POST = new_form
 
             if confirmed:
                 # We've passed the confirmation page, try and save.

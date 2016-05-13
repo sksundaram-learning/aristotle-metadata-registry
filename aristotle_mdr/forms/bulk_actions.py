@@ -75,6 +75,12 @@ class BulkActionForm(UserAwareForm):
     classes = ""
     confirm_page = None
     all_in_queryset = forms.BooleanField(
+    )
+    all_in_queryset = forms.BooleanField(
+        label=_("All items"),
+        required=False,
+    )
+    qs = forms.CharField(
         label=_("All items"),
         required=False,
     )
@@ -91,33 +97,36 @@ class BulkActionForm(UserAwareForm):
         label="Related items", 
         required=False,
     )
-    item_label="Select some items"
+    items_label = "Select some items"
     queryset = MDR._concept.objects.all()
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, form, *args, **kwargs):
         initial_items = kwargs.pop('items', [])
-        super(BulkActionForm, self).__init__(*args, **kwargs)
         if 'user' in kwargs.keys():
-            self.user = kwargs.pop('user', None)
+            self.user = kwargs.get('user', None)
             queryset = MDR._concept.objects.visible(self.user)
         else:
             queryset = MDR._concept.objects.public()
 
+        super(BulkActionForm, self).__init__(form, *args, **kwargs)
+
+
         self.fields['items'] = ForbiddenAllowedModelMultipleChoiceField(
-            label=self.item_label,
+            label=self.items_label,
             validate_queryset=MDR._concept.objects.all(),
             queryset=queryset,
             initial=initial_items,
+            required=False,
             widget=autocomplete_light.MultipleChoiceWidget('Autocomplete_concept')
         )
 
     @property
     def items_to_change(self):
-        print 'data',self.data
-        print 'clean data',self.cleaned_data
-        1/0        
         if bool(self.cleaned_data.get('all_in_queryset',False)):
-            items = self.queryset
+            filters = dict([
+                tuple(v.split('=')) for v in self.cleaned_data.get('qs',"").split(',')
+                ])
+            items = self.queryset.filter(**filters).visible(self.user)
         else:
             items = self.cleaned_data.get('items')
         return items
@@ -140,6 +149,7 @@ class BulkActionForm(UserAwareForm):
 class AddFavouriteForm(BulkActionForm):
     classes="fa-bookmark"
     action_text = _('Add favourite')
+    items_label = "Items that will be added to your favourites list"
 
     def make_changes(self):
         items = self.items_to_change
@@ -158,6 +168,7 @@ class AddFavouriteForm(BulkActionForm):
 class RemoveFavouriteForm(BulkActionForm):
     classes="fa-minus-square"
     action_text = _('Remove favourite')
+    items_label = "Items that will be removed from your favourites list"
 
     def make_changes(self):
         items = self.items_to_change
@@ -169,7 +180,7 @@ class ChangeStateForm(ChangeStatusForm, BulkActionForm):
     confirm_page = "aristotle_mdr/actions/bulk_actions/change_status.html"
     classes="fa-university"
     action_text = _('Change registration status')
-    items_label="These are the items that will be be registered. Add or remove additional items with the autocomplete box.",
+    items_label = "These are the items that will be registered. Add or remove additional items with the autocomplete box."
 
     def __init__(self, *args, **kwargs):
         super(ChangeStateForm, self).__init__(*args, **kwargs)

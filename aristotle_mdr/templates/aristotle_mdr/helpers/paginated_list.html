@@ -10,7 +10,11 @@ Showing {{ page.paginator.count }} results.
 <thead>
     <tr>
         <th>
-            <input title='{% trans "Select all" %}' type="checkbox" id="all_in_queryset" name="all_in_queryset" checked="checked">
+            {% if allow_select_all %}
+            <input title='{% trans "Select all" %}' type="checkbox" id="all_in_queryset" name="all_in_queryset">
+            <input type="" name="qs" value="{{ select_all_list_queryset_filter }}">
+
+            {% endif %}
         </th>
         <th></th>
         <th>
