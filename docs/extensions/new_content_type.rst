@@ -200,8 +200,7 @@ fieldsets, autcompeletes and suggested names is::
         name_suggest_fields = ['questionText','collectedDataElement']
 
 `For more information on configuring an admin site for Django models, consult the
-Django documentation <https://docs.djangoproject.com/en/stable/ref/contrib/admin/>`_
-as well as `the documentation for Grappelli admin extensions <https://django-grappelli.readthedocs.org/>`_.
+Django documentation <https://docs.djangoproject.com/en/stable/ref/contrib/admin/>`_.
 
 Making new item types searchable
 ++++++++++++++++++++++++++++++++
