@@ -15,6 +15,7 @@ from aristotle_mdr.utils import get_concepts_for_apps
 from aristotle_mdr.models import _concept
 from aristotle_mdr.perms import user_can_edit
 
+
 class GenericAlterManyToManyView(FormView):
     model_to_add = None
     model_base = None
