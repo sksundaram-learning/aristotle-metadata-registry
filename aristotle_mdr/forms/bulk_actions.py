@@ -75,8 +75,6 @@ class BulkActionForm(UserAwareForm):
     classes = ""
     confirm_page = None
     all_in_queryset = forms.BooleanField(
-    )
-    all_in_queryset = forms.BooleanField(
         label=_("All items"),
         required=False,
     )
@@ -123,9 +121,16 @@ class BulkActionForm(UserAwareForm):
     @property
     def items_to_change(self):
         if bool(self.cleaned_data.get('all_in_queryset',False)):
-            filters = dict([
-                tuple(v.split('=')) for v in self.cleaned_data.get('qs',"").split(',')
-                ])
+            filters = {}
+            for v in self.cleaned_data.get('qs',"").split(','):
+                if 'user' in v:
+                    # if the queryset even contains a user, cut it right off
+                    # otherwise, it could leak data if people tried to alter the query value
+                    k = v.split('user',1)[0] + 'user'
+                    v = self.user
+                else:
+                    k,v = v.split('=',1)
+                filters.update({k:v})
             items = self.queryset.filter(**filters).visible(self.user)
         else:
             items = self.cleaned_data.get('items')

@@ -214,7 +214,8 @@ def favourites(request):
     items = request.user.profile.favourites.select_subclasses()
     context = {
         'help': request.GET.get("help", False),
-        'favourite': request.GET.get("favourite", False)
+        'favourite': request.GET.get("favourite", False),
+        "select_all_list_queryset_filter": 'favourited_by__user=user' # no information leakage here.
     }
     return paginated_list(request, items, "aristotle_mdr/user/userFavourites.html", context)
 
