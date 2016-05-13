@@ -192,7 +192,7 @@ class ChangeStateForm(ChangeStatusForm, BulkActionForm):
             raise PermissionDenied
         ras = self.cleaned_data['registrationAuthorities']
         state = self.cleaned_data['state']
-        items = items_to_change
+        items = self.items_to_change
         regDate = self.cleaned_data['registrationDate']
         cascade = self.cleaned_data['cascadeRegistration']
         changeDetails = self.cleaned_data['changeDetails']
