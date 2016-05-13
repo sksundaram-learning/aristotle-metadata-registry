@@ -113,6 +113,13 @@
         {% endif %}
     </li>
     {% endif %}
+    {% if request.user.is_staff %}
+    <li class="staff_action {% ifequal activeTab "djangoAdminTools" %}active{% endifequal %}">
+        <a href="{% url 'admin:index' %}">
+        <i class="fa fa-user-md fa-fw"></i> {% trans "Django administration" %}
+        </a>
+    </li>
+    {% endif %}
     <li role="presentation" class="nav-divider"></li>
     {% for addon in config.DASHBOARD_ADDONS %}
         {% with addon|add:'/dashboard/sidebar.html' as template %}

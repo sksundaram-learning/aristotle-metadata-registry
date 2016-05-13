@@ -1,5 +1,5 @@
 {% extends "aristotle_mdr/base.html" %}
-{% load aristotle_tags i18n slot_tags %}
+{% load aristotle_tags i18n slot_tags util_tags %}
 {% block title %}Slots - Metadata Items related to '{{slot_type.slot_name}}'{% endblock %}
 
 {% block content %}
@@ -10,9 +10,11 @@
         items of type
         {% with item_type=slot_type.model_class %}
         <a href='{% url "aristotle_help:concept_help" item_type.app_label item_type.model %}'>{{ item_type }}</a>.
+        {% if slot_type.help_text %}
         <p class='slot_help'>
             {{ slot_type.help_text }}
         </p>
+        {% endif %}
         {% endwith %}
         {% if value %}
             <p>
@@ -36,7 +38,7 @@
         </tr>
         </thead>
         <tbody>
-      {% for obj in object_list.all %}
+      {% for obj in object_list.all|order_by:'name' %}
         <tr>
             <td>
                 {% include "aristotle_mdr/helpers/inlineDetails.html" with item=obj %}

@@ -41,12 +41,11 @@ SOUTH_TESTS_MIGRATE = False
 MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
 
 INSTALLED_APPS = (
-    'aristotle_mdr',  # Comes before grappelli for overloads
+    'aristotle_mdr',
     'aristotle_mdr.contrib.generic',
     'aristotle_mdr.contrib.help',
     'aristotle_mdr.contrib.slots',
     'aristotle_mdr.contrib.browse',
-    'grappelli',
     'haystack',
     'django.contrib.admin',
     'django.contrib.admindocs',
@@ -107,6 +106,7 @@ STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     'static_precompiler.finders.StaticPrecompilerFinder',
 )
+ADMIN_MEDIA_PREFIX = '/static/admin/'
 
 if DEBUG:
     STATIC_PRECOMPILER_CACHE_TIMEOUT = 1

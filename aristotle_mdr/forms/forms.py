@@ -152,7 +152,6 @@ class ChangeStatusForm(UserAwareForm):
 class PermissibleValueForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(PermissibleValueForm, self).__init__(*args, **kwargs)
-        self.fields['order'].widget = forms.HiddenInput()
 
     class Meta:
         model = MDR.PermissibleValue

@@ -14,13 +14,12 @@ Once this is done, follow the steps below to setup Aristotle-MDR.
         ...
         'haystack',
         'aristotle_mdr',
-        'grappelli',
         ...
     )
 
    To ensure that search indexing works properly `haystack` **must** be installed before `aristotle_mdr`.
    If you want to take advantage of Aristotle's WCAG-2.0 access-key shortcut improvements for the admin interface,
-   make sure it is installed *before* `grappelli`.
+   make sure it is installed *before* the django admin app.
 
 2. Include the Aristotle-MDR URLconf in your project urls.py. Because Aristotle will
    form the majority of the interactions with the site, as well as including a
