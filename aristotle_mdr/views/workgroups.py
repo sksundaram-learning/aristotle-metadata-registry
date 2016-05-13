@@ -40,7 +40,7 @@ def items(request, iid):
         "item": wg,
         "workgroup": wg,
         "user_is_admin": user_is_workgroup_manager(request.user, wg),
-        "select_all_list_queryset_filter": 'workgroup__pk=%s'%wg.pk
+        "select_all_list_queryset_filter": 'workgroup__pk=%s' % wg.pk
     }
     return paginated_list(request, items, "aristotle_mdr/workgroupItems.html", context)
 

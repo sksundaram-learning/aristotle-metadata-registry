@@ -82,17 +82,13 @@ class BulkActionForm(UserAwareForm):
         label=_("All items"),
         required=False,
     )
-    # all_on_page = forms.BooleanField(
-    #     label=_("All items on page"),
-    #     required=False,
-    # )
-    
+
     # queryset is all as we try to be nice and process what we can in bulk
     # actions.
     items = ForbiddenAllowedModelMultipleChoiceField(
         queryset=MDR._concept.objects.all(),
         validate_queryset=MDR._concept.objects.all(),
-        label="Related items", 
+        label="Related items",
         required=False,
     )
     items_label = "Select some items"
@@ -108,7 +104,6 @@ class BulkActionForm(UserAwareForm):
 
         super(BulkActionForm, self).__init__(form, *args, **kwargs)
 
-
         self.fields['items'] = ForbiddenAllowedModelMultipleChoiceField(
             label=self.items_label,
             validate_queryset=MDR._concept.objects.all(),
@@ -120,17 +115,17 @@ class BulkActionForm(UserAwareForm):
 
     @property
     def items_to_change(self):
-        if bool(self.cleaned_data.get('all_in_queryset',False)):
+        if bool(self.cleaned_data.get('all_in_queryset', False)):
             filters = {}
-            for v in self.cleaned_data.get('qs',"").split(','):
+            for v in self.cleaned_data.get('qs', "").split(','):
                 if 'user' in v:
                     # if the queryset even contains a user, cut it right off
                     # otherwise, it could leak data if people tried to alter the query value
-                    k = v.split('user',1)[0] + 'user'
+                    k = v.split('user', 1)[0] + 'user'
                     v = self.user
                 else:
-                    k,v = v.split('=',1)
-                filters.update({k:v})
+                    k, v = v.split('=', 1)
+                filters.update({k: v})
             items = self.queryset.filter(**filters).visible(self.user)
         else:
             items = self.cleaned_data.get('items')
