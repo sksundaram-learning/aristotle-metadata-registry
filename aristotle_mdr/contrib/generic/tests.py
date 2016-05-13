@@ -13,7 +13,7 @@ setup_test_environment()
 class TestGenericPagesLoad(utils.LoggedInViewPages, TestCase):
 
     def test_anon_cant_use_generic(self):
-        from aristotle_mdr.tests.apps.extension_test.models import Question, Questionnaire
+        from extension_test.models import Question, Questionnaire
         from aristotle_mdr.models import Workgroup
 
         wg = Workgroup.objects.create(name="Setup WG")
