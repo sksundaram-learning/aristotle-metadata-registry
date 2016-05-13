@@ -114,7 +114,8 @@ def bulk_action(request):
 
             if form.is_valid():
                 to_change = form.items_to_change
-                if to_change.count() > 10:
+                confirmed = request.POST.get("confirmed", None)
+                if to_change.count() > 10 and not confirmed:
                     new_form = request.POST.copy()
                     new_form.setlist('items', form.items_to_change.values_list('id', flat=True))
                     form = action_form(new_form, user=request.user, items=[])
