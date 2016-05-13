@@ -2,7 +2,10 @@ from django import forms
 from django.apps import apps
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import PermissionDenied
+from django.core.urlresolvers import reverse
 from django.http import HttpResponse, Http404, HttpResponseRedirect
+from django.shortcuts import redirect, get_object_or_404
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import FormView, ListView, TemplateView
 
@@ -10,7 +13,7 @@ import autocomplete_light
 
 from aristotle_mdr.utils import get_concepts_for_apps
 from aristotle_mdr.models import _concept
-
+from aristotle_mdr.perms import user_can_edit
 
 class GenericAlterManyToManyView(FormView):
     model_to_add = None
@@ -27,7 +30,12 @@ class GenericAlterManyToManyView(FormView):
         return context
 
     def dispatch(self, request, *args, **kwargs):
-        self.item = self.model_base.objects.get(id=self.kwargs['iid'])
+        self.item = get_object_or_404(self.model_base, pk=self.kwargs['iid'])
+        if not (self.item and user_can_edit(request.user, self.item)):
+            if request.user.is_anonymous():
+                return redirect(reverse('friendly_login') + '?next=%s' % request.path)
+            else:
+                raise PermissionDenied
         return super(GenericAlterManyToManyView, self).dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
