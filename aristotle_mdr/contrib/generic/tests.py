@@ -5,9 +5,7 @@ from django.test.utils import setup_test_environment
 
 from django.core.management import call_command
 from aristotle_mdr.contrib.help import models
-from aristotle_mdr.tests.apps.extension_test.models import Question, Questionnaire
 from aristotle_mdr.tests import utils
-from aristotle_mdr.models import Workgroup
 
 setup_test_environment()
 
@@ -15,6 +13,9 @@ setup_test_environment()
 class TestGenericPagesLoad(utils.LoggedInViewPages, TestCase):
 
     def test_anon_cant_use_generic(self):
+        from aristotle_mdr.tests.apps.extension_test.models import Question, Questionnaire
+        from aristotle_mdr.models import Workgroup
+
         wg = Workgroup.objects.create(name="Setup WG")
         q = Questionnaire.objects.create(name='test questionnaire', workgroup=wg)
         url = reverse('questionnaire_add_question', kwargs={'iid': q.id})
