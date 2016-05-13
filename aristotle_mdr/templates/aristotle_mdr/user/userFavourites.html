@@ -20,7 +20,7 @@
         {% if not help %}
             {% if page %}
                 <strong><a href="?help=help">Get help on using your favourites list</a></strong>
-                {% include "aristotle_mdr/helpers/bulk_action_paginated_list.html" with page=page %}
+                {% include "aristotle_mdr/helpers/bulk_action_paginated_list.html" with page=page allow_select_all=True %}
                 {{ page}}
             {% else %}
                 <h3>You currently have no favourited items.</h3>

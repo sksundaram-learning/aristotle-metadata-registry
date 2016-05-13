@@ -74,31 +74,62 @@ class ForbiddenAllowedModelMultipleChoiceField(forms.ModelMultipleChoiceField):
 class BulkActionForm(UserAwareForm):
     classes = ""
     confirm_page = None
+    all_in_queryset = forms.BooleanField(
+        label=_("All items"),
+        required=False,
+    )
+    qs = forms.CharField(
+        label=_("All items"),
+        required=False,
+    )
+
     # queryset is all as we try to be nice and process what we can in bulk
     # actions.
     items = ForbiddenAllowedModelMultipleChoiceField(
         queryset=MDR._concept.objects.all(),
         validate_queryset=MDR._concept.objects.all(),
-        label="Related items", required=False,
+        label="Related items",
+        required=False,
     )
-    item_label="Select some items"
+    items_label = "Select some items"
+    queryset = MDR._concept.objects.all()
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, form, *args, **kwargs):
         initial_items = kwargs.pop('items', [])
-        super(BulkActionForm, self).__init__(*args, **kwargs)
         if 'user' in kwargs.keys():
-            self.user = kwargs.pop('user', None)
+            self.user = kwargs.get('user', None)
             queryset = MDR._concept.objects.visible(self.user)
         else:
             queryset = MDR._concept.objects.public()
 
+        super(BulkActionForm, self).__init__(form, *args, **kwargs)
+
         self.fields['items'] = ForbiddenAllowedModelMultipleChoiceField(
-            label=self.item_label,
+            label=self.items_label,
             validate_queryset=MDR._concept.objects.all(),
             queryset=queryset,
             initial=initial_items,
+            required=False,
             widget=autocomplete_light.MultipleChoiceWidget('Autocomplete_concept')
         )
+
+    @property
+    def items_to_change(self):
+        if bool(self.cleaned_data.get('all_in_queryset', False)):
+            filters = {}
+            for v in self.cleaned_data.get('qs', "").split(','):
+                if 'user' in v:
+                    # if the queryset even contains a user, cut it right off
+                    # otherwise, it could leak data if people tried to alter the query value
+                    k = v.split('user', 1)[0] + 'user'
+                    v = self.user
+                else:
+                    k, v = v.split('=', 1)
+                filters.update({k: v})
+            items = self.queryset.filter(**filters).visible(self.user)
+        else:
+            items = self.cleaned_data.get('items')
+        return items
 
     @classmethod
     def can_use(cls, user):
@@ -117,10 +148,11 @@ class BulkActionForm(UserAwareForm):
 
 class AddFavouriteForm(BulkActionForm):
     classes="fa-bookmark"
-    action_text = _('Add bookmark')
+    action_text = _('Add favourite')
+    items_label = "Items that will be added to your favourites list"
 
     def make_changes(self):
-        items = self.cleaned_data.get('items')
+        items = self.items_to_change
         bad_items = [str(i.id) for i in items if not user_can_view(self.user, i)]
         items = items.visible(self.user)
         self.user.profile.favourites.add(*items)
@@ -135,10 +167,11 @@ class AddFavouriteForm(BulkActionForm):
 
 class RemoveFavouriteForm(BulkActionForm):
     classes="fa-minus-square"
-    action_text = _('Remove bookmark')
+    action_text = _('Remove favourite')
+    items_label = "Items that will be removed from your favourites list"
 
     def make_changes(self):
-        items = self.cleaned_data.get('items')
+        items = self.items_to_change
         self.user.profile.favourites.remove(*items)
         return _('%(num_items)s items removed from favourites') % {'num_items': len(items)}
 
@@ -146,8 +179,8 @@ class RemoveFavouriteForm(BulkActionForm):
 class ChangeStateForm(ChangeStatusForm, BulkActionForm):
     confirm_page = "aristotle_mdr/actions/bulk_actions/change_status.html"
     classes="fa-university"
-    action_text = _('Change state')
-    items_label="These are the items that will be registered. Add or remove additional items with the autocomplete box.",
+    action_text = _('Change registration status')
+    items_label = "These are the items that will be registered. Add or remove additional items with the autocomplete box."
 
     def __init__(self, *args, **kwargs):
         super(ChangeStateForm, self).__init__(*args, **kwargs)
@@ -159,7 +192,7 @@ class ChangeStateForm(ChangeStatusForm, BulkActionForm):
             raise PermissionDenied
         ras = self.cleaned_data['registrationAuthorities']
         state = self.cleaned_data['state']
-        items = self.cleaned_data['items']
+        items = self.items_to_change
         regDate = self.cleaned_data['registrationDate']
         cascade = self.cleaned_data['cascadeRegistration']
         changeDetails = self.cleaned_data['changeDetails']

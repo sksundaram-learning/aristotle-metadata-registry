@@ -226,3 +226,55 @@ class BulkWorkgroupActionsPage(utils.LoggedInViewPages, TestCase):
         self.assertEqual(response.redirect_chain[0][1], 302)
 
     # TODO: bulk action *and* cascade, where a user doesn't have permission for child elements.
+
+
+    @override_settings(ARISTOTLE_SETTINGS=dict(settings.ARISTOTLE_SETTINGS, WORKGROUP_CHANGES=['submitter']))
+    def test_bulk_workgroup_change_with_all_from_workgroup_list(self):
+        #phew thats one hell of a test
+        
+        self.new_workgroup = models.Workgroup.objects.create(name="new workgroup")
+        self.new_workgroup.submitters.add(self.editor)
+        self.login_editor()
+        
+        self.assertTrue(self.item1.concept not in self.new_workgroup.items.all())
+        self.assertTrue(self.item2.concept not in self.new_workgroup.items.all())
+        self.assertTrue(self.item4.concept not in self.new_workgroup.items.all())
+
+        response = self.client.post(
+            reverse('aristotle:bulk_action'),
+            {
+                'bulkaction': 'move_workgroup',
+                'items': [],
+                'workgroup': [self.new_workgroup.id],
+                "confirmed": True,
+                'qs': 'workgroup__pk=%s'%self.wg1.pk,
+                'all_in_queryset': True
+            },
+            follow=True
+        )
+
+        self.assertTrue(self.item1.concept in self.new_workgroup.items.all())
+        self.assertTrue(self.item2.concept in self.new_workgroup.items.all())
+        self.assertTrue(self.item4.concept not in self.new_workgroup.items.all())
+
+
+        self.logout()
+        self.login_superuser()
+
+
+        response = self.client.post(
+            reverse('aristotle:bulk_action'),
+            {
+                'bulkaction': 'move_workgroup',
+                'items': [],
+                'workgroup': [self.wg1.pk],
+                "confirmed": True,
+                'qs': 'workgroup__pk=%s'%self.new_workgroup.id,
+                'all_in_queryset': True
+            },
+            follow=True
+        )
+
+        self.assertTrue(self.item1.concept in self.wg1.items.all())
+        self.assertTrue(self.item2.concept in self.wg1.items.all())
+        self.assertTrue(self.item4.concept not in self.wg1.items.all())
