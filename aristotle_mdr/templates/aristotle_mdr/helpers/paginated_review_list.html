@@ -12,6 +12,7 @@ Showing {{ page.paginator.count }} results.
         <th title="{% trans 'Number of items' %}">#</th>
         <th>{% trans 'Status' %}</th>
         <th>{% trans 'Message' %}</th>
+        <th>{% trans 'Close reason' %}</th>
         <th>
             {% if sort == "mod_asc" %}
             <a href="?{% paginator_get request page.number %}&sort=mod_desc"><i class="fa fa-sort-asc"></i></a>
@@ -32,24 +33,41 @@ Showing {{ page.paginator.count }} results.
             {% endif %}
             {% trans 'Submitted' %}
         </th>
+        <th>{% trans 'Actions' %}</th>
     </tr>
 </thead>
 <tbody>
     {% for item in page %}
     <tr>
-        <td>{{item.concepts.count}}</td>
-        <td>{{item.get_status_display }}
+        <td>{{ item.concepts.count }}</td>
+        <td>{{ item.get_status_display }}
         </td>
         <td>{{ item.message }}</td>
+        <td>{% if item.response %}
+            {{ item.response }}
+            {% endif %}
+        </td>
+        <td>
+            <time title="{{ item.modified|date:'o-m-d H:i e' }}" datetime="{{ item.modified|date:'c' }}">
+                {{item.modified|naturaltime}}
+            </time>
+        </td>
         <td>
             <time title="{{ item.created|date:'o-m-d H:i e' }}" datetime="{{ item.created|date:'c' }}">
                 {{item.created|naturaltime}}
             </time>
         </td>
         <td>
-            <time title="{{ item.modified|date:'o-m-d H:i e' }}" datetime="{{ item.modified|date:'c' }}">
-                {{item.modified|naturaltime}}
-            </time>
+        <div class="btn-group" role="group" aria-label="">
+          <a class="btn btn-success btn-xs" title="Accept"
+            href="{% url 'aristotle:userReviewAccept' review_id=item.pk %}"
+            data-toggle="modal" data-target="#review_box"
+            ><i class="fa fa-check"></i></a>
+          <a class="btn btn-danger  btn-xs" title="Reject"
+            href="{% url 'aristotle:userReviewReject' review_id=item.pk %}"
+            data-toggle="modal" data-target="#review_box"
+            ><i class="fa fa-times"></i></a>
+        </div>
         </td>
     </tr>
     {% endfor %}
@@ -57,4 +75,5 @@ Showing {{ page.paginator.count }} results.
 </table>
 
 {% include "aristotle_mdr/helpers/paginator.html" with page=page %}
+{% bootstrap_modal "review_box" size='md' %}
 

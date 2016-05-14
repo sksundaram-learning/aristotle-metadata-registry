@@ -67,3 +67,73 @@ class SubmitForReviewView(ItemSubpageFormView):
             return HttpResponseRedirect(item.get_absolute_url())
         else:
             return self.form_invalid(form)
+
+class ReviewRejectView(FormView):
+    form_class = actions.RequestReviewRejectForm
+    template_name = "aristotle_mdr/user/user_request_reject.html"
+
+    def get_review(self):
+        self.review = get_object_or_404(MDR.ReviewRequest, pk=self.kwargs['review_id'])
+        return self.review
+
+    def get_context_data(self, **kwargs):
+        kwargs = super(ReviewRejectView, self).get_context_data(**kwargs)
+        kwargs['review'] = self.get_review()
+        return kwargs
+
+    def get_form_kwargs(self):
+        kwargs = super(ReviewRejectView, self).get_form_kwargs()
+        kwargs['user'] = self.request.user
+        kwargs['instance'] = self.get_review()
+        print kwargs
+        return kwargs
+
+    def post(self, request, *args, **kwargs):
+        form = self.get_form()
+
+        if form.is_valid():
+            review = form.save(commit=False)
+            review.reviewer = request.user
+            review.status = MDR.REVIEW_STATES.rejected
+            review.save()
+            message = _("Review successfully rejected")
+            messages.add_message(request, messages.INFO, message)
+            return HttpResponseRedirect(reverse('aristotle_mdr:userReadyForReview'))
+        else:
+            return self.form_invalid(form)
+
+
+class ReviewAcceptView(FormView):
+    form_class = actions.RequestReviewAcceptForm
+    template_name = "aristotle_mdr/user/user_request_accept.html"
+
+    def get_review(self):
+        self.review = get_object_or_404(MDR.ReviewRequest, pk=self.kwargs['review_id'])
+        return self.review
+
+    def get_context_data(self, **kwargs):
+        kwargs = super(ReviewAcceptView, self).get_context_data(**kwargs)
+        kwargs['review'] = self.get_review()
+        return kwargs
+
+    def get_form_kwargs(self):
+        kwargs = super(ReviewAcceptView, self).get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
+    def post(self, request, *args, **kwargs):
+        form = self.get_form()
+        review = self.get_review()
+
+        if form.is_valid():
+            review.reviewer = request.user
+            review.response = form.cleaned_data['response']
+            review.status = MDR.REVIEW_STATES.accepted
+            review.save()
+            message = form.make_changes(items=review.concepts.all())
+            # message = _("Review accepted")
+            messages.add_message(request, messages.INFO, message)
+            return HttpResponseRedirect(reverse('aristotle_mdr:userReadyForReview'))
+        else:
+            return self.form_invalid(form)
+

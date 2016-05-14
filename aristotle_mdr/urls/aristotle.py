@@ -85,6 +85,9 @@ urlpatterns = patterns(
 
     url(r'^account/registrartools/?$', views.user_pages.registrar_tools, name='userRegistrarTools'),
     url(r'^account/registrartools/review/?$', views.user_pages.review_list, name='userReadyForReview'),
+    #url(r'^account/registrartools/review/details/(?P<review_id>\d+)?$', views.user_pages.ReviewDetailsView.as_view(), name='userReviewDetails'),
+    url(r'^account/registrartools/review/accept/(?P<review_id>\d+)?$', views.actions.ReviewAcceptView.as_view(), name='userReviewAccept'),
+    url(r'^account/registrartools/review/reject/(?P<review_id>\d+)?$', views.actions.ReviewRejectView.as_view(), name='userReviewReject'),
 
     url(r'^registrationauthority/(?P<iid>\d+)?(?:\/(?P<name_slug>.+))?/?$', views.registrationauthority, name='registrationAuthority'),
     url(r'^registrationauthorities/?$', views.allRegistrationAuthorities, name='allRegistrationAuthorities'),
