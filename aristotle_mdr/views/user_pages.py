@@ -232,8 +232,17 @@ def registrar_tools(request):
 def review_list(request):
     if not request.user.profile.is_registrar:
         raise PermissionDenied
-    items = MDR._concept.objects.visible(request.user).filter(readyToReview=True, statuses=None).select_subclasses()
-    return paginated_list(request, items, "aristotle_mdr/user/userReadyForReview.html", {'items': items})
+    authorities = [i[0] for i in request.user.profile.registrarAuthorities.all().values_list('id')]
+    print authorities
+
+    # Registars can see items they have been asked to review
+    q = Q(
+            Q(review_requests__registration_authority__id__in=authorities) &
+            ~Q(review_requests__status=MDR.REVIEW_STATES.cancelled)
+        )
+
+    items = MDR._concept.objects.visible(request.user).filter(q) #.select_subclasses()
+    return paginated_list(request, items, "aristotle_mdr/user/userReviewList.html", {'items': items})
 
 
 @login_required

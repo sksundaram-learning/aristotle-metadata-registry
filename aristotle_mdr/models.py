@@ -846,7 +846,7 @@ REVIEW_STATES = Choices(
 
 class ReviewRequest(TimeStampedModel):
     concepts = models.ManyToManyField(_concept, related_name="review_requests")
-    registrationAuthority = models.ForeignKey(RegistrationAuthority, help_text=_("The registration authority the requester wishes to endorse the metadata item"))
+    registration_authority = models.ForeignKey(RegistrationAuthority, help_text=_("The registration authority the requester wishes to endorse the metadata item"))
     requester = models.ForeignKey(User, help_text=_("The user requesting a review"), related_name='requested_reviews')
     message = models.TextField(blank=True, null=True, help_text=_("An optional message accompanying a request"))
     reviewer = models.ForeignKey(User, help_text=_("The user performing a review"), related_name='reviewed_requests')

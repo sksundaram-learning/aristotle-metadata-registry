@@ -182,7 +182,7 @@ class CustomConceptQuerySetTest(TestCase):
         wg = models.Workgroup.objects.create(name="Setup WG")
         wg.registrationAuthorities.add(ra)
         wg.save()
-        oc1 = models.ValueDomain.objects.create(name="Test OC1",workgroup=wg,readyToReview=True)
+        oc1 = models.ValueDomain.objects.create(name="Test OC1",workgroup=wg)
         oc2 = models.ValueDomain.objects.create(name="Test OC2",workgroup=wg)
         user = User.objects.create_superuser('super','','user')
 
@@ -211,11 +211,10 @@ class RegistryCascadeTest(TestCase):
         self.wg = models.Workgroup.objects.create(name="Setup WG")
         self.wg.registrationAuthorities.add(self.ra)
         self.wg.save()
-        self.oc = models.ObjectClass.objects.create(name="Test OC",workgroup=self.wg,readyToReview=True)
-        self.pr = models.Property.objects.create(name="Test P",workgroup=self.wg,readyToReview=True)
+        self.oc = models.ObjectClass.objects.create(name="Test OC",workgroup=self.wg)
+        self.pr = models.Property.objects.create(name="Test P",workgroup=self.wg)
         self.dec = models.DataElementConcept.objects.create(
             name="Test DEC",
-            readyToReview=True,
             objectClass=self.oc,
             property=self.pr,
             workgroup=self.wg,
@@ -247,11 +246,10 @@ class RegistryCascadeTest(TestCase):
         self.wg = models.Workgroup.objects.create(name="Setup WG")
         self.wg.registrationAuthorities.add(self.ra)
         self.wg.save()
-        self.oc = models.ObjectClass.objects.create(name="Test OC",workgroup=self.wg,readyToReview=True)
-        self.pr = models.Property.objects.create(name="Test P",workgroup=self.wg,readyToReview=True)
+        self.oc = models.ObjectClass.objects.create(name="Test OC",workgroup=self.wg)
+        self.pr = models.Property.objects.create(name="Test P",workgroup=self.wg)
         self.vd = models.ValueDomain.objects.create(
             name="Test VD",
-            readyToReview=True,
             workgroup=self.wg,
             format = "X" ,
             maximum_length = 3,
@@ -259,14 +257,12 @@ class RegistryCascadeTest(TestCase):
         )
         self.dec = models.DataElementConcept.objects.create(
             name="Test DEC",
-            readyToReview=True,
             objectClass=self.oc,
             property=self.pr,
             workgroup=self.wg,
         )
         self.de = models.DataElement.objects.create(
             name="Test DE",
-            readyToReview=True,
             dataElementConcept=self.dec,
             valueDomain=self.vd,
             workgroup=self.wg,
