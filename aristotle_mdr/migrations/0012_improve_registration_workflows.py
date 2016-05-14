@@ -23,7 +23,7 @@ class Migration(migrations.Migration):
                 ('modified', model_utils.fields.AutoLastModifiedField(default=django.utils.timezone.now, verbose_name='modified', editable=False)),
                 ('message', models.TextField(help_text='An optional message accompanying a request', null=True, blank=True)),
                 ('response', models.TextField(help_text='An optional message responding to a request', null=True, blank=True)),
-                ('outcome', models.IntegerField(blank=True, help_text='Final outcome of a review', null=True, choices=[(0, 'Submitted'), (5, 'Cancelled'), (10, 'Accepted'), (15, 'Rejected')])),
+                ('status', models.IntegerField(blank=True, help_text='Status of a review', null=True, choices=[(0, 'Submitted'), (5, 'Cancelled'), (10, 'Accepted'), (15, 'Rejected')])),
                 ('state', models.IntegerField(blank=True, help_text='The state at which a user wishes a metadata item to be endorsed', null=True, choices=[(0, 'Not Progressed'), (1, 'Incomplete'), (2, 'Candidate'), (3, 'Recorded'), (4, 'Qualified'), (5, 'Standard'), (6, 'Preferred Standard'), (7, 'Superseded'), (8, 'Retired')])),
             ],
             options={

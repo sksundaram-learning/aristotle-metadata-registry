@@ -851,10 +851,10 @@ class ReviewRequest(TimeStampedModel):
     message = models.TextField(blank=True, null=True, help_text=_("An optional message accompanying a request"))
     reviewer = models.ForeignKey(User, help_text=_("The user performing a review"), related_name='reviewed_requests')
     response = models.TextField(blank=True, null=True, help_text=_("An optional message responding to a request"))
-    outcome = models.IntegerField(
+    status = models.IntegerField(
         choices=REVIEW_STATES,
         blank=True, null=True,
-        help_text=_('Final outcome of a review')
+        help_text=_('Status of a review')
     )
     state = models.IntegerField(
         choices=STATES,
