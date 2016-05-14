@@ -54,7 +54,7 @@
                         <i class="fa fa-fw fa-code-fork"></i> {% trans 'Clone this item'%}
                     </a></li>
                     <li class="divider"></li>
-                    <li><a class="" href="{% url 'aristotle:clone_item' item.id %}">
+                    <li><a class="" href="{% url 'aristotle:request_review' item.id %}" data-toggle="modal" data-target="#infobox_adv_edit">
                         <i class="fa fa-fw fa-flag"></i> {% trans 'Submit for review'%}
                     </a></li>
                     <li><a class="" href="{% url 'aristotle:clone_item' item.id %}">

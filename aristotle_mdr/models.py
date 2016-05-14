@@ -509,10 +509,10 @@ class ConceptQuerySet(InheritanceQuerySet):
             q |= Q(workgroup__in=user.profile.workgroups)
             # q |= Q(workgroup__user__profile=user)
         if user.profile.is_registrar:
-            authorities = user.profile.registrarAuthorities.all()
+            authorities = [i[0] for i in request.user.profile.registrarAuthorities.all().values_list('id')]
             # Registars can see items they have been asked to review
             q |= Q(
-                    Q(review_requests__registrationAuthorities__in=authorities) &
+                    Q(review_requests__registration_authority__id__in=authorities) &
                     ~Q(review_requests__status=REVIEW_STATES.cancelled)
                 )
         return self.filter(q)
@@ -631,6 +631,8 @@ class _concept(baseAristotleObject):
                 or self.workgroup.stewards.filter(pk=user.pk).exists()
 
     def can_view(self, user):
+        if user.is_superuser:
+            return True
         if self.is_public():
             return True
         elif user.is_anonymous():
@@ -645,7 +647,7 @@ class _concept(baseAristotleObject):
                 ra = s.registrationAuthority
                 if ra.registrars.filter(pk=user.pk).exists():
                     return True
-        if self.review_requests.filter(registrationAuthorities__registrars__user=user).exists():
+        if self.review_requests.filter(registration_authority__registrars__profile__user=user).exists():
             return True
         return False
 
@@ -846,14 +848,17 @@ REVIEW_STATES = Choices(
 
 class ReviewRequest(TimeStampedModel):
     concepts = models.ManyToManyField(_concept, related_name="review_requests")
-    registration_authority = models.ForeignKey(RegistrationAuthority, help_text=_("The registration authority the requester wishes to endorse the metadata item"))
+    registration_authority = models.ForeignKey(
+        RegistrationAuthority,
+        help_text=_("The registration authority the requester wishes to endorse the metadata item")
+    )
     requester = models.ForeignKey(User, help_text=_("The user requesting a review"), related_name='requested_reviews')
     message = models.TextField(blank=True, null=True, help_text=_("An optional message accompanying a request"))
-    reviewer = models.ForeignKey(User, help_text=_("The user performing a review"), related_name='reviewed_requests')
+    reviewer = models.ForeignKey(User, null=True, help_text=_("The user performing a review"), related_name='reviewed_requests')
     response = models.TextField(blank=True, null=True, help_text=_("An optional message responding to a request"))
     status = models.IntegerField(
         choices=REVIEW_STATES,
-        blank=True, null=True,
+        default=REVIEW_STATES.submitted,
         help_text=_('Status of a review')
     )
     state = models.IntegerField(

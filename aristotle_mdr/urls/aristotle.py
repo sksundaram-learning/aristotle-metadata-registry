@@ -65,6 +65,7 @@ urlpatterns = patterns(
     url(r'^action/deprecate/(?P<iid>\d+)$', views.deprecate, name='deprecate'),
     url(r'^action/bulkaction/?$', views.bulk_actions.BulkAction.as_view(), name='bulk_action'),
     url(r'^action/r2r/(?P<iid>\d+)?$', views.mark_ready_to_review, name='mark_ready_to_review'),
+    url(r'^action/review/(?P<iid>\d+)?$', views.actions.SubmitForReviewView.as_view(), name='request_review'),
     url(r'^action/compare/?$', views.comparator.compare_concepts, name='compare_concepts'),
 
     url(r'^changestatus/(?P<iid>\d+)$', views.changeStatus, name='changeStatus'),
@@ -83,7 +84,7 @@ urlpatterns = patterns(
     url(r'^account/notifications(?:/folder/(?P<folder>all))?/?$', views.user_pages.inbox, name='userInbox'),
 
     url(r'^account/registrartools/?$', views.user_pages.registrar_tools, name='userRegistrarTools'),
-    url(r'^account/registrartools/readyforreview/?$', views.user_pages.review_list, name='userReadyForReview'),
+    url(r'^account/registrartools/review/?$', views.user_pages.review_list, name='userReadyForReview'),
 
     url(r'^registrationauthority/(?P<iid>\d+)?(?:\/(?P<name_slug>.+))?/?$', views.registrationauthority, name='registrationAuthority'),
     url(r'^registrationauthorities/?$', views.allRegistrationAuthorities, name='allRegistrationAuthorities'),

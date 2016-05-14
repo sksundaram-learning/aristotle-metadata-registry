@@ -8,3 +8,4 @@ from . import discussions
 from . import comparator
 from . import bulk_actions
 from . import editors
+from . import actions

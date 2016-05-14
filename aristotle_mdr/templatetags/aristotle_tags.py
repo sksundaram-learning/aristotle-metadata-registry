@@ -379,18 +379,3 @@ def template_path(item, _type):
     from aristotle_mdr.utils import get_download_template_path_for_item
     _type, subpath=_type.split(',')
     return get_download_template_path_for_item(item, _type, subpath)
-
-
-@register.filter
-def owned_by_registry(item):
-    return item.workgroup.ownership == MDR.WORKGROUP_OWNERSHIP.registry
-
-
-@register.filter
-def owned_by_ra(item, ra_id):
-    if item.workgroup.ownership == MDR.WORKGROUP_OWNERSHIP.registry:
-        return False
-
-    ra = MDR.RegistrationAuthority.objects.get(pk=ra_id)
-
-    return ra in item.workgroup.registrationAuthorities.all()
