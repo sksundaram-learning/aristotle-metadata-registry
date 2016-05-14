@@ -12,6 +12,8 @@ from django.db.models.functions import Lower
 paginate_sort_opts = {
     "mod_asc": ["modified"],
     "mod_desc": ["-modified"],
+    "cre_asc": ["created"],
+    "cre_desc": ["-created"],
     "name_asc": [Lower("name").asc()],
     "name_desc": [Lower("name").desc()],
 }
@@ -19,7 +21,8 @@ paginate_sort_opts = {
 
 @login_required
 def paginated_list(request, items, template, extra_context={}):
-    items = items.select_subclasses()
+    if hasattr(items, 'select_subclasses'):
+        items = items.select_subclasses()
     sort_by=request.GET.get('sort', "mod_desc")
     if sort_by not in paginate_sort_opts.keys():
         sort_by="mod_desc"

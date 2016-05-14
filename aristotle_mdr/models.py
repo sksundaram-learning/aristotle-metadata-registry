@@ -512,9 +512,8 @@ class ConceptQuerySet(InheritanceQuerySet):
             authorities = [i[0] for i in request.user.profile.registrarAuthorities.all().values_list('id')]
             # Registars can see items they have been asked to review
             q |= Q(
-                    Q(review_requests__registration_authority__id__in=authorities) &
-                    ~Q(review_requests__status=REVIEW_STATES.cancelled)
-                )
+                Q(review_requests__registration_authority__id__in=authorities) & ~Q(review_requests__status=REVIEW_STATES.cancelled)
+            )
         return self.filter(q)
 
     def editable(self, user):
@@ -863,7 +862,7 @@ class ReviewRequest(TimeStampedModel):
     )
     state = models.IntegerField(
         choices=STATES,
-        blank=True, null=True, 
+        blank=True, null=True,
         help_text=_("The state at which a user wishes a metadata item to be endorsed")
     )
 

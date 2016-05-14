@@ -235,13 +235,10 @@ def review_list(request):
     authorities = [i[0] for i in request.user.profile.registrarAuthorities.all().values_list('id')]
 
     # Registars can see items they have been asked to review
-    q = Q(
-            Q(registration_authority__id__in=authorities) &
-            ~Q(status=MDR.REVIEW_STATES.cancelled)
-        )
+    q = Q(Q(registration_authority__id__in=authorities) & ~Q(status=MDR.REVIEW_STATES.cancelled))
 
-    items = MDR.ReviewRequest.objects.visible(request.user).filter(q).select_subclasses()
-    return paginated_list(request, items, "aristotle_mdr/user/userReviewList.html", {'items': items})
+    reviews = MDR.ReviewRequest.objects.filter(q)
+    return paginated_list(request, reviews, "aristotle_mdr/user/userReviewList.html", {'reviews': reviews})
 
 
 @login_required

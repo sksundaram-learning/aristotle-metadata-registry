@@ -1,14 +1,11 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.conf import settings
 from django.core.exceptions import PermissionDenied, ImproperlyConfigured
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.shortcuts import render, redirect, get_object_or_404
 from django.template import RequestContext, TemplateDoesNotExist
 from django.template.defaultfilters import slugify
-from django.template.loader import select_template
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import FormView
 from django.utils.decorators import method_decorator
@@ -23,6 +20,7 @@ from aristotle_mdr import forms as MDRForms
 from aristotle_mdr import exceptions as registry_exceptions
 from aristotle_mdr import models as MDR
 from aristotle_mdr.forms import actions
+
 
 class ItemSubpageFormView(FormView):
     def get_context_data(self, **kwargs):
@@ -40,6 +38,7 @@ class ItemSubpageFormView(FormView):
         self.item = self.get_item()
         return super(ItemSubpageFormView, self).dispatch(*args, **kwargs)
 
+
 class SubmitForReviewView(ItemSubpageFormView):
     form_class = actions.RequestReviewForm
     template_name = "aristotle_mdr/actions/request_review.html"
@@ -53,7 +52,7 @@ class SubmitForReviewView(ItemSubpageFormView):
         kwargs = super(SubmitForReviewView, self).get_form_kwargs()
         kwargs['user'] = self.request.user
         return kwargs
-        
+
     def post(self, request, *args, **kwargs):
         form = self.get_form()
         item = self.get_item()
