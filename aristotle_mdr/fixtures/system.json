@@ -20,32 +20,5 @@
     },
     "model": "auth.user",
     "pk": 1
-  },
-  {
-    "fields": {
-      "definition": "",
-      "archived": false,
-      "stewards": [
-        
-      ],
-      "managers": [
-        
-      ],
-      "name": "System Workgroup",
-      "created": "2016-05-02T22:23:10.331Z",
-      "registrationAuthorities": [
-        
-      ],
-      "submitters": [
-        
-      ],
-      "modified": "2016-05-02T22:23:10.331Z",
-      "ownership": 1,
-      "viewers": [
-        
-      ]
-    },
-    "model": "aristotle_mdr.workgroup",
-    "pk": 1
   }
 ]
