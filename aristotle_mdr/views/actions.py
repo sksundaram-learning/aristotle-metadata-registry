@@ -68,6 +68,7 @@ class SubmitForReviewView(ItemSubpageFormView):
         else:
             return self.form_invalid(form)
 
+
 class ReviewActionMixin(object):
     def get_review(self):
         self.review = get_object_or_404(MDR.ReviewRequest, pk=self.kwargs['review_id'])
@@ -83,7 +84,8 @@ class ReviewActionMixin(object):
         kwargs['user'] = self.request.user
         return kwargs
 
-class ReviewRejectView(ReviewActionMixin,FormView):
+
+class ReviewRejectView(ReviewActionMixin, FormView):
     form_class = actions.RequestReviewRejectForm
     template_name = "aristotle_mdr/user/user_request_reject.html"
 
@@ -126,4 +128,3 @@ class ReviewAcceptView(ReviewActionMixin, FormView):
             return HttpResponseRedirect(reverse('aristotle_mdr:userReadyForReview'))
         else:
             return self.form_invalid(form)
-

@@ -367,22 +367,18 @@ def changeStatus(request, iid):
     if item._is_public:
         visibility = "public"
 
-    from aristotle_mdr.models import WORKGROUP_OWNERSHIP, STATES
+    from aristotle_mdr.models import STATES
     import json
 
     for ra in request.user.profile.registrarAuthorities:
-        if item.workgroup.ownership == WORKGROUP_OWNERSHIP.authority:
-            owner = ra in item.workgroup.registrationAuthorities.all()
-        elif item.workgroup.ownership == WORKGROUP_OWNERSHIP.registry:
-            owner = True
         ra_matrix = {'name': ra.name, 'states': {}}
         for s, _ in STATES:
             if s > ra.public_state:
-                ra_matrix['states'][s] = [visibility, "public"][owner]
+                ra_matrix['states'][s] = "public"
             elif s > ra.locked_state:
-                ra_matrix['states'][s] = [visibility, "locked"][owner]
+                ra_matrix['states'][s] = "locked"
             else:
-                ra_matrix['states'][s] = [visibility, "hidden"][owner]
+                ra_matrix['states'][s] = "hidden"
         matrix[ra.id] = ra_matrix
 
     return render(

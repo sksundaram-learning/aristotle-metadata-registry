@@ -31,7 +31,7 @@ class RequestReviewAcceptForm(ChangeStatusForm):
     )
 
     # TODO: This is from aristotle_mdr.bulk_actions.ChangeStateForm - See if this can share a superclass
-    def make_changes(self,items):
+    def make_changes(self, items):
         import reversion
         if not self.user.profile.is_registrar:
             raise PermissionDenied
