@@ -68,24 +68,28 @@ class SubmitForReviewView(ItemSubpageFormView):
         else:
             return self.form_invalid(form)
 
-class ReviewRejectView(FormView):
-    form_class = actions.RequestReviewRejectForm
-    template_name = "aristotle_mdr/user/user_request_reject.html"
-
+class ReviewActionMixin(object):
     def get_review(self):
         self.review = get_object_or_404(MDR.ReviewRequest, pk=self.kwargs['review_id'])
         return self.review
 
     def get_context_data(self, **kwargs):
-        kwargs = super(ReviewRejectView, self).get_context_data(**kwargs)
+        kwargs = super(ReviewActionMixin, self).get_context_data(**kwargs)
         kwargs['review'] = self.get_review()
         return kwargs
 
     def get_form_kwargs(self):
-        kwargs = super(ReviewRejectView, self).get_form_kwargs()
+        kwargs = super(ReviewActionMixin, self).get_form_kwargs()
         kwargs['user'] = self.request.user
+        return kwargs
+
+class ReviewRejectView(ReviewActionMixin,FormView):
+    form_class = actions.RequestReviewRejectForm
+    template_name = "aristotle_mdr/user/user_request_reject.html"
+
+    def get_form_kwargs(self):
+        kwargs = super(ReviewRejectView, self).get_form_kwargs()
         kwargs['instance'] = self.get_review()
-        print kwargs
         return kwargs
 
     def post(self, request, *args, **kwargs):
@@ -103,23 +107,9 @@ class ReviewRejectView(FormView):
             return self.form_invalid(form)
 
 
-class ReviewAcceptView(FormView):
+class ReviewAcceptView(ReviewActionMixin, FormView):
     form_class = actions.RequestReviewAcceptForm
     template_name = "aristotle_mdr/user/user_request_accept.html"
-
-    def get_review(self):
-        self.review = get_object_or_404(MDR.ReviewRequest, pk=self.kwargs['review_id'])
-        return self.review
-
-    def get_context_data(self, **kwargs):
-        kwargs = super(ReviewAcceptView, self).get_context_data(**kwargs)
-        kwargs['review'] = self.get_review()
-        return kwargs
-
-    def get_form_kwargs(self):
-        kwargs = super(ReviewAcceptView, self).get_form_kwargs()
-        kwargs['user'] = self.request.user
-        return kwargs
 
     def post(self, request, *args, **kwargs):
         form = self.get_form()

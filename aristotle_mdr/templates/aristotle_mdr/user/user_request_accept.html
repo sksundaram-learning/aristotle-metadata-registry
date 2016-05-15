@@ -2,21 +2,21 @@
 {% load compile_static i18n %}
 {% load aristotle_tags %}
 
-{% block title %}Change state for {{ item.name }}{% endblock %}
+{% block title %}Approve review request{% endblock %}
 {% block content %}
 {{ form.media }}
 <form method="post" action="{% url 'aristotle:userReviewAccept' review.id %}">{% csrf_token %}
     <div class="modal-body">
         <ol class="breadcrumb">
           <li><a href="{% url 'aristotle:userReadyForReview' %}">Review list</a></li>
-          <li class="active">Change registation status</li>
+          <li class="active">Approve review request</li>
         </ol>
 
 
-        <header>This form allows you to change the status of multiple items in your registration authorities.
+        <header>By approving this review, this form allows you to change the status of multiple items in your registration authorities.
         </header>
         <div class="well">
-            <strong>The original request for this message was:</strong>
+            <strong>The original message for this request:</strong>
             <p>{{ review.message }}</p>
             <strong>The items in this request are listed below:</strong>
             <ul>

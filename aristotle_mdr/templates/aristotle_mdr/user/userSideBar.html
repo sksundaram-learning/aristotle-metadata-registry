@@ -66,6 +66,10 @@
         <a href="{% url 'aristotle:userRecentItems' %}">
         <i class="fa fa-history fa-fw"></i> {% trans "Recent Actions" %}</a>
     </li>
+    <li {% ifequal activeTab "sandbox" %}class="active"{% endifequal %}>
+        <a href="{% url 'aristotle:userSandbox' %}">
+        <i class="fa fa-pencil-square-o fa-fw"></i> {% trans "My Sandbox" %}</a>
+    </li>
     <li {% ifequal activeTab "edit" %}class="active"{% endifequal %}>
         <a href="{% url 'aristotle:userEdit' %}">
         <i class="fa fa-user fa-fw"></i> Edit details</a>

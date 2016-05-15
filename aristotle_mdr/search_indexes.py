@@ -85,7 +85,7 @@ class conceptIndex(baseObjectIndex):
 
     def prepare_registrationAuthorities(self, obj):
         ras_stats = [str(s.registrationAuthority.id) for s in obj.current_statuses().all()]
-        ras_reqs = [str(rr.registrationAuthority.id) for rr in obj.review_requests.filter(~Q(status=models.REVIEW_STATES.cancelled)).all()]
+        ras_reqs = [str(rr.registration_authority.id) for rr in obj.review_requests.filter(~Q(status=models.REVIEW_STATES.cancelled)).all()]
 
         return list(set(ras_stats + ras_reqs))
 
@@ -93,7 +93,10 @@ class conceptIndex(baseObjectIndex):
         return obj.is_public()
 
     def prepare_workgroup(self, obj):
-        return int(obj.workgroup.id)
+        if obj.workgroup:
+            return int(obj.workgroup.id)
+        else:
+            return -99
 
     def prepare_statuses(self, obj):
         # We don't remove duplicates as it should mean the more standard it is the higher it will rank

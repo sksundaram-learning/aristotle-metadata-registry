@@ -42,7 +42,8 @@ Showing {{ page.paginator.count }} results.
         <td>{{ item.concepts.count }}</td>
         <td>{{ item.get_status_display }}
         </td>
-        <td>{{ item.message }}</td>
+        <td>
+            <a href="{% url 'aristotle:userReviewDetails' item.id %}" data-toggle="modal" data-target="#review_box">{{ item.message }}</a></td>
         <td>{% if item.response %}
             {{ item.response }}
             {% endif %}

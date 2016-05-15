@@ -567,14 +567,10 @@ class ConceptManager(InheritanceManager):
     It provides access to the ``ConceptQuerySet`` to allow for easy
     permissions-based filtering of ISO 11179 Concept-based items.
     """
-    def get_query_set(self):
-        return ConceptQuerySet(self.model)
-
     def get_queryset(self):
         return ConceptQuerySet(self.model)
 
     def __getattr__(self, attr, *args):
-        # Only let the slow ones through to the queryset
         if attr in ['editable', 'visible', 'public']:
             return getattr(self.get_queryset(), attr, *args)
         else:
@@ -845,7 +841,44 @@ REVIEW_STATES = Choices(
 )
 
 
+class ReviewRequestQuerySet(models.QuerySet):
+    def visible(self, user):
+        """
+        Returns a queryset that returns all reviews that the given user has
+        permission to view.
+
+        It is **chainable** with other querysets. For example, both of these
+        will work and return the same list::
+
+            ObjectClass.objects.filter(name__contains="Person").visible()
+            ObjectClass.objects.visible().filter(name__contains="Person")
+        """
+        if user.is_superuser:
+            return self.all()
+        if user.is_anonymous():
+            return self.public()
+        q = Q(requester=user)  # Users can always see reviews they requested
+        if user.profile.is_registrar:
+            # Registars can see reviews for the registration authority
+            q |= Q(
+                Q(registration_authority__registrars__profile__user=user) & ~Q(status=REVIEW_STATES.cancelled)
+            )
+        return self.filter(q)
+
+
+class ReviewRequestManager(models.Manager):
+    def get_queryset(self):
+        return ReviewRequestQuerySet(self.model, using=self._db)
+
+    def __getattr__(self, attr, *args):
+        if attr in ['visible']:
+            return getattr(self.get_queryset(), attr, *args)
+        else:
+            return getattr(self.__class__, attr, *args)
+
+
 class ReviewRequest(TimeStampedModel):
+    objects = ReviewRequestManager()
     concepts = models.ManyToManyField(_concept, related_name="review_requests")
     registration_authority = models.ForeignKey(
         RegistrationAuthority,
@@ -1277,11 +1310,12 @@ def concept_saved(sender, instance, created, **kwargs):
         return
     for p in instance.favourited_by.all():
         messages.favourite_updated(recipient=p.user, obj=instance)
-    for user in instance.workgroup.viewers.all():
-        if created:
-            messages.workgroup_item_new(recipient=user, obj=instance)
-        else:
-            messages.workgroup_item_updated(recipient=user, obj=instance)
+    if instance.workgroup:
+        for user in instance.workgroup.viewers.all():
+            if created:
+                messages.workgroup_item_new(recipient=user, obj=instance)
+            else:
+                messages.workgroup_item_updated(recipient=user, obj=instance)
     try:
         # This will fail during first load, and if admins delete aristotle.
         system = User.objects.get(username="aristotle")

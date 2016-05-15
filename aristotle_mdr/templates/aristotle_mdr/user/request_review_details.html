@@ -1,0 +1,46 @@
+{% extends request.is_ajax|yesno:"aristotle_mdr/base_ajax.html,aristotle_mdr/base.html" %}
+{% load compile_static i18n humanize %}
+{% load aristotle_tags %}
+
+{% block title %}Review details{{ item.name }}{% endblock %}
+{% block content %}
+    <div class="modal-body">
+        <ol class="breadcrumb">
+          <li><a href="{% url 'aristotle:userReadyForReview' %}">Review list</a></li>
+          <li class="active">Request review details</li>
+        </ol>
+
+        <dl>
+            <dt>The original message for this request</dt>
+                <dd>{{ review.message|linebreaks }}</dd>
+            <dt>Request status</dt>
+                <dd>{{review.get_status_display}}</dd>
+            <dt>Response from the reviewer</dt>
+                <dd>{{ review.message|linebreaks }}</dd>
+            <dt>Requested registry state</dt>
+                <dd><em>{{review.get_state_display}}</em> in <a href="{{review.registration_authority.get_absolute_url }}">{{review.registration_authority.name }}</a></dd>
+            <dt>Date review requested</dt>
+                <dd>{{review.created}}</dd>
+            <dt>Last updated</dt>
+                <dd>{{review.modified}}</dd>
+            <dt>The items in this request are listed below</dt>
+                <dd>
+                <ul>
+                    {% for item in review.concepts.all %}
+                        <li>
+            {% include "aristotle_mdr/helpers/inlineDetails.html" with item=item %}
+                        </li>
+                    {% endfor %}
+                </ul>
+                </dd>
+        </dl>
+    </div>
+    <div class="modal-footer">
+        {% if request.is_ajax %}
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        {% else %}
+            <a class="btn btn-default" href="{% url 'aristotle:userReadyForReview' %}">Return to review list</a>
+        {% endif %}
+    </div>
+</form>
+{% endblock %}

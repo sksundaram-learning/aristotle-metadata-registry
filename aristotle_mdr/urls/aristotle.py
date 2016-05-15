@@ -73,6 +73,7 @@ urlpatterns = patterns(
 
     url(r'^account/?$', RedirectView.as_view(url='account/home/', permanent=True)),
     url(r'^account/home/?$', views.user_pages.home, name='userHome'),
+    url(r'^account/sandbox/?$', views.user_pages.CreatedItemsListView.as_view(), name='userSandbox'),
     url(r'^account/roles/?$', views.user_pages.roles, name='userRoles'),
     url(r'^account/admin/?$', views.user_pages.admin_tools, name='userAdminTools'),
     url(r'^account/admin/statistics/?$', views.user_pages.admin_stats, name='userAdminStats'),
@@ -85,7 +86,7 @@ urlpatterns = patterns(
 
     url(r'^account/registrartools/?$', views.user_pages.registrar_tools, name='userRegistrarTools'),
     url(r'^account/registrartools/review/?$', views.user_pages.review_list, name='userReadyForReview'),
-    #url(r'^account/registrartools/review/details/(?P<review_id>\d+)?$', views.user_pages.ReviewDetailsView.as_view(), name='userReviewDetails'),
+    url(r'^account/registrartools/review/details/(?P<review_id>\d+)?$', views.user_pages.ReviewDetailsView.as_view(), name='userReviewDetails'),
     url(r'^account/registrartools/review/accept/(?P<review_id>\d+)?$', views.actions.ReviewAcceptView.as_view(), name='userReviewAccept'),
     url(r'^account/registrartools/review/reject/(?P<review_id>\d+)?$', views.actions.ReviewRejectView.as_view(), name='userReviewReject'),
 
