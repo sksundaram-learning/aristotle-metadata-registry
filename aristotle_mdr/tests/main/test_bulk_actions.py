@@ -165,13 +165,14 @@ class BulkWorkgroupActionsPage(utils.LoggedInViewPages, TestCase):
 
     def test_bulk_status_change_on_permitted_items(self):
         self.login_registrar()
-        self.item1.readyToReview = True
-        self.item2.readyToReview = True
-        self.item1.save()
-        self.item2.save()
+        review = models.ReviewRequest.objects.create(requester=self.su,registration_authority=self.ra)
+        review.concepts.add(self.item1)
+        review.concepts.add(self.item2)
 
         self.assertTrue(perms.user_can_change_status(self.registrar, self.item1))
+        self.assertTrue(perms.user_can_change_status(self.registrar, self.item2))
         self.assertFalse(self.item1.is_registered)
+        self.assertFalse(self.item2.is_registered)
         response = self.client.post(
             reverse('aristotle:bulk_action'),
             {
@@ -189,12 +190,12 @@ class BulkWorkgroupActionsPage(utils.LoggedInViewPages, TestCase):
 
     def test_bulk_status_change_on_forbidden_items(self):
         self.login_registrar()
-        self.item1.readyToReview = True
-        self.item4.readyToReview = True
-        self.item1.save()
-        self.item4.save()
+        review = models.ReviewRequest.objects.create(requester=self.su,registration_authority=self.ra)
+        review.concepts.add(self.item1)
+        # review.concepts.add(self.item4)
 
         self.assertTrue(perms.user_can_change_status(self.registrar, self.item1))
+        self.assertFalse(perms.user_can_change_status(self.registrar, self.item4))
         self.assertFalse(self.item1.is_registered)
         self.assertFalse(self.item2.is_registered)
         self.assertFalse(self.item4.is_registered)

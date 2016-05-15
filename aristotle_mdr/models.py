@@ -509,10 +509,10 @@ class ConceptQuerySet(InheritanceQuerySet):
             q |= Q(workgroup__in=user.profile.workgroups)
             # q |= Q(workgroup__user__profile=user)
         if user.profile.is_registrar:
-            authorities = [i[0] for i in request.user.profile.registrarAuthorities.all().values_list('id')]
+            #authorities = [i[0] for i in user.profile.registrarAuthorities.all().values_list('id')]
             # Registars can see items they have been asked to review
             q |= Q(
-                Q(review_requests__registration_authority__id__in=authorities) & ~Q(review_requests__status=REVIEW_STATES.cancelled)
+                Q(review_requests__registration_authority__registrars__profile__user=user) & ~Q(review_requests__status=REVIEW_STATES.cancelled)
             )
         return self.filter(q)
 

@@ -113,17 +113,10 @@ def user_can_change_status(user, item):
         return False
     if user.is_superuser:
         return True
-    # TODO: restrict to only those registration authorities of that items based
-    # on the items workgroup, unless the item is visible to the user.
-    from aristotle_mdr.models import WORKGROUP_OWNERSHIP
-    if item.readyToReview and user.registrar_in.count() > 0:
-        if item.workgroup.ownership == WORKGROUP_OWNERSHIP.authority:
-            return any(
-                (user in ra.registrars.all()
-                    for ra in item.workgroup.registrationAuthorities.all())
-            )
-        else:
-            return True
+
+    # If this item has any requested reviews for a registration authority this user is a registrar of:
+    if item.review_requests.visible(user):
+        return True
     return False
 
 

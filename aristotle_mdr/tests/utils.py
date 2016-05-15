@@ -53,7 +53,7 @@ class ManagedObjectVisibility(object):
         )
 
         self.wg = models.Workgroup.objects.create(name="Test WG")
-        self.wg.registrationAuthorities.add(self.ra)
+        #RAFIX self.wg.registrationAuthorities.add(self.ra)
 
     def test_object_is_public(self):
         self.assertEqual(self.item.is_public(), False)
@@ -339,8 +339,8 @@ class ManagedObjectVisibility(object):
         e2 = User.objects.create_user('editor2', '', 'editor2')
         wg2.giveRoleToUser('submitter', e2)
 
-        wg1.registrationAuthorities.add(self.ra)
-        wg2.registrationAuthorities.add(self.ra)
+        #RAFIX wg1.registrationAuthorities.add(self.ra)
+        #RAFIX wg2.registrationAuthorities.add(self.ra)
 
         # ensure object is in wg1
         self.item.workgroup = wg1
@@ -389,8 +389,8 @@ class ManagedObjectVisibility(object):
         e2 = User.objects.create_user('editor2', '', 'editor2')
         wg2.giveRoleToUser('submitter', e2)
 
-        wg1.registrationAuthorities.add(self.ra)
-        wg2.registrationAuthorities.add(self.ra)
+        #RAFIX wg1.registrationAuthorities.add(self.ra)
+        #RAFIX wg2.registrationAuthorities.add(self.ra)
 
         # ensure object is in wg1
         self.item.workgroup = wg1
@@ -428,7 +428,7 @@ class LoggedInViewPages(object):
         self.wg1 = models.Workgroup.objects.create(name="Test WG 1")  # Editor is member
         self.wg2 = models.Workgroup.objects.create(name="Test WG 2")
         self.ra = models.RegistrationAuthority.objects.create(name="Test RA")
-        self.wg1.registrationAuthorities.add(self.ra)
+        #RAFIX self.wg1.registrationAuthorities.add(self.ra)
         self.wg1.save()
 
         self.su = User.objects.create_superuser('super', '', 'user')
