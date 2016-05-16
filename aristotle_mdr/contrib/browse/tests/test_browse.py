@@ -23,8 +23,7 @@ class LoggedInViewConceptBrowsePages(utils.LoggedInViewPages):
         self.item1 = self.itemType.objects.create(name="Test Item 1 (visible to tested viewers)",definition=" ",workgroup=self.wg1,**self.defaults)
         self.item2 = self.itemType.objects.create(name="Test Item 2 (NOT visible to tested viewers)",definition=" ",workgroup=self.wg2,**self.defaults)
         self.item3 = self.itemType.objects.create(name="Test Item 3 (visible to tested viewers)",definition=" ",workgroup=self.wg1,**self.defaults)
-        self.item4 = self.itemType.objects.create(name="Test Item 3 (visible to tested viewers)",definition=" ",workgroup=self.wg1,
-            readyToReview=True,**self.defaults)
+        self.item4 = self.itemType.objects.create(name="Test Item 3 (visible to tested viewers)",definition=" ",workgroup=self.wg1,**self.defaults)
         self.ra.register(self.item4,self.ra.public_state,self.su)
 
     def test_anon_can_view_browse(self):

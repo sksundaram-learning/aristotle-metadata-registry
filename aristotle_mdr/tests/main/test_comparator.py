@@ -21,7 +21,6 @@ class ComparatorTester(utils.LoggedInViewPages):
         super(ComparatorTester, self).setUp()
         self.ra = models.RegistrationAuthority.objects.create(name="Test RA")
         self.wg = models.Workgroup.objects.create(name="Setup WG")
-        self.wg.registrationAuthorities.add(self.ra)
         self.item1 = self.itemType.objects.create(name="Item with a name", workgroup=self.wg)
         self.item2 = self.itemType.objects.create(name="Item wit a different name", workgroup=self.wg)
 

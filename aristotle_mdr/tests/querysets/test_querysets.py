@@ -13,12 +13,12 @@ import aristotle_mdr.perms as perms
 setup_test_environment()
 
 
-class CustomConceptQuerySetTest_Slow(object):
+class CustomConceptQuerySetTest_Slow(TransactionTestCase):
     @classmethod
     def setUpClass(cls):
         super(CustomConceptQuerySetTest_Slow, cls).setUpClass()
         cls.super_user = User.objects.create_superuser(
-            'permission_check_super ' + str(cls.workgroup_owner_type),
+            'permission_check_super',
             '',
             'user'
         )
@@ -27,35 +27,35 @@ class CustomConceptQuerySetTest_Slow(object):
         cls.ras = {}
         user_count = 100
         # p = "permission_check %s "%str(cls.workgroup_owner_type)
-        p = "perm_chk %s " % str(cls.workgroup_owner_type)
+        # p = "perm_chk %s " % str(cls.workgroup_owner_type)
         # Default settings for locked/public
-        cls.ras['default'] = models.RegistrationAuthority.objects.create(name=p + "Default RA")
+        cls.ras['default'] = models.RegistrationAuthority.objects.create(name="Default RA")
 
         # Locked standards are visible standards
         # cls.ras['standard'] = models.RegistrationAuthority.objects.create(
-        #     name=p + "Standard RA",
+        #     name="Standard RA",
         #     public_state=models.STATES.standard,
         #     locked_state=models.STATES.standard
         # )
 
         # Always public, hard to lock
         cls.ras['wiki_like'] = models.RegistrationAuthority.objects.create(
-            name=p + "Wiki RA",
+            name="Wiki RA",
             public_state=models.STATES.candidate,
             locked_state=models.STATES.standard
         )
 
         # Only public on retirement
         cls.ras['top_secret'] = models.RegistrationAuthority.objects.create(
-            name=p + "CIA RA",
+            name="CIA RA",
             public_state=models.STATES.retired
         )
 
         for key, ra in cls.ras.items():
             role = 'registrar'
-            # u = User.objects.create_user(p + role + key, '', 'user')
+            # u = User.objects.create_user(role + key, '', 'user')
             user_count += 1
-            u = User.objects.create_user(p + str(user_count), '', 'user')
+            u = User.objects.create_user("%s %s %s"%(ra.name,role,str(user_count)), '', 'user')
             ra.giveRoleToUser(role, u)
             cls.ra_users.append(u)
 
@@ -77,29 +77,23 @@ class CustomConceptQuerySetTest_Slow(object):
         print("About to make a *LOT* of items. This may appear to lock up, but it still working.")
         import itertools
         # http://en.wikipedia.org/wiki/Combinatorial_explosion
+        wg = models.Workgroup.objects.create(
+            name="WG",
+        )
+
+        for role in ['viewer', 'submitter', 'steward']:
+            # u = User.objects.create_user(role + prefix, '', 'user')
+            user_count += 1
+            u = User.objects.create_user(("%s %s %s"%(wg.name,role,str(user_count)), '', 'user')
+            wg.giveRoleToUser(role, u)
+            cls.wg_users.append(u)
         for i in range(1, 4):
             # Generate a number of different workgroups with different numbers of RAs
             # Each workgroup can have at most 2 RAs in this test, and the third will be
             #  a "non-member" workgroup that we also register the item in to confirm
             #  that "non-members" don't alter the visibility.
             for keys in itertools.combinations(cls.ras.keys(), i):
-                prefix = "%d %s %s" % (len(keys), "-".join(keys), str(cls.workgroup_owner_type))
-                wg = models.Workgroup.objects.create(
-                    name="WG " + prefix,
-                    ownership=cls.workgroup_owner_type
-                )
-
-                for role in ['viewer', 'submitter', 'steward']:
-                    # u = User.objects.create_user(role + prefix, '', 'user')
-                    user_count += 1
-                    u = User.objects.create_user(p + str(user_count), '', 'user')
-                    wg.giveRoleToUser(role, u)
-                    cls.wg_users.append(u)
-
-                max_ra_index = min(2, len(keys))
-                for ra_key in keys[:max_ra_index]:
-                    wg.registrationAuthorities.add(cls.ras[ra_key])
-                cls.wgs.append(wg)
+                prefix = "%d %s" % (len(keys), "-".join(keys))
 
                 # now we create every possible combination of states for the keys
                 # eg. the cartesian product of the States
@@ -113,9 +107,9 @@ class CustomConceptQuerySetTest_Slow(object):
                     print('+', end="")
                     # Then register it
                     for ra, state in zip(keys, states):
-                        ra = cls.ras[ra_key]
+                        ra = cls.ras[ra]
                         state = state[0]
-                        ra.register(item, models.STATES.standard, cls.super_user)
+                        ra.register(item, state, cls.super_user)
         print("Created this many things to test against:", models.ObjectClass.objects.count())
 
     @classmethod
@@ -143,7 +137,7 @@ class CustomConceptQuerySetTest_Slow(object):
             # This branch needs no coverage as it shouldn't be hit
             print("These items failed the check for ConceptQuerySet.public")
             for user, item in invalid_items:
-                print("user=", user)
+                print("user=", user.username)
                 print("item=", item)
                 print("     ", item.statuses.all())
 
@@ -163,7 +157,7 @@ class CustomConceptQuerySetTest_Slow(object):
             # This branch needs no coverage as it shouldn't be hit
             print("These items failed the check for %s:" % name)
             for user, item in invalid_items:
-                print("user=", user)
+                print("user=", user.username)
                 print("item=", item)
                 print("     ", item.statuses.all())
         self.assertEqual(len(invalid_items), 0)
@@ -186,11 +180,3 @@ class CustomConceptQuerySetTest_Slow(object):
         user = User.objects.create_superuser('super', '', 'user')
         self.assertTrue(models.ObjectClass.objects.visible(user).count() == models.ObjectClass.objects.all().count())
         self.assertTrue(models.ObjectClass.objects.editable(user).count() == models.ObjectClass.objects.all().count())
-
-
-class CustomConceptQuerySetTest_RegistrationOwned_Slow(CustomConceptQuerySetTest_Slow, TransactionTestCase):
-    workgroup_owner_type = models.WORKGROUP_OWNERSHIP.registry
-
-
-class CustomConceptQuerySetTest_RegistryOwned_Slow(CustomConceptQuerySetTest_Slow, TransactionTestCase):
-    workgroup_owner_type = models.WORKGROUP_OWNERSHIP.authority
