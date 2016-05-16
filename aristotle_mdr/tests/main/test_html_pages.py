@@ -28,7 +28,6 @@ class AnonymousUserViewingThePages(TestCase):
     def test_visible_item(self):
         wg = models.Workgroup.objects.create(name="Setup WG")
         ra = models.RegistrationAuthority.objects.create(name="Test RA")
-        wg.registrationAuthorities.add(ra)
         item = models.ObjectClass.objects.create(name="Test OC",workgroup=wg)
         s = models.Status.objects.create(
                 concept=item,
@@ -1059,7 +1058,6 @@ class DataElementConceptViewPage(LoggedInViewConceptPages,TestCase):
         oc = models.ObjectClass.objects.create(
             name="sub item OC",
             workgroup=self.item1.workgroup,
-            readyToReview = True
         )
         prop = models.Property.objects.create(
             name="sub item prop",

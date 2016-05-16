@@ -30,14 +30,14 @@ class TestSearch(utils.LoggedInViewPages,TestCase):
         xmen = "professorX cyclops iceman angel beast phoenix wolverine storm nightcrawler"
 
         self.xmen_wg = models.Workgroup.objects.create(name="X Men")
-        self.xmen_wg.registrationAuthorities.add(self.ra)
+        # self.xmen_wg.registrationAuthorities.add(self.ra)
         self.xmen_wg.save()
 
         self.item_xmen = [
             models.ObjectClass.objects.create(name=t,definition="known xman",workgroup=self.xmen_wg,readyToReview=True)\
             for t in xmen.split()]
         for item in self.item_xmen:
-            registered = self.ra.register(item,models.STATES.standard,self.registrar)
+            registered = self.ra.register(item,models.STATES.standard,self.su)
             self.assertTrue(item in registered['success'])
             item = models._concept.objects.get(pk=item.pk).item # Stupid cache
             self.assertTrue(item.is_public())
@@ -46,7 +46,7 @@ class TestSearch(utils.LoggedInViewPages,TestCase):
         avengers = "thor spiderman ironman hulk captainAmerica"
 
         self.avengers_wg = models.Workgroup.objects.create(name="Avengers")
-        self.avengers_wg.registrationAuthorities.add(self.ra1)
+        # self.avengers_wg.registrationAuthorities.add(self.ra1)
         self.item_avengers = [
             models.ObjectClass.objects.create(name=t,workgroup=self.avengers_wg)
             for t in avengers.split()]
@@ -157,7 +157,7 @@ class TestSearch(utils.LoggedInViewPages,TestCase):
 
         # Adding the registrars Authorities to the managing authorities of the workgroup
         # should grant them access to see item in that workgroup now.
-        self.avengers_wg.registrationAuthorities.add(self.ra)
+        # self.avengers_wg.registrationAuthorities.add(self.ra)
         self.avengers_wg.save()
 
         self.assertTrue(perms.user_can_view(self.registrar,steve_rogers))
@@ -378,7 +378,7 @@ class TestTokenSearch(TestCase):
         self.ra.giveRoleToUser('registrar',self.registrar)
         xmen = "wolverine professorX cyclops iceman angel beast phoenix storm nightcrawler"
         self.xmen_wg = models.Workgroup.objects.create(name="X Men")
-        self.xmen_wg.registrationAuthorities.add(self.ra)
+        # self.xmen_wg.registrationAuthorities.add(self.ra)
         self.xmen_wg.save()
 
         self.item_xmen = [
