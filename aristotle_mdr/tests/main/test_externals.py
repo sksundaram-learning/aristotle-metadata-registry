@@ -99,7 +99,11 @@ class AristotleAutocompletes(utils.LoggedInViewPages, TestCase):
 
         dp = models.ObjectClass.objects.create(name="deadpool",
                 definition="not really an xman, no matter how much he tries",
-                workgroup=self.wg1,readyToReview=True)
+                workgroup=self.wg1)
+
+        review = models.ReviewRequest.objects.create(requester=self.su,registration_authority=self.ra)
+        review.concepts.add(self.item1)
+
         dp = models.ObjectClass.objects.get(pk=dp.pk) # Un-cache
         self.assertTrue(perms.user_can_view(self.registrar,dp))
         self.assertFalse(dp.is_public())
