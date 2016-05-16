@@ -84,14 +84,10 @@ class CustomConceptQuerySetTest_Slow(TransactionTestCase):
         for role in ['viewer', 'submitter', 'steward']:
             # u = User.objects.create_user(role + prefix, '', 'user')
             user_count += 1
-            u = User.objects.create_user(("%s %s %s"%(wg.name,role,str(user_count)), '', 'user')
+            u = User.objects.create_user("%s %s %s"%(wg.name,role,str(user_count)), '', 'user')
             wg.giveRoleToUser(role, u)
             cls.wg_users.append(u)
         for i in range(1, 4):
-            # Generate a number of different workgroups with different numbers of RAs
-            # Each workgroup can have at most 2 RAs in this test, and the third will be
-            #  a "non-member" workgroup that we also register the item in to confirm
-            #  that "non-members" don't alter the visibility.
             for keys in itertools.combinations(cls.ras.keys(), i):
                 prefix = "%d %s" % (len(keys), "-".join(keys))
 
@@ -157,6 +153,8 @@ class CustomConceptQuerySetTest_Slow(TransactionTestCase):
             # This branch needs no coverage as it shouldn't be hit
             print("These items failed the check for %s:" % name)
             for user, item in invalid_items:
+                print("lock=", item._is_locked)
+                print("pub =", item._is_public)
                 print("user=", user.username)
                 print("item=", item)
                 print("     ", item.statuses.all())

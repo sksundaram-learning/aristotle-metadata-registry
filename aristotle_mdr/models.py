@@ -613,13 +613,8 @@ class _concept(baseAristotleObject):
         return len(changed.keys()) > 0
 
     def can_edit(self, user):
-        if self.is_public():
+        if self.is_locked():
             return self.workgroup.stewards.filter(pk=user.pk).exists()
-        elif self.is_locked():
-            return self.workgroup.stewards.filter(pk=user.pk).exists()
-        elif self.is_registered:
-            return self.workgroup.submitters.filter(pk=user.pk).exists() \
-                or self.workgroup.stewards.filter(pk=user.pk).exists()
         else:
             return self.workgroup.submitters.filter(pk=user.pk).exists() \
                 or self.workgroup.stewards.filter(pk=user.pk).exists()
