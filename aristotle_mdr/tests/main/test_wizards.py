@@ -148,6 +148,7 @@ class ConceptWizardPage(utils.LoggedInViewPages):
             })
         response = self.client.post(self.wizard_url, step_2_data)
         self.assertEqual(response.status_code, 200)
+        wizard = response.context['wizard']
         self.assertTrue('workgroup' in wizard['form'].errors.keys())
 
         # must submit a definition at this step. With the right workgroup

@@ -11,10 +11,11 @@ import haystack.signals as signals  # .RealtimeSignalProcessor as RealtimeSignal
 
 class AristotleSignalProcessor(signals.BaseSignalProcessor):
     def setup(self):
-        from aristotle_mdr.models import _concept, Workgroup
+        from aristotle_mdr.models import _concept, Workgroup, ReviewRequest
         # post_save.connect(self.handle_concept_save, sender=_concept)
         post_revision_commit.connect(self.handle_concept_revision)
         pre_delete.connect(self.handle_concept_delete, sender=_concept)
+        post_save.connect(self.update_visibility_review_request, sender=ReviewRequest)
         super(AristotleSignalProcessor, self).setup()
 
     def teardown(self):  # pragma: no cover
@@ -42,3 +43,10 @@ class AristotleSignalProcessor(signals.BaseSignalProcessor):
         # Delete index *before* the object, as we need to query it to check the actual subclass.
         obj = instance.item
         self.handle_delete(obj.__class__, obj, **kwargs)
+
+    def update_visibility_review_request(self, sender, instance, **kwargs):
+        from aristotle_mdr.models import ReviewRequest
+        assert(sender == ReviewRequest)
+        for concept in instance.concepts.all():
+            obj = concept.item
+            self.handle_save(obj.__class__,obj, **kwargs)

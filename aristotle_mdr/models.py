@@ -489,9 +489,7 @@ class ConceptQuerySet(InheritanceQuerySet):
     def visible(self, user):
         """
         Returns a queryset that returns all items that the given user has
-        permission to view. For speed reasons and django queryset limitations,
-        *doesn't* use `perms.user_can_view` however, is guaranteed to follow
-        the same logic.
+        permission to view.
 
         It is **chainable** with other querysets. For example, both of these
         will work and return the same list::
@@ -513,14 +511,17 @@ class ConceptQuerySet(InheritanceQuerySet):
             q |= Q(
                 Q(review_requests__registration_authority__registrars__profile__user=user) & ~Q(review_requests__status=REVIEW_STATES.cancelled)
             )
+            # Registars can see items that have been registered in their registration authority
+            q |= Q(
+                Q(statuses__registrationAuthority__registrars__profile__user=user)
+            )
+
         return self.filter(q)
 
     def editable(self, user):
         """
         Returns a queryset that returns all items that the given user has
-        permission to edit. For speed reasons and django queryset limitations,
-        *doesn't* use `perms.user_can_edit` however, is guaranteed to follow
-        the same logic.
+        permission to edit.
 
         It is **chainable** with other querysets. For example, both of these
         will work and return the same list::
@@ -535,9 +536,9 @@ class ConceptQuerySet(InheritanceQuerySet):
         q = Q()
         if user.submitter_in.exists() or user.steward_in.exists():
             if user.submitter_in.exists():
-                q |= Q(_is_locked=False, workgroup__in=user.submitter_in.all())
+                q |= Q(_is_locked=False, workgroup__submitters__profile__user=user)
             if user.steward_in.exists():
-                q |= Q(workgroup__in=user.steward_in.all())
+                q |= Q(workgroup__stewards__profile__user=user)
             return self.filter(q)
         else:
             return self.none()
@@ -613,32 +614,10 @@ class _concept(baseAristotleObject):
         return len(changed.keys()) > 0
 
     def can_edit(self, user):
-        if self.is_locked():
-            return self.workgroup.stewards.filter(pk=user.pk).exists()
-        else:
-            return self.workgroup.submitters.filter(pk=user.pk).exists() \
-                or self.workgroup.stewards.filter(pk=user.pk).exists()
+        return _concept.objects.filter(pk=self.pk).editable(user).exists()
 
     def can_view(self, user):
-        if user.is_superuser:
-            return True
-        if self.is_public():
-            return True
-        elif user.is_anonymous():
-            return False
-        # If the user can view objects in this workgroup
-        if self.workgroup.members.filter(pk=user.pk).exists():
-            return True
-        # If the item is registered and the user is a registrar view view
-        # permissions in that authority.
-        if self.is_registered:
-            for s in self.statuses.all():
-                ra = s.registrationAuthority
-                if ra.registrars.filter(pk=user.pk).exists():
-                    return True
-        if self.review_requests.filter(registration_authority__registrars__profile__user=user).exists():
-            return True
-        return False
+        return _concept.objects.filter(pk=self.pk).visible(user).exists()
 
     @property
     def item(self):
