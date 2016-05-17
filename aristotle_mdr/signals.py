@@ -49,4 +49,4 @@ class AristotleSignalProcessor(signals.BaseSignalProcessor):
         assert(sender == ReviewRequest)
         for concept in instance.concepts.all():
             obj = concept.item
-            self.handle_save(obj.__class__,obj, **kwargs)
+            self.handle_save(obj.__class__, obj, **kwargs)
