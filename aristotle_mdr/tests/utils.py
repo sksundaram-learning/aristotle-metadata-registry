@@ -460,9 +460,6 @@ class LoggedInViewPages(object):
     def get_page(self, item):
         return url_slugify_concept(item)
 
-    def get_help_page(self):
-        return reverse('aristotle:about', args=[self.item1._meta.model_name])
-
     def logout(self):
         self.client.post(reverse('django.contrib.auth.views.logout'), {})
 
