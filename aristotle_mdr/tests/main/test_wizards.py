@@ -531,7 +531,7 @@ class DataElementWizardPage(ConceptWizardPage,TestCase):
         response = self.client.post(self.wizard_url, step_3_data)
         wizard = response.context['wizard']
         self.assertTrue('definition' in wizard['form'].errors.keys())
-        self.assertTrue('workgroup' in wizard['form'].errors.keys())
+        # NOWG self.assertTrue('workgroup' in wizard['form'].errors.keys())
 
         # no "test item" yet.
         self.assertFalse(models.DataElementConcept.objects.filter(name="Animagus--Animal type").exists())

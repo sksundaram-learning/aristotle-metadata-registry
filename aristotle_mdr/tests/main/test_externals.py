@@ -102,7 +102,7 @@ class AristotleAutocompletes(utils.LoggedInViewPages, TestCase):
                 workgroup=self.wg1)
 
         review = models.ReviewRequest.objects.create(requester=self.su,registration_authority=self.ra)
-        review.concepts.add(self.item1)
+        review.concepts.add(dp)
 
         dp = models.ObjectClass.objects.get(pk=dp.pk) # Un-cache
         self.assertTrue(perms.user_can_view(self.registrar,dp))

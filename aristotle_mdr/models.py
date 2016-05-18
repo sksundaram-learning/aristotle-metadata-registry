@@ -265,6 +265,10 @@ class RegistrationAuthority(registryGroup):
         )
 
     def cascaded_register(self, item, state, user, *args, **kwargs):
+        if not perms.user_can_change_status(user, item):
+            # Return a failure as this item isn't allowed
+            return {'success': [], 'failed': [item] + item.registry_cascade_items}
+
         revision_message = _(
             "Cascade registration of item '%(name)s' (id:%(iid)s)\n"
         ) % {
@@ -279,26 +283,24 @@ class RegistrationAuthority(registryGroup):
             reversion.revisions.set_comment(revision_message)
 
             for child_item in [item] + item.registry_cascade_items:
-                registered = self._register(
+                self._register(
                     child_item, state, user, *args, **kwargs
                 )
-                if registered:
-                    seen_items['success'] = seen_items['success'] + [child_item]
-                else:
-                    seen_items['failed'] = seen_items['failed'] + [child_item]
+                seen_items['success'] = seen_items['success'] + [child_item]
         return seen_items
 
     def register(self, item, state, user, *args, **kwargs):
+        if not perms.user_can_change_status(user, item):
+            # Return a failure as this item isn't allowed
+            return {'success': [], 'failed': [item]}
+
         revision_message = kwargs.get('changeDetails', "")
         with transaction.atomic(), reversion.revisions.create_revision():
             reversion.revisions.set_user(user)
             reversion.revisions.set_comment(revision_message)
-            registered = self._register(item, state, user, *args, **kwargs)
+            self._register(item, state, user, *args, **kwargs)
 
-        if registered:
-            return {'success': [item], 'failed': []}
-        else:
-            return {'success': [], 'failed': [item]}
+        return {'success': [item], 'failed': []}
 
     def _register(self, item, state, user, *args, **kwargs):
         changeDetails = kwargs.get('changeDetails', "")
@@ -308,10 +310,6 @@ class RegistrationAuthority(registryGroup):
             or timezone.now().date()
         until_date = kwargs.get('until_date', None)
 
-        if not perms.user_can_change_status(user, item):
-            # Return a failure as this item isn't allowed
-            return False
-
         Status.objects.create(
             concept=item,
             registrationAuthority=self,
@@ -320,7 +318,6 @@ class RegistrationAuthority(registryGroup):
             changeDetails=changeDetails,
             until_date=until_date
         )
-        return True
 
     def giveRoleToUser(self, role, user):
         if role == 'registrar':

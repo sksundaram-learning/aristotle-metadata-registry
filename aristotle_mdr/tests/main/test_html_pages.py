@@ -833,9 +833,11 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.login_registrar()
 
         self.assertFalse(perms.user_can_view(self.registrar,self.item1))
-        self.item1.readyToReview = True
         self.item1.save()
         self.item1 = self.itemType.objects.get(pk=self.item1.pk)
+
+        review = models.ReviewRequest.objects.create(requester=self.su,registration_authority=self.ra)
+        review.concepts.add(self.item1)
 
         self.assertTrue(perms.user_can_view(self.registrar,self.item1))
         self.assertTrue(perms.user_can_change_status(self.registrar,self.item1))
