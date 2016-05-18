@@ -140,49 +140,6 @@ class UserHomePages(utils.LoggedInViewPages, TestCase):
         response = self.client.get(reverse('aristotle:userReadyForReview',))
         self.assertEqual(response.status_code,200)
 
-    def test_registrar_has_valid_items_in_review(self):
-
-        item1 = models.ObjectClass.objects.create(name="Test Item 1",definition=" ",workgroup=self.wg1)
-        item2 = models.ObjectClass.objects.create(name="Test Item 2",definition=" ",workgroup=self.wg2)
-        item3 = models.ObjectClass.objects.create(name="Test Item 3",definition=" ",workgroup=self.wg1)
-        item4 = models.ObjectClass.objects.create(name="Test Item 4",definition=" ",workgroup=self.wg2)
-
-        self.login_registrar()
-
-        response = self.client.get(reverse('aristotle:userReadyForReview',))
-        self.assertEqual(response.status_code,200)
-
-        self.assertEqual(len(response.context['page']),0)
-
-        review = models.ReviewRequest.objects.create(requester=self.su,registration_authority=self.ra)
-        review.concepts.add(item1)
-        review.concepts.add(item4)
-
-        response = self.client.get(reverse('aristotle:userReadyForReview',))
-        self.assertEqual(response.status_code,200)
-        self.assertEqual(len(response.context['page']),1)
-
-        review = models.ReviewRequest.objects.create(requester=self.su,registration_authority=self.ra)
-        review.concepts.add(item1)
-
-        response = self.client.get(reverse('aristotle:userReadyForReview',))
-        self.assertEqual(response.status_code,200)
-        self.assertEqual(len(response.context['page']),2)
-
-        other_ra = models.RegistrationAuthority.objects.create(name="A different ra")
-        review = models.ReviewRequest.objects.create(requester=self.su,registration_authority=other_ra)
-        review.concepts.add(item2)
-
-        response = self.client.get(reverse('aristotle:userReadyForReview',))
-        self.assertEqual(response.status_code,200)
-        self.assertEqual(len(response.context['page']),2)
-
-        other_ra.giveRoleToUser('registrar',self.registrar)
-        response = self.client.get(reverse('aristotle:userReadyForReview',))
-        self.assertEqual(response.status_code,200)
-        self.assertEqual(len(response.context['page']),3)
-
-
     def test_superuser_can_access_tools(self):
         self.login_superuser()
         self.check_generic_pages()

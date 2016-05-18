@@ -14,7 +14,7 @@ import datetime
 import reversion
 from reversion.revisions import default_revision_manager
 
-from aristotle_mdr.perms import user_can_view, user_can_edit, user_can_change_status
+from aristotle_mdr import perms
 from aristotle_mdr.utils import cache_per_item_user, concept_to_dict, construct_change_message, url_slugify_concept
 from aristotle_mdr import forms as MDRForms
 from aristotle_mdr import exceptions as registry_exceptions
@@ -70,6 +70,13 @@ class SubmitForReviewView(ItemSubpageFormView):
 
 
 class ReviewActionMixin(object):
+    @method_decorator(login_required)
+    def dispatch(self, *args, **kwargs):
+        review = self.get_review()
+        if not perms.user_can_view_review(self.request.user,review):
+            raise PermissionDenied
+        return super(ReviewActionMixin, self).dispatch(*args, **kwargs)
+
     def get_review(self):
         self.review = get_object_or_404(MDR.ReviewRequest, pk=self.kwargs['review_id'])
         return self.review

@@ -122,6 +122,20 @@ def user_can_change_status(user, item):
     return False
 
 
+def user_can_view_review(user,review):
+    # A user can see all their requests
+    if review.requester == user:
+        return True
+
+    # None else can see a cancelled request
+    from aristotle_mdr.models import REVIEW_STATES
+    if review.status == REVIEW_STATES.cancelled:
+        return False
+    
+    # If a registrar is in the registration authority for the request they can see it.
+    return user.registrar_in.filter(pk=review.registration_authority.pk).exists()
+
+
 def user_in_workgroup(user, wg):
     if user.is_superuser:
         return True

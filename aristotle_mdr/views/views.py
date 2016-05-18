@@ -301,27 +301,6 @@ def allRegistrationAuthorities(request):
 # Actions
 
 
-def mark_ready_to_review(request, iid):
-    item = get_object_or_404(MDR._concept, pk=iid).item
-    if not (item and user_can_edit(request.user, item)):
-        if request.user.is_anonymous():
-            return redirect(reverse('friendly_login') + '?next=%s' % request.path)
-        else:
-            raise PermissionDenied
-
-    if request.method == 'POST':  # If the form has been submitted...
-        if item.is_registered:
-            raise PermissionDenied
-        else:
-            with transaction.atomic(), reversion.revisions.create_revision():
-                reversion.revisions.set_user(request.user)
-                item.readyToReview = not item.readyToReview
-                item.save()
-        return HttpResponseRedirect(url_slugify_concept(item))
-    else:
-        return render(request, "aristotle_mdr/actions/mark_ready_to_review.html", {"item": item})
-
-
 def changeStatus(request, iid):
     item = get_object_or_404(MDR._concept, pk=iid).item
     if not (item and user_can_change_status(request.user, item)):
