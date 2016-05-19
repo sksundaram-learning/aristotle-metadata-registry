@@ -55,3 +55,20 @@ class TestSlotsPagesLoad(utils.LoggedInViewPages, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue(oc1.name not in response.content)
         self.assertTrue(oc2.name not in response.content)
+
+    def test_long_slots(self):
+        _type = models.SlotDefinition.objects.create(
+            slot_name="test slots",
+            app_label='aristotle_mdr',
+            concept_type='objectclass'
+        )
+
+        oc1 = ObjectClass.objects.create(
+            name="test obj1",
+            definition="test",
+        )
+
+        slot = models.Slot.objects.create(concept=oc1.concept, type=_type, value="a" * 512)
+        slot = models.Slot.objects.get(pk=slot.pk)
+        self.assertTrue(slot.value=="a" * 512)
+        self.assertTrue(len(slot.value) > 256)
