@@ -540,11 +540,6 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.assertTrue(self.item1.superseded_by == None)
         self.assertTrue(self.item2.supersedes.count() == 0)
 
-    def test_editor_can_request_review(self):
-        self.login_editor()
-
-        # TODO: do stuff here
-
     def test_viewer_cannot_view_deprecate_page(self):
         self.login_viewer()
         response = self.client.get(reverse('aristotle:deprecate',args=[self.item1.id]))

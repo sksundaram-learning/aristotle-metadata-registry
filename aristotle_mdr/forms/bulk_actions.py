@@ -2,8 +2,10 @@ import autocomplete_light
 
 from django import forms
 from django.core.exceptions import PermissionDenied
+from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.utils import timezone
+from django.utils.html import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 import aristotle_mdr.models as MDR
@@ -227,6 +229,56 @@ class ChangeStateForm(ChangeStatusForm, BulkActionForm):
     @classmethod
     def can_use(cls, user):
         return user_is_registrar(user)
+
+
+class RequestReviewForm(BulkActionForm):
+    confirm_page = "aristotle_mdr/actions/bulk_actions/request_review.html"
+    classes="fa-flag"
+    action_text = _('Request review')
+    items_label = "These are the items that will be reviewed. Add or remove additional items with the autocomplete box."
+        
+    registration_authority=forms.ModelChoiceField(
+        label="Registration Authority",
+        queryset=MDR.RegistrationAuthority.objects.all(),
+       # widget=forms.CheckboxSelect
+    )
+    state = forms.ChoiceField(choices=MDR.STATES, widget=forms.RadioSelect)
+    message = forms.CharField(
+        required=False,
+        label=_("Message for the reviewing registrar"),
+        widget=forms.Textarea
+    )
+
+    def __init__(self, *args, **kwargs):
+        super(RequestReviewForm, self).__init__(*args, **kwargs)
+
+    def make_changes(self):
+        import reversion
+        ra = self.cleaned_data['registration_authority']
+        state = self.cleaned_data['state']
+        items = self.items_to_change
+        # cascade = self.cleaned_data['cascadeRegistration']
+        message = self.cleaned_data['message']
+
+        with transaction.atomic(), reversion.revisions.create_revision():
+            reversion.revisions.set_user(self.user)
+
+            review = MDR.ReviewRequest.objects.create(
+                requester=self.user,
+                registration_authority=ra,
+                message=message,
+                state=state
+            )
+            review.concepts = items
+
+            user_message = mark_safe(_(
+                "%(num_items)s items requested for review - <a href='%(url)s'>see the review here</a>"
+            ) % {
+                'num_items': len(items),
+                'url': reverse('aristotle:userReviewDetails',args=[review.id]) 
+            })
+            reversion.revisions.set_comment(message + "\n\n" + user_message)
+            return user_message
 
 
 class ChangeWorkgroupForm(BulkActionForm):
