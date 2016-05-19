@@ -55,7 +55,7 @@ class Slot(TimeStampedModel):
     # on save confirm the cardinality
     type = models.ForeignKey(SlotDefinition)
     concept = models.ForeignKey(MDR._concept, related_name='slots')
-    value = models.CharField(max_length=256)
+    value = models.TextField()
 
     def clean(self):
         if hasattr(self, 'type') and self.type is not None and not self.concept.__class__ != self.type.model_class():
