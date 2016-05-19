@@ -2,27 +2,38 @@
 {% load compile_static i18n %}
 {% load aristotle_tags %}
 
-{% block title %}Change state for {{ item.name }}{% endblock %}
+{% block title %}Approve review request{% endblock %}
 {% block content %}
 {{ form.media }}
-<form method="post" action="{% url 'aristotle:changeStatus' item.id %}">{% csrf_token %}
+<form method="post" action="{% url 'aristotle:userReviewAccept' review.id %}">{% csrf_token %}
     <div class="modal-body">
         <ol class="breadcrumb">
-          <li><a href="{% url 'aristotle:item' item.id %}">{{ item.name }}</a></li>
-          <li class="active">Change registation status</li>
+          <li><a href="{% url 'aristotle:userReadyForReview' %}">Review list</a></li>
+          <li class="active">Approve review request</li>
         </ol>
 
 
-        <header>This form allows you to change the status of multiple items in your registration authorities.
+        <header>By approving this review, this form allows you to change the status of multiple items in your registration authorities.
         </header>
+        <div class="well">
+            <strong>The original message for this request:</strong>
+            <p>{{ review.message }}</p>
+            <strong>The items in this request are listed below:</strong>
+            <ul>
+                {% for item in review.concepts.all %}
+                    <li>
+        {% include "aristotle_mdr/helpers/inlineDetails.html" with item=item %}
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
         <div>
 
-            {{ form.items }}
+            {{ form.errors }}
         </div>
         <div id="visibilty">
-            This item is currently {{visibility}}.
             <span id="potential">
-            {% trans 'Select a new state to see how the visibility of this item will change.' %}
+            {% trans 'Select a new state to see how the visibility of these metadata items will change.' %}
             </span>
         </div>
         <section>
@@ -60,9 +71,6 @@
             <div>
                 {{ form.state }}
                 <ul>
-                    <li class="alert alert-info">
-                        Changing the registration status of an item may impact who can view or make changes to metadata.
-                    </li>
                 {% for val,label_text in form.registrationAuthorities.field.choices %}
                     <li>
                         <input type="checkbox" id="registrationAuthorities_{{val}}" name="registrationAuthorities" value="{{val}}">
@@ -76,6 +84,10 @@
             </div>
         </div>
         <div class="status_change_description">
+            <label for='id_response'>{{ form.response.label }}:</label> {{ form.response.help_text }} 
+            {{ form.response }}
+        </div>
+        <div class="status_change_description">
             {{ form.changeDetails.label }} (optional):
             {{ form.changeDetails }}
         </div>
@@ -87,7 +99,7 @@
         {% if request.is_ajax %}
             <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
         {% else %}
-            <a class="btn btn-default" href="{% url 'aristotle:item' item.id %}">Cancel</a>
+            <a class="btn btn-default" href="{% url 'aristotle:userReadyForReview' %}">Cancel</a>
         {% endif %}
         <input type="submit" class="btn btn-primary" value="Update Status" />
     </div>

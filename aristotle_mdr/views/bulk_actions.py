@@ -84,6 +84,7 @@ class BulkAction(FormView):
                 # there was an error with the form redisplay
                 if form.is_valid():
                     message = form.make_changes()
+
                     messages.add_message(request, messages.INFO, message)
                     return HttpResponseRedirect(url)
             else:

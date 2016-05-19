@@ -9,3 +9,8 @@ register = template.Library()
 @register.filter
 def order_by(qs, order):
     return qs.order_by(*(order.split(",")))
+
+
+@register.filter
+def startswith(string, substr):
+    return string.startswith(substr)

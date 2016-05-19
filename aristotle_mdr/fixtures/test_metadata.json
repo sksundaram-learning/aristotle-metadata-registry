@@ -197,14 +197,10 @@
       ],
       "name": "Possum Workgroup",
       "created": "2016-05-02T22:23:10.720Z",
-      "registrationAuthorities": [
-        3
-      ],
       "submitters": [
         6
       ],
       "modified": "2016-05-02T22:23:12.039Z",
-      "ownership": 1,
       "viewers": [
         3
       ]
@@ -219,7 +215,6 @@
       "workgroup": 3,
       "created": "2016-05-02T22:23:10.597Z",
       "modified": "2016-05-02T22:23:10.597Z",
-      "readyToReview": false,
       "_is_public": false,
       "name": "Hour and minute"
     },
@@ -233,7 +228,6 @@
       "workgroup": 3,
       "created": "2016-05-02T22:23:10.612Z",
       "modified": "2016-05-02T22:23:10.612Z",
-      "readyToReview": false,
       "_is_public": false,
       "name": "Week"
     },
@@ -247,7 +241,6 @@
       "workgroup": 3,
       "created": "2016-05-02T22:23:11.253Z",
       "modified": "2016-05-02T22:23:11.947Z",
-      "readyToReview": false,
       "_is_public": false,
       "name": "Person"
     },
@@ -261,7 +254,6 @@
       "workgroup": 3,
       "created": "2016-05-02T22:23:11.269Z",
       "modified": "2016-05-02T22:23:11.934Z",
-      "readyToReview": true,
       "_is_public": true,
       "name": "Person"
     },
@@ -275,7 +267,6 @@
       "workgroup": 3,
       "created": "2016-05-02T22:23:11.315Z",
       "modified": "2016-05-02T22:23:11.315Z",
-      "readyToReview": false,
       "_is_public": false,
       "name": "Age"
     },
@@ -289,7 +280,6 @@
       "workgroup": 3,
       "created": "2016-05-02T22:23:11.331Z",
       "modified": "2016-05-02T22:23:11.333Z",
-      "readyToReview": false,
       "_is_public": false,
       "name": "Person-Age"
     },
@@ -303,7 +293,6 @@
       "workgroup": 3,
       "created": "2016-05-02T22:23:11.352Z",
       "modified": "2016-05-02T22:23:11.353Z",
-      "readyToReview": false,
       "_is_public": false,
       "name": "Weight"
     },
@@ -317,7 +306,6 @@
       "workgroup": 3,
       "created": "2016-05-02T22:23:11.368Z",
       "modified": "2016-05-02T22:23:11.368Z",
-      "readyToReview": false,
       "_is_public": false,
       "name": "Height"
     },
@@ -331,7 +319,6 @@
       "workgroup": 3,
       "created": "2016-05-02T22:23:11.384Z",
       "modified": "2016-05-02T22:23:11.384Z",
-      "readyToReview": false,
       "_is_public": false,
       "name": "Person-Weight"
     },
@@ -345,7 +332,6 @@
       "workgroup": 3,
       "created": "2016-05-02T22:23:11.400Z",
       "modified": "2016-05-02T22:23:11.400Z",
-      "readyToReview": false,
       "_is_public": false,
       "name": "Person-Height"
     },
@@ -359,7 +345,6 @@
       "workgroup": 3,
       "created": "2016-05-02T22:23:11.420Z",
       "modified": "2016-05-02T22:23:11.421Z",
-      "readyToReview": false,
       "_is_public": false,
       "name": "Total years N[NN]"
     },
@@ -373,7 +358,6 @@
       "workgroup": 3,
       "created": "2016-05-02T22:23:11.436Z",
       "modified": "2016-05-02T22:23:11.436Z",
-      "readyToReview": false,
       "_is_public": false,
       "name": "Person-age, total years N[NN]"
     },
@@ -387,7 +371,6 @@
       "workgroup": 3,
       "created": "2016-05-02T22:23:11.450Z",
       "modified": "2016-05-02T22:23:11.450Z",
-      "readyToReview": false,
       "_is_public": false,
       "name": "Sex"
     },
@@ -401,7 +384,6 @@
       "workgroup": 3,
       "created": "2016-05-02T22:23:11.466Z",
       "modified": "2016-05-02T22:23:11.466Z",
-      "readyToReview": false,
       "_is_public": false,
       "name": "Person-Sex"
     },
@@ -415,7 +397,6 @@
       "workgroup": 3,
       "created": "2016-05-02T22:23:11.487Z",
       "modified": "2016-05-02T22:23:11.487Z",
-      "readyToReview": false,
       "_is_public": false,
       "name": "Sex Code"
     },
@@ -429,7 +410,6 @@
       "workgroup": 3,
       "created": "2016-05-02T22:23:11.524Z",
       "modified": "2016-05-02T22:23:12.021Z",
-      "readyToReview": false,
       "_is_public": false,
       "name": "Person-sex, Code N"
     },

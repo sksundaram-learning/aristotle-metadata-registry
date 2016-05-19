@@ -48,50 +48,6 @@
     </div><!-- /.modal -->
     {% endif %}
 
-    <section class=well>
-        <header>{% trans 'Responsible Registration Authorities' %}</header>
-            <ul>
-                {% if workgroup.ownership == workgroup_ownership.registry %}
-                    <li>Content in this registry can be made visible by <em>any</em> Registration Authority.</li>
-                {% elif workgroup.ownership == workgroup_ownership.authority %}
-                    {% for ra in workgroup.registrationAuthorities.all %}
-                        <a href="{% url 'aristotle:registrationAuthority' iid=ra.id %}">{{ ra.name }}</a>
-                    {% empty %}
-                        <li><em>No Registration Authorities - items in this workgroup cannot be progressed!</em></li>
-                    {% endfor %}
-                {% endif %}
-            </ul>
-        {% if workgroup.ownership == workgroup_ownership.registry %}
-            <div>{% trans 'Content in this workgroup will be:' %}</div>
-            <ul>
-                <li>
-                    <em>locked</em> if its status is locked in
-                    <em>any</em> registration authority
-                </li>
-                <li>
-                    <em>publically visible</em> if its status is public in
-                    <em>any</em> registration authority
-                </li>
-            </ul>
-        {% elif workgroup.ownership == workgroup_ownership.authority %}
-            <div>Content in this workgroup will be:</div>
-            <em>locked</em> if its status is:
-            <ul>
-                {% for ra in workgroup.registrationAuthorities.all %}
-                    <li>{{ ra.get_locked_state_display }} or above in
-                    <a href="{{ ra.get_absolute_url }}">{{ ra }}</a></li>
-                {% endfor %}
-            </ul>
-            <em>publically visible</em> if its status is:
-            <ul>
-                {% for ra in workgroup.registrationAuthorities.all %}
-                    <li>{{ ra.get_public_state_display }} or above in
-                    <a href="{{ ra.get_absolute_url }}">{{ ra }}</a></li>
-                {% endfor %}
-            </ul>
-        {% endif %}
-    </section>
-
     <section id="items">
     <header>{% trans 'Recently changed items' %}</header>
         <ul>

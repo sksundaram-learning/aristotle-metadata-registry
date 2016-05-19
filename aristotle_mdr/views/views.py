@@ -62,11 +62,6 @@ class ConceptHistoryCompareView(HistoryCompareDetailView):
         return super(ConceptHistoryCompareView, self).dispatch(*args, **kwargs)
 
 
-class HelpTemplateView(TemplateView):
-    def get_template_names(self):
-        return ['aristotle_mdr/static/help/%s.html' % self.kwargs['template']]
-
-
 def get_if_user_can_view(objtype, user, iid):
     item = get_object_or_404(objtype, pk=iid)
     if user_can_view(user, item):
@@ -301,27 +296,6 @@ def allRegistrationAuthorities(request):
 # Actions
 
 
-def mark_ready_to_review(request, iid):
-    item = get_object_or_404(MDR._concept, pk=iid).item
-    if not (item and user_can_edit(request.user, item)):
-        if request.user.is_anonymous():
-            return redirect(reverse('friendly_login') + '?next=%s' % request.path)
-        else:
-            raise PermissionDenied
-
-    if request.method == 'POST':  # If the form has been submitted...
-        if item.is_registered:
-            raise PermissionDenied
-        else:
-            with transaction.atomic(), reversion.revisions.create_revision():
-                reversion.revisions.set_user(request.user)
-                item.readyToReview = not item.readyToReview
-                item.save()
-        return HttpResponseRedirect(url_slugify_concept(item))
-    else:
-        return render(request, "aristotle_mdr/actions/mark_ready_to_review.html", {"item": item})
-
-
 def changeStatus(request, iid):
     item = get_object_or_404(MDR._concept, pk=iid).item
     if not (item and user_can_change_status(request.user, item)):
@@ -367,22 +341,18 @@ def changeStatus(request, iid):
     if item._is_public:
         visibility = "public"
 
-    from aristotle_mdr.models import WORKGROUP_OWNERSHIP, STATES
+    from aristotle_mdr.models import STATES
     import json
 
     for ra in request.user.profile.registrarAuthorities:
-        if item.workgroup.ownership == WORKGROUP_OWNERSHIP.authority:
-            owner = ra in item.workgroup.registrationAuthorities.all()
-        elif item.workgroup.ownership == WORKGROUP_OWNERSHIP.registry:
-            owner = True
         ra_matrix = {'name': ra.name, 'states': {}}
         for s, _ in STATES:
             if s > ra.public_state:
-                ra_matrix['states'][s] = [visibility, "public"][owner]
+                ra_matrix['states'][s] = "public"
             elif s > ra.locked_state:
-                ra_matrix['states'][s] = [visibility, "locked"][owner]
+                ra_matrix['states'][s] = "locked"
             else:
-                ra_matrix['states'][s] = [visibility, "hidden"][owner]
+                ra_matrix['states'][s] = "hidden"
         matrix[ra.id] = ra_matrix
 
     return render(

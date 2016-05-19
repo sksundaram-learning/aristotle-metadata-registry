@@ -64,7 +64,6 @@ urlpatterns = patterns(
     url(r'^action/supersede/(?P<iid>\d+)$', views.supersede, name='supersede'),
     url(r'^action/deprecate/(?P<iid>\d+)$', views.deprecate, name='deprecate'),
     url(r'^action/bulkaction/?$', views.bulk_actions.BulkAction.as_view(), name='bulk_action'),
-    url(r'^action/r2r/(?P<iid>\d+)?$', views.mark_ready_to_review, name='mark_ready_to_review'),
     url(r'^action/compare/?$', views.comparator.compare_concepts, name='compare_concepts'),
 
     url(r'^changestatus/(?P<iid>\d+)$', views.changeStatus, name='changeStatus'),
@@ -72,6 +71,7 @@ urlpatterns = patterns(
 
     url(r'^account/?$', RedirectView.as_view(url='account/home/', permanent=True)),
     url(r'^account/home/?$', views.user_pages.home, name='userHome'),
+    url(r'^account/sandbox/?$', views.user_pages.CreatedItemsListView.as_view(), name='userSandbox'),
     url(r'^account/roles/?$', views.user_pages.roles, name='userRoles'),
     url(r'^account/admin/?$', views.user_pages.admin_tools, name='userAdminTools'),
     url(r'^account/admin/statistics/?$', views.user_pages.admin_stats, name='userAdminStats'),
@@ -82,8 +82,13 @@ urlpatterns = patterns(
     url(r'^account/workgroups/archives/?$', views.user_pages.workgroup_archives, name='user_workgroups_archives'),
     url(r'^account/notifications(?:/folder/(?P<folder>all))?/?$', views.user_pages.inbox, name='userInbox'),
 
+
+    url(r'^action/review/(?P<iid>\d+)?$', views.actions.SubmitForReviewView.as_view(), name='request_review'),
     url(r'^account/registrartools/?$', views.user_pages.registrar_tools, name='userRegistrarTools'),
-    url(r'^account/registrartools/readyforreview/?$', views.user_pages.review_list, name='userReadyForReview'),
+    url(r'^account/registrartools/review/?$', views.user_pages.review_list, name='userReadyForReview'),
+    url(r'^account/registrartools/review/details/(?P<review_id>\d+)?$', views.user_pages.ReviewDetailsView.as_view(), name='userReviewDetails'),
+    url(r'^account/registrartools/review/accept/(?P<review_id>\d+)?$', views.actions.ReviewAcceptView.as_view(), name='userReviewAccept'),
+    url(r'^account/registrartools/review/reject/(?P<review_id>\d+)?$', views.actions.ReviewRejectView.as_view(), name='userReviewReject'),
 
     url(r'^registrationauthority/(?P<iid>\d+)?(?:\/(?P<name_slug>.+))?/?$', views.registrationauthority, name='registrationAuthority'),
     url(r'^registrationauthorities/?$', views.allRegistrationAuthorities, name='allRegistrationAuthorities'),

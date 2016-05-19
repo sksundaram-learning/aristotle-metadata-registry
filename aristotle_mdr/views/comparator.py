@@ -87,7 +87,7 @@ def compare_concepts(request, obj_type=None):
                     comparison.pop(f.name, None)
                     same.pop(f.name, None)
 
-            hidden_fields = ['readyToReview', 'workgroup', 'created', 'modified', 'id']
+            hidden_fields = ['workgroup', 'created', 'modified', 'id']
             for h in hidden_fields:
                 comparison.pop(h, None)
                 same.pop(h, None)

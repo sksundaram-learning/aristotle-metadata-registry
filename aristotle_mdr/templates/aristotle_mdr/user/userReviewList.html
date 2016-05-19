@@ -12,14 +12,13 @@
 {% block page %}
 <h1>{% block title %}Review list{% endblock %}</h1>
 <p>
-    The following items have been marked as "ready to review" by the editors in their workgroup,
+    The following items have been requested for review
     and are ready to begin the standarisation process.
 </p>
 {% if page %}
     <form action="{% url 'aristotle:bulk_action' %}?next={{ request.path }}" method="POST">
     {% csrf_token %}
     {% include "aristotle_mdr/helpers/paginated_review_list.html" with page=page %}
-    {% include "aristotle_mdr/helpers/list_action_bar.html" with wrap=True %}
     </form>
 {% else %}
     <h3>You currently have no items to review.</h3>

@@ -28,7 +28,6 @@ class AnonymousUserViewingThePages(TestCase):
     def test_visible_item(self):
         wg = models.Workgroup.objects.create(name="Setup WG")
         ra = models.RegistrationAuthority.objects.create(name="Test RA")
-        wg.registrationAuthorities.add(ra)
         item = models.ObjectClass.objects.create(name="Test OC",workgroup=wg)
         s = models.Status.objects.create(
                 concept=item,
@@ -538,24 +537,8 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
             reverse('aristotle:supersede',args=[self.item1.id]),{'newerItem':""})
         self.assertEqual(response.status_code,302)
         self.item1 = self.itemType.objects.get(id=self.item1.id) # Stupid cache
-        print self.item1.superseded_by, response
         self.assertTrue(self.item1.superseded_by == None)
         self.assertTrue(self.item2.supersedes.count() == 0)
-
-    def test_editor_can_use_ready_to_review(self):
-        self.login_editor()
-        response = self.client.get(reverse('aristotle:mark_ready_to_review',args=[self.item1.id]))
-        self.assertEqual(response.status_code,200)
-        response = self.client.get(reverse('aristotle:mark_ready_to_review',args=[self.item2.id]))
-        self.assertEqual(response.status_code,403)
-        response = self.client.get(reverse('aristotle:mark_ready_to_review',args=[self.item3.id]))
-        self.assertEqual(response.status_code,200)
-
-        self.assertFalse(self.item1.readyToReview)
-        response = self.client.post(reverse('aristotle:mark_ready_to_review',args=[self.item1.id]))
-        self.assertRedirects(response,url_slugify_concept(self.item1))
-        self.item1 = self.itemType.objects.get(id=self.item1.id) # Stupid cache
-        self.assertTrue(self.item1.readyToReview)
 
     def test_viewer_cannot_view_deprecate_page(self):
         self.login_viewer()
@@ -618,9 +601,10 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         with reversion.create_revision():
             self.item1.name = "change 1"
             reversion.set_comment("change 1")
-            self.item1.readyToReview = True
             self.item1.save()
 
+        review = models.ReviewRequest.objects.create(requester=self.su,registration_authority=self.ra)
+        review.concepts.add(self.item1)
         with reversion.create_revision():
             self.item1.name = "change 2"
             reversion.set_comment("change 2")
@@ -680,6 +664,8 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.item1 = self.itemType.objects.get(pk=self.item1.pk)
         self.assertEqual(self.item1.name,updated_name)
 
+        review = models.ReviewRequest.objects.create(requester=self.su,registration_authority=self.ra)
+        review.concepts.add(self.item1)
         r = self.ra.register(
             item=self.item1,
             state=models.STATES.incomplete,
@@ -807,9 +793,11 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.login_registrar()
 
         self.assertFalse(perms.user_can_view(self.registrar,self.item1))
-        self.item1.readyToReview = True
         self.item1.save()
         self.item1 = self.itemType.objects.get(pk=self.item1.pk)
+
+        review = models.ReviewRequest.objects.create(requester=self.su,registration_authority=self.ra)
+        review.concepts.add(self.item1)
 
         self.assertTrue(perms.user_can_view(self.registrar,self.item1))
         self.assertTrue(perms.user_can_change_status(self.registrar,self.item1))
@@ -840,9 +828,11 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.login_registrar()
 
         self.assertFalse(perms.user_can_view(self.registrar,self.item1))
-        self.item1.readyToReview = True
         self.item1.save()
         self.item1 = self.itemType.objects.get(pk=self.item1.pk)
+
+        review = models.ReviewRequest.objects.create(requester=self.su,registration_authority=self.ra)
+        review.concepts.add(self.item1)
 
         self.assertTrue(perms.user_can_view(self.registrar,self.item1))
         self.assertTrue(perms.user_can_change_status(self.registrar,self.item1))
@@ -877,48 +867,16 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
                     print sub_item
                 self.assertTrue(sub_item.is_registered)
 
-    def test_registrar_can_change_status_of_registry_owned_item(self):
-        self.login_registrar()
-        wg = self.item1.workgroup
-        wg.ownership = models.WORKGROUP_OWNERSHIP.registry
-        wg.registrationAuthorities = []
-        wg.save()
-        
-        self.assertFalse(perms.user_can_view(self.registrar,self.item1))
-        self.item1.readyToReview = True
-        self.item1.save()
-        self.item1 = self.itemType.objects.get(pk=self.item1.pk)
-
-        self.assertTrue(perms.user_can_view(self.registrar,self.item1))
-        self.assertTrue(perms.user_can_change_status(self.registrar,self.item1))
-
-        response = self.client.get(reverse('aristotle:changeStatus',args=[self.item1.id]))
-        self.assertEqual(response.status_code,200)
-
-        self.assertEqual(self.item1.statuses.count(),0)
-        response = self.client.post(
-            reverse('aristotle:changeStatus',args=[self.item1.id]),
-            {
-                'registrationAuthorities': [str(self.ra.id)],
-                'state': self.ra.public_state,
-                'changeDetails': "testing",
-                'cascadeRegistration': 0, # no
-            }
-        )
-        self.assertRedirects(response,url_slugify_concept(self.item1))
-
-        self.item1 = self.itemType.objects.get(pk=self.item1.pk)
-        self.assertEqual(self.item1.statuses.count(),1)
-        self.assertTrue(self.item1.is_registered)
-        self.assertTrue(self.item1.is_public())
 
     def test_registrar_cannot_use_faulty_statuses(self):
         self.login_registrar()
 
         self.assertFalse(perms.user_can_view(self.registrar,self.item1))
-        self.item1.readyToReview = True
         self.item1.save()
         self.item1 = self.itemType.objects.get(pk=self.item1.pk)
+
+        review = models.ReviewRequest.objects.create(requester=self.su,registration_authority=self.ra)
+        review.concepts.add(self.item1)
 
         self.assertTrue(perms.user_can_view(self.registrar,self.item1))
         self.assertTrue(perms.user_can_change_status(self.registrar,self.item1))
@@ -1097,7 +1055,6 @@ class DataElementConceptViewPage(LoggedInViewConceptPages,TestCase):
         oc = models.ObjectClass.objects.create(
             name="sub item OC",
             workgroup=self.item1.workgroup,
-            readyToReview = True
         )
         prop = models.Property.objects.create(
             name="sub item prop",

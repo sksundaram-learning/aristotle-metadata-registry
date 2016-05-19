@@ -26,31 +26,7 @@
   },
   {
     "fields": {
-      "definition": "",
-      "archived": false,
-      "stewards": [
-      ],
-      "managers": [
-      ],
-      "name": "ISO\/IEC Workgroup",
-      "created": "2016-05-02T22:23:10.194Z",
-      "registrationAuthorities": [
-      ],
-      "submitters": [
-      ],
-      "modified": "2016-05-02T22:23:10.195Z",
-      "ownership": 0,
-      "viewers": [
-      ]
-    },
-    "model": "aristotle_mdr.workgroup",
-    "pk": 2
-  },
-  {
-    "fields": {
       "definition": "A binary value expressed using a string (e.g. true or false).",
-      "workgroup": 2,
-      "readyToReview": true,
       "created": "2016-05-02T22:23:10.208Z",
       "modified": "2016-05-02T22:23:10.209Z",
       "name": "Boolean"
@@ -61,8 +37,6 @@
   {
     "fields": {
       "definition": "A numeric value expressed using a particular medium of exchange.",
-      "workgroup": 2,
-      "readyToReview": true,
       "created": "2016-05-02T22:23:10.235Z",
       "modified": "2016-05-02T22:23:10.235Z",
       "name": "Currency"
@@ -73,8 +47,6 @@
   {
     "fields": {
       "definition": "A specific instance of time expressed in numeric form.",
-      "workgroup": 2,
-      "readyToReview": true,
       "created": "2016-05-02T22:23:10.259Z",
       "modified": "2016-05-02T22:23:10.260Z",
       "name": "Date\/Time"
@@ -85,8 +57,6 @@
   {
     "fields": {
       "definition": "A sequence of numeric characters which may contain decimals, excluding codes with 'leading' characters e.g. '01','02','03'. ",
-      "workgroup": 2,
-      "readyToReview": true,
       "created": "2016-05-02T22:23:10.284Z",
       "modified": "2016-05-02T22:23:10.284Z",
       "name": "Number"
@@ -97,8 +67,6 @@
   {
     "fields": {
       "definition": "A sequence of alphabetic and\/or numeric characters, including 'leading' characters e.g. '01','02','03'.",
-      "workgroup": 2,
-      "readyToReview": true,
       "created": "2016-05-02T22:23:10.308Z",
       "modified": "2016-05-02T22:23:10.309Z",
       "name": "String"
@@ -109,8 +77,6 @@
   {
     "fields": {
       "definition": "",
-      "workgroup": 2,
-      "readyToReview": true,
       "created": "2016-05-02T22:23:10.359Z",
       "modified": "2016-05-02T22:23:10.359Z",
       "name": "Centimetre"
@@ -121,8 +87,6 @@
   {
     "fields": {
       "definition": "",
-      "workgroup": 2,
-      "readyToReview": true,
       "created": "2016-05-02T22:23:10.379Z",
       "modified": "2016-05-02T22:23:10.379Z",
       "name": "Millimetre"
@@ -133,8 +97,6 @@
   {
     "fields": {
       "definition": "",
-      "workgroup": 2,
-      "readyToReview": true,
       "created": "2016-05-02T22:23:10.410Z",
       "modified": "2016-05-02T22:23:10.411Z",
       "name": "Degree"
@@ -145,8 +107,6 @@
   {
     "fields": {
       "definition": "",
-      "workgroup": 2,
-      "readyToReview": true,
       "created": "2016-05-02T22:23:10.443Z",
       "modified": "2016-05-02T22:23:10.444Z",
       "name": "Second"
@@ -157,8 +117,6 @@
   {
     "fields": {
       "definition": "",
-      "workgroup": 2,
-      "readyToReview": true,
       "created": "2016-05-02T22:23:10.460Z",
       "modified": "2016-05-02T22:23:10.460Z",
       "name": "Minute"
@@ -169,8 +127,6 @@
   {
     "fields": {
       "definition": "",
-      "workgroup": 2,
-      "readyToReview": true,
       "created": "2016-05-02T22:23:10.479Z",
       "modified": "2016-05-02T22:23:10.479Z",
       "name": "Hour"
@@ -181,8 +137,6 @@
   {
     "fields": {
       "definition": "",
-      "workgroup": 2,
-      "readyToReview": true,
       "created": "2016-05-02T22:23:10.499Z",
       "modified": "2016-05-02T22:23:10.499Z",
       "name": "Day"
@@ -193,8 +147,6 @@
   {
     "fields": {
       "definition": "",
-      "workgroup": 2,
-      "readyToReview": true,
       "created": "2016-05-02T22:23:10.519Z",
       "modified": "2016-05-02T22:23:10.519Z",
       "name": "Year"
@@ -205,8 +157,6 @@
   {
     "fields": {
       "definition": "",
-      "workgroup": 2,
-      "readyToReview": true,
       "created": "2016-05-02T22:23:10.550Z",
       "modified": "2016-05-02T22:23:10.551Z",
       "name": "Gram"
@@ -217,8 +167,6 @@
   {
     "fields": {
       "definition": "",
-      "workgroup": 2,
-      "readyToReview": true,
       "created": "2016-05-02T22:23:10.571Z",
       "modified": "2016-05-02T22:23:10.571Z",
       "name": "Kilogram"

@@ -112,7 +112,7 @@
                 {% endif %}
             </li></ul>
             </dd>
-        {% if request.user|in_workgroup:item.workgroup %}
+        {% if item.workgroup and request.user|in_workgroup:item.workgroup %}
             <hr>
             <dt>{% trans 'Workgroup' %}</dt>
             <dd><a href="{% url 'aristotle:workgroup' iid=item.workgroup.id %}">{{ item.workgroup.name }}</a></dd>
@@ -130,6 +130,10 @@
                 {% endif %}
                 <a href="{% url 'aristotle:discussionsNew' %}?workgroup={{item.workgroup.id}}&item={{item.id}}">{% trans "Start a new discussion about this item" %}</a>
             </dd>
+        {% elif item.submitter == request.user %}
+            <hr>
+            <dt>{% trans 'Workgroup' %} </dt>
+            <dd><a href="{% url 'aristotle:userSandbox' %}">{% trans "Sandboxed Item" %}</a></dd>
         {% endif %}
         </dl>
         {% bootstrap_modal "infobox_modal" size='lg' %}

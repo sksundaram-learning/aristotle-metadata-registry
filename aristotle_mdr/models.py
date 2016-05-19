@@ -265,6 +265,10 @@ class RegistrationAuthority(registryGroup):
         )
 
     def cascaded_register(self, item, state, user, *args, **kwargs):
+        if not perms.user_can_change_status(user, item):
+            # Return a failure as this item isn't allowed
+            return {'success': [], 'failed': [item] + item.registry_cascade_items}
+
         revision_message = _(
             "Cascade registration of item '%(name)s' (id:%(iid)s)\n"
         ) % {
@@ -279,26 +283,24 @@ class RegistrationAuthority(registryGroup):
             reversion.revisions.set_comment(revision_message)
 
             for child_item in [item] + item.registry_cascade_items:
-                registered = self._register(
+                self._register(
                     child_item, state, user, *args, **kwargs
                 )
-                if registered:
-                    seen_items['success'] = seen_items['success'] + [child_item]
-                else:
-                    seen_items['failed'] = seen_items['failed'] + [child_item]
+                seen_items['success'] = seen_items['success'] + [child_item]
         return seen_items
 
     def register(self, item, state, user, *args, **kwargs):
+        if not perms.user_can_change_status(user, item):
+            # Return a failure as this item isn't allowed
+            return {'success': [], 'failed': [item]}
+
         revision_message = kwargs.get('changeDetails', "")
         with transaction.atomic(), reversion.revisions.create_revision():
             reversion.revisions.set_user(user)
             reversion.revisions.set_comment(revision_message)
-            registered = self._register(item, state, user, *args, **kwargs)
+            self._register(item, state, user, *args, **kwargs)
 
-        if registered:
-            return {'success': [item], 'failed': []}
-        else:
-            return {'success': [], 'failed': [item]}
+        return {'success': [item], 'failed': []}
 
     def _register(self, item, state, user, *args, **kwargs):
         changeDetails = kwargs.get('changeDetails', "")
@@ -308,10 +310,6 @@ class RegistrationAuthority(registryGroup):
             or timezone.now().date()
         until_date = kwargs.get('until_date', None)
 
-        if not perms.user_can_change_status(user, item):
-            # Return a failure as this item isn't allowed
-            return False
-
         Status.objects.create(
             concept=item,
             registrationAuthority=self,
@@ -320,7 +318,6 @@ class RegistrationAuthority(registryGroup):
             changeDetails=changeDetails,
             until_date=until_date
         )
-        return True
 
     def giveRoleToUser(self, role, user):
         if role == 'registrar':
@@ -348,12 +345,6 @@ def update_registration_authority_states(sender, instance, created, **kwargs):
             logger.critical(message)
 
 
-WORKGROUP_OWNERSHIP = Choices(
-    (0, 'registry', _('Registry')),
-    (1, 'authority', _('Registration Authorities')),
-)
-
-
 class Workgroup(registryGroup):
     """
     A workgroup is a collection of associated users given control to work on a
@@ -366,27 +357,11 @@ class Workgroup(registryGroup):
     created in that workgroup.
     """
     template = "aristotle_mdr/workgroup.html"
-    ownership = models.IntegerField(
-        choices=WORKGROUP_OWNERSHIP,
-        default=WORKGROUP_OWNERSHIP.authority,
-        help_text=_("Specifies the 'owner' of the content of the workgroup. "
-                    "Selecting 'registry' allows any registration authority "
-                    "to progress and make items public, 'Registration "
-                    "authorities' specifies that only registration "
-                    "authorities associated with this workgroup may control "
-                    "their visibility.")
-    )
     archived = models.BooleanField(
         default=False,
         help_text=_("Archived workgroups can no longer have new items or "
                     "discussions created within them."),
         verbose_name=_('Archived'),
-    )
-    registrationAuthorities = models.ManyToManyField(
-        RegistrationAuthority,
-        blank=True,
-        related_name="workgroups",
-        verbose_name=_('Registration Authorities'),
     )
 
     viewers = models.ManyToManyField(
@@ -464,44 +439,6 @@ class Workgroup(registryGroup):
         self.managers.remove(user)
 
 
-@receiver(post_save, sender=Workgroup)
-def update_ownership(sender, instance, created, **kwargs):
-    # only log if its an edit, not a newly created workgroup
-    if not created and instance.tracker.has_changed('ownership'):
-        message = (
-            "Workgroup '{wg}' changed ownership, "
-            "cached public states for items in this workgroup are now "
-            "stale and need to be manually updated."
-        ).format(wg=instance.name)
-        logger.critical(message)
-# This would be like the below, but again, a better solution is needed.
-
-
-def update_registation_authorities(sender, instance, action, **kwargs):
-    # this will be slow, but necessary... perhaps this will encourage people
-    # to not change or add registration authorities to workgroups willy-nilly.
-    if action in ['post_add', 'post_remove', 'post_clear']:
-        created = instance.created >= timezone.now() - \
-            datetime.timedelta(seconds=VERY_RECENTLY_SECONDS)
-        # Don't fire this off if the object was created very recently within
-        # about the last 15 seconds.
-        if not created:
-            message = (
-                "Workgroup '{wg}' has altered registration authorities, "
-                "cached public states for items in this workgroup are now "
-                "stale and need to be manually updated."
-            ).format(wg=instance.name)
-            logger.critical(message)
-    # In practice it seems the below is far too slow, so a better alternative
-    # is needed.
-    #    for item in instance.items.all():
-    #        item.recache_states()
-m2m_changed.connect(
-    update_registation_authorities,
-    sender=Workgroup.registrationAuthorities.through
-)
-
-
 class discussionAbstract(TimeStampedModel):
     body = models.TextField()
     author = models.ForeignKey(User)
@@ -549,9 +486,7 @@ class ConceptQuerySet(InheritanceQuerySet):
     def visible(self, user):
         """
         Returns a queryset that returns all items that the given user has
-        permission to view. For speed reasons and django queryset limitations,
-        *doesn't* use `perms.user_can_view` however, is guaranteed to follow
-        the same logic.
+        permission to view.
 
         It is **chainable** with other querysets. For example, both of these
         will work and return the same list::
@@ -569,21 +504,21 @@ class ConceptQuerySet(InheritanceQuerySet):
             q |= Q(workgroup__in=user.profile.workgroups)
             # q |= Q(workgroup__user__profile=user)
         if user.profile.is_registrar:
-            authorities = user.profile.registrarAuthorities.all()
-            # User can see everything that is "readyToReview" or registered in
-            # their workgroup.
-            q |= Q(workgroup__registrationAuthorities__in=authorities,
-                   readyToReview=True)
-            q |= Q(workgroup__registrationAuthorities__in=authorities,
-                   statuses__registrationAuthority__in=authorities)
+            # Registars can see items they have been asked to review
+            q |= Q(
+                Q(review_requests__registration_authority__registrars__profile__user=user) & ~Q(review_requests__status=REVIEW_STATES.cancelled)
+            )
+            # Registars can see items that have been registered in their registration authority
+            q |= Q(
+                Q(statuses__registrationAuthority__registrars__profile__user=user)
+            )
+
         return self.filter(q)
 
     def editable(self, user):
         """
         Returns a queryset that returns all items that the given user has
-        permission to edit. For speed reasons and django queryset limitations,
-        *doesn't* use `perms.user_can_edit` however, is guaranteed to follow
-        the same logic.
+        permission to edit.
 
         It is **chainable** with other querysets. For example, both of these
         will work and return the same list::
@@ -598,9 +533,9 @@ class ConceptQuerySet(InheritanceQuerySet):
         q = Q()
         if user.submitter_in.exists() or user.steward_in.exists():
             if user.submitter_in.exists():
-                q |= Q(_is_locked=False, workgroup__in=user.submitter_in.all())
+                q |= Q(_is_locked=False, workgroup__submitters__profile__user=user)
             if user.steward_in.exists():
-                q |= Q(workgroup__in=user.steward_in.all())
+                q |= Q(workgroup__stewards__profile__user=user)
             return self.filter(q)
         else:
             return self.none()
@@ -629,14 +564,10 @@ class ConceptManager(InheritanceManager):
     It provides access to the ``ConceptQuerySet`` to allow for easy
     permissions-based filtering of ISO 11179 Concept-based items.
     """
-    def get_query_set(self):
-        return ConceptQuerySet(self.model)
-
     def get_queryset(self):
         return ConceptQuerySet(self.model)
 
     def __getattr__(self, attr, *args):
-        # Only let the slow ones through to the queryset
         if attr in ['editable', 'visible', 'public']:
             return getattr(self.get_queryset(), attr, *args)
         else:
@@ -652,8 +583,11 @@ class _concept(baseAristotleObject):
     """
     objects = ConceptManager()
     template = "aristotle_mdr/concepts/managedContent.html"
-    readyToReview = models.BooleanField(default=False)
-    workgroup = models.ForeignKey(Workgroup, related_name="items")
+    workgroup = models.ForeignKey(Workgroup, related_name="items", null=True, blank=True)
+    submitter = models.ForeignKey(
+        User, related_name="created_items",
+        null=True, blank=True,
+        help_text=_('This is the person who first created an item. Users can always see items they made.'))
     # We will query on these, so want them cached with the items themselves
     # To be usable these must be updated when statuses are changed
     _is_public = models.BooleanField(default=False)
@@ -677,45 +611,10 @@ class _concept(baseAristotleObject):
         return len(changed.keys()) > 0
 
     def can_edit(self, user):
-        if self.is_public():
-            return self.workgroup.stewards.filter(pk=user.pk).exists()
-        elif self.is_locked():
-            return self.workgroup.stewards.filter(pk=user.pk).exists()
-        elif self.is_registered:
-            return self.workgroup.submitters.filter(pk=user.pk).exists() \
-                or self.workgroup.stewards.filter(pk=user.pk).exists()
-        else:
-            return self.workgroup.submitters.filter(pk=user.pk).exists() \
-                or self.workgroup.stewards.filter(pk=user.pk).exists()
+        return _concept.objects.filter(pk=self.pk).editable(user).exists()
 
     def can_view(self, user):
-        if self.is_public():
-            return True
-        elif user.is_anonymous():
-            return False
-        # If the user can view objects in this workgroup
-        if self.workgroup.members.filter(pk=user.pk).exists():
-            return True
-        # If the item is registered and the user is a registrar view view
-        # permissions in that authority.
-        if self.is_registered:
-            for s in self.statuses.all():
-                ra = s.registrationAuthority
-                if ra.registrars.filter(pk=user.pk).exists():
-                    return True
-        if self.readyToReview:
-            if self.workgroup.ownership == WORKGROUP_OWNERSHIP.authority:
-                for ra in self.workgroup.registrationAuthorities.all():
-                    if ra.registrars.filter(pk=user.pk).exists():
-                        return True
-            else:
-                if self.workgroup.registrationAuthorities.count() > 0:
-                    for ra in self.workgroup.registrationAuthorities.all():
-                        if ra.registrars.filter(pk=user.pk).exists():
-                            return True
-                else:
-                    return True
-        return False
+        return _concept.objects.filter(pk=self.pk).visible(user).exists()
 
     @property
     def item(self):
@@ -777,19 +676,10 @@ class _concept(baseAristotleObject):
 
     def check_is_public(self, when=timezone.now()):
         """
-            A concept is public if any registration authority of the workgroup
+            A concept is public if any registration authority
             has advanced it to a public state in that RA.
         """
-        if self.workgroup.ownership == WORKGROUP_OWNERSHIP.authority:
-            authorities = self.workgroup.registrationAuthorities.all()
-            if authorities:
-                statuses = self.statuses.filter(
-                    registrationAuthority__in=authorities
-                )
-            else:
-                statuses = self.statuses.none()
-        elif self.workgroup.ownership == WORKGROUP_OWNERSHIP.registry:
-            statuses = self.statuses.all()
+        statuses = self.statuses.all()
         statuses = self.current_statuses(qs=statuses, when=when)
         return True in [
             s.state >= s.registrationAuthority.public_state for s in statuses
@@ -802,16 +692,10 @@ class _concept(baseAristotleObject):
 
     def check_is_locked(self, when=timezone.now()):
         """
-        A concept is locked if any registration authority of the workgroup
+        A concept is locked if any registration authority
         has advanced it to a locked state in that RA.
         """
-        if self.workgroup.ownership == WORKGROUP_OWNERSHIP.authority:
-            authorities = self.workgroup.registrationAuthorities.all()
-            statuses = self.statuses.filter(
-                registrationAuthority__in=authorities
-            )
-        elif self.workgroup.ownership == WORKGROUP_OWNERSHIP.registry:
-            statuses = self.statuses.all()
+        statuses = self.statuses.all()
         statuses = self.current_statuses(qs=statuses, when=when)
         return True in [
             s.state >= s.registrationAuthority.locked_state for s in statuses
@@ -917,6 +801,73 @@ class concept(_concept):
         Return self, because we already have the correct item.
         """
         return self
+
+
+REVIEW_STATES = Choices(
+    (0, 'submitted', _('Submitted')),
+    (5, 'cancelled', _('Cancelled')),
+    (10, 'accepted', _('Accepted')),
+    (15, 'rejected', _('Rejected')),
+)
+
+
+class ReviewRequestQuerySet(models.QuerySet):
+    def visible(self, user):
+        """
+        Returns a queryset that returns all reviews that the given user has
+        permission to view.
+
+        It is **chainable** with other querysets. For example, both of these
+        will work and return the same list::
+
+            ObjectClass.objects.filter(name__contains="Person").visible()
+            ObjectClass.objects.visible().filter(name__contains="Person")
+        """
+        if user.is_superuser:
+            return self.all()
+        if user.is_anonymous():
+            return self.none()
+        q = Q(requester=user)  # Users can always see reviews they requested
+        if user.profile.is_registrar:
+            # Registars can see reviews for the registration authority
+            q |= Q(
+                Q(registration_authority__registrars__profile__user=user) & ~Q(status=REVIEW_STATES.cancelled)
+            )
+        return self.filter(q)
+
+
+class ReviewRequestManager(models.Manager):
+    def get_queryset(self):
+        return ReviewRequestQuerySet(self.model, using=self._db)
+
+    def __getattr__(self, attr, *args):
+        if attr in ['visible']:
+            return getattr(self.get_queryset(), attr, *args)
+        else:
+            return getattr(self.__class__, attr, *args)
+
+
+class ReviewRequest(TimeStampedModel):
+    objects = ReviewRequestManager()
+    concepts = models.ManyToManyField(_concept, related_name="review_requests")
+    registration_authority = models.ForeignKey(
+        RegistrationAuthority,
+        help_text=_("The registration authority the requester wishes to endorse the metadata item")
+    )
+    requester = models.ForeignKey(User, help_text=_("The user requesting a review"), related_name='requested_reviews')
+    message = models.TextField(blank=True, null=True, help_text=_("An optional message accompanying a request"))
+    reviewer = models.ForeignKey(User, null=True, help_text=_("The user performing a review"), related_name='reviewed_requests')
+    response = models.TextField(blank=True, null=True, help_text=_("An optional message responding to a request"))
+    status = models.IntegerField(
+        choices=REVIEW_STATES,
+        default=REVIEW_STATES.submitted,
+        help_text=_('Status of a review')
+    )
+    state = models.IntegerField(
+        choices=STATES,
+        blank=True, null=True,
+        help_text=_("The state at which a user wishes a metadata item to be endorsed")
+    )
 
 
 class Status(TimeStampedModel):
@@ -1329,11 +1280,12 @@ def concept_saved(sender, instance, created, **kwargs):
         return
     for p in instance.favourited_by.all():
         messages.favourite_updated(recipient=p.user, obj=instance)
-    for user in instance.workgroup.viewers.all():
-        if created:
-            messages.workgroup_item_new(recipient=user, obj=instance)
-        else:
-            messages.workgroup_item_updated(recipient=user, obj=instance)
+    if instance.workgroup:
+        for user in instance.workgroup.viewers.all():
+            if created:
+                messages.workgroup_item_new(recipient=user, obj=instance)
+            else:
+                messages.workgroup_item_updated(recipient=user, obj=instance)
     try:
         # This will fail during first load, and if admins delete aristotle.
         system = User.objects.get(username="aristotle")

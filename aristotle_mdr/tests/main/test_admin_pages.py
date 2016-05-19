@@ -225,10 +225,16 @@ class AdminPageForConcept(utils.LoggedInViewPages):
         self.assertRedirects(response,reverse("admin:%s_%s_changelist"%(self.itemType._meta.app_label,self.itemType._meta.model_name)))
         self.assertEqual(self.wg1.items.count(),before_count-1)
 
-        self.item1 = self.itemType.objects.create(name="OC1",workgroup=self.wg1,readyToReview=True, **self.create_defaults)
+        self.item1 = self.itemType.objects.create(name="OC1",workgroup=self.wg1, **self.create_defaults)
         self.assertEqual(self.wg1.items.count(),1)
         before_count = self.wg1.items.count()
+
+        review = models.ReviewRequest.objects.create(requester=self.su,registration_authority=self.ra)
+        review.concepts.add(self.item1)
+        old_count = self.item1.statuses.count()
         self.ra.register(self.item1,models.STATES.standard,self.registrar)
+        self.assertTrue(self.item1.statuses.count() == old_count + 1)
+
 
         self.item1 = self.itemType.objects.get(pk=self.item1.pk) # Dang DB cache
         self.assertTrue(self.item1.is_registered)
@@ -384,9 +390,11 @@ class AdminPageForConcept(utils.LoggedInViewPages):
         with reversion.create_revision():
             self.item1.name = "change 1"
             reversion.set_comment("change 1")
-            self.item1.readyToReview = True
             self.item1.save()
 
+        old_count = self.item1.statuses.count()
+        review = models.ReviewRequest.objects.create(requester=self.su,registration_authority=self.ra)
+        review.concepts.add(self.item1)
         with reversion.create_revision():
             self.item1.name = "change 2"
             reversion.set_comment("change 2")
@@ -396,7 +404,8 @@ class AdminPageForConcept(utils.LoggedInViewPages):
                 user=self.registrar
             )
             self.item1.save()
-
+        self.assertTrue(self.item1.statuses.count() == old_count + 1)
+        
         revisions = reversion.default_revision_manager.get_for_object(self.item1)
 
         response = self.client.get(
