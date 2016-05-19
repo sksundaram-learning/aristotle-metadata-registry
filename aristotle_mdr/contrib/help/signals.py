@@ -3,6 +3,7 @@ from django.db.models.signals import post_save, post_delete, pre_delete
 import haystack.signals as signals  # .RealtimeSignalProcessor as RealtimeSignalProcessor
 from aristotle_mdr.signals import AristotleSignalProcessor
 
+
 class AristotleHelpSignalProcessor(AristotleSignalProcessor):
     def setup(self):
         from aristotle_mdr.contrib.help.models import HelpPage, ConceptHelp

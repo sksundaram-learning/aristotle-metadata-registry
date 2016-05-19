@@ -73,7 +73,7 @@ class ReviewActionMixin(object):
     @method_decorator(login_required)
     def dispatch(self, *args, **kwargs):
         review = self.get_review()
-        if not perms.user_can_view_review(self.request.user,review):
+        if not perms.user_can_view_review(self.request.user, review):
             raise PermissionDenied
         return super(ReviewActionMixin, self).dispatch(*args, **kwargs)
 

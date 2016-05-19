@@ -22,7 +22,6 @@ class TestHelpPagesLoad(TestCase):
         count_2 = models.ConceptHelp.objects.all().count()
         self.assertTrue(count_2 > count_1)
 
-
     def test_help_pages_load(self):
         call_command('loadhelp', 'aristotle_help/*')
         call_command('loadhelp', 'aristotle_help/concept_help/*')
@@ -30,22 +29,22 @@ class TestHelpPagesLoad(TestCase):
         concept_help = models.ConceptHelp.objects.all()
 
         response = self.client.get(reverse('aristotle_help:help_base'))
-        self.assertEqual(response.status_code,200)
+        self.assertEqual(response.status_code, 200)
         response = self.client.get(reverse('aristotle_help:help_concepts'))
-        self.assertEqual(response.status_code,200)
+        self.assertEqual(response.status_code, 200)
 
         for app_label in getattr(settings, 'ARISTOTLE_SETTINGS')['CONTENT_EXTENSIONS']:
-            response = self.client.get(reverse('aristotle_help:concept_app_help',args=[app_label]))
-            self.assertEqual(response.status_code,200)
+            response = self.client.get(reverse('aristotle_help:concept_app_help', args=[app_label]))
+            self.assertEqual(response.status_code, 200)
 
         for obj in concept_help:
-            response = self.client.get(reverse('aristotle_help:concept_help',args=[obj.app_label, obj.concept_type]))
-            self.assertEqual(response.status_code,200)
+            response = self.client.get(reverse('aristotle_help:concept_help', args=[obj.app_label, obj.concept_type]))
+            self.assertEqual(response.status_code, 200)
 
         for obj in concept_help:
-            response = self.client.get(reverse('aristotle_help:concept_help',args=[obj.app_label, obj.concept_type]))
-            self.assertEqual(response.status_code,200)
+            response = self.client.get(reverse('aristotle_help:concept_help', args=[obj.app_label, obj.concept_type]))
+            self.assertEqual(response.status_code, 200)
 
         for obj in regular_help:
-            response = self.client.get(reverse('aristotle_help:help_page',args=[obj.slug]))
-            self.assertEqual(response.status_code,200)
+            response = self.client.get(reverse('aristotle_help:help_page', args=[obj.slug]))
+            self.assertEqual(response.status_code, 200)
