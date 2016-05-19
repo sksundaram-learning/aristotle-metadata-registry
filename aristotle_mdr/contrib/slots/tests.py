@@ -68,7 +68,7 @@ class TestSlotsPagesLoad(utils.LoggedInViewPages, TestCase):
             definition="test",
         )
 
-        slot = models.Slot.objects.create(concept=oc1.concept, type=_type, value="a"*512)
+        slot = models.Slot.objects.create(concept=oc1.concept, type=_type, value="a" * 512)
         slot = models.Slot.objects.get(pk=slot.pk)
-        self.assertTrue(slot.value=="a"*512)
+        self.assertTrue(slot.value=="a" * 512)
         self.assertTrue(len(slot.value) > 256)
