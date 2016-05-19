@@ -121,6 +121,21 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.assertRedirects(response,url_slugify_concept(self.item1))
         self.assertEqual(self.item1.name,updated_name)
 
+    def test_submitter_can_save_item_with_no_workgroup_via_edit_page(self):
+        self.login_editor()
+        self.item1 = self.itemType.objects.create(name="Test Item 1 (visible to tested viewers)",submitter=self.editor,definition=" ",**self.defaults)
+        response = self.client.get(reverse('aristotle:edit_item',args=[self.item1.id]))
+        self.assertEqual(response.status_code,200)
+
+        updated_item = utils.model_to_dict_with_change_time(response.context['item'])
+        updated_name = updated_item['name'] + " updated!"
+        updated_item['name'] = updated_name
+        response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
+        self.item1 = self.itemType.objects.get(pk=self.item1.pk)
+        self.assertRedirects(response,url_slugify_concept(self.item1))
+        self.assertEqual(self.item1.name,updated_name)
+        self.assertEqual(self.item1.workgroup,None)
+
     def test_submitter_can_save_via_edit_page_with_change_comment(self):
         self.login_editor()
         response = self.client.get(reverse('aristotle:edit_item',args=[self.item1.id]))

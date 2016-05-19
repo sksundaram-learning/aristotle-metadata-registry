@@ -49,7 +49,10 @@ class WorkgroupVerificationMixin(forms.ModelForm):
         # cleaning before checking gives a "invalid selection" even if a user isn't allowed to change workgroups.
         if self.instance.pk is not None:
             if 'workgroup' in self.data.keys() and str(self.data['workgroup']) is not None:
-                if str(self.data['workgroup']) != str(self.instance.workgroup.pk):
+                old_wg_pk = None
+                if self.instance.workgroup:
+                    old_wg_pk = str(self.instance.workgroup.pk)
+                if str(self.data['workgroup']) != str(old_wg_pk):
                     if not user_can_move_any_workgroup(self.user):
                         raise forms.ValidationError(WorkgroupVerificationMixin.cant_move_any_permission_error)
                     if not user_can_remove_from_workgroup(self.user, self.instance.workgroup):

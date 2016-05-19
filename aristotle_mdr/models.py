@@ -499,6 +499,10 @@ class ConceptQuerySet(InheritanceQuerySet):
         if user.is_anonymous():
             return self.public()
         q = Q(_is_public=True)
+
+        # User can see everything they've made.
+        q |= Q(submitter=user)
+
         if user.profile.workgroups:
             # User can see everything in their workgroups.
             q |= Q(workgroup__in=user.profile.workgroups)
@@ -531,6 +535,10 @@ class ConceptQuerySet(InheritanceQuerySet):
         if user.is_anonymous():
             return self.none()
         q = Q()
+
+        # User can edit everything they've made thats not locked
+        q |= Q(submitter=user, _is_locked=False)
+
         if user.submitter_in.exists() or user.steward_in.exists():
             if user.submitter_in.exists():
                 q |= Q(_is_locked=False, workgroup__submitters__profile__user=user)

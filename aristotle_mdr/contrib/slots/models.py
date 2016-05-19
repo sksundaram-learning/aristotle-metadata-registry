@@ -61,8 +61,8 @@ class Slot(TimeStampedModel):
         if hasattr(self, 'type') and self.type is not None and not self.concept.__class__ != self.type.model_class():
             raise ValidationError('This slot is not allowed on this model')
 
-    def __str__(self):
-        return "{0.type}.{0.value}".format(self)
+    def __unicode__(self):
+        return u"{0} - {1}".format(self.type, self.value)
 
 
 def concepts_with_similar_slots(user, _type=None, value=None, slot=None):
