@@ -62,11 +62,6 @@ class ConceptHistoryCompareView(HistoryCompareDetailView):
         return super(ConceptHistoryCompareView, self).dispatch(*args, **kwargs)
 
 
-class HelpTemplateView(TemplateView):
-    def get_template_names(self):
-        return ['aristotle_mdr/static/help/%s.html' % self.kwargs['template']]
-
-
 def get_if_user_can_view(objtype, user, iid):
     item = get_object_or_404(objtype, pk=iid)
     if user_can_view(user, item):

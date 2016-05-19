@@ -20,7 +20,7 @@ class ReviewRequestActionsPage(utils.LoggedInViewPages, TestCase):
         self.item2 = models.ObjectClass.objects.create(name="Test Item 2 (NOT visible to tested viewers)",definition=" ",workgroup=self.wg2)
         self.item3 = models.ObjectClass.objects.create(name="Test Item 3 (only visible to the editor)",definition=" ",workgroup=None,submitter=self.editor)
 
-    def test_viewer_cannot_request_review(self):
+    def test_viewer_can_request_review(self):
         self.login_editor()
 
         response = self.client.get(reverse('aristotle:request_review',args=[self.item3.id]))
@@ -109,6 +109,16 @@ class ReviewRequestActionsPage(utils.LoggedInViewPages, TestCase):
 
         response = self.client.get(reverse('aristotle:userReviewDetails',args=[review.pk]))
         self.assertEqual(response.status_code,404)
+
+    def test_anon_cannot_see_review(self):
+        self.logout()
+
+        review = models.ReviewRequest.objects.create(requester=self.editor,registration_authority=self.ra)
+        review.concepts.add(self.item1)
+
+        response = self.client.get(reverse('aristotle:userReviewDetails',args=[review.pk]))
+        self.assertEqual(response.status_code,302)
+        # is redirected to login
 
     def test_editor_can_see_review(self):
         self.login_editor()

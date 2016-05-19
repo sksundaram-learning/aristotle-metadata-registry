@@ -826,7 +826,7 @@ class ReviewRequestQuerySet(models.QuerySet):
         if user.is_superuser:
             return self.all()
         if user.is_anonymous():
-            return self.public()
+            return self.none()
         q = Q(requester=user)  # Users can always see reviews they requested
         if user.profile.is_registrar:
             # Registars can see reviews for the registration authority

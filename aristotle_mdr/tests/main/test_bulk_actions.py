@@ -330,6 +330,6 @@ class BulkWorkgroupActionsPage(utils.LoggedInViewPages, TestCase):
         self.assertTrue(models.ReviewRequest.objects.count() == 1)
         review = models.ReviewRequest.objects.first()
 
-        # self.assertTrue(review.concepts.count() == 1)
+        self.assertTrue(review.concepts.count() == 1)
         self.assertTrue(self.item1.concept in review.concepts.all())
         self.assertFalse(self.item4.concept in review.concepts.all())
