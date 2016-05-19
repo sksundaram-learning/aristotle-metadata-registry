@@ -279,3 +279,57 @@ class BulkWorkgroupActionsPage(utils.LoggedInViewPages, TestCase):
         self.assertTrue(self.item1.concept in self.wg1.items.all())
         self.assertTrue(self.item2.concept in self.wg1.items.all())
         self.assertTrue(self.item4.concept not in self.wg1.items.all())
+
+    def test_bulk_review_request_on_permitted_items(self):
+        self.login_viewer()
+
+        self.assertTrue(perms.user_can_view(self.viewer, self.item1))
+        self.assertTrue(perms.user_can_view(self.viewer, self.item2))
+
+        self.assertTrue(models.ReviewRequest.objects.count() == 0)
+        
+        response = self.client.post(
+            reverse('aristotle:bulk_action'),
+            {
+                'bulkaction': 'request_review',
+                'state': 1,
+                'items': [self.item1.id, self.item2.id],
+                'registration_authority': self.ra.id,
+                "message": "review these plz",
+                'confirmed': 'confirmed',
+            }
+        )
+
+        self.assertTrue(models.ReviewRequest.objects.count() == 1)
+        review = models.ReviewRequest.objects.first()
+
+        self.assertTrue(review.concepts.count() == 2)
+        self.assertTrue(self.item1.concept in review.concepts.all())
+        self.assertTrue(self.item2.concept in review.concepts.all())
+
+    def test_bulk_review_request_on_forbidden_items(self):
+        self.login_viewer()
+
+        self.assertTrue(perms.user_can_view(self.viewer, self.item1))
+        self.assertFalse(perms.user_can_view(self.viewer, self.item4))
+
+        self.assertTrue(models.ReviewRequest.objects.count() == 0)
+        
+        response = self.client.post(
+            reverse('aristotle:bulk_action'),
+            {
+                'bulkaction': 'request_review',
+                'state': 1,
+                'items': [self.item1.id, self.item4.id],
+                'registration_authority': self.ra.id,
+                "message": "review these plz",
+                'confirmed': 'confirmed',
+            }
+        )
+
+        self.assertTrue(models.ReviewRequest.objects.count() == 1)
+        review = models.ReviewRequest.objects.first()
+
+        # self.assertTrue(review.concepts.count() == 1)
+        self.assertTrue(self.item1.concept in review.concepts.all())
+        self.assertFalse(self.item4.concept in review.concepts.all())

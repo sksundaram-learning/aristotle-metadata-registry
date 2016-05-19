@@ -269,12 +269,20 @@ class RequestReviewForm(BulkActionForm):
                 message=message,
                 state=state
             )
-            review.concepts = items
+            failed = []
+            success = []
+            for item in items:
+                if item.can_view(self.user):
+                    success.append(item)
+                else:
+                    failed.append(item)
+
+            review.concepts = success
 
             user_message = mark_safe(_(
-                "%(num_items)s items requested for review - <a href='%(url)s'>see the review here</a>"
+                "%(num_items)s items requested for review - <a href='%(url)s'>see the review here</a>."
             ) % {
-                'num_items': len(items),
+                'num_items': len(success),
                 'url': reverse('aristotle:userReviewDetails',args=[review.id]) 
             })
             reversion.revisions.set_comment(message + "\n\n" + user_message)
