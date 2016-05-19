@@ -20,11 +20,23 @@ class ReviewRequestActionsPage(utils.LoggedInViewPages, TestCase):
         self.item2 = models.ObjectClass.objects.create(name="Test Item 2 (NOT visible to tested viewers)",definition=" ",workgroup=self.wg2)
         self.item3 = models.ObjectClass.objects.create(name="Test Item 3 (only visible to the editor)",definition=" ",workgroup=None,submitter=self.editor)
 
+    def test_viewer_cannot_request_review_for_private_item(self):
+        self.login_viewer()
+
+        response = self.client.get(reverse('aristotle:request_review',args=[self.item3.id]))
+        self.assertEqual(response.status_code,403)
+
+        response = self.client.get(reverse('aristotle:request_review',args=[self.item2.id]))
+        self.assertEqual(response.status_code,403)
+
+        response = self.client.get(reverse('aristotle:request_review',args=[self.item1.id]))
+        self.assertEqual(response.status_code,200)
+
     def test_viewer_can_request_review(self):
         self.login_editor()
 
         response = self.client.get(reverse('aristotle:request_review',args=[self.item3.id]))
-        self.assertEqual(response.status_code,403)
+        self.assertEqual(response.status_code,200)
 
         response = self.client.get(reverse('aristotle:request_review',args=[self.item2.id]))
         self.assertEqual(response.status_code,403)
