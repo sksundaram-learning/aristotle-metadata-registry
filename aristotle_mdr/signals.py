@@ -1,4 +1,4 @@
-from django.db.models.signals import post_save, post_delete, pre_delete
+from django.db.models.signals import post_save, post_delete, pre_delete, m2m_changed
 from reversion.signals import post_revision_commit
 import haystack.signals as signals  # .RealtimeSignalProcessor as RealtimeSignalProcessor
 # Don't import aristotle_mdr.models directly, only pull in whats required,
@@ -16,6 +16,7 @@ class AristotleSignalProcessor(signals.BaseSignalProcessor):
         post_revision_commit.connect(self.handle_concept_revision)
         pre_delete.connect(self.handle_concept_delete, sender=_concept)
         post_save.connect(self.update_visibility_review_request, sender=ReviewRequest)
+        m2m_changed.connect(self.update_visibility_review_request, sender=ReviewRequest.concepts.through)
         super(AristotleSignalProcessor, self).setup()
 
     def teardown(self):  # pragma: no cover
@@ -46,7 +47,7 @@ class AristotleSignalProcessor(signals.BaseSignalProcessor):
 
     def update_visibility_review_request(self, sender, instance, **kwargs):
         from aristotle_mdr.models import ReviewRequest
-        assert(sender == ReviewRequest)
+        assert(sender in [ReviewRequest, ReviewRequest.concepts.through])
         for concept in instance.concepts.all():
             obj = concept.item
             self.handle_save(obj.__class__, obj, **kwargs)

@@ -31,6 +31,19 @@ class UserHomePages(utils.LoggedInViewPages, TestCase):
         self.assertEqual(response.status_code, 200)
         response = self.client.get(reverse('aristotle:userRecentItems',))
         self.assertEqual(response.status_code, 200)
+        response = self.client.get(reverse('aristotle:userSandbox',))
+        self.assertEqual(response.status_code, 200)
+
+    def test_user_can_view_sandbox(self):
+        self.login_viewer()
+        self.item1 = models.ObjectClass.objects.create(
+            name="Test Item 1 (visible to tested viewers)",definition=" ",submitter=self.viewer)
+        self.item2 = models.ObjectClass.objects.create(
+            name="Test Item 1 (visible to tested viewers)",definition=" ")
+        response = self.client.get(reverse('aristotle:userSandbox',))
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(self.item1.concept in response.context['page'])
+        self.assertTrue(self.item2.concept not in response.context['page'])
 
     def test_user_can_edit_own_details(self):
         self.login_viewer()

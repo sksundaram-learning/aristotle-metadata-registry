@@ -261,7 +261,6 @@ class CreatedItemsListView(ListView):
     template_name = "aristotle_mdr/user/sandbox.html"
 
     def get_queryset(self, *args, **kwargs):
-        print self.request.user
         return MDR._concept.objects.filter(submitter=self.request.user)  # ,statuses=None,review_requests=None)
 
     def get_context_data(self, **kwargs):
