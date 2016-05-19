@@ -236,11 +236,10 @@ class RequestReviewForm(BulkActionForm):
     classes="fa-flag"
     action_text = _('Request review')
     items_label = "These are the items that will be reviewed. Add or remove additional items with the autocomplete box."
-        
+
     registration_authority=forms.ModelChoiceField(
         label="Registration Authority",
         queryset=MDR.RegistrationAuthority.objects.all(),
-       # widget=forms.CheckboxSelect
     )
     state = forms.ChoiceField(choices=MDR.STATES, widget=forms.RadioSelect)
     message = forms.CharField(
@@ -283,7 +282,7 @@ class RequestReviewForm(BulkActionForm):
                 "%(num_items)s items requested for review - <a href='%(url)s'>see the review here</a>."
             ) % {
                 'num_items': len(success),
-                'url': reverse('aristotle:userReviewDetails',args=[review.id]) 
+                'url': reverse('aristotle:userReviewDetails', args=[review.id])
             })
             reversion.revisions.set_comment(message + "\n\n" + user_message)
             return user_message
