@@ -75,6 +75,8 @@ class ReviewActionMixin(object):
         review = self.get_review()
         if not perms.user_can_view_review(self.request.user, review):
             raise PermissionDenied
+        if review.status != MDR.REVIEW_STATES.submitted:
+            return HttpResponseRedirect(reverse('aristotle_mdr:userReviewDetails', args=[review.pk]))
         return super(ReviewActionMixin, self).dispatch(*args, **kwargs)
 
     def get_review(self):
@@ -90,6 +92,39 @@ class ReviewActionMixin(object):
         kwargs = super(ReviewActionMixin, self).get_form_kwargs()
         kwargs['user'] = self.request.user
         return kwargs
+
+
+class ReviewCancelView(ReviewActionMixin, FormView):
+    form_class = actions.RequestReviewCancelForm
+    template_name = "aristotle_mdr/user/user_request_cancel.html"
+
+    @method_decorator(login_required)
+    def dispatch(self, *args, **kwargs):
+        review = self.get_review()
+        if not self.request.user == review.requester:
+            raise PermissionDenied
+        if review.status != MDR.REVIEW_STATES.submitted:
+            return HttpResponseRedirect(reverse('aristotle_mdr:userReviewDetails', args=[review.pk]))
+
+        return super(ReviewCancelView, self).dispatch(*args, **kwargs)
+
+    def get_form_kwargs(self):
+        kwargs = super(ReviewCancelView, self).get_form_kwargs()
+        kwargs['instance'] = self.get_review()
+        return kwargs
+
+    def post(self, request, *args, **kwargs):
+        form = self.get_form()
+
+        if form.is_valid():
+            review = form.save(commit=False)
+            review.status = MDR.REVIEW_STATES.cancelled
+            review.save()
+            message = _("Review successfully cancelled")
+            messages.add_message(request, messages.INFO, message)
+            return HttpResponseRedirect(reverse('aristotle_mdr:userMyReviewRequests'))
+        else:
+            return self.form_invalid(form)
 
 
 class ReviewRejectView(ReviewActionMixin, FormView):
@@ -119,6 +154,14 @@ class ReviewRejectView(ReviewActionMixin, FormView):
 class ReviewAcceptView(ReviewActionMixin, FormView):
     form_class = actions.RequestReviewAcceptForm
     template_name = "aristotle_mdr/user/user_request_accept.html"
+
+    def get_context_data(self, **kwargs):
+        from aristotle_mdr.views.utils import generate_visibility_matrix
+        kwargs = super(ReviewAcceptView, self).get_context_data(**kwargs)
+        import json
+        kwargs['status_matrix'] = json.dumps(generate_visibility_matrix(self.request.user))
+        return kwargs
+
 
     def post(self, request, *args, **kwargs):
         form = self.get_form()

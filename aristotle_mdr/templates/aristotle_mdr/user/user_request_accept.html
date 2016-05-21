@@ -108,13 +108,13 @@
     {{status_matrix}}
 </pre>
 <script>
+    current_visibility = "";
     status_matrix = {{status_matrix|safe}};
-    current_visibility = "{{visibility}}";
     {# VISIBILITY_STATUS will be replaced in javascript #}
-    same_visibility_text = "{% trans 'After saving, this item will stay VISIBILITY_STATUS' %}";
-    {# VISIBILITY_STATUS will be replaced in javascript #}
-    diff_visibility_text = "{% trans 'After saving, this item will become VISIBILITY_STATUS' %}";
-    select_state_to_see = "{% trans 'Select a new state to see how the visibility of this item will change.' %}";
+    same_visibility_text = "{% trans 'After saving, these items will stay at their current status' %}";
+    {# VISIBILITY_STATUS will be replaced in javascript #}  
+    diff_visibility_text = "{% trans 'After saving, these items will become VISIBILITY_STATUS' %}";
+    select_state_to_see = "{% trans 'Select a new state to see how the visibility of these items will change.' %}";
     visibility_translations = {
         "hidden":"{% trans 'hidden' %}",
         "locked":"{% trans 'locked' %}",

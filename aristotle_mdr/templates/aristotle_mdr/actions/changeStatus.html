@@ -20,7 +20,7 @@
             {{ form.items }}
         </div>
         <div id="visibilty">
-            This item is currently {{visibility}}.
+            This item is currently {{item|visibility_text}}.
             <span id="potential">
             {% trans 'Select a new state to see how the visibility of this item will change.' %}
             </span>
@@ -97,7 +97,7 @@
 </pre>
 <script>
     status_matrix = {{status_matrix|safe}};
-    current_visibility = "{{visibility}}";
+    current_visibility = "{{item|visibility_text}}";
     {# VISIBILITY_STATUS will be replaced in javascript #}
     same_visibility_text = "{% trans 'After saving, this item will stay VISIBILITY_STATUS' %}";
     {# VISIBILITY_STATUS will be replaced in javascript #}

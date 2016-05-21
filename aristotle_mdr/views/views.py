@@ -28,6 +28,7 @@ from aristotle_mdr.utils import cache_per_item_user, concept_to_dict, construct_
 from aristotle_mdr import forms as MDRForms
 from aristotle_mdr import models as MDR
 from aristotle_mdr.utils import concept_to_clone_dict, get_concepts_for_apps
+from aristotle_mdr.views.utils import generate_visibility_matrix
 from aristotle_mdr import exceptions as registry_exceptions
 
 from haystack.views import SearchView, FacetedSearchView
@@ -333,27 +334,7 @@ def changeStatus(request, iid):
             return HttpResponseRedirect(url_slugify_concept(item))
     else:
         form = MDRForms.ChangeStatusForm(user=request.user)
-    matrix={}
-
-    visibility = "hidden"
-    if item._is_locked:
-        visibility = "locked"
-    if item._is_public:
-        visibility = "public"
-
-    from aristotle_mdr.models import STATES
     import json
-
-    for ra in request.user.profile.registrarAuthorities:
-        ra_matrix = {'name': ra.name, 'states': {}}
-        for s, _ in STATES:
-            if s > ra.public_state:
-                ra_matrix['states'][s] = "public"
-            elif s > ra.locked_state:
-                ra_matrix['states'][s] = "locked"
-            else:
-                ra_matrix['states'][s] = "hidden"
-        matrix[ra.id] = ra_matrix
 
     return render(
         request,
@@ -361,8 +342,7 @@ def changeStatus(request, iid):
         {
             "item": item,
             "form": form,
-            "status_matrix": json.dumps(matrix),
-            "visibility": visibility
+            "status_matrix": json.dumps(generate_visibility_matrix(request.user)),
         }
     )
 

@@ -100,6 +100,29 @@ class ReviewRequestActionsPage(utils.LoggedInViewPages, TestCase):
         self.assertEqual(response.status_code,200)
         self.assertEqual(len(response.context['page']),3)
 
+
+    def test_superuser_can_see_review(self):
+        self.login_superuser()
+        other_ra = models.RegistrationAuthority.objects.create(name="A different ra")
+
+        review = models.ReviewRequest.objects.create(requester=self.editor,registration_authority=other_ra)
+        review.concepts.add(self.item1)
+
+        response = self.client.get(reverse('aristotle:userReviewDetails',args=[review.pk]))
+        self.assertEqual(response.status_code,200)
+
+        review = models.ReviewRequest.objects.create(requester=self.editor,registration_authority=self.ra)
+        review.concepts.add(self.item1)
+
+        response = self.client.get(reverse('aristotle:userReviewDetails',args=[review.pk]))
+        self.assertEqual(response.status_code,200)
+
+        review.status = models.REVIEW_STATES.cancelled
+        review.save()
+
+        response = self.client.get(reverse('aristotle:userReviewDetails',args=[review.pk]))
+        self.assertEqual(response.status_code,200)
+
     def test_registrar_can_see_review(self):
         self.login_registrar()
         other_ra = models.RegistrationAuthority.objects.create(name="A different ra")

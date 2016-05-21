@@ -24,9 +24,9 @@ Showing {{ page.paginator.count }} results.
             {% trans 'Last modified' %}
         </th>
         <th>
-            {% if sort == "mod_asc" %}
+            {% if sort == "cre_asc" %}
             <a href="?{% paginator_get request page.number %}&sort=cre_desc"><i class="fa fa-sort-asc"></i></a>
-            {% elif sort == "mod_desc" %}
+            {% elif sort == "cre_desc" %}
             <a href="?{% paginator_get request page.number %}&sort=cre_asc"><i class="fa fa-sort-desc"></i></a>
             {% else %}
             <a href="?{% paginator_get request page.number %}&sort=cre_desc"><i class="fa fa-sort"></i></a>
@@ -59,6 +59,15 @@ Showing {{ page.paginator.count }} results.
             </time>
         </td>
         <td>
+        {% if actions == 'user' %}
+            {% if item.status == 0 %} {# submitted #}
+              <a class="btn btn-warning btn-xs" title="Cancel request"
+                href="{% url 'aristotle:userReviewCancel' review_id=item.pk %}"
+                data-toggle="modal" data-target="#review_box"
+                ><i class="fa fa-ban"></i></a>
+            {% endif %}
+        {% else %}
+        {% if item.status == 0 %} {# submitted #}
         <div class="btn-group" role="group" aria-label="">
           <a class="btn btn-success btn-xs" title="Accept"
             href="{% url 'aristotle:userReviewAccept' review_id=item.pk %}"
@@ -69,6 +78,8 @@ Showing {{ page.paginator.count }} results.
             data-toggle="modal" data-target="#review_box"
             ><i class="fa fa-times"></i></a>
         </div>
+        {% endif %}
+        {% endif %}
         </td>
     </tr>
     {% endfor %}

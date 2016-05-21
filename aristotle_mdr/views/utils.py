@@ -157,3 +157,20 @@ def workgroup_item_statuses(workgroup):
             state = STATES[state]
         counts.append((state, count))
     return counts
+
+def generate_visibility_matrix(user):
+    matrix={}
+
+    from aristotle_mdr.models import STATES
+
+    for ra in user.profile.registrarAuthorities:
+        ra_matrix = {'name': ra.name, 'states': {}}
+        for s, _ in STATES:
+            if s > ra.public_state:
+                ra_matrix['states'][s] = "public"
+            elif s > ra.locked_state:
+                ra_matrix['states'][s] = "locked"
+            else:
+                ra_matrix['states'][s] = "hidden"
+        matrix[ra.id] = ra_matrix
+    return matrix

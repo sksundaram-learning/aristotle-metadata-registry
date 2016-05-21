@@ -239,8 +239,16 @@ def review_list(request):
     # Registars can see items they have been asked to review
     q = Q(Q(registration_authority__id__in=authorities) & ~Q(status=MDR.REVIEW_STATES.cancelled))
 
-    reviews = MDR.ReviewRequest.objects.visible(request.user)
+    reviews = MDR.ReviewRequest.objects.visible(request.user).filter(q)
     return paginated_list(request, reviews, "aristotle_mdr/user/userReviewList.html", {'reviews': reviews})
+
+
+@login_required
+def my_review_list(request):
+    # Users can see any items they have been asked to review
+    q = Q(requester=request.user)
+    reviews = MDR.ReviewRequest.objects.visible(request.user).filter(q)
+    return paginated_list(request, reviews, "aristotle_mdr/user/my_review_list.html", {'reviews': reviews})
 
 
 class ReviewDetailsView(DetailView):
