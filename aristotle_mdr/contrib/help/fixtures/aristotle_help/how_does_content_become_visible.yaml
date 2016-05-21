@@ -3,9 +3,13 @@
     title: How does metadata become visible?
     language: en
     body: >
+        <p>Before metadata has been registered, it is only visible to certain authorised members of the metadata registry.
+        As content is edited and shared different groups of users will have access to view or edit metadata. Once metadata
+        is registered with an authority, more members of the registry and even public users of the site may be able to
+        view items.
+        </p>
+
         <h2>Before registration</h2>
-        <p>Before metadata has been registered, it is only visible to authorised members of the metadata registry.
-        As content is edited and shared different groups of users will have access to view or edit metadata.
 
         <h3>Private items</h3>
         <p>
