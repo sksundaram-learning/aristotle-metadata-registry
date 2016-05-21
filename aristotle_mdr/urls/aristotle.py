@@ -17,6 +17,8 @@ urlpatterns = patterns(
     'aristotle_mdr.views',
 
     url(r'^/?$', TemplateView.as_view(template_name='aristotle_mdr/static/home.html'), name="home"),
+    url(r'^sitemap.xml$', views.sitemaps.main, name='sitemap_xml'),
+    url(r'^sitemaps/sitemap_(?P<page>[0-9]+).xml$', views.sitemaps.page_range, name='sitemap_range_xml'),
 
     # all the below take on the same form:
     # url(r'^itemType/(?P<iid>\d+)?/?

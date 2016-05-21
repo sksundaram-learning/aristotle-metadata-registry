@@ -24,7 +24,13 @@ class AnonymousUserViewingThePages(TestCase):
         # Make sure notifications library isn't loaded for anon users as they'll never have notifications.
         self.assertTrue("notifications/notify.js" not in home.content)
         # At some stage this might need a better test to check the 500 page doesn't show... after notifications is fixed.
-        
+
+    def test_sitemaps(self):
+        home = self.client.get("/sitemap.xml")
+        self.assertEqual(home.status_code,200)
+        home = self.client.get("/sitemaps/sitemap_0.xml")
+        self.assertEqual(home.status_code,200)
+
     def test_visible_item(self):
         wg = models.Workgroup.objects.create(name="Setup WG")
         ra = models.RegistrationAuthority.objects.create(name="Test RA")
