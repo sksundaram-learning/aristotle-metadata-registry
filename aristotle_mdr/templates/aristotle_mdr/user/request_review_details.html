@@ -9,31 +9,47 @@
           <li><a href="{% url 'aristotle:userReadyForReview' %}">Review list</a></li>
           <li class="active">Request review details</li>
         </ol>
+        <div class="alert alert-info">
+            Request status: 
+            {{review.get_status_display}}
+        </div>
+        <table class="table request_message">
+            <tr>
+                <th>Request</th>
+                <th>Response</th>
+            </tr>
+            <tr>
+                <td>{{ review.message|linebreaks }}</td>
+                <td>
+                    {% if review.response %}
+                        {{ review.response|linebreaks }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td>Requested: {{ review.created }}</td>
+                <td>Updated: 
+                {% if review.created != review.modified %}
+                    {{ review.modified }}
+                {% endif %}
+                </td>
+            </tr>
+        </table>
 
-        <dl>
-            <dt>The original message for this request</dt>
-                <dd>{{ review.message|linebreaks }}</dd>
-            <dt>Request status</dt>
-                <dd>{{review.get_status_display}}</dd>
-            <dt>Response from the reviewer</dt>
-                <dd>{{ review.message|linebreaks }}</dd>
-            <dt>Requested registry state</dt>
-                <dd><em>{{review.get_state_display}}</em> in <a href="{{review.registration_authority.get_absolute_url }}">{{review.registration_authority.name }}</a></dd>
-            <dt>Date review requested</dt>
-                <dd>{{review.created}}</dd>
-            <dt>Last updated</dt>
-                <dd>{{review.modified}}</dd>
-            <dt>The items in this request are listed below</dt>
-                <dd>
-                <ul>
-                    {% for item in review.concepts.all %}
-                        <li>
-            {% include "aristotle_mdr/helpers/inlineDetails.html" with item=item %}
-                        </li>
-                    {% endfor %}
-                </ul>
-                </dd>
-        </dl>
+        <div>Requested registry state
+            <em>{{review.get_state_display}}</em> in <a href="{{review.registration_authority.get_absolute_url }}">{{review.registration_authority.name }}</a>
+        </div>
+        <div>The items in this request are listed below:
+            <ul>
+                {% for item in review.concepts.all %}
+                    <li>
+        {% include "aristotle_mdr/helpers/inlineDetails.html" with item=item %}
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
     </div>
     <div class="modal-footer">
         {% if request.is_ajax %}
@@ -43,4 +59,8 @@
         {% endif %}
     </div>
 </form>
+
+    {% block extra_head_scripts %}
+        <link rel="stylesheet" href="{{ STATIC_URL }}{% compile 'aristotle_mdr/aristotle.actions.less' %}" />
+    {% endblock %}
 {% endblock %}

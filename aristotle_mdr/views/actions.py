@@ -63,7 +63,9 @@ class SubmitForReviewView(ItemSubpageFormView):
             review.requester = request.user
             review.save()
             review.concepts.add(item)
-            message = mark_safe(_("<a href='{url}'>Review submitted, click to review</a>").format(url=reverse('aristotle_mdr:userReviewDetails', args=[review.pk]))
+            message = mark_safe(
+                _("<a href='{url}'>Review submitted, click to review</a>").format(url=reverse('aristotle_mdr:userReviewDetails', args=[review.pk]))
+            )
             messages.add_message(request, messages.INFO, message)
             return HttpResponseRedirect(item.get_absolute_url())
         else:
