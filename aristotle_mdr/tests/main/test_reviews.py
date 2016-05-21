@@ -299,9 +299,23 @@ class ReviewRequestActionsPage(utils.LoggedInViewPages, TestCase):
         response = self.client.get(reverse('aristotle:userReviewReject',args=[review.pk]))
         self.assertRedirects(response,reverse('aristotle_mdr:userReviewDetails', args=[review.pk]))
 
+        response = self.client.get(reverse('aristotle:userReviewAccept',args=[review.pk]))
+        self.assertRedirects(response,reverse('aristotle_mdr:userReviewDetails', args=[review.pk]))
+
         review = models.ReviewRequest.objects.create(requester=self.editor,registration_authority=self.ra,status=models.REVIEW_STATES.rejected)
         review.concepts.add(self.item1)
 
+        response = self.client.get(reverse('aristotle:userReviewReject',args=[review.pk]))
+        self.assertRedirects(response,reverse('aristotle_mdr:userReviewDetails', args=[review.pk]))
+
         response = self.client.get(reverse('aristotle:userReviewAccept',args=[review.pk]))
         self.assertRedirects(response,reverse('aristotle_mdr:userReviewDetails', args=[review.pk]))
+
+        review = models.ReviewRequest.objects.create(requester=self.editor,registration_authority=self.ra,status=models.REVIEW_STATES.cancelled)
+        review.concepts.add(self.item1)
+
+        response = self.client.get(reverse('aristotle:userReviewReject',args=[review.pk]))
+        self.assertEqual(response.status_code,403)
+        response = self.client.get(reverse('aristotle:userReviewAccept',args=[review.pk]))
+        self.assertEqual(response.status_code,403)
 

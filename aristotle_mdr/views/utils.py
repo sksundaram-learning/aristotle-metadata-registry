@@ -158,6 +158,7 @@ def workgroup_item_statuses(workgroup):
         counts.append((state, count))
     return counts
 
+
 def generate_visibility_matrix(user):
     matrix={}
 
