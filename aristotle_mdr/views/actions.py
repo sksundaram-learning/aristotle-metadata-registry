@@ -9,6 +9,7 @@ from django.template.defaultfilters import slugify
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import FormView
 from django.utils.decorators import method_decorator
+from django.utils.safestring import mark_safe
 import datetime
 
 import reversion
@@ -62,7 +63,7 @@ class SubmitForReviewView(ItemSubpageFormView):
             review.requester = request.user
             review.save()
             review.concepts.add(item)
-            message = _("Review submitted")
+            message = mark_safe(_("<a href='{url}'>Review submitted, click to review</a>").format(url=reverse('aristotle_mdr:userReviewDetails', args=[review.pk]))
             messages.add_message(request, messages.INFO, message)
             return HttpResponseRedirect(item.get_absolute_url())
         else:
@@ -161,7 +162,6 @@ class ReviewAcceptView(ReviewActionMixin, FormView):
         import json
         kwargs['status_matrix'] = json.dumps(generate_visibility_matrix(self.request.user))
         return kwargs
-
 
     def post(self, request, *args, **kwargs):
         form = self.get_form()
