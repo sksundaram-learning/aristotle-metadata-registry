@@ -59,7 +59,7 @@ def relink(help_item, field):
 
             return "<a href='{url}'>{name}</a>".format(
                 name=name,
-                url=reverse_lazy("concept_help", args=[app, model])
+                url=reverse_lazy("aristotle_help:concept_help", args=[app, model])
                 )
         except:
             return "unknown model - %s" % match.group(0)
