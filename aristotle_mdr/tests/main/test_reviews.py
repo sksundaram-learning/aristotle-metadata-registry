@@ -100,7 +100,6 @@ class ReviewRequestActionsPage(utils.LoggedInViewPages, TestCase):
         self.assertEqual(response.status_code,200)
         self.assertEqual(len(response.context['page']),3)
 
-
     def test_superuser_can_see_review(self):
         self.login_superuser()
         other_ra = models.RegistrationAuthority.objects.create(name="A different ra")
@@ -288,3 +287,21 @@ class ReviewRequestActionsPage(utils.LoggedInViewPages, TestCase):
 
         self.item1 = models.ObjectClass.objects.get(pk=self.item1.pk) # decache
         self.assertFalse(self.item1.is_public())
+
+
+    def test_registrar_cant_load_rejected_or_accepted_review(self):
+        self.login_registrar()
+        other_ra = models.RegistrationAuthority.objects.create(name="A different ra")
+
+        review = models.ReviewRequest.objects.create(requester=self.editor,registration_authority=self.ra,status=models.REVIEW_STATES.accepted)
+        review.concepts.add(self.item1)
+
+        response = self.client.get(reverse('aristotle:userReviewReject',args=[review.pk]))
+        self.assertRedirects(response,reverse('aristotle_mdr:userReviewDetails', args=[review.pk]))
+
+        review = models.ReviewRequest.objects.create(requester=self.editor,registration_authority=self.ra,status=models.REVIEW_STATES.rejected)
+        review.concepts.add(self.item1)
+
+        response = self.client.get(reverse('aristotle:userReviewAccept',args=[review.pk]))
+        self.assertRedirects(response,reverse('aristotle_mdr:userReviewDetails', args=[review.pk]))
+
