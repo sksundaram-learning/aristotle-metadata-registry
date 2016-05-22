@@ -149,6 +149,9 @@ def download(request, downloadType, iid=None):
             exec("import %s.downloader as downloader" % module_name)
             return downloader.download(request, downloadType, item)
         except TemplateDoesNotExist:
+            debug = getattr(settings, 'DEBUG')
+            if debug:
+                raise
             raise Http404
 
     raise Http404
