@@ -42,6 +42,7 @@
             <div class="panel-body">
                 <a href="{% url 'aristotle:allRegistrationAuthorities' %}">Current registration authorities</a>
                 <a href="{% url 'browse_apps' %}">Browse the registry</a>
+                <a href="{% url 'aristotle:compare_concepts' %}">Compare metadata</a>
                 {% if config.CONTENT_EXTENSIONS %}
                 <a href="{% url 'aristotle:extensions' %}">View current extensions</a>
                 {% endif %}
