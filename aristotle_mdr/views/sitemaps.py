@@ -4,7 +4,7 @@ from aristotle_mdr import models as MDR
 
 def main(request):
     count = MDR._concept.objects.public().count()
-    list_range = range(1+count/1000)
+    list_range = range(1 + count / 1000)
     return render(request, "aristotle_mdr/sitemaps/main.xml", {'range_list': list_range}, content_type='text/xml')
 
 
