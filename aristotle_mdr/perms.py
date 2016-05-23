@@ -127,6 +127,9 @@ def user_can_view_review(user, review):
     if review.requester == user:
         return True
 
+    if user.is_superuser:
+        return True
+
     # None else can see a cancelled request
     from aristotle_mdr.models import REVIEW_STATES
     if review.status == REVIEW_STATES.cancelled:

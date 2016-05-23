@@ -31,7 +31,7 @@
 @screen-sm-min:600px;
 #user_sidebar {
     @media only screen and (min-width: @screen-sm-min) {
-        padding:50px 0;
+        padding:25px 0;
         width:250px;
     }
     background-color:#2E2E3E;
@@ -116,4 +116,30 @@ body > .main.navbar {
         padding-bottom:10px;
         border-bottom:1px solid #2e2e2e
     }
+}
+
+
+.dashboard_link {
+    font-size:125%;
+}
+
+.nav > li.dashboard_link > div {
+    display:table;
+    width:100%;
+}
+
+li.dashboard_link div a.main:hover {
+    background-color: #eee;
+}
+
+.nav > li.dashboard_link > div > a {
+    display:table-cell;
+}
+
+
+.nav > li.dashboard_link  a .fa-inverse {
+    color:#2E2E3E;
+}
+.nav > li.dashboard_link:hover  a .fa-inverse {
+    color:#999;
 }

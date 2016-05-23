@@ -1,10 +1,27 @@
 {% load i18n %}
 
 <ul class="nav nav-pills nav-stacked nav-collapse dashMenu">
-    <li {% ifequal activeTab "home" %}class="active"{% endifequal %}>
-        <a href="{% url 'aristotle:userHome' %}">
+    <li class="dashboard_link {% ifequal activeTab "home" %}active{% endifequal %}">
+        <div>
+        <a class="main" href="{% url 'aristotle:userHome' %}">
         <i class="fa fa-home fa-fw"></i> My Dashboard</a>
+        <a href="{% url 'aristotle:userEdit' %}">
+            <span class="fa-stack fa-lg">
+              <i class="fa fa-square fa-stack-2x"></i>
+              <i class="fa fa-cog fa-stack-1x fa-inverse"></i>
+            </span>
+        </a>
+        </div>
     </li>
+        {% ifequal activeTab "edit" %}
+    <li class="">
+        <ul class="nav nav-pills nav-stacked nav-collapse dashSubMenu">
+            <li><a href="{% url 'password_change' %}">
+                <i class="fa fa-cog fa-fw"></i> {% trans 'Change password' %}
+            </a></li>
+        </ul>
+    </li>
+        {% endifequal %}
     <li {% ifequal activeTab "favourites" %}class="active"{% endifequal %}>
         <a href="{% url 'aristotle:userFavourites' %}">
         <i class="fa fa-bookmark fa-fw"></i> Favourites
@@ -70,16 +87,9 @@
         <a href="{% url 'aristotle:userSandbox' %}">
         <i class="fa fa-pencil-square-o fa-fw"></i> {% trans "My Sandbox" %}</a>
     </li>
-    <li {% ifequal activeTab "edit" %}class="active"{% endifequal %}>
-        <a href="{% url 'aristotle:userEdit' %}">
-        <i class="fa fa-user fa-fw"></i> Edit details</a>
-        {% ifequal activeTab "edit" %}
-        <ul class="nav nav-pills nav-stacked nav-collapse dashSubMenu">
-            <li><a href="{% url 'password_change' %}">
-                <i class="fa fa-cog fa-fw"></i> {% trans 'Change password' %}
-            </a></li>
-        </ul>
-        {% endifequal %}
+    <li {% ifequal activeTab "myreviewrequests" %}class="active"{% endifequal %}>
+        <a href="{% url 'aristotle:userMyReviewRequests' %}">
+        <i class="fa fa-flag-o fa-fw"></i> {% trans "My Review Requests" %}</a>
     </li>
     <li role="presentation" class="nav-divider"></li>
     <li {% ifequal activeTab "role" %}class="active"{% endifequal %}>

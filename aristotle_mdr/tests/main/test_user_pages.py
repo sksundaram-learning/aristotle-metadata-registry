@@ -35,6 +35,8 @@ class UserHomePages(utils.LoggedInViewPages, TestCase):
         self.assertEqual(response.status_code, 200)
         response = self.client.get(reverse('aristotle:userRoles',))
         self.assertEqual(response.status_code, 200)
+        response = self.client.get(reverse('aristotle:userMyReviewRequests',))
+        self.assertEqual(response.status_code, 200)
 
     def test_user_can_view_sandbox(self):
         self.login_viewer()

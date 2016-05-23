@@ -100,6 +100,28 @@ class ReviewRequestActionsPage(utils.LoggedInViewPages, TestCase):
         self.assertEqual(response.status_code,200)
         self.assertEqual(len(response.context['page']),3)
 
+    def test_superuser_can_see_review(self):
+        self.login_superuser()
+        other_ra = models.RegistrationAuthority.objects.create(name="A different ra")
+
+        review = models.ReviewRequest.objects.create(requester=self.editor,registration_authority=other_ra)
+        review.concepts.add(self.item1)
+
+        response = self.client.get(reverse('aristotle:userReviewDetails',args=[review.pk]))
+        self.assertEqual(response.status_code,200)
+
+        review = models.ReviewRequest.objects.create(requester=self.editor,registration_authority=self.ra)
+        review.concepts.add(self.item1)
+
+        response = self.client.get(reverse('aristotle:userReviewDetails',args=[review.pk]))
+        self.assertEqual(response.status_code,200)
+
+        review.status = models.REVIEW_STATES.cancelled
+        review.save()
+
+        response = self.client.get(reverse('aristotle:userReviewDetails',args=[review.pk]))
+        self.assertEqual(response.status_code,200)
+
     def test_registrar_can_see_review(self):
         self.login_registrar()
         other_ra = models.RegistrationAuthority.objects.create(name="A different ra")
@@ -265,3 +287,85 @@ class ReviewRequestActionsPage(utils.LoggedInViewPages, TestCase):
 
         self.item1 = models.ObjectClass.objects.get(pk=self.item1.pk) # decache
         self.assertFalse(self.item1.is_public())
+
+    def test_user_can_cancel_review(self):
+        self.login_editor()
+
+        review = models.ReviewRequest.objects.create(requester=self.viewer,registration_authority=self.ra)
+        review.concepts.add(self.item1)
+
+        response = self.client.get(reverse('aristotle:userReviewCancel',args=[review.pk]))
+        self.assertEqual(response.status_code,403)
+
+        review = models.ReviewRequest.objects.create(requester=self.editor,registration_authority=self.ra)
+        review.concepts.add(self.item1)
+
+        response = self.client.get(reverse('aristotle:userReviewCancel',args=[review.pk]))
+        self.assertEqual(response.status_code,200)
+
+        review.status = models.REVIEW_STATES.cancelled
+        review.save()
+
+        response = self.client.get(reverse('aristotle:userReviewCancel',args=[review.pk]))
+        self.assertRedirects(response,reverse('aristotle:userReviewDetails',args=[review.pk]))
+
+        review = models.ReviewRequest.objects.create(requester=self.editor,registration_authority=self.ra)
+        review.concepts.add(self.item1)
+
+        self.assertFalse(review.status == models.REVIEW_STATES.cancelled)        
+        response = self.client.post(reverse('aristotle:userReviewCancel',args=[review.pk]),{})
+        self.assertRedirects(response,reverse('aristotle:userMyReviewRequests',))
+
+        review = models.ReviewRequest.objects.get(pk=review.pk) #decache
+        self.assertTrue(review.status == models.REVIEW_STATES.cancelled)
+
+    def test_registrar_cant_load_rejected_or_accepted_review(self):
+        self.login_registrar()
+        other_ra = models.RegistrationAuthority.objects.create(name="A different ra")
+
+        review = models.ReviewRequest.objects.create(requester=self.editor,registration_authority=self.ra,status=models.REVIEW_STATES.accepted)
+        review.concepts.add(self.item1)
+
+        response = self.client.get(reverse('aristotle:userReviewReject',args=[review.pk]))
+        self.assertRedirects(response,reverse('aristotle_mdr:userReviewDetails', args=[review.pk]))
+
+        response = self.client.get(reverse('aristotle:userReviewAccept',args=[review.pk]))
+        self.assertRedirects(response,reverse('aristotle_mdr:userReviewDetails', args=[review.pk]))
+
+        review = models.ReviewRequest.objects.create(requester=self.editor,registration_authority=self.ra,status=models.REVIEW_STATES.rejected)
+        review.concepts.add(self.item1)
+
+        response = self.client.get(reverse('aristotle:userReviewReject',args=[review.pk]))
+        self.assertRedirects(response,reverse('aristotle_mdr:userReviewDetails', args=[review.pk]))
+
+        response = self.client.get(reverse('aristotle:userReviewAccept',args=[review.pk]))
+        self.assertRedirects(response,reverse('aristotle_mdr:userReviewDetails', args=[review.pk]))
+
+        review = models.ReviewRequest.objects.create(requester=self.editor,registration_authority=self.ra,status=models.REVIEW_STATES.cancelled)
+        review.concepts.add(self.item1)
+
+        response = self.client.get(reverse('aristotle:userReviewReject',args=[review.pk]))
+        self.assertEqual(response.status_code,403)
+        response = self.client.get(reverse('aristotle:userReviewAccept',args=[review.pk]))
+        self.assertEqual(response.status_code,403)
+
+    def test_who_can_see_review(self):
+        from aristotle_mdr.perms import user_can_view_review
+
+        review = models.ReviewRequest.objects.create(requester=self.editor,registration_authority=self.ra)
+        review.concepts.add(self.item1)
+
+        self.assertTrue(user_can_view_review(self.editor,review))
+        self.assertTrue(user_can_view_review(self.registrar,review))
+        self.assertTrue(user_can_view_review(self.su,review))
+        self.assertFalse(user_can_view_review(self.viewer,review))
+        
+        review.status = models.REVIEW_STATES.cancelled
+        review.save()
+
+        review = models.ReviewRequest.objects.get(pk=review.pk) #decache
+
+        self.assertTrue(user_can_view_review(self.editor,review))
+        self.assertFalse(user_can_view_review(self.registrar,review))
+        self.assertTrue(user_can_view_review(self.su,review))
+        self.assertFalse(user_can_view_review(self.viewer,review))

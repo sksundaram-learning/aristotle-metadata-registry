@@ -17,6 +17,8 @@ urlpatterns = patterns(
     'aristotle_mdr.views',
 
     url(r'^/?$', TemplateView.as_view(template_name='aristotle_mdr/static/home.html'), name="home"),
+    url(r'^sitemap.xml$', views.sitemaps.main, name='sitemap_xml'),
+    url(r'^sitemaps/sitemap_(?P<page>[0-9]+).xml$', views.sitemaps.page_range, name='sitemap_range_xml'),
 
     # all the below take on the same form:
     # url(r'^itemType/(?P<iid>\d+)?/?
@@ -78,6 +80,8 @@ urlpatterns = patterns(
     url(r'^account/edit/?$', views.user_pages.edit, name='userEdit'),
     url(r'^account/recent/?$', views.user_pages.recent, name='userRecentItems'),
     url(r'^account/favourites/?$', views.user_pages.favourites, name='userFavourites'),
+    url(r'^account/reviews/?$', views.user_pages.my_review_list, name='userMyReviewRequests'),
+    url(r'^account/reviews/cancel/(?P<review_id>\d+)/?$', views.actions.ReviewCancelView.as_view(), name='userReviewCancel'),
     url(r'^account/workgroups/?$', views.user_pages.workgroups, name='userWorkgroups'),
     url(r'^account/workgroups/archives/?$', views.user_pages.workgroup_archives, name='user_workgroups_archives'),
     url(r'^account/notifications(?:/folder/(?P<folder>all))?/?$', views.user_pages.inbox, name='userInbox'),
@@ -86,9 +90,9 @@ urlpatterns = patterns(
     url(r'^action/review/(?P<iid>\d+)?$', views.actions.SubmitForReviewView.as_view(), name='request_review'),
     url(r'^account/registrartools/?$', views.user_pages.registrar_tools, name='userRegistrarTools'),
     url(r'^account/registrartools/review/?$', views.user_pages.review_list, name='userReadyForReview'),
-    url(r'^account/registrartools/review/details/(?P<review_id>\d+)?$', views.user_pages.ReviewDetailsView.as_view(), name='userReviewDetails'),
-    url(r'^account/registrartools/review/accept/(?P<review_id>\d+)?$', views.actions.ReviewAcceptView.as_view(), name='userReviewAccept'),
-    url(r'^account/registrartools/review/reject/(?P<review_id>\d+)?$', views.actions.ReviewRejectView.as_view(), name='userReviewReject'),
+    url(r'^account/registrartools/review/details/(?P<review_id>\d+)/?$', views.user_pages.ReviewDetailsView.as_view(), name='userReviewDetails'),
+    url(r'^account/registrartools/review/accept/(?P<review_id>\d+)/?$', views.actions.ReviewAcceptView.as_view(), name='userReviewAccept'),
+    url(r'^account/registrartools/review/reject/(?P<review_id>\d+)/?$', views.actions.ReviewRejectView.as_view(), name='userReviewReject'),
 
     url(r'^registrationauthority/(?P<iid>\d+)?(?:\/(?P<name_slug>.+))?/?$', views.registrationauthority, name='registrationAuthority'),
     url(r'^registrationauthorities/?$', views.allRegistrationAuthorities, name='allRegistrationAuthorities'),

@@ -17,6 +17,12 @@ class RequestReviewForm(UserAwareModelForm):
         fields = ['state', 'registration_authority', 'message']
 
 
+class RequestReviewCancelForm(UserAwareModelForm):
+    class Meta:
+        model = MDR.ReviewRequest
+        fields = []
+
+
 class RequestReviewRejectForm(UserAwareModelForm):
     class Meta:
         model = MDR.ReviewRequest
