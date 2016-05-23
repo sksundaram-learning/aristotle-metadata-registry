@@ -349,3 +349,23 @@ class ReviewRequestActionsPage(utils.LoggedInViewPages, TestCase):
         response = self.client.get(reverse('aristotle:userReviewAccept',args=[review.pk]))
         self.assertEqual(response.status_code,403)
 
+    def test_who_can_see_review(self):
+        from aristotle_mdr.perms import user_can_view_review
+
+        review = models.ReviewRequest.objects.create(requester=self.editor,registration_authority=self.ra)
+        review.concepts.add(self.item1)
+
+        self.assertTrue(user_can_view_review(self.editor,review))
+        self.assertTrue(user_can_view_review(self.registrar,review))
+        self.assertTrue(user_can_view_review(self.su,review))
+        self.assertFalse(user_can_view_review(self.viewer,review))
+        
+        review.status = models.REVIEW_STATES.cancelled
+        review.save()
+
+        review = models.ReviewRequest.objects.get(pk=review.pk) #decache
+
+        self.assertTrue(user_can_view_review(self.editor,review))
+        self.assertFalse(user_can_view_review(self.registrar,review))
+        self.assertTrue(user_can_view_review(self.su,review))
+        self.assertFalse(user_can_view_review(self.viewer,review))
