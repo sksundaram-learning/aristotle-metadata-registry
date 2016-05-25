@@ -17,6 +17,7 @@ urlpatterns = patterns(
     'aristotle_mdr.views',
 
     url(r'^/?$', TemplateView.as_view(template_name='aristotle_mdr/static/home.html'), name="home"),
+    url(r'^manifest.json$', TemplateView.as_view(template_name='aristotle_mdr/manifest.json', content_type='application/json')),
     url(r'^sitemap.xml$', views.sitemaps.main, name='sitemap_xml'),
     url(r'^sitemaps/sitemap_(?P<page>[0-9]+).xml$', views.sitemaps.page_range, name='sitemap_range_xml'),
 

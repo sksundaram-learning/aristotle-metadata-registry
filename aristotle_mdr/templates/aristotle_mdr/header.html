@@ -40,6 +40,9 @@
         {% endif %}
 
         <ul class="nav navbar-nav navbar-right">
+            <li >
+                <a accesskey="h" href="{% url 'aristotle_help:help_base' %}">{% trans 'Help'%}</a>
+            </li>
         {% if user.is_active %}
             <li class="dropdown">
                 <a href="{% url 'aristotle:userHome' %}" accesskey="u" class="dropdown-toggle" role="menu" data-toggle="dropdown" title="{% trans 'Open user menu' %}">
@@ -154,7 +157,7 @@
                 </a>
             </li>
         {% else %}
-            <li accesskey="l">
+            <li>
             <a href="{% url 'friendly_login' %}?next={{request.path}}">
                 <i class="fa fa-sign-in fa-lg"></i>  {% trans 'Log in'%}
             </a>
