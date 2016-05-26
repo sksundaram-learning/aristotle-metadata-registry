@@ -7,7 +7,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.template import RequestContext, TemplateDoesNotExist
 from django.template.defaultfilters import slugify
 from django.utils.translation import ugettext_lazy as _
-from django.views.generic import FormView
+from django.views.generic import FormView, DetailView
 from django.utils.decorators import method_decorator
 from django.utils.safestring import mark_safe
 import datetime
@@ -23,12 +23,7 @@ from aristotle_mdr import models as MDR
 from aristotle_mdr.forms import actions
 
 
-class ItemSubpageFormView(FormView):
-    def get_context_data(self, **kwargs):
-        kwargs = super(ItemSubpageFormView, self).get_context_data(**kwargs)
-        kwargs['item'] = self.get_item()
-        return kwargs
-
+class ItemSubpageView(object):
     def get_item(self):
         self.item = get_object_or_404(MDR._concept, pk=self.kwargs['iid']).item
         if not self.item.can_view(self.request.user):
@@ -37,7 +32,14 @@ class ItemSubpageFormView(FormView):
 
     def dispatch(self, *args, **kwargs):
         self.item = self.get_item()
-        return super(ItemSubpageFormView, self).dispatch(*args, **kwargs)
+        return super(ItemSubpageView, self).dispatch(*args, **kwargs)
+
+
+class ItemSubpageFormView(ItemSubpageView, FormView):
+    def get_context_data(self, **kwargs):
+        kwargs = super(ItemSubpageFormView, self).get_context_data(**kwargs)
+        kwargs['item'] = self.get_item()
+        return kwargs
 
 
 class SubmitForReviewView(ItemSubpageFormView):
@@ -180,3 +182,36 @@ class ReviewAcceptView(ReviewActionMixin, FormView):
             return HttpResponseRedirect(reverse('aristotle_mdr:userReadyForReview'))
         else:
             return self.form_invalid(form)
+
+class CheckCascadedStates(ItemSubpageView, DetailView):
+    pk_url_kwarg = 'iid'
+    context_object_name = 'item'
+    queryset = MDR._concept.objects.all()
+    template_name = 'aristotle_mdr/actions/check_states.html'
+    
+    def get_context_data(self, **kwargs):
+        kwargs = super(CheckCascadedStates, self).get_context_data(**kwargs)
+
+        state_matrix = [
+            #(item,[states_ordered_alphabetically_by_ra_as_per_parent_item],[extra statuses] )
+            ]
+        item = self.get_item()
+        states = item.current_statuses()
+        ras = []
+        for s in states:
+            if s.registrationAuthority not in ras:
+                ras.append(s.registrationAuthority)
+
+        for i in item.item.registry_cascade_items:
+            states = [None]*len(ras)
+            extras = []
+            for s in i.current_statuses():
+                ra = s.registrationAuthority
+                if ra in ras:
+                    states[ras.index(ra)] = s
+                else:
+                    extras.append(s)
+            state_matrix.append((i,states,extras))
+        
+        kwargs['state_matrix'] = state_matrix
+        return kwargs
