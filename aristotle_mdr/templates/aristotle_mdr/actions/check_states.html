@@ -11,16 +11,16 @@
         </ol>
 
 
-        <header>This form allows you to change the status of multiple items in your registration authorities.
+        <header>This form allows you to review the status of items related to the metadata item <em>{{item.name}}</em>.
         </header>
-        <pre>{{state_matrix}}</pre>
-
         <table class="table">
             <thead>
                 <tr>
                     <th>Item</th>
-                    <th>states</th>
-                    <th>extras</th>
+                    {% for s in known_states %}
+                    <th>{{s.registrationAuthority}}</th>
+                    {% endfor %}
+                    <th>Extra statuses</th>
                 </tr>
             </thead>
             <tbody>
@@ -38,12 +38,21 @@
                 <td>{% include "aristotle_mdr/helpers/itemLink.html" with item=i %}
                 <!-- small>{{item.type}}</small -->
                 </td>
-                {% for s in states %}
-                    <td>{{s.get_state_display}}</td>
+                {% for s,parent in states %}
+                    <td>
+                        {% if s == None %}
+                            <i class="fa fa-times fa-fw"></i>
+                        {% elif s.state == parent.state %}
+                            <i class="fa fa-check fa-fw"></i>
+                        {% else %}
+                            <i class="fa fa-times fa-fw"></i>
+                        {% endif %}
+                        {{s.get_state_display}}
+                    </td>
                 {% endfor %}
                 <td><ul>
                 {% for s in extra %}
-                    <li>{{s.get_state_display}}</li>
+                    <li>{{s.get_state_display}} in {{s.registrationAuthority}}</li>
                 {% empty %}
                 <li>No extras</li>
                 {% endfor %}

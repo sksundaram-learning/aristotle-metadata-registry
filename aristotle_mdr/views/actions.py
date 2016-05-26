@@ -193,25 +193,27 @@ class CheckCascadedStates(ItemSubpageView, DetailView):
         kwargs = super(CheckCascadedStates, self).get_context_data(**kwargs)
 
         state_matrix = [
-            #(item,[states_ordered_alphabetically_by_ra_as_per_parent_item],[extra statuses] )
+            #(item,[(states_ordered_alphabetically_by_ra_as_per_parent_item,state_of_parent_with_same_ra)],[extra statuses] )
             ]
         item = self.get_item()
-        states = item.current_statuses()
+        states = []
         ras = []
-        for s in states:
+        for s in item.current_statuses():
             if s.registrationAuthority not in ras:
                 ras.append(s.registrationAuthority)
+                states.append(s)
 
         for i in item.item.registry_cascade_items:
-            states = [None]*len(ras)
+            sub_states = [None]*len(ras)
             extras = []
             for s in i.current_statuses():
                 ra = s.registrationAuthority
                 if ra in ras:
-                    states[ras.index(ra)] = s
+                    sub_states[ras.index(ra)] = (s,states[ras.index(ra)])
                 else:
                     extras.append(s)
-            state_matrix.append((i,states,extras))
+            state_matrix.append((i,sub_states,extras))
         
+        kwargs['known_states'] = states
         kwargs['state_matrix'] = state_matrix
         return kwargs
