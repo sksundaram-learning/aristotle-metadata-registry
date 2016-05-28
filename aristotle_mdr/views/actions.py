@@ -188,7 +188,13 @@ class CheckCascadedStates(ItemSubpageView, DetailView):
     context_object_name = 'item'
     queryset = MDR._concept.objects.all()
     template_name = 'aristotle_mdr/actions/check_states.html'
-    
+
+    def dispatch(self, *args, **kwargs):
+        self.item = self.get_item()
+        if not self.item.item.registry_cascade_items:
+            raise Http404
+        return super(CheckCascadedStates, self).dispatch(*args, **kwargs)
+
     def get_context_data(self, **kwargs):
         kwargs = super(CheckCascadedStates, self).get_context_data(**kwargs)
 
