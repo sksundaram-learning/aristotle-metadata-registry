@@ -183,6 +183,7 @@ class ReviewAcceptView(ReviewActionMixin, FormView):
         else:
             return self.form_invalid(form)
 
+
 class CheckCascadedStates(ItemSubpageView, DetailView):
     pk_url_kwarg = 'iid'
     context_object_name = 'item'
@@ -199,7 +200,7 @@ class CheckCascadedStates(ItemSubpageView, DetailView):
         kwargs = super(CheckCascadedStates, self).get_context_data(**kwargs)
 
         state_matrix = [
-            #(item,[(states_ordered_alphabetically_by_ra_as_per_parent_item,state_of_parent_with_same_ra)],[extra statuses] )
+            # (item,[(states_ordered_alphabetically_by_ra_as_per_parent_item,state_of_parent_with_same_ra)],[extra statuses] )
             ]
         item = self.get_item()
         states = []
@@ -210,16 +211,16 @@ class CheckCascadedStates(ItemSubpageView, DetailView):
                 states.append(s)
 
         for i in item.item.registry_cascade_items:
-            sub_states = [None]*len(ras)
+            sub_states = [None] * len(ras)
             extras = []
             for s in i.current_statuses():
                 ra = s.registrationAuthority
                 if ra in ras:
-                    sub_states[ras.index(ra)] = (s,states[ras.index(ra)])
+                    sub_states[ras.index(ra)] = (s, states[ras.index(ra)])
                 else:
                     extras.append(s)
-            state_matrix.append((i,sub_states,extras))
-        
+            state_matrix.append((i, sub_states, extras))
+
         kwargs['known_states'] = states
         kwargs['state_matrix'] = state_matrix
         return kwargs
