@@ -20,7 +20,7 @@
         <dl>
             <dt>{% trans 'Type' context "Object Type" %}</dt>
             <dd>
-                <a href="{% aboutLink item %}"
+                <a href="{% url 'aristotle_help:concept_help' item.meta.app_label item.meta.model_name %}"
                     data-toggle="modal" data-target="#infobox_modal"
                 >{{ item.get_verbose_name }}</a>
             </dd>
