@@ -13,7 +13,8 @@ from reversion_compare.admin import CompareVersionAdmin
 import reversion
 
 from aristotle_mdr.register import register_concept
-reversion.revisions.register(MDR._concept)
+reversion.revisions.register(MDR.Status)
+reversion.revisions.register(MDR._concept, follow=['statuses', 'workgroup'])
 reversion.revisions.register(MDR.Workgroup)
 
 
@@ -58,12 +59,12 @@ class WorkgroupFilter(RelatedFieldListFilter):
 
 class WorkgroupAdmin(CompareVersionAdmin):
     fieldsets = [
-        (None, {'fields': ['name', 'definition', 'ownership', 'registrationAuthorities']}),
+        (None, {'fields': ['name', 'definition']}),
         ('Members', {'fields': ['managers', 'stewards', 'submitters', 'viewers']}),
     ]
-    filter_horizontal = ['managers', 'stewards', 'submitters', 'viewers', 'registrationAuthorities']
-    list_display = ('name', 'definition', 'ownership', 'archived')
-    list_filter = ('ownership', 'archived', 'registrationAuthorities')
+    filter_horizontal = ['managers', 'stewards', 'submitters', 'viewers']
+    list_display = ('name', 'definition', 'archived')
+    list_filter = ('archived',)
     search_fields = ('name', 'definition')
 
     def get_queryset(self, request):
@@ -93,19 +94,13 @@ class WorkgroupAdmin(CompareVersionAdmin):
 
 
 class ConceptAdmin(CompareVersionAdmin, admin.ModelAdmin):
-    class Media:
-        js = [
-            '/static/grappelli/tinymce/jscripts/tiny_mce/tiny_mce.js'
-        ]
 
     form = MDRForms.admin.AdminConceptForm
-    list_display = ['name', 'description_stub', 'created', 'modified', 'workgroup', 'is_public', 'is_locked', 'readyToReview']  # ,'status']
+    list_display = ['name', 'description_stub', 'created', 'modified', 'workgroup', 'is_public', 'is_locked']  # ,'status']
     list_filter = ['created', 'modified', ('workgroup', WorkgroupFilter)]  # , 'statuses']
     search_fields = ['name', 'synonyms']
     inlines = [StatusInline]
 
-    change_list_template = "admin/change_list_filter_sidebar.html"
-    change_list_filter_template = "admin/filter_listing.html"
     date_hierarchy = 'created'  # ,'modified']
 
     fieldsets = [
@@ -266,13 +261,19 @@ register_concept(
 register_concept(
     MDR.DataElementConcept,
     name_suggest_fields=['objectClass', 'property'],
-    extra_fieldsets=[('Components', {'fields': ['objectClass', 'property']})]
+    extra_fieldsets=[('Components', {'fields': ['objectClass', 'property']})],
+    reversion={
+        'follow': ['objectClass', 'property'],
+    }
 )
 
 register_concept(
     MDR.DataElement,
     name_suggest_fields=['dataElementConcept', 'valueDomain'],
-    extra_fieldsets=[('Components', {'fields': ['dataElementConcept', 'valueDomain']})]
+    extra_fieldsets=[('Components', {'fields': ['dataElementConcept', 'valueDomain']})],
+    reversion={
+        'follow': ['dataElementConcept', 'valueDomain'],
+    }
 )
 
 register_concept(

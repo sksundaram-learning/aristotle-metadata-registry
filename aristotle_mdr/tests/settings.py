@@ -1,11 +1,15 @@
-import os, sys
+import os
+import sys
 from aristotle_mdr.required_settings import *
+
 BASE = os.path.dirname(os.path.dirname(__file__))
 
-sys.path.insert(1,BASE)
-sys.path.insert(1,os.path.join(BASE, "tests"))
-sys.path.insert(1,os.path.join(BASE, "tests/apps"))
-TEMPLATE_DIRS = [os.path.join(BASE_DIR, 'tests/apps/bulk_actions_test/templates')]
+sys.path.insert(1, BASE)
+sys.path.insert(1, os.path.join(BASE, "tests"))
+sys.path.insert(1, os.path.join(BASE, "tests/apps"))
+TEMPLATE_DIRS = [
+    os.path.join(BASE_DIR, 'tests/apps/bulk_actions_test/templates')
+]
 
 SECRET_KEY = 'inara+vtkprm7@0(fsc$+grbz9-s+tmo9d)e#k(9uf8m281&$7xhdkjr'
 SOUTH_TESTS_MIGRATE = True
@@ -17,8 +21,8 @@ CKEDITOR_UPLOAD_PATH = 'uploads/'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': ':memory:',
-   }
+            'NAME': 'test_database',
+    }
 }
 
 if 'TRAVIS' in os.environ:
@@ -42,13 +46,13 @@ if 'TRAVIS' in os.environ:
             'HOST': 'localhost',
             'PORT': '',
         }
-    #elif os.eviron.get('DB') == 'mysql':
+    # elif os.eviron.get('DB') == 'mysql':
     elif os.environ.get('DB') == 'sqlitememory':
         print("Running TRAVIS-CI test-suite with memory-based SQLite")
         DATABASES['default'] = {
             'ENGINE': 'django.db.backends.sqlite3',
             'NAME': ':memory:',
-       }
+        }
 
 class DisableMigrations(object):
 
@@ -61,7 +65,7 @@ class DisableMigrations(object):
 MIGRATION_MODULES = DisableMigrations()
 
 INSTALLED_APPS = (
-    #The good stuff
+    # The good stuff
     'templatetags',
     'extension_test',
     'text_download_test',
@@ -69,9 +73,9 @@ INSTALLED_APPS = (
 
 HAYSTACK_CONNECTIONS = {
     'default': {
-        'ENGINE': 'haystack.backends.whoosh_backend.WhooshEngine',
+        'ENGINE': 'aristotle_mdr.contrib.whoosh_backend.FixedWhooshEngine',
         'PATH': os.path.join(os.path.dirname(__file__), 'aristotle_mdr/tests/whoosh_index'),
-        'INCLUDE_SPELLING':True,
+        'INCLUDE_SPELLING': True,
     },
 }
 
@@ -82,12 +86,56 @@ PASSWORD_HASHERS = (
 )
 
 ARISTOTLE_SETTINGS['SEPARATORS']['DataElementConcept'] = '--'
-ARISTOTLE_SETTINGS['CONTENT_EXTENSIONS'] = ARISTOTLE_SETTINGS['CONTENT_EXTENSIONS'] +['extension_test']
-ARISTOTLE_DOWNLOADS = ARISTOTLE_DOWNLOADS +[
-    ('txt','Text','fa-file-pdf-o','text_download_test'),
-    ]
+ARISTOTLE_SETTINGS['CONTENT_EXTENSIONS'] = ARISTOTLE_SETTINGS['CONTENT_EXTENSIONS'] + ['extension_test']
+ARISTOTLE_DOWNLOADS = ARISTOTLE_DOWNLOADS + [
+    ('txt', 'Text', 'fa-file-pdf-o', 'text_download_test'),
+]
 ARISTOTLE_SETTINGS['BULK_ACTIONS'].update({
-    'delete':    'bulk_actions_test.actions.StaffDeleteActionForm',
-    'incomplete':'bulk_actions_test.actions.IncompleteActionForm',
+    'delete': 'bulk_actions_test.actions.StaffDeleteActionForm',
+    'incomplete': 'bulk_actions_test.actions.IncompleteActionForm',
 })
 ROOT_URLCONF = 'extension_test.urls'
+
+# disable
+__LOGGING__ = {
+    'version': 1,
+    'formatters': {
+        'verbose': {
+            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+        },
+        'simple': {
+            'format': '%(levelname)s %(message)s'
+        },
+    },
+    'handlers': {
+        'console-simple': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple'
+            },
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose'
+            },
+        },
+    'loggers': {
+        'aristotle_mdr': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': True,
+            },
+        'django': {
+            'handlers': ['console-simple'],
+            'level': 'INFO',
+            'propagate': True,
+            },
+        }
+    }
+
+"""
+if DEBUG:
+    # make all loggers use the console.
+    for logger in LOGGING['loggers']:
+        LOGGING['loggers'][logger]['handlers'] = ['console']
+"""

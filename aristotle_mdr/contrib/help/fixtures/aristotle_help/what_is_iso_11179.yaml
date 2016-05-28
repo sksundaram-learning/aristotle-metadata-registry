@@ -1,0 +1,20 @@
+- model: aristotle_mdr_help.helppage
+  fields:
+    title: About ISO/IEC 11179
+    app_label: aristotle_mdr
+    language: en
+    body: >
+      <blockquote>
+      The primary purpose of ISO/IEC 11179-3 is to specify the structure of a Metadata Registry.
+      ISO/IEC 11179-3 also specifies basic attributes which are required to describe metadata items, and which
+      may be used in situations where a complete metadata registry is not appropriate (e.g. in the specification of
+      other International Standards).
+      </blockquote>
+
+      <a href="http://standards.iso.org/ittf/PubliclyAvailableStandards/index.html">
+      Electronic copies of the ISO/IEC 11179 specification are made freely
+      accessible on the ISO website.
+      </a>
+      <p>
+      
+      </p>

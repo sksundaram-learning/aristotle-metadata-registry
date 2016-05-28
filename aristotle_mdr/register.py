@@ -56,7 +56,11 @@ def register_concept(concept_class, *args, **kwargs):
 def register_concept_reversions(concept_class, *args, **kwargs):
     from reversion import revisions as reversion
     follows = kwargs.get('reversion', {}).get('follow', [])
-    follows.append('_concept_ptr')
+    follows += [
+        '_concept_ptr',
+        'statuses',
+        'workgroup',
+    ]
     follow_classes = kwargs.get('reversion', {}).get('follow_classes', [])
 
     reversion.register(concept_class, follow=follows)
@@ -120,16 +124,26 @@ def register_concept_admin(concept_class, *args, **kwargs):
     # late import this as we call this in aristotle_mdr.admin and need it to be ready before we call this.
     from aristotle_mdr.admin import ConceptAdmin
     from aristotle_mdr.models import concept
-
+    from django.db.models.fields.related import ManyToManyField, ManyToOneRel
     if not extra_fieldsets and auto_fieldsets:
         # returns every field that isn't in a concept
         field_names = concept._meta.get_all_field_names() + ['supersedes']
-
-        auto_fieldset = [f for f in concept_class._meta.get_all_field_names() if f not in field_names]
+        m2ms = [m[0] for m in concept_class._meta.get_m2m_with_model()]
+        m2m_rel = [y.related_model for y in concept_class._meta.get_all_related_objects()]
+        auto_fieldset = []
+        auto_inlines = []
+        for f in concept_class._meta.get_fields():
+            if f.name not in field_names and f.name not in concept_class.admin_page_excludes:
+                auto_fieldset.append(f.name)
 
         if auto_fieldset:
             extra_fieldsets_name = _('Extra fields for %(class_name)s') % {'class_name': concept_class._meta.verbose_name.title()}
             extra_fieldsets = [(extra_fieldsets_name, {'fields': auto_fieldset})]
+        for inline_field in auto_inlines:
+            class AutoInline(admin.TabularInline):
+                model=inline_field.related_model
+                extra=0
+            extra_inlines.append(AutoInline)
 
     class SubclassedConceptAdmin(ConceptAdmin):
         model = concept_class

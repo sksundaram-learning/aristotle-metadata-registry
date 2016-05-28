@@ -4,7 +4,8 @@ import os
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 TEMPLATE_DIRS = [os.path.join(BASE_DIR, 'templates')]
 FIXTURES_DIRS = [os.path.join(BASE_DIR, 'fixtures')]
-STATIC_ROOT =os.path.join(BASE_DIR, "static")
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
+MEDIA_ROOT =os.path.join(BASE_DIR, "media")
 
 # https://docs.djangoproject.com/en/1.6/ref/settings/#databases
 # This provides for quick easy set up, but should be changed to a production
@@ -27,24 +28,24 @@ CACHES = {
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
-if DEBUG:
-    STATIC_ROOT =os.path.join(BASE_DIR, "static")
-
-    MEDIA_ROOT = '/home/aristotle/aristotle/possum-mdr/media/'
-    MEDIA_URL = '/media/'
-
-    CKEDITOR_UPLOAD_PATH = 'uploads/'
+MEDIA_URL = '/media/'
+CKEDITOR_UPLOAD_PATH = 'uploads/'
 
 
 # Required for admindocs, see: https://code.djangoproject.com/ticket/21386
 SITE_ID=None
 
+
 ALLOWED_HOSTS = []
 SOUTH_TESTS_MIGRATE = False
+MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
 
 INSTALLED_APPS = (
-    'aristotle_mdr',  # Comes before grappelli for overloads
-    'grappelli',
+    'aristotle_mdr',
+    'aristotle_mdr.contrib.generic',
+    'aristotle_mdr.contrib.help',
+    'aristotle_mdr.contrib.slots',
+    'aristotle_mdr.contrib.browse',
     'haystack',
     'django.contrib.admin',
     'django.contrib.admindocs',
@@ -56,6 +57,7 @@ INSTALLED_APPS = (
     'django.contrib.humanize',
 
     'ckeditor',
+    'ckeditor_uploader',
 
     'static_precompiler',
     'bootstrap3',
@@ -72,12 +74,13 @@ USE_I18N = True
 
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
     'django.middleware.locale.LocaleMiddleware',
+    'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # 'aristotle_mdr.contrib.redirect.middleware.RedirectMiddleware',
 
 
     # 'reversion.middleware.RevisionMiddleware',
@@ -103,6 +106,7 @@ STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     'static_precompiler.finders.StaticPrecompilerFinder',
 )
+ADMIN_MEDIA_PREFIX = '/static/admin/'
 
 if DEBUG:
     STATIC_PRECOMPILER_CACHE_TIMEOUT = 1
@@ -133,6 +137,8 @@ ARISTOTLE_SETTINGS = {
         'add_favourites': 'aristotle_mdr.forms.bulk_actions.AddFavouriteForm',
         'remove_favourites': 'aristotle_mdr.forms.bulk_actions.RemoveFavouriteForm',
         'change_state': 'aristotle_mdr.forms.bulk_actions.ChangeStateForm',
+        'move_workgroup': 'aristotle_mdr.forms.bulk_actions.ChangeWorkgroupForm',
+        'request_review': 'aristotle_mdr.forms.bulk_actions.RequestReviewForm',
     },
     'DASHBOARD_ADDONS': []
 }
@@ -156,20 +162,12 @@ CKEDITOR_CONFIGS = {
     },
 }
 
-HAYSTACK_SIGNAL_PROCESSOR = 'aristotle_mdr.signals.AristotleSignalProcessor'
+HAYSTACK_SIGNAL_PROCESSOR = 'aristotle_mdr.contrib.help.signals.AristotleHelpSignalProcessor'
 # HAYSTACK_SEARCH_RESULTS_PER_PAGE = 10
 HAYSTACK_CONNECTIONS = {
     'default': {
-        'ENGINE': 'haystack.backends.whoosh_backend.WhooshEngine',
+        'ENGINE': 'aristotle_mdr.contrib.whoosh_backend.FixedWhooshEngine',
         'PATH': os.path.join(os.path.dirname(__file__), 'whoosh_index'),
         'INCLUDE_SPELLING': True,
     },
 }
-
-# Email settings required for password resets.
-if DEBUG:
-    EMAIL_HOST = 'smtp.gmail.com'
-    EMAIL_PORT = 587
-    EMAIL_HOST_USER = 'aristotle.email@gmail.com'
-    EMAIL_HOST_PASSWORD = 'aristotle.email1'
-    EMAIL_USE_TLS = True

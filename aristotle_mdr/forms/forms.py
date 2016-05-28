@@ -90,6 +90,8 @@ class SupersedeForm(forms.Form):
 
     def clean_newerItem(self):
         item = self.cleaned_data['newerItem']
+        if not item:
+            return None
         if self.item.id == item.id:
             raise forms.ValidationError("An item may not supersede itself")
         if not user_can_edit(self.user, item):
@@ -150,7 +152,6 @@ class ChangeStatusForm(UserAwareForm):
 class PermissibleValueForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(PermissibleValueForm, self).__init__(*args, **kwargs)
-        self.fields['order'].widget = forms.HiddenInput()
 
     class Meta:
         model = MDR.PermissibleValue

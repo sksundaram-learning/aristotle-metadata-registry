@@ -1,6 +1,6 @@
 {% extends "aristotle_mdr/user/userHome.html" %}
 
-{% load humanize %}
+{% load humanize i18n %}
 
 {% block collapse-link%}
     <i class="fa fa-users fa-fw"></i> {{ workgroup.name }}</a>
@@ -24,18 +24,18 @@
 <aside id="infoBox" class="col-xs-12 col-sm-4 pull-right">
 {% if workgroup.archived %}
     <div class="alert alert-warning">
-        This workgroup is archived.
+        {% trans 'This workgroup is archived.' %}
         {% if request.user in workgroup.managers or request.user.is_superuser %}
         <a data-toggle="modal" data-target="#archive_modal" class="btn btn-sm btn-default" href="{% url 'aristotle:archive_workgroup' workgroup.id %}">
-            <i class="fa fa-folder-open"></i> Reactivate this workgroup</a>
+            <i class="fa fa-folder-open"></i> {% trans 'Reactivate this workgroup' %}</a>
         {% endif %}
     </div>
     {% else %}
     <div class="alert alert-success">
-        This workgroup is active.
+        {% trans 'This workgroup is active.' %}
         {% if request.user in workgroup.managers or request.user.is_superuser %}
         <a data-toggle="modal" data-target="#archive_modal" class="btn btn-sm btn-default" href="{% url 'aristotle:archive_workgroup' workgroup.id %}">
-            <i class="fa fa-archive"></i> Archive this workgroup</a>
+            <i class="fa fa-archive"></i> {% trans 'Archive this workgroup' %}</a>
         {% endif %}
     </div>
     {% endif %}
@@ -47,16 +47,17 @@
         </div><!-- /.modal-dialog -->
     </div><!-- /.modal -->
     {% endif %}
-<section id="items">
-<header>Recently changed items</header>
-    <ul>
-        {% for item in recent %}
-        <li>{% include "aristotle_mdr/helpers/itemLink.html" with item=item %} ({{ item.get_verbose_name }})
-            <br><small>Modified {{ item.modified|naturaltime }}</small>
-        </li>
-        {% endfor %}
-    </ul>
-</section>
+
+    <section id="items">
+    <header>{% trans 'Recently changed items' %}</header>
+        <ul>
+            {% for item in recent %}
+            <li>{% include "aristotle_mdr/helpers/itemLink.html" with item=item %} ({{ item.get_verbose_name }})
+                <br><small>{% trans 'Modified' %} {{ item.modified|naturaltime }}</small>
+            </li>
+            {% endfor %}
+        </ul>
+    </section>
 </aside>
 
 <div class="col-sm-8">
@@ -65,16 +66,7 @@
     </div>
     <h2>Details</h2>
     <dl>
-        <dt>Responsible Registration Authorities</dt>
-        <dd>
-            <ul>{% for ra in workgroup.registrationAuthorities.all %}
-                <a href="{% url 'aristotle:registrationAuthority' iid=ra.id %}">{{ ra.name }}</a>
-            {% empty %}
-                <li><em>No Registration Authorities - items in this workgroup cannot be progressed!</em></li>
-            {% endfor %}
-            </ul>
-        </dd>
-
+        
         <dt>Managers
             {% if user_is_admin %}
                 <a data-toggle="modal" data-target="#addMember" href="{% url 'aristotle:addWorkgroupMembers' workgroup.id %}" class="inline_action">Add</a>
@@ -104,6 +96,17 @@
                     {{ total }} current item{{ total|pluralize }}
                 {% endwith %}
             </a>
+            <p>
+            {% blocktrans %}
+            Breakdown by status - items may be counted twice if they have been registered by multiple
+            registration authorities.
+            {% endblocktrans %}
+            <ul>
+                {% for a,b in counts %}
+                <li>{{a}} - {{b}}</li>
+                {% endfor %}
+            </ul>
+            </p>
         </dd>
     </dl>
 

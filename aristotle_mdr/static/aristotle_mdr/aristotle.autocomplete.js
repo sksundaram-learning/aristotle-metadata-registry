@@ -4,9 +4,7 @@
 });
 */
 $( document ).ready( function() {
-    console.log('here');
     $('a.ac_preview_link').click( function(e) {
-        console.log('clicked');
         e.stopPropagation();
         return false;
     });

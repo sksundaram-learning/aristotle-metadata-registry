@@ -31,15 +31,16 @@ For more information on configuring a more complete installation review the help
 
    On a linux machine, this can be done with the command::
 
-       wget https://github.com/aristotle-mdr/aristotle-metadata-registry/trunk/aristotle_easy_installer.py
+      pip install aristotle-metadata-registry
+      python -m aristotle_mdr.install.easy
 
-4. Run the easy installer: ``aristotle_easy_installer.py``. There are a number of command line arguments
-   that are explained in the help documentation which can be access from the command line::
+4. Run the easy installer: ``aristotle_mdr.install.easy``. There are a number of command line arguments
+   that are explained in the help documentation which can be accessed from the command line::
 
-    aristotle_easy_installer.py --help
+    python -m aristotle_mdr.install.easy --help
 
-   This will download an example registry, and will prompt you for a new name, ask for a few
-   additional settings, install requirements, setup the database and set up the static files.
+   This will setup an example registry, and will prompt you for a new name, ask for a few
+   additional settings, install requirements, setup a database and set up the static files.
 
 5. If required, browse to the directory of your project that was named in the above directory,
     and edit the ``settings.py`` files to meet your requirements.
@@ -49,7 +50,7 @@ For more information on configuring a more complete installation review the help
    dictionary - details of which can be found under :doc:`/installing/settings`.
 
    The example registry includes commented out lines for some useful Aristotle-MDR extensions.
-   If you wish to use these, removed the comments as directed by the documentation in ``settings.py``.
+   If you wish to use these, remove the comments as directed by the documentation in ``settings.py``.
 
 6. If you are using a WSGI server (such as PythonAnywhere) you'll need to either point your server to
    the projects ``wsgi.py`` file or update your WSGI configuration.
@@ -66,7 +67,7 @@ The easy installer using a simple SQLite database for storing content, however f
 large scale production servers with multiple concurrent users this may not be
 appropriate. `Django supports a wide range of database server <https://docs.djangoproject.com/en/stable/ref/databases/>`_
 which can be used instead of SQLite. However to the very specific nature of the
-options required to connect to a a database, to use an alternate database with
+options required to connect to a database, to use an alternate database with
 the easy installer a few additional steps are required.
 
 1. Let the installer run to completion, without the ``--dry`` option, and

@@ -1,6 +1,6 @@
 from django.apps import apps
-from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.core.exceptions import PermissionDenied, ImproperlyConfigured
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -15,36 +15,52 @@ from django.template.loader import select_template
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import TemplateView
 from django.utils import timezone
+from django.utils.decorators import method_decorator
 import datetime
 
 import reversion
 from reversion.revisions import default_revision_manager
+from reversion_compare.views import HistoryCompareDetailView
 
 from aristotle_mdr.perms import user_can_view, user_can_edit, user_can_change_status
 from aristotle_mdr import perms
 from aristotle_mdr.utils import cache_per_item_user, concept_to_dict, construct_change_message, url_slugify_concept
 from aristotle_mdr import forms as MDRForms
 from aristotle_mdr import models as MDR
-from aristotle_mdr.utils import concept_to_clone_dict
+from aristotle_mdr.utils import concept_to_clone_dict, get_concepts_for_apps
+from aristotle_mdr.views.utils import generate_visibility_matrix
 from aristotle_mdr import exceptions as registry_exceptions
 
-from haystack.views import SearchView
+from haystack.views import SearchView, FacetedSearchView
 
+import logging
+
+logger = logging.getLogger(__name__)
+logger.debug("Logging started for " + __name__)
 
 PAGES_PER_RELATED_ITEM = 15
 
-import logging
-logger = logging.getLogger(__name__)
-logger.debug("Logging started for " + __name__)
 
 class DynamicTemplateView(TemplateView):
     def get_template_names(self):
         return ['aristotle_mdr/static/%s.html' % self.kwargs['template']]
 
 
-class HelpTemplateView(TemplateView):
-    def get_template_names(self):
-        return ['aristotle_mdr/static/help/%s.html' % self.kwargs['template']]
+class ConceptHistoryCompareView(HistoryCompareDetailView):
+    model = MDR._concept
+    pk_url_kwarg = 'iid'
+    template_name = "aristotle_mdr/actions/concept_history_compare.html"
+
+    def get_object(self, queryset=None):
+        item = super(ConceptHistoryCompareView, self).get_object(queryset)
+        if not user_can_view(self.request.user, item):
+            raise PermissionDenied
+        self.model = item.item.__class__  # Get the subclassed object
+        return item
+
+    @method_decorator(login_required)
+    def dispatch(self, *args, **kwargs):
+        return super(ConceptHistoryCompareView, self).dispatch(*args, **kwargs)
 
 
 def get_if_user_can_view(objtype, user, iid):
@@ -133,6 +149,9 @@ def download(request, downloadType, iid=None):
             exec("import %s.downloader as downloader" % module_name)
             return downloader.download(request, downloadType, item)
         except TemplateDoesNotExist:
+            debug = getattr(settings, 'DEBUG')
+            if debug:
+                raise
             raise Http404
 
     raise Http404
@@ -193,23 +212,6 @@ def render_if_condition_met(request, condition, objtype, iid, model_slug=None, n
     return HttpResponse(template.render(context))
 
 
-def item_history(request, iid):
-    item = get_if_user_can_view(MDR._concept, request.user, iid)
-    if not item:
-        if request.user.is_anonymous():
-            return redirect(reverse('friendly_login') + '?next=%s' % request.path)
-        else:
-            raise PermissionDenied
-    item = item.item
-    versions = default_revision_manager.get_for_object(item)
-    from django.contrib.contenttypes.models import ContentType
-    ct = ContentType.objects.get_for_model(item)
-    versions = reversion.models.Version.objects.filter(content_type=ct, object_id=item.pk).order_by('-revision__date_created')
-
-    page = render(request, "aristotle_mdr/actions/concept_history.html", {"item": item, 'versions': versions})
-    return page
-
-
 def registrationHistory(request, iid):
     item = get_if_user_can_view(MDR._concept, request.user, iid)
     if not item:
@@ -229,58 +231,6 @@ def registrationHistory(request, iid):
     return render(request, "aristotle_mdr/registrationHistory.html", {'item': item, 'history': out})
 
 
-def edit_item(request, iid, *args, **kwargs):
-    item = get_object_or_404(MDR._concept, pk=iid).item
-    if not user_can_edit(request.user, item):
-        if request.user.is_anonymous():
-            return redirect(reverse('friendly_login') + '?next=%s' % request.path)
-        else:
-            raise PermissionDenied
-
-    base_form = MDRForms.wizards.subclassed_edit_modelform(item.__class__)
-    if request.method == 'POST':  # If the form has been submitted...
-        form = base_form(request.POST, instance=item, user=request.user)
-        new_wg = request.POST.get('workgroup', None)
-        workgroup_changed = not(str(item.workgroup.pk) == (new_wg))
-
-        if form.is_valid():
-            workgroup_changed = item.workgroup.pk != form.cleaned_data['workgroup'].pk
-
-            with transaction.atomic(), reversion.revisions.create_revision():
-                change_comments = form.data.get('change_comments', None)
-                item = form.save()
-                reversion.revisions.set_user(request.user)
-                if not change_comments:
-                    change_comments = construct_change_message(request, form, None)
-                reversion.revisions.set_comment(change_comments)
-                return HttpResponseRedirect(url_slugify_concept(item))
-    else:
-        form = base_form(instance=item, user=request.user)
-    return render(request, "aristotle_mdr/actions/advanced_editor.html", {"item": item, "form": form})
-
-
-def clone_item(request, iid, *args, **kwargs):
-    item_to_clone = get_object_or_404(MDR._concept, pk=iid).item
-    if not user_can_edit(request.user, item_to_clone):
-        if request.user.is_anonymous():
-            return redirect(reverse('friendly_login') + '?next=%s' % request.path)
-        else:
-            raise PermissionDenied
-    base_form = MDRForms.wizards.subclassed_modelform(item_to_clone.__class__)
-    if request.method == 'POST':  # If the form has been submitted...
-        form = base_form(request.POST, user=request.user)
-
-        if form.is_valid():
-            with transaction.atomic(), reversion.revisions.create_revision():
-                new_clone = form.save()
-                reversion.revisions.set_user(request.user)
-                reversion.revisions.set_comment("Cloned from %s (id: %s)" % (item_to_clone.name, str(item_to_clone.pk)))
-                return HttpResponseRedirect(url_slugify_concept(new_clone))
-    else:
-        form = base_form(initial=concept_to_clone_dict(item_to_clone), user=request.user)
-    return render(request, "aristotle_mdr/create/clone_item.html", {"item": item_to_clone, "form": form})
-
-
 def unauthorised(request, path=''):
     if request.user.is_anonymous():
         return render(request, "401.html", {"path": path, "anon": True, }, status=401)
@@ -296,22 +246,18 @@ def create_list(request):
 
     aristotle_apps = getattr(settings, 'ARISTOTLE_SETTINGS', {}).get('CONTENT_EXTENSIONS', [])
     aristotle_apps += ["aristotle_mdr"]
-
-    from django.contrib.contenttypes.models import ContentType
-    models = ContentType.objects.filter(app_label__in=aristotle_apps).all()
     out = {}
 
-    for m in models:
-        if issubclass(m.model_class(), MDR._concept) and not m.model.startswith("_"):
-            # Only output subclasses of 11179 concept
-            app_models = out.get(m.app_label, {'app': None, 'models': []})
-            if app_models['app'] is None:
-                try:
-                    app_models['app'] = getattr(apps.get_app_config(m.app_label), 'verbose_name')
-                except:
-                    app_models['app'] = "No name"  # Where no name is configured in the app_config, set a dummy so we don't keep trying
-            app_models['models'].append((m, m.model_class()))
-            out[m.app_label] = app_models
+    for m in get_concepts_for_apps(aristotle_apps):
+        # Only output subclasses of 11179 concept
+        app_models = out.get(m.app_label, {'app': None, 'models': []})
+        if app_models['app'] is None:
+            try:
+                app_models['app'] = getattr(apps.get_app_config(m.app_label), 'verbose_name')
+            except:
+                app_models['app'] = "No name"  # Where no name is configured in the app_config, set a dummy so we don't keep trying
+        app_models['models'].append((m, m.model_class()))
+        out[m.app_label] = app_models
 
     return render(request, "aristotle_mdr/create/create_list.html", {'models': out})
 
@@ -327,6 +273,12 @@ def toggleFavourite(request, iid):
     request.user.profile.toggleFavourite(item)
     if request.GET.get('next', None):
         return redirect(request.GET.get('next'))
+    if item.concept in request.user.profile.favourites.all():
+        message = _("%s added to favourites.") % (item.name)
+    else:
+        message = _("%s removed from favourites.") % (item.name)
+    message = _(message + " Review your favourites from the user menu.")
+    messages.add_message(request, messages.SUCCESS, message)
     return redirect(url_slugify_concept(item))
 
 
@@ -345,56 +297,7 @@ def allRegistrationAuthorities(request):
     return render(request, "aristotle_mdr/allRegistrationAuthorities.html", {'registrationAuthorities': ras})
 
 
-def about_all_items(request):
-
-    aristotle_apps = getattr(settings, 'ARISTOTLE_SETTINGS', {}).get('CONTENT_EXTENSIONS', [])
-    aristotle_apps += ["aristotle_mdr"]
-    out = {}
-    from django.contrib.contenttypes.models import ContentType
-    if aristotle_apps:
-        for app_label in aristotle_apps:
-            app=apps.get_app_config(app_label)
-            try:
-                app.about_url = reverse('%s:about' % app_label)
-            except:
-                pass  # if there is no about URL, thats ok.
-            app.mymodels = ContentType.objects.filter(app_label=app_label).all()
-
-            out[app_label]=app
-
-    # models = ContentType.objects.filter(app_label__in=aristotle_apps).all()
-    # out = {}
-    # for m in models:
-    #    if not m.model.startswith("_"):
-    #        app_models = out.get(m.app_label, [])
-    #        app_models.append(m.model_class())
-    #        out[m.app_label] = app_models
-
-    return render(request, "aristotle_mdr/static/all_items.html", {'models': out, })
-
-
 # Actions
-
-
-def mark_ready_to_review(request, iid):
-    item = get_object_or_404(MDR._concept, pk=iid).item
-    if not (item and user_can_edit(request.user, item)):
-        if request.user.is_anonymous():
-            return redirect(reverse('friendly_login') + '?next=%s' % request.path)
-        else:
-            raise PermissionDenied
-
-    if request.method == 'POST':  # If the form has been submitted...
-        if item.is_registered:
-            raise PermissionDenied
-        else:
-            with transaction.atomic(), reversion.revisions.create_revision():
-                reversion.revisions.set_user(request.user)
-                item.readyToReview = not item.readyToReview
-                item.save()
-        return HttpResponseRedirect(url_slugify_concept(item))
-    else:
-        return render(request, "aristotle_mdr/actions/mark_ready_to_review.html", {"item": item})
 
 
 def changeStatus(request, iid):
@@ -434,7 +337,17 @@ def changeStatus(request, iid):
             return HttpResponseRedirect(url_slugify_concept(item))
     else:
         form = MDRForms.ChangeStatusForm(user=request.user)
-    return render(request, "aristotle_mdr/actions/changeStatus.html", {"item": item, "form": form})
+    import json
+
+    return render(
+        request,
+        "aristotle_mdr/actions/changeStatus.html",
+        {
+            "item": item,
+            "form": form,
+            "status_matrix": json.dumps(generate_visibility_matrix(request.user)),
+        }
+    )
 
 
 def supersede(request, iid):
@@ -582,24 +495,9 @@ def extensions(request):
     )
 
 
-def browse(request, oc_id=None, dec_id=None):
-    if oc_id is None:
-        items = MDR.ObjectClass.objects.order_by("name").public()
-        return render(request, "aristotle_mdr/browse/objectClasses.html", {"items": items})
-    elif oc_id is not None and dec_id is None:
-        oc = get_object_or_404(MDR.ObjectClass, id=oc_id)
-        items = MDR.DataElementConcept.objects.filter(objectClass=oc).order_by("name").public()
-        return render(request, "aristotle_mdr/browse/dataElementConcepts.html", {"items": items, "objectClass": oc})
-    elif oc_id is not None and dec_id is not None:
-        # Yes, for now we ignore the Object Class. If the user is messing with IDs in the URL and things break thats their fault.
-        dec = get_object_or_404(MDR.DataElementConcept, id=dec_id)
-        items = MDR.DataElement.objects.filter(dataElementConcept=dec).order_by("name").public()
-        return render(request, "aristotle_mdr/browse/dataElements.html", {"items": items, "dataElementConcept": dec})
-
-
 # Search views
 
-class PermissionSearchView(SearchView):
+class PermissionSearchView(FacetedSearchView):
     def build_form(self):
         form = super(self.__class__, self).build_form()
         form.request = self.request

@@ -20,6 +20,10 @@ class CreateListPageTests(utils.LoggedInViewPages,TestCase):
         response = self.client.get(reverse('aristotle:createList'))
         self.assertEqual(response.status_code,403) # unauthorised
 
+        self.login_registrar()
+        response = self.client.get(reverse('aristotle:createList'))
+        self.assertEqual(response.status_code,403) # unauthorised
+
         self.login_editor()
         response = self.client.get(reverse('aristotle:createList'))
         self.assertEqual(response.status_code,200)
@@ -65,6 +69,15 @@ class ConceptWizardPage(utils.LoggedInViewPages):
         import haystack
         haystack.connections.reload('default')
 
+
+        # Tests against bug #333
+        # https://github.com/aristotle-mdr/aristotle-metadata-registry/issues/333
+        self.extra_wg = models.Workgroup.objects.create(name="Extra WG for issue 333")
+        self.extra_wg.stewards.add(self.editor)
+        self.extra_wg.submitters.add(self.editor)
+        self.extra_wg.viewers.add(self.editor)
+        self.extra_wg.save()
+
     @property
     def wizard_url(self):
         return reverse('aristotle:createItem',args=[self.model._meta.app_label,self.model._meta.model_name])
@@ -77,17 +90,21 @@ class ConceptWizardPage(utils.LoggedInViewPages):
     def test_viewer_cannot_view_create_page(self):
         self.login_viewer()
         response = self.client.get(self.wizard_url)
-        self.assertEqual(response.status_code,302)
+        self.assertEqual(response.status_code,403)
 
     def test_registrar_cannot_view_create_page(self):
         self.login_registrar()
         response = self.client.get(self.wizard_url)
-        self.assertEqual(response.status_code,302)
+        self.assertEqual(response.status_code,403)
 
     def test_editor_can_view_create_page(self):
         self.login_editor()
         response = self.client.get(self.wizard_url)
         self.assertEqual(response.status_code,200)
+
+    def do_test_for_issue333(self,response):
+        self.assertTrue(self.extra_wg.name in response.content)
+        self.assertTrue(response.content.count(self.extra_wg.name) == 1)
 
     def test_editor_can_make_object(self):
         self.login_editor()
@@ -108,7 +125,9 @@ class ConceptWizardPage(utils.LoggedInViewPages):
         wizard = response.context['wizard']
         self.assertEqual(response.status_code, 200)
         self.assertEqual(wizard['steps'].current, 'results')
-
+        
+        self.do_test_for_issue333(response)
+        
         step_2_data = {
             self.wizard_form_name+'-current_step': 'results',
             'results-name':"Test Item",
@@ -117,7 +136,7 @@ class ConceptWizardPage(utils.LoggedInViewPages):
         response = self.client.post(self.wizard_url, step_2_data)
         wizard = response.context['wizard']
         self.assertTrue('definition' in wizard['form'].errors.keys())
-        self.assertTrue('workgroup' in wizard['form'].errors.keys())
+        # NOWG self.assertTrue('workgroup' in wizard['form'].errors.keys())
 
         # no "test item" yet.
         self.assertFalse(models._concept.objects.filter(name="Test Item").exists())
@@ -129,6 +148,7 @@ class ConceptWizardPage(utils.LoggedInViewPages):
             })
         response = self.client.post(self.wizard_url, step_2_data)
         self.assertEqual(response.status_code, 200)
+        wizard = response.context['wizard']
         self.assertTrue('workgroup' in wizard['form'].errors.keys())
 
         # must submit a definition at this step. With the right workgroup
@@ -251,7 +271,7 @@ class DataElementConceptWizardPage(ConceptWizardPage,TestCase):
         response = self.client.post(self.wizard_url, step_3_data)
         wizard = response.context['wizard']
         self.assertTrue('definition' in wizard['form'].errors.keys())
-        self.assertTrue('workgroup' in wizard['form'].errors.keys())
+        # NOWG self.assertTrue('workgroup' in wizard['form'].errors.keys())
 
         # no "test item" yet.
         self.assertFalse(models._concept.objects.filter(name="Test Item").exists())
@@ -284,7 +304,7 @@ class DataElementConceptWizardPage(ConceptWizardPage,TestCase):
         response = self.client.post(self.wizard_url, step_4_data)
         wizard = response.context['wizard']
         self.assertTrue('definition' in wizard['form'].errors.keys())
-        self.assertTrue('workgroup' in wizard['form'].errors.keys())
+        # NOWG self.assertTrue('workgroup' in wizard['form'].errors.keys())
 
         # no "test item" yet.
         self.assertFalse(models._concept.objects.filter(name="Test Item").exists())
@@ -322,7 +342,7 @@ class DataElementConceptWizardPage(ConceptWizardPage,TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue('name' in wizard['form'].errors.keys())
         self.assertTrue('definition' in wizard['form'].errors.keys())
-        self.assertTrue('workgroup' in wizard['form'].errors.keys())
+        # NOWG self.assertTrue('workgroup' in wizard['form'].errors.keys())
 
         # must submit a name and definition at this step. But we are using a non-permitted workgroup.
         step_5_data.update({
@@ -511,7 +531,7 @@ class DataElementWizardPage(ConceptWizardPage,TestCase):
         response = self.client.post(self.wizard_url, step_3_data)
         wizard = response.context['wizard']
         self.assertTrue('definition' in wizard['form'].errors.keys())
-        self.assertTrue('workgroup' in wizard['form'].errors.keys())
+        # NOWG self.assertTrue('workgroup' in wizard['form'].errors.keys())
 
         # no "test item" yet.
         self.assertFalse(models.DataElementConcept.objects.filter(name="Animagus--Animal type").exists())
@@ -546,7 +566,7 @@ class DataElementWizardPage(ConceptWizardPage,TestCase):
         response = self.client.post(self.wizard_url, step_4_data)
         wizard = response.context['wizard']
         self.assertTrue('definition' in wizard['form'].errors.keys())
-        self.assertTrue('workgroup' in wizard['form'].errors.keys())
+        # NOWG self.assertTrue('workgroup' in wizard['form'].errors.keys())
 
         # no "test item" yet.
         self.assertFalse(models.DataElement.objects.filter(name="Animagus--Animal type, MoM Code").exists())

@@ -17,11 +17,13 @@ urlpatterns = patterns(
     'aristotle_mdr.views',
 
     url(r'^/?$', TemplateView.as_view(template_name='aristotle_mdr/static/home.html'), name="home"),
+    url(r'^sitemap.xml$', views.sitemaps.main, name='sitemap_xml'),
+    url(r'^sitemaps/sitemap_(?P<page>[0-9]+).xml$', views.sitemaps.page_range, name='sitemap_range_xml'),
 
     # all the below take on the same form:
     # url(r'^itemType/(?P<iid>\d+)?/?
     # Allowing for a blank ItemId (iid) allows aristotle to redirect to /about/itemtype instead of 404ing
-    url(r'^valuedomain/(?P<iid>\d+)?/edit/values/(?P<value_type>permissible|supplementary)/?$', views.valuedomain_value_edit, name='valueDomain_edit_values'),
+    url(r'^valuedomain/(?P<iid>\d+)?/edit/values/(?P<value_type>permissible|supplementary)/?$', views.editors.valuedomain_value_edit, name='valueDomain_edit_values'),
 
     url(r'^workgroup/(?P<iid>\d+)(?:-(?P<name_slug>[A-Za-z0-9\-]+))?/?$', views.workgroups.workgroup, name='workgroup'),
     url(r'^workgroup/(?P<iid>\d+)/members/?$', views.workgroups.members, name='workgroupMembers'),
@@ -42,11 +44,12 @@ urlpatterns = patterns(
     url(r'^discussions/post/(?P<pid>\d+)/toggle/?$', views.discussions.toggle_post, name='discussionsPostToggle'),
 
     # url(r'^item/(?P<iid>\d+)/?$', views.items.concept, name='item'),
-    url(r'^item/(?P<iid>\d+)(?:\/(?P<model_slug>\w+)\/(?P<name_slug>.+))?/?$', views.concept, name='item'),
-    url(r'^item/(?P<iid>\d+)/edit/?$', views.edit_item, name='edit_item'),
-    url(r'^item/(?P<iid>\d+)/clone/?$', views.clone_item, name='clone_item'),
-    url(r'^item/(?P<iid>\d+)/history/?$', views.item_history, name='item_history'),
+    url(r'^item/(?P<iid>\d+)/edit/?$', views.editors.EditItemView.as_view(), name='edit_item'),
+    url(r'^item/(?P<iid>\d+)/clone/?$', views.editors.CloneItemView.as_view(), name='clone_item'),
+    url(r'^item/(?P<iid>\d+)/history/?$', views.ConceptHistoryCompareView.as_view(), name='item_history'),
     url(r'^item/(?P<iid>\d+)/registrationHistory/?$', views.registrationHistory, name='registrationHistory'),
+
+    url(r'^item/(?P<iid>\d+)(?:\/(?P<model_slug>\w+)\/(?P<name_slug>.+))?/?$', views.concept, name='item'),
     url(r'^item/(?P<iid>\d+)(?:\/.*)?$', views.concept, name='item'),  # Catch every other 'item' URL and throw it for a redirect
 
     url(r'^unmanaged/measure/(?P<iid>\d+)(?:\/(?P<model_slug>\w+)\/(?P<name_slug>.+))?/?$', views.measure, name='measure'),
@@ -62,8 +65,7 @@ urlpatterns = patterns(
 
     url(r'^action/supersede/(?P<iid>\d+)$', views.supersede, name='supersede'),
     url(r'^action/deprecate/(?P<iid>\d+)$', views.deprecate, name='deprecate'),
-    url(r'^action/bulkaction/?$', views.bulk_actions.bulk_action, name='bulk_action'),
-    url(r'^action/r2r/(?P<iid>\d+)?$', views.mark_ready_to_review, name='mark_ready_to_review'),
+    url(r'^action/bulkaction/?$', views.bulk_actions.BulkAction.as_view(), name='bulk_action'),
     url(r'^action/compare/?$', views.comparator.compare_concepts, name='compare_concepts'),
 
     url(r'^changestatus/(?P<iid>\d+)$', views.changeStatus, name='changeStatus'),
@@ -71,30 +73,35 @@ urlpatterns = patterns(
 
     url(r'^account/?$', RedirectView.as_view(url='account/home/', permanent=True)),
     url(r'^account/home/?$', views.user_pages.home, name='userHome'),
+    url(r'^account/sandbox/?$', views.user_pages.CreatedItemsListView.as_view(), name='userSandbox'),
+    url(r'^account/roles/?$', views.user_pages.roles, name='userRoles'),
     url(r'^account/admin/?$', views.user_pages.admin_tools, name='userAdminTools'),
     url(r'^account/admin/statistics/?$', views.user_pages.admin_stats, name='userAdminStats'),
     url(r'^account/edit/?$', views.user_pages.edit, name='userEdit'),
     url(r'^account/recent/?$', views.user_pages.recent, name='userRecentItems'),
     url(r'^account/favourites/?$', views.user_pages.favourites, name='userFavourites'),
+    url(r'^account/reviews/?$', views.user_pages.my_review_list, name='userMyReviewRequests'),
+    url(r'^account/reviews/cancel/(?P<review_id>\d+)/?$', views.actions.ReviewCancelView.as_view(), name='userReviewCancel'),
     url(r'^account/workgroups/?$', views.user_pages.workgroups, name='userWorkgroups'),
     url(r'^account/workgroups/archives/?$', views.user_pages.workgroup_archives, name='user_workgroups_archives'),
     url(r'^account/notifications(?:/folder/(?P<folder>all))?/?$', views.user_pages.inbox, name='userInbox'),
 
-    url(r'^account/registrartools/?$', views.user_pages.registrar_tools, name='userRegistrarTools'),
-    url(r'^account/registrartools/readyforreview/?$', views.user_pages.review_list, name='userReadyForReview'),
 
-    url(r'^registrationauthority/(?P<iid>\d+)?/?$', views.registrationauthority, name='registrationAuthority'),
+    url(r'^action/review/(?P<iid>\d+)?$', views.actions.SubmitForReviewView.as_view(), name='request_review'),
+    url(r'^account/registrartools/?$', views.user_pages.registrar_tools, name='userRegistrarTools'),
+    url(r'^account/registrartools/review/?$', views.user_pages.review_list, name='userReadyForReview'),
+    url(r'^account/registrartools/review/details/(?P<review_id>\d+)/?$', views.user_pages.ReviewDetailsView.as_view(), name='userReviewDetails'),
+    url(r'^account/registrartools/review/accept/(?P<review_id>\d+)/?$', views.actions.ReviewAcceptView.as_view(), name='userReviewAccept'),
+    url(r'^account/registrartools/review/reject/(?P<review_id>\d+)/?$', views.actions.ReviewRejectView.as_view(), name='userReviewReject'),
+
+    url(r'^registrationauthority/(?P<iid>\d+)?(?:\/(?P<name_slug>.+))?/?$', views.registrationauthority, name='registrationAuthority'),
     url(r'^registrationauthorities/?$', views.allRegistrationAuthorities, name='allRegistrationAuthorities'),
     url(r'^account/toggleFavourite/(?P<iid>\d+)/?$', views.toggleFavourite, name='toggleFavourite'),
 
-    url(r'^browse(?:/(?P<oc_id>\d+)(?:-[a-z\-]*)?(?:/(?P<dec_id>\d+)(?:-[a-z\-]*)?)?)?/?$', views.browse, name='browse'),
     url(r'^extensions/?$', views.extensions, name='extensions'),
 
     url(r'^about/aristotle/?$', TemplateView.as_view(template_name='aristotle_mdr/static/aristotle_mdr.html'), name="aboutMain"),
-    url(r'^about/all_items/?$', views.about_all_items, name='about_all_items'),
     url(r'^about/(?P<template>.+)/?$', views.DynamicTemplateView.as_view(), name="about"),
-    url(r'^help/(?P<template>.+)/?$', views.HelpTemplateView.as_view(), name="help"),
-    url(r'^help/?$', TemplateView.as_view(template_name='aristotle_mdr/static/help/help.html'), name="helpMain"),
 
     url(r'^accessibility/?$', TemplateView.as_view(template_name='aristotle_mdr/static/accessibility.html'), name="accessibility"),
 
