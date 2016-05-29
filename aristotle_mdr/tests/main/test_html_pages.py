@@ -944,17 +944,12 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
     def test_cascade_action(self):
         self.logout()
         check_url = reverse('aristotle:check_cascaded_states', args=[self.item1.pk])
-        response = self.client.get(self.get_page(self.item1))
-        self.assertEqual(response.status_code,302)
-        self.assertTrue(check_url not in response.content)
+
         response = self.client.get(check_url)
         self.assertTrue(response.status_code,403)
-        
+
         self.login_editor()
-        response = self.client.get(self.get_page(self.item1))
-        self.assertEqual(response.status_code,200)
-        self.assertTrue(check_url not in response.content)
-        
+
         response = self.client.get(check_url)
         self.assertTrue(response.status_code,404)
 
@@ -1106,18 +1101,12 @@ class DataElementConceptViewPage(LoggedInViewConceptPages,TestCase):
     def test_cascade_action(self):
         self.logout()
         check_url = reverse('aristotle:check_cascaded_states', args=[self.item1.pk])
-        response = self.client.get(self.get_page(self.item1))
-        self.assertEqual(response.status_code,302)
-        self.assertTrue(check_url not in response.content)
-        
+
         response = self.client.get(check_url)
         self.assertTrue(response.status_code,403)
 
         self.login_editor()
-        response = self.client.get(self.get_page(self.item1))
-        self.assertEqual(response.status_code,200)
-        self.assertTrue(check_url in response.content)
-        
+
         response = self.client.get(check_url)
         self.assertTrue(response.status_code,200)
         self.assertTrue(self.item1.objectClass.name in response.content)
@@ -1131,18 +1120,12 @@ class DataElementViewPage(LoggedInViewConceptPages,TestCase):
     def test_cascade_action(self):
         self.logout()
         check_url = reverse('aristotle:check_cascaded_states', args=[self.item1.pk])
-        response = self.client.get(self.get_page(self.item1))
-        self.assertEqual(response.status_code,302)
-        self.assertTrue(check_url not in response.content)
-        
+
         response = self.client.get(check_url)
         self.assertTrue(response.status_code,403)
 
         self.login_editor()
-        response = self.client.get(self.get_page(self.item1))
-        self.assertEqual(response.status_code,200)
-        self.assertTrue(check_url in response.content)
-        
+
         response = self.client.get(check_url)
         self.assertTrue(response.status_code,200)
 
