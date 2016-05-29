@@ -104,7 +104,6 @@
            <div style="page-break-after:always;">
                 PDF download for:
                 <strong>
-                    {{ item.name }}
                 </strong>
            </div>
            <div style="page-break-after:always;">
@@ -113,8 +112,11 @@
            </div>
 
        <div id='content'>
-           {% for i in items %}
+            {% for i in items %}
                {% include 'aristotle_mdr/downloads/pdf/inline/managedContent.html' with item=i %}
+            {% endfor %}
+            {% for i in subitems %}
+               {% include 'aristotle_mdr/downloads/pdf/inline/managedContent.html' with item=i.item %}
             {% endfor %}
         </div>
     </div>

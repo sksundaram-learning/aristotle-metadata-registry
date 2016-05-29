@@ -69,13 +69,15 @@ def download(request, downloadType, item):
 
 def bulk_download(request, downloadType, items):
     """Built in download method"""
-    template = 'downloads/%s/bulk_download.html'%(downloadType)
+    template = 'aristotle_mdr/downloads/pdf/bulk_download.html'  # %(downloadType)
     from django.conf import settings
     page_size = getattr(settings, 'PDF_PAGE_SIZE', "A4")
     if downloadType == "pdf":
         subItems = []
         for item in items:
-            subItems.append(item.get_download_items())
+            i = item.get_download_items()
+            if i:
+                subItems.append()
         
         return render_to_pdf(
             template,
