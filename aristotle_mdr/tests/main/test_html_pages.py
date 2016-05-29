@@ -1122,13 +1122,13 @@ class DataElementConceptViewPage(LoggedInViewConceptPages,TestCase):
                 )
         s = models.Status.objects.create(
                 concept=item,
-                registrationAuthority=ra,
+                registrationAuthority=self.ra,
                 registrationDate=timezone.now(),
                 state=ra.locked_state
                 )
         s = models.Status.objects.create(
                 concept=self.item1,
-                registrationAuthority=ra,
+                registrationAuthority=self.ra,
                 registrationDate=timezone.now(),
                 state=ra.public_state
                 )
