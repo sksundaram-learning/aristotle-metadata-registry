@@ -1111,6 +1111,34 @@ class DataElementConceptViewPage(LoggedInViewConceptPages,TestCase):
         self.assertTrue(response.status_code,200)
         self.assertTrue(self.item1.objectClass.name in response.content)
         self.assertTrue(self.item1.property.name in response.content)
+        
+        ra = models.RegistrationAuthority.objects.create(name="new RA")
+        item = self.item1.property
+        s = models.Status.objects.create(
+                concept=item,
+                registrationAuthority=ra,
+                registrationDate=timezone.now(),
+                state=ra.locked_state
+                )
+        s = models.Status.objects.create(
+                concept=item,
+                registrationAuthority=ra,
+                registrationDate=timezone.now(),
+                state=ra.locked_state
+                )
+        s = models.Status.objects.create(
+                concept=self.item1,
+                registrationAuthority=ra,
+                registrationDate=timezone.now(),
+                state=ra.public_state
+                )
+
+        response = self.client.get(check_url)
+        self.assertTrue(response.status_code,200)
+        self.assertTrue(self.item1.objectClass.name in response.content)
+        self.assertTrue(self.item1.property.name in response.content)
+        self.assertTrue('fa-times' in response.content) # The property has a different status
+
 
 class DataElementViewPage(LoggedInViewConceptPages,TestCase):
     url_name='dataElement'

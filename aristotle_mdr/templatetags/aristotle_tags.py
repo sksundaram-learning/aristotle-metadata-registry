@@ -275,12 +275,6 @@ def historyLink(item):
 
 
 @register.simple_tag
-def aboutLink(item):
-    app_name = item._meta.app_label
-    return reverse("%s:about" % app_name, args=[item.help_name])
-
-
-@register.simple_tag
 def downloadMenu(item):
     """
     Returns the complete download menu for a partcular item. It accepts the id of
