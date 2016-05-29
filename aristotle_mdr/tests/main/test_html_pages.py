@@ -941,6 +941,18 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         response = self.client.get(reverse('aristotle:changeStatus',args=[self.item1.id]))
         self.assertRedirects(response,reverse('friendly_login')+"?next="+reverse('aristotle:changeStatus', args=[self.item1.id]))
 
+    def test_cascade_action(self):
+        self.logout()
+        check_url = reverse('aristotle:check_cascaded_states', args=[self.item1.pk])
+
+        response = self.client.get(check_url)
+        self.assertTrue(response.status_code,403)
+
+        self.login_editor()
+
+        response = self.client.get(check_url)
+        self.assertTrue(response.status_code,404)
+
 class ObjectClassViewPage(LoggedInViewConceptPages,TestCase):
     url_name='objectClass'
     itemType=models.ObjectClass
@@ -1032,7 +1044,7 @@ class ValueDomainViewPage(LoggedInViewConceptPages,TestCase):
     def test_submitter_can_use_supplementary_value_edit_page(self):
         self.submitter_user_can_use_value_edit_page('supplementary')
 
-    def test_su_can_download_pdf(self):
+    def test_su_can_download_csv(self):
         self.login_superuser()
         response = self.client.get(reverse('aristotle:download',args=['csv-vd',self.item1.id]))
         self.assertEqual(response.status_code,200)
@@ -1085,9 +1097,65 @@ class DataElementConceptViewPage(LoggedInViewConceptPages,TestCase):
         self.item1.property = prop
         self.item1.save()
 
+
+    def test_cascade_action(self):
+        self.logout()
+        check_url = reverse('aristotle:check_cascaded_states', args=[self.item1.pk])
+
+        response = self.client.get(check_url)
+        self.assertTrue(response.status_code,403)
+
+        self.login_editor()
+
+        response = self.client.get(check_url)
+        self.assertTrue(response.status_code,200)
+        self.assertTrue(self.item1.objectClass.name in response.content)
+        self.assertTrue(self.item1.property.name in response.content)
+        
+        ra = models.RegistrationAuthority.objects.create(name="new RA")
+        item = self.item1.property
+        s = models.Status.objects.create(
+                concept=item,
+                registrationAuthority=ra,
+                registrationDate=timezone.now(),
+                state=ra.locked_state
+                )
+        s = models.Status.objects.create(
+                concept=item,
+                registrationAuthority=self.ra,
+                registrationDate=timezone.now(),
+                state=ra.locked_state
+                )
+        s = models.Status.objects.create(
+                concept=self.item1,
+                registrationAuthority=self.ra,
+                registrationDate=timezone.now(),
+                state=ra.public_state
+                )
+
+        response = self.client.get(check_url)
+        self.assertTrue(response.status_code,200)
+        self.assertTrue(self.item1.objectClass.name in response.content)
+        self.assertTrue(self.item1.property.name in response.content)
+        self.assertTrue('fa-times' in response.content) # The property has a different status
+
+
 class DataElementViewPage(LoggedInViewConceptPages,TestCase):
     url_name='dataElement'
     itemType=models.DataElement
+
+
+    def test_cascade_action(self):
+        self.logout()
+        check_url = reverse('aristotle:check_cascaded_states', args=[self.item1.pk])
+
+        response = self.client.get(check_url)
+        self.assertTrue(response.status_code,403)
+
+        self.login_editor()
+
+        response = self.client.get(check_url)
+        self.assertTrue(response.status_code,200)
 
 class DataElementDerivationViewPage(LoggedInViewConceptPages,TestCase):
     url_name='dataelementderivation'

@@ -1117,7 +1117,12 @@ class DataElementConcept(concept):
 
     @property_
     def registry_cascade_items(self):
-        return [self.objectClass, self.property]
+        out = []
+        if self.objectClass:
+            out.append(self.objectClass)
+        if self.property:
+            out.append(self.property)
+        return out
 
 
 # Yes this name looks bad - blame 11179:3:2013 for renaming "administered item"
@@ -1142,8 +1147,13 @@ class DataElement(concept):
 
     @property
     def registry_cascade_items(self):
-        return ([self.dataElementConcept, self.valueDomain] +
-                self.dataElementConcept.registry_cascade_items)
+        out = []
+        if self.valueDomain:
+            out.append(self.valueDomain)
+        if self.dataElementConcept:
+            out.append(self.dataElementConcept)
+            out += self.dataElementConcept.registry_cascade_items
+        return out
 
 
 class DataElementDerivation(concept):
