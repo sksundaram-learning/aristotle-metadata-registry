@@ -1124,6 +1124,12 @@ class DataElementConcept(concept):
             out.append(self.property)
         return out
 
+    def get_download_items(self):
+        return [
+            (ObjectClass, ObjectClass.objects.filter(dataelementconcept=self)),
+            (Property, Property.objects.filter(dataelementconcept=self)),
+        ]
+
 
 # Yes this name looks bad - blame 11179:3:2013 for renaming "administered item"
 # to "concept".

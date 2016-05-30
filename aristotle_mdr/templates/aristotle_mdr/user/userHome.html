@@ -92,7 +92,7 @@
                     <ul class="list-group">
                     {% for revision in recent %}
                         <li class="list-group-item">
-                            <span>{{ revision.comment }}</span>
+                            <span>{{ revision.comment }} <small>({{revision.date_created}})</small></span>
                             <ul>
                                 {% for item in revision.version_set.all|unique_recent %}
                                     {% if item.object.get_absolute_url %}
