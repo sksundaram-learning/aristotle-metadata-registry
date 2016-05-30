@@ -73,32 +73,37 @@ def bulk_download(request, downloadType, items, title=None, subtitle=None):
     template = 'aristotle_mdr/downloads/pdf/bulk_download.html'  # %(downloadType)
     from django.conf import settings
     page_size = getattr(settings, 'PDF_PAGE_SIZE', "A4")
-    
+
     iids = {}
     item_querysets = {}  # {PythonClass:{help:ConceptHelp,qs:Queryset}}
     for item in items:
-        if item.can_view(request.user):
+        print item
+        if item and item.can_view(request.user):
             if item.__class__ not in iids.keys():
                 iids[item.__class__] = []
             iids[item.__class__].append(item.pk)
 
             for metadata_type, qs in item.get_download_items():
                 if metadata_type not in item_querysets.keys():
-                    item_querysets[metadata_type] = {'help':None,'qs':qs}
+                    item_querysets[metadata_type] = {'help': None, 'qs': qs}
                 else:
                     item_querysets[metadata_type]['qs'] &= qs
 
     help_topics = {}
     for metadata_type, ids_set in iids.items():
-        query = metadata_type.objects.filter(pk__in = ids_set)
+        query = metadata_type.objects.filter(pk__in=ids_set)
         if metadata_type not in item_querysets.keys():
-            item_querysets[metadata_type] = {'help':None,'qs':query}
+            item_querysets[metadata_type] = {'help': None, 'qs': query}
         else:
             item_querysets[metadata_type]['qs'] &= query
         from aristotle_mdr.contrib.help.models import ConceptHelp
 
     for metadata_type in item_querysets.keys():
-        item_querysets[metadata_type]['help'] = ConceptHelp.objects.filter(app_label=metadata_type._meta.app_label, concept_type=metadata_type._meta.model_name).first()
+        item_querysets[metadata_type]['qs'] = item_querysets[metadata_type]['qs'].visible(request.user)
+        item_querysets[metadata_type]['help'] = ConceptHelp.objects.filter(
+            app_label=metadata_type._meta.app_label,
+            concept_type=metadata_type._meta.model_name
+        ).first()
 
     if title is None:
         if request.GET.get('title', None):
@@ -110,19 +115,19 @@ def bulk_download(request, downloadType, items, title=None, subtitle=None):
         if request.GET.get('subtitle', None):
             subtitle = request.GET.get('subtitle')
         else:
-            _list = "<li>"+"</li><li>".join([item.name for item in items])+"</li>"
-            subtitle = mark_safe("Generated from the following metadata items:<ul>%s<ul>"%_list)
+            _list = "<li>" + "</li><li>".join([item.name for item in items if item]) + "</li>"
+            subtitle = mark_safe("Generated from the following metadata items:<ul>%s<ul>" % _list)
 
     if downloadType == "pdf":
         subItems = []
-        
+
         return render_to_pdf(
             template,
             {
                 'title': title,
                 'subtitle': subtitle,
                 'items': items,
-                'included_items': sorted([(k,v) for k,v in item_querysets.items()], key=lambda (k,v): k._meta.model_name),
+                'included_items': sorted([(k, v) for k, v in item_querysets.items()], key=lambda (k, v): k._meta.model_name),
                 'help_topics': help_topics,
                 'pagesize': request.GET.get('pagesize', page_size),
             }

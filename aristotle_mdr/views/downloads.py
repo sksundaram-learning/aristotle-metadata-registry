@@ -36,6 +36,7 @@ logger.debug("Logging started for " + __name__)
 
 PAGES_PER_RELATED_ITEM = 15
 
+
 def download(request, downloadType, iid=None):
     """
     By default, ``aristotle_mdr.views.download`` is called whenever a URL matches
@@ -172,7 +173,6 @@ def bulk_download(request, downloadType):
             raise registry_exceptions.BadDownloadModuleName("Download name isn't a valid Python module name.")
         try:
             downloader = None
-            #import aristotle_mdr.downloader as downloader
             # dangerous - we are really trusting the settings creators here.
             exec("import %s.downloader as downloader" % module_name)
             return downloader.bulk_download(request, downloadType, items)
