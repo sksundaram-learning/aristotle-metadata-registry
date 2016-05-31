@@ -98,6 +98,7 @@ class BulkActionForm(UserAwareForm):
 
     def __init__(self, form, *args, **kwargs):
         initial_items = kwargs.pop('items', [])
+        self.request = kwargs.pop('request')
         if 'user' in kwargs.keys():
             self.user = kwargs.get('user', None)
             queryset = MDR._concept.objects.visible(self.user)
@@ -362,3 +363,14 @@ class ChangeWorkgroupForm(BulkActionForm):
     @classmethod
     def can_use(cls, user):
         return user_can_move_any_workgroup(user)
+
+
+class QuickPDFDownloadForm(BulkActionForm):
+    classes="fa-file-pdf-o"
+    action_text = _('Quick PDF download')
+    items_label = "Items that will be added to your favourites list"
+
+    def make_changes(self):
+        items = self.items_to_change
+        from aristotle_mdr.views.downloads import bulk_download
+        return bulk_download(self.request, 'pdf')

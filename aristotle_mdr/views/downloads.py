@@ -112,7 +112,7 @@ def download(request, downloadType, iid=None):
     raise Http404
 
 
-def bulk_download(request, downloadType):
+def bulk_download(request, downloadType, items=None):
     """
     By default, ``aristotle_mdr.views.download`` is called whenever a URL matches
     the pattern defined in ``aristotle_mdr.urls_aristotle``::
@@ -152,6 +152,7 @@ def bulk_download(request, downloadType):
     a Django ``HttpResponse`` object of some form.
     """
     items=[]
+    print request
     for iid in request.GET.getlist('items'):
         item = MDR._concept.objects.get_subclass(pk=iid)
         item = get_if_user_can_view(item.__class__, request.user, iid)

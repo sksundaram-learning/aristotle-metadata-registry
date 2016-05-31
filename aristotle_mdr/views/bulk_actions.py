@@ -42,7 +42,7 @@ class BulkAction(FormView):
         action_form = actions[action]['form']
         if action_form.confirm_page is None:
             # if there is no confirm page or extra details required, do the action and redirect
-            form = action_form(request.POST, user=request.user)  # A form bound to the POST data
+            form = action_form(request.POST, user=request.user, request=request)  # A form bound to the POST data
 
             if form.is_valid():
                 to_change = form.items_to_change
@@ -50,7 +50,7 @@ class BulkAction(FormView):
                 if to_change.count() > 10 and not confirmed:
                     new_form = request.POST.copy()
                     new_form.setlist('items', form.items_to_change.values_list('id', flat=True))
-                    form = action_form(new_form, user=request.user, items=[])
+                    form = action_form(new_form, user=request.user, request=request, items=[])
                     return render(
                         request,
                         "aristotle_mdr/actions/bulk_actions/lots_of_things.html",
@@ -67,7 +67,7 @@ class BulkAction(FormView):
                 messages.add_message(request, messages.ERROR, form.errors)
             return HttpResponseRedirect(url)
         else:
-            form = action_form(request.POST, user=request.user)
+            form = action_form(request.POST, user=request.user, request=request)
             items = []
             if form.is_valid():
                 items = form.cleaned_data['items']
@@ -80,7 +80,7 @@ class BulkAction(FormView):
 
             if confirmed:
                 # We've passed the confirmation page, try and save.
-                form = action_form(request.POST, user=request.user, items=items)  # A form bound to the POST data
+                form = action_form(request.POST, user=request.user, request=request, items=items)  # A form bound to the POST data
                 # there was an error with the form redisplay
                 if form.is_valid():
                     message = form.make_changes()
@@ -89,7 +89,7 @@ class BulkAction(FormView):
                     return HttpResponseRedirect(url)
             else:
                 # we need a confirmation, render the next form
-                form = action_form(request.POST, user=request.user, items=items)
+                form = action_form(request.POST, user=request.user, request=request, items=items)
             return render(
                 request,
                 action_form.confirm_page,
