@@ -139,7 +139,7 @@ ARISTOTLE_SETTINGS = {
         'change_state': 'aristotle_mdr.forms.bulk_actions.ChangeStateForm',
         'move_workgroup': 'aristotle_mdr.forms.bulk_actions.ChangeWorkgroupForm',
         'request_review': 'aristotle_mdr.forms.bulk_actions.RequestReviewForm',
-        'bulk_download':'aristotle_mdr.forms.bulk_actions.BulkDownloadForm',
+        'bulk_download': 'aristotle_mdr.forms.bulk_actions.BulkDownloadForm',
     },
     'DASHBOARD_ADDONS': []
 }
