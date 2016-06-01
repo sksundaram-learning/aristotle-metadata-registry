@@ -9,6 +9,7 @@ from django.utils.safestring import mark_safe
 
 import xhtml2pdf.pisa as pisa
 import csv
+from aristotle_mdr.contrib.help.models import ConceptHelp
 
 
 def render_to_pdf(template_src, context_dict):
@@ -68,7 +69,7 @@ def download(request, download_type, item):
         return response
 
 
-def items_for_bulk_download(items):
+def items_for_bulk_download(items, request):
     iids = {}
     item_querysets = {}  # {PythonClass:{help:ConceptHelp,qs:Queryset}}
     for item in items:
@@ -83,14 +84,12 @@ def items_for_bulk_download(items):
                 else:
                     item_querysets[metadata_type]['qs'] &= qs
 
-    help_topics = {}
     for metadata_type, ids_set in iids.items():
         query = metadata_type.objects.filter(pk__in=ids_set)
         if metadata_type not in item_querysets.keys():
             item_querysets[metadata_type] = {'help': None, 'qs': query}
         else:
             item_querysets[metadata_type]['qs'] &= query
-        from aristotle_mdr.contrib.help.models import ConceptHelp
 
     for metadata_type in item_querysets.keys():
         item_querysets[metadata_type]['qs'] = item_querysets[metadata_type]['qs'].visible(request.user)
@@ -108,7 +107,7 @@ def bulk_download(request, download_type, items, title=None, subtitle=None):
     from django.conf import settings
     page_size = getattr(settings, 'PDF_PAGE_SIZE', "A4")
 
-    item_querysets = items_for_bulk_download(items)
+    item_querysets = items_for_bulk_download(items, request)
 
     if title is None:
         if request.GET.get('title', None):
@@ -133,7 +132,6 @@ def bulk_download(request, download_type, items, title=None, subtitle=None):
                 'subtitle': subtitle,
                 'items': items,
                 'included_items': sorted([(k, v) for k, v in item_querysets.items()], key=lambda (k, v): k._meta.model_name),
-                'help_topics': help_topics,
                 'pagesize': request.GET.get('pagesize', page_size),
             }
         )
