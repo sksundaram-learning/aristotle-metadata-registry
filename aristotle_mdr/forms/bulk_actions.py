@@ -370,7 +370,7 @@ class DownloadActionForm(BulkActionForm):
     def make_changes(self):
         items = self.items_to_change
         from aristotle_mdr.contrib.redirect.exceptions import Redirect
-        raise Redirect(url=reverse('aristotle:bulk_download', kwargs={'download_type':self.download_type}) + ('?title=%s&' % self.title) + "&".join(['items=%s' % i.id for i in items]))
+        raise Redirect(url=reverse('aristotle:bulk_download', kwargs={'download_type': self.download_type}) + ('?title=%s&' % self.title) + "&".join(['items=%s' % i.id for i in items]))
 
 
 class QuickPDFDownloadForm(DownloadActionForm):
@@ -393,7 +393,7 @@ class BulkDownloadForm(DownloadActionForm):
         # widget=forms.Textarea
     )
     download_type = forms.ChoiceField(
-        choices=[(setting[0],setting[1]) for setting in getattr(settings, 'ARISTOTLE_DOWNLOADS', [])],
+        choices=[(setting[0], setting[1]) for setting in getattr(settings, 'ARISTOTLE_DOWNLOADS', [])],
         widget=forms.RadioSelect
     )
 
@@ -402,5 +402,3 @@ class BulkDownloadForm(DownloadActionForm):
         self.title = self.cleaned_data['title']
         items = self.cleaned_data['items']
         super(BulkDownloadForm, self).make_changes()
-
-
