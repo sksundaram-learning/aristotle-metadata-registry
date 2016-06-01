@@ -30,12 +30,12 @@ def render_to_pdf(template_src, context_dict):
     return HttpResponse('We had some errors<pre>%s</pre>' % cgi.escape(html))
 
 
-def download(request, downloadType, item):
+def download(request, download_type, item):
     """Built in download method"""
-    template = get_download_template_path_for_item(item, downloadType)
+    template = get_download_template_path_for_item(item, download_type)
     from django.conf import settings
     page_size = getattr(settings, 'PDF_PAGE_SIZE', "A4")
-    if downloadType == "pdf":
+    if download_type == "pdf":
         subItems = item.get_download_items()
         return render_to_pdf(
             template,
@@ -48,7 +48,7 @@ def download(request, downloadType, item):
             }
         )
 
-    elif downloadType == "csv-vd":
+    elif download_type == "csv-vd":
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="%s.csv"' % (
             item.name
@@ -68,9 +68,9 @@ def download(request, downloadType, item):
         return response
 
 
-def bulk_download(request, downloadType, items, title=None, subtitle=None):
+def bulk_download(request, download_type, items, title=None, subtitle=None):
     """Built in download method"""
-    template = 'aristotle_mdr/downloads/pdf/bulk_download.html'  # %(downloadType)
+    template = 'aristotle_mdr/downloads/pdf/bulk_download.html'  # %(download_type)
     from django.conf import settings
     page_size = getattr(settings, 'PDF_PAGE_SIZE', "A4")
 
@@ -118,7 +118,7 @@ def bulk_download(request, downloadType, items, title=None, subtitle=None):
             _list = "<li>" + "</li><li>".join([item.name for item in items if item]) + "</li>"
             subtitle = mark_safe("Generated from the following metadata items:<ul>%s<ul>" % _list)
 
-    if downloadType == "pdf":
+    if download_type == "pdf":
         subItems = []
 
         return render_to_pdf(

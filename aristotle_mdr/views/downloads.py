@@ -37,12 +37,12 @@ logger.debug("Logging started for " + __name__)
 PAGES_PER_RELATED_ITEM = 15
 
 
-def download(request, downloadType, iid=None):
+def download(request, download_type, iid=None):
     """
     By default, ``aristotle_mdr.views.download`` is called whenever a URL matches
     the pattern defined in ``aristotle_mdr.urls_aristotle``::
 
-        download/(?P<downloadType>[a-zA-Z0-9\-\.]+)/(?P<iid>\d+)/?
+        download/(?P<download_type>[a-zA-Z0-9\-\.]+)/(?P<iid>\d+)/?
 
     This is passed into ``download`` which resolves the item id (``iid``), and
     determins if a user has permission to view the request item with that id. If
@@ -88,12 +88,12 @@ def download(request, downloadType, iid=None):
     module_name = ""
     for d in downloadOpts:
         dt = d[0]
-        if dt == downloadType:
+        if dt == download_type:
             module_name = d[3]
     if module_name:
         import re
-        if not re.search('^[a-zA-Z0-9\-\.]+$', downloadType):  # pragma: no cover
-            # Invalid downloadType
+        if not re.search('^[a-zA-Z0-9\-\.]+$', download_type):  # pragma: no cover
+            # Invalid download_type
             raise registry_exceptions.BadDownloadTypeAbbreviation("Download type can only be composed of letters, numbers, hyphens or periods.")
         elif not re.search('^[a-zA-Z0-9\_]+$', module_name):  # pragma: no cover
             # bad module_name
@@ -102,7 +102,7 @@ def download(request, downloadType, iid=None):
             downloader = None
             # dangerous - we are really trusting the settings creators here.
             exec("import %s.downloader as downloader" % module_name)
-            return downloader.download(request, downloadType, item)
+            return downloader.download(request, download_type, item)
         except TemplateDoesNotExist:
             debug = getattr(settings, 'DEBUG')
             if debug:
@@ -112,12 +112,12 @@ def download(request, downloadType, iid=None):
     raise Http404
 
 
-def bulk_download(request, downloadType, items=None):
+def bulk_download(request, download_type, items=None):
     """
     By default, ``aristotle_mdr.views.download`` is called whenever a URL matches
     the pattern defined in ``aristotle_mdr.urls_aristotle``::
 
-        download/(?P<downloadType>[a-zA-Z0-9\-\.]+)/(?P<iid>\d+)/?
+        download/(?P<download_type>[a-zA-Z0-9\-\.]+)/(?P<iid>\d+)/?
 
     This is passed into ``download`` which resolves the item id (``iid``), and
     determins if a user has permission to view the request item with that id. If
@@ -162,12 +162,12 @@ def bulk_download(request, downloadType, items=None):
     module_name = ""
     for d in downloadOpts:
         dt = d[0]
-        if dt == downloadType:
+        if dt == download_type:
             module_name = d[3]
     if module_name:
         import re
-        if not re.search('^[a-zA-Z0-9\-\.]+$', downloadType):  # pragma: no cover
-            # Invalid downloadType
+        if not re.search('^[a-zA-Z0-9\-\.]+$', download_type):  # pragma: no cover
+            # Invalid download_type
             raise registry_exceptions.BadDownloadTypeAbbreviation("Download type can only be composed of letters, numbers, hyphens or periods.")
         elif not re.search('^[a-zA-Z0-9\_]+$', module_name):  # pragma: no cover
             # bad module_name
@@ -176,7 +176,7 @@ def bulk_download(request, downloadType, items=None):
             downloader = None
             # dangerous - we are really trusting the settings creators here.
             exec("import %s.downloader as downloader" % module_name)
-            return downloader.bulk_download(request, downloadType, items)
+            return downloader.bulk_download(request, download_type, items)
         except TemplateDoesNotExist:
             debug = getattr(settings, 'DEBUG')
             if debug:

@@ -63,8 +63,8 @@ urlpatterns = patterns(
     url(r'^create/(?P<app_label>.+)/(?P<model_name>.+)/?$', views.wizards.create_item, name='createItem'),
     url(r'^create/(?P<model_name>.+)/?$', views.wizards.create_item, name='createItem'),
 
-    url(r'^download/bulk/(?P<downloadType>[a-zA-Z0-9\-\.]+)/?$', views.downloads.bulk_download, name='bulk_download'),
-    url(r'^download/(?P<downloadType>[a-zA-Z0-9\-\.]+)/(?P<iid>\d+)/?$', views.downloads.download, name='download'),
+    url(r'^download/bulk/(?P<download_type>[a-zA-Z0-9\-\.]+)/?$', views.downloads.bulk_download, name='bulk_download'),
+    url(r'^download/(?P<download_type>[a-zA-Z0-9\-\.]+)/(?P<iid>\d+)/?$', views.downloads.download, name='download'),
 
     url(r'^action/supersede/(?P<iid>\d+)$', views.supersede, name='supersede'),
     url(r'^action/deprecate/(?P<iid>\d+)$', views.deprecate, name='deprecate'),
