@@ -101,6 +101,7 @@ def items_for_bulk_download(items):
 
     return item_querysets
 
+
 def bulk_download(request, download_type, items, title=None, subtitle=None):
     """Built in download method"""
     template = 'aristotle_mdr/downloads/pdf/bulk_download.html'  # %(download_type)
