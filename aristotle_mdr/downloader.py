@@ -68,12 +68,7 @@ def download(request, download_type, item):
         return response
 
 
-def bulk_download(request, download_type, items, title=None, subtitle=None):
-    """Built in download method"""
-    template = 'aristotle_mdr/downloads/pdf/bulk_download.html'  # %(download_type)
-    from django.conf import settings
-    page_size = getattr(settings, 'PDF_PAGE_SIZE', "A4")
-
+def items_for_bulk_download(items):
     iids = {}
     item_querysets = {}  # {PythonClass:{help:ConceptHelp,qs:Queryset}}
     for item in items:
@@ -103,6 +98,16 @@ def bulk_download(request, download_type, items, title=None, subtitle=None):
             app_label=metadata_type._meta.app_label,
             concept_type=metadata_type._meta.model_name
         ).first()
+
+    return item_querysets
+
+def bulk_download(request, download_type, items, title=None, subtitle=None):
+    """Built in download method"""
+    template = 'aristotle_mdr/downloads/pdf/bulk_download.html'  # %(download_type)
+    from django.conf import settings
+    page_size = getattr(settings, 'PDF_PAGE_SIZE', "A4")
+
+    item_querysets = items_for_bulk_download(items)
 
     if title is None:
         if request.GET.get('title', None):

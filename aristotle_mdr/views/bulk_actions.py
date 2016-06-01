@@ -110,7 +110,7 @@ def get_bulk_actions():
         actions = {}
         for action_name, form in config.get('BULK_ACTIONS', {}).items():
             if not re.search('^[a-zA-Z0-9\_\.]+$', form):  # pragma: no cover
-                # Invalid downloadType
+                # Invalid download_type
                 raise registry_exceptions.BadBulkActionModuleName("Bulk action isn't a valid Python module name.")
 
             module, form = form.rsplit('.', 1)
