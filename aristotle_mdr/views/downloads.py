@@ -152,7 +152,7 @@ def bulk_download(request, download_type, items=None):
     a Django ``HttpResponse`` object of some form.
     """
     items=[]
-    print request
+
     for iid in request.GET.getlist('items'):
         item = MDR._concept.objects.get_subclass(pk=iid)
         item = get_if_user_can_view(item.__class__, request.user, iid)

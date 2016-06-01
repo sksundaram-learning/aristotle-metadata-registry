@@ -77,7 +77,6 @@ def bulk_download(request, download_type, items, title=None, subtitle=None):
     iids = {}
     item_querysets = {}  # {PythonClass:{help:ConceptHelp,qs:Queryset}}
     for item in items:
-        print item
         if item and item.can_view(request.user):
             if item.__class__ not in iids.keys():
                 iids[item.__class__] = []
