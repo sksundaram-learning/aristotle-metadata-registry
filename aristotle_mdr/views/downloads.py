@@ -45,7 +45,7 @@ def download(request, download_type, iid=None):
         download/(?P<download_type>[a-zA-Z0-9\-\.]+)/(?P<iid>\d+)/?
 
     This is passed into ``download`` which resolves the item id (``iid``), and
-    determins if a user has permission to view the request item with that id. If
+    determines if a user has permission to view the requested item with that id. If
     a user is allowed to download this file, ``download`` iterates through each
     download type defined in ``ARISTOTLE_DOWNLOADS``.
 
@@ -114,41 +114,18 @@ def download(request, download_type, iid=None):
 
 def bulk_download(request, download_type, items=None):
     """
-    By default, ``aristotle_mdr.views.download`` is called whenever a URL matches
+    By default, ``aristotle_mdr.views.bulk_download`` is called whenever a URL matches
     the pattern defined in ``aristotle_mdr.urls_aristotle``::
 
-        download/(?P<download_type>[a-zA-Z0-9\-\.]+)/(?P<iid>\d+)/?
+        bulk_download/(?P<download_type>[a-zA-Z0-9\-\.]+)/?
 
-    This is passed into ``download`` which resolves the item id (``iid``), and
-    determins if a user has permission to view the request item with that id. If
-    a user is allowed to download this file, ``download`` iterates through each
-    download type defined in ``ARISTOTLE_DOWNLOADS``.
+    This is passed into ``bulk_download`` which takes the items GET arguments from the
+    request and determines if a user has permission to view the requested items. 
+    For any items the user can download they are exported in the desired format as 
+    described in ``aristotle_mdr.views.download``.
 
-    A download option tuple takes the following form form::
-
-        ('file_type','display_name','font_awesome_icon_name','module_name'),
-
-    With ``file_type`` allowing only ASCII alphanumeric and underscores,
-    ``display_name`` can be any valid python string,
-    ``font_awesome_icon_name`` can be any Font Awesome icon and
-    ``module_name`` is the name of the python module that provides a downloader
-    for this file type.
-
-    For example, included with Aristotle-MDR is a PDF downloader which has the
-    download definition tuple::
-
-            ('pdf','PDF','fa-file-pdf-o','aristotle_mdr'),
-
-    Where a ``file_type`` multiple is defined multiple times, **the last matching
-    instance in the tuple is used**.
-
-    Next, the module that is defined for a ``file_type`` is dynamically imported using
-    ``exec``, and is wrapped in a ``try: except`` block to catch any exceptions. If
-    the ``module_name`` does not match the regex ``^[a-zA-Z0-9\_]+$`` ``download``
-    raises an exception.
-
-    If the module is able to be imported, ``downloader.py`` from the given module
-    is imported, this file **MUST** have a ``download`` function defined which returns
+    If the requested module is able to be imported, ``downloader.py`` from the given module
+    is imported, this file **MUST** have a ``bulk_download`` function defined which returns
     a Django ``HttpResponse`` object of some form.
     """
     items=[]
