@@ -376,7 +376,7 @@ class DownloadActionForm(BulkActionForm):
 class QuickPDFDownloadForm(DownloadActionForm):
     classes="fa-file-pdf-o"
     action_text = _('Quick PDF download')
-    items_label = "Items that will be added to your favourites list"
+    items_label = "Items that are downloaded"
     download_type= 'pdf'
     title = None
 
@@ -389,7 +389,7 @@ class BulkDownloadForm(DownloadActionForm):
 
     title = forms.CharField(
         required=False,
-        label=_("Title for the printed document"),
+        label=_("Title for the document"),
         # widget=forms.Textarea
     )
     download_type = forms.ChoiceField(
