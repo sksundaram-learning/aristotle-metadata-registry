@@ -104,3 +104,12 @@ class QuestionnaireViewPage(LoggedInViewExtensionConceptPages, TestCase):
         self.assertEqual(response.status_code, 200)
         form = response.context['form']
         self.assertTrue('questions' not in form.fields)
+
+    def test_questions_attachment_editor(self):
+        self.login_editor()
+        response = self.client.get(reverse('extension_test:questionnaire_add_question', args=[self.item1.id]))
+        self.assertEqual(response.status_code, 200)
+        form = response.context['form']
+
+
+

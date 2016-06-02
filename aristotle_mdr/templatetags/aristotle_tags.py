@@ -292,9 +292,9 @@ def downloadMenu(item):
     from aristotle_mdr.utils import get_download_template_path_for_item
     downloadsForItem = []
     for d in downloadOpts:
-        downloadType = d[0]
+        download_type = d[0]
         try:
-            get_template(get_download_template_path_for_item(item, downloadType))
+            get_template(get_download_template_path_for_item(item, download_type))
             downloadsForItem.append(d)
         except template.TemplateDoesNotExist:
             pass  # This is ok.

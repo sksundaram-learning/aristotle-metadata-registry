@@ -1,6 +1,7 @@
 import autocomplete_light
 
 from django import forms
+from django.conf import settings
 from django.core.exceptions import PermissionDenied
 from django.core.urlresolvers import reverse
 from django.db import transaction
@@ -98,6 +99,7 @@ class BulkActionForm(UserAwareForm):
 
     def __init__(self, form, *args, **kwargs):
         initial_items = kwargs.pop('items', [])
+        self.request = kwargs.pop('request')
         if 'user' in kwargs.keys():
             self.user = kwargs.get('user', None)
             queryset = MDR._concept.objects.visible(self.user)
@@ -292,7 +294,7 @@ class ChangeWorkgroupForm(BulkActionForm):
     confirm_page = "aristotle_mdr/actions/bulk_actions/change_workgroup.html"
     classes="fa-users"
     action_text = _('Change workgroup')
-    items_label="These are the items that will be moved between workgroups. Add or remove additional items with the autocomplete box.",
+    items_label="These are the items that will be moved between workgroups. Add or remove additional items with the autocomplete box."
 
     def __init__(self, *args, **kwargs):
         super(ChangeWorkgroupForm, self).__init__(*args, **kwargs)
@@ -362,3 +364,41 @@ class ChangeWorkgroupForm(BulkActionForm):
     @classmethod
     def can_use(cls, user):
         return user_can_move_any_workgroup(user)
+
+
+class DownloadActionForm(BulkActionForm):
+    def make_changes(self):
+        items = self.items_to_change
+        from aristotle_mdr.contrib.redirect.exceptions import Redirect
+        raise Redirect(url=reverse('aristotle:bulk_download', kwargs={'download_type': self.download_type}) + ('?title=%s&' % self.title) + "&".join(['items=%s' % i.id for i in items]))
+
+
+class QuickPDFDownloadForm(DownloadActionForm):
+    classes="fa-file-pdf-o"
+    action_text = _('Quick PDF download')
+    items_label = "Items that are downloaded"
+    download_type= 'pdf'
+    title = None
+
+
+class BulkDownloadForm(DownloadActionForm):
+    confirm_page = "aristotle_mdr/actions/bulk_actions/bulk_download.html"
+    classes="fa-download"
+    action_text = _('Bulk download')
+    items_label="These are the items that will be downloaded"
+
+    title = forms.CharField(
+        required=False,
+        label=_("Title for the document"),
+        # widget=forms.Textarea
+    )
+    download_type = forms.ChoiceField(
+        choices=[(setting[0], setting[1]) for setting in getattr(settings, 'ARISTOTLE_DOWNLOADS', [])],
+        widget=forms.RadioSelect
+    )
+
+    def make_changes(self):
+        self.download_type = self.cleaned_data['download_type']
+        self.title = self.cleaned_data['title']
+        items = self.cleaned_data['items']
+        super(BulkDownloadForm, self).make_changes()

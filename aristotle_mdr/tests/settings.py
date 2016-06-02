@@ -91,6 +91,7 @@ ARISTOTLE_DOWNLOADS = ARISTOTLE_DOWNLOADS + [
     ('txt', 'Text', 'fa-file-pdf-o', 'text_download_test'),
 ]
 ARISTOTLE_SETTINGS['BULK_ACTIONS'].update({
+    'quick_pdf_download':'aristotle_mdr.forms.bulk_actions.QuickPDFDownloadForm',
     'delete': 'bulk_actions_test.actions.StaffDeleteActionForm',
     'incomplete': 'bulk_actions_test.actions.IncompleteActionForm',
 })
@@ -133,9 +134,3 @@ __LOGGING__ = {
         }
     }
 
-"""
-if DEBUG:
-    # make all loggers use the console.
-    for logger in LOGGING['loggers']:
-        LOGGING['loggers'][logger]['handlers'] = ['console']
-"""

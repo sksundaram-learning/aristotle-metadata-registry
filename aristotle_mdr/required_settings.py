@@ -80,7 +80,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    # 'aristotle_mdr.contrib.redirect.middleware.RedirectMiddleware',
+    'aristotle_mdr.contrib.redirect.middleware.RedirectMiddleware',
 
 
     # 'reversion.middleware.RevisionMiddleware',
@@ -139,6 +139,7 @@ ARISTOTLE_SETTINGS = {
         'change_state': 'aristotle_mdr.forms.bulk_actions.ChangeStateForm',
         'move_workgroup': 'aristotle_mdr.forms.bulk_actions.ChangeWorkgroupForm',
         'request_review': 'aristotle_mdr.forms.bulk_actions.RequestReviewForm',
+        'bulk_download': 'aristotle_mdr.forms.bulk_actions.BulkDownloadForm',
     },
     'DASHBOARD_ADDONS': []
 }

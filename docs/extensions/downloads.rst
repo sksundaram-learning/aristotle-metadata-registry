@@ -22,7 +22,7 @@ Writing a ``downloader.download`` method
 ----------------------------------------
 Your ``downloader.py`` file must contain a method with the following signature::
 
-    def download(request,downloadType,item):
+    def download(request,download_type,item):
 
 This is called from Aristotle-MDR when it catches a download type that has been
 registered for this module. The arguments are:
@@ -31,7 +31,7 @@ registered for this module. The arguments are:
   that was used to call the download view. The current user trying to download the
   item can be gotten by calling ``request.user``.
 
-* ``downloadType`` - a short string used to differentiate different download formats
+* ``download_type`` - a short string used to differentiate different download formats
 
 * ``item`` - the item to be downloaded, as retrieved from the database.
 

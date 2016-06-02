@@ -8,10 +8,9 @@ import aristotle_mdr.tests.utils as utils
 from django.test.utils import setup_test_environment
 setup_test_environment()
 
-
-class BulkWorkgroupActionsPage(utils.LoggedInViewPages, TestCase):
+class BulkActionsTest(utils.LoggedInViewPages):
     def setUp(self):
-        super(BulkWorkgroupActionsPage, self).setUp()
+        super(BulkActionsTest, self).setUp()
 
         # There would be too many tests to test every item type against every other
         # But they all have identical logic, so one test should suffice
@@ -19,6 +18,9 @@ class BulkWorkgroupActionsPage(utils.LoggedInViewPages, TestCase):
         self.item2 = models.ObjectClass.objects.create(name="OC2", workgroup=self.wg1)
         self.item3 = models.ObjectClass.objects.create(name="OC3", workgroup=self.wg1)
         self.item4 = models.Property.objects.create(name="Prop4", workgroup=self.wg2)
+
+
+class BulkWorkgroupActionsPage(BulkActionsTest, TestCase):
 
     def test_bulk_add_favourite_on_permitted_items(self):
         self.login_editor()
@@ -333,3 +335,71 @@ class BulkWorkgroupActionsPage(utils.LoggedInViewPages, TestCase):
         self.assertTrue(review.concepts.count() == 1)
         self.assertTrue(self.item1.concept in review.concepts.all())
         self.assertFalse(self.item4.concept in review.concepts.all())
+
+class QuickPDFDownloadTests(BulkActionsTest, TestCase):
+
+    def test_bulk_quick_pdf_download_on_permitted_items(self):
+        self.login_editor()
+
+        self.assertEqual(self.editor.profile.favourites.count(), 0)
+        response = self.client.post(
+            reverse('aristotle:bulk_action'),
+            {
+                'bulkaction': 'quick_pdf_download',
+                'items': [self.item1.id, self.item2.id],
+            }
+        )
+        self.assertEqual(response.status_code, 302)
+
+    def test_bulk_quick_pdf_download_on_forbidden_items(self):
+        self.login_editor()
+
+        self.assertEqual(self.editor.profile.favourites.count(), 0)
+        response = self.client.post(
+            reverse('aristotle:bulk_action'),
+            {
+                'bulkaction': 'quick_pdf_download',
+                'items': [self.item1.id, self.item4.id],
+            },
+            follow=True
+        )
+        self.assertEqual(len(response.redirect_chain), 1)
+        self.assertEqual(response.redirect_chain[0][1], 302)
+
+
+class BulkDownloadTests(BulkActionsTest, TestCase):
+    download_type="pdf"
+
+    def test_bulk_pdf_download_on_permitted_items(self):
+        self.login_editor()
+
+        self.assertEqual(self.editor.profile.favourites.count(), 0)
+        response = self.client.post(
+            reverse('aristotle:bulk_action'),
+            {
+                'bulkaction': 'bulk_download',
+                'items': [self.item1.id, self.item2.id],
+                "title": "The title",
+                "download_type": self.download_type,
+                'confirmed': 'confirmed',
+            }
+        )
+        self.assertEqual(response.status_code, 302)
+
+    def test_bulk_pdf_download_on_forbidden_items(self):
+        self.login_editor()
+
+        self.assertEqual(self.editor.profile.favourites.count(), 0)
+        response = self.client.post(
+            reverse('aristotle:bulk_action'),
+            {
+                'bulkaction': 'bulk_download',
+                'items': [self.item1.id, self.item4.id],
+                "title": "The title",
+                "download_type": self.download_type,
+                'confirmed': 'confirmed',
+            },
+            follow=True
+        )
+        self.assertEqual(len(response.redirect_chain), 1)
+        self.assertEqual(response.redirect_chain[0][1], 302)

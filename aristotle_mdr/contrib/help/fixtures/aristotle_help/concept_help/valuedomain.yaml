@@ -18,9 +18,12 @@
             <em>Person&mdash;body height</em> can be implemented through union
             with the <em>Total centimetres NNN</em> value domain. </p>
         
-        <h2>Permissable values</h2>
-        {% include "aristotle_mdr/helpers/iso_quote.html" with quote="an expression of a Value Meaning allowed in a specific Value Domain" %}
-        <h2>Enumerated vs non-enumerated value domains</h2>
+        <header><strong>Permissible values</strong></header>
+        <blockquote>
+        An expression of a Value Meaning allowed in a specific Value Domain
+        </blockquote>
+        
+        <header><strong>Permissible values</strong></header>
         
         <p>ISO/IEC 11179 allows for 2 different types of Value Domains - enumerated vs non-enumerated.
         The distinction between these is that an enumerated value domain is <q>specified by a list of all its Value Meanings</q>,
