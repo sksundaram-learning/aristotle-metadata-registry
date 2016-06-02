@@ -120,8 +120,8 @@ def bulk_download(request, download_type, items=None):
         bulk_download/(?P<download_type>[a-zA-Z0-9\-\.]+)/?
 
     This is passed into ``bulk_download`` which takes the items GET arguments from the
-    request and determines if a user has permission to view the requested items. 
-    For any items the user can download they are exported in the desired format as 
+    request and determines if a user has permission to view the requested items.
+    For any items the user can download they are exported in the desired format as
     described in ``aristotle_mdr.views.download``.
 
     If the requested module is able to be imported, ``downloader.py`` from the given module
