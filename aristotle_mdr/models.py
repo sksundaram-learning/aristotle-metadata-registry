@@ -1161,6 +1161,14 @@ class DataElement(concept):
             out += self.dataElementConcept.registry_cascade_items
         return out
 
+    def get_download_items(self):
+        return [
+            (ObjectClass, ObjectClass.objects.filter(dataelementconcept=self.dataElementConcept)),
+            (Property, Property.objects.filter(dataelementconcept=self.dataElementConcept)),
+            (DataElementConcept, DataElementConcept.objects.filter(dataelement=self)),
+            (ValueDomain, ValueDomain.objects.filter(dataelement=self)),
+        ]
+
 
 class DataElementDerivation(concept):
     """

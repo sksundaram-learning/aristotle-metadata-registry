@@ -17,6 +17,7 @@ from django.views.generic import TemplateView
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 import datetime
+import re
 
 import reversion
 from reversion.revisions import default_revision_manager
@@ -28,6 +29,7 @@ from aristotle_mdr.utils import cache_per_item_user, concept_to_dict, construct_
 from aristotle_mdr import forms as MDRForms
 from aristotle_mdr import models as MDR
 from aristotle_mdr.views import get_if_user_can_view
+from aristotle_mdr.utils.downloads import get_download_module
 
 import logging
 
@@ -90,18 +92,12 @@ def download(request, download_type, iid=None):
         dt = d[0]
         if dt == download_type:
             module_name = d[3]
+    if not re.search('^[a-zA-Z0-9\-\.]+$', download_type):  # pragma: no cover
+        # Invalid download_type
+        raise registry_exceptions.BadDownloadTypeAbbreviation("Download type can only be composed of letters, numbers, hyphens or periods.")
     if module_name:
-        import re
-        if not re.search('^[a-zA-Z0-9\-\.]+$', download_type):  # pragma: no cover
-            # Invalid download_type
-            raise registry_exceptions.BadDownloadTypeAbbreviation("Download type can only be composed of letters, numbers, hyphens or periods.")
-        elif not re.search('^[a-zA-Z0-9\_]+$', module_name):  # pragma: no cover
-            # bad module_name
-            raise registry_exceptions.BadDownloadModuleName("Download name isn't a valid Python module name.")
+        downloader = get_download_module(module_name)
         try:
-            downloader = None
-            # dangerous - we are really trusting the settings creators here.
-            exec("import %s.downloader as downloader" % module_name)
             return downloader.download(request, download_type, item)
         except TemplateDoesNotExist:
             debug = getattr(settings, 'DEBUG')
@@ -141,18 +137,12 @@ def bulk_download(request, download_type, items=None):
         dt = d[0]
         if dt == download_type:
             module_name = d[3]
+    if not re.search('^[a-zA-Z0-9\-\.]+$', download_type):  # pragma: no cover
+        # Invalid download_type
+        raise registry_exceptions.BadDownloadTypeAbbreviation("Download type can only be composed of letters, numbers, hyphens or periods.")
     if module_name:
-        import re
-        if not re.search('^[a-zA-Z0-9\-\.]+$', download_type):  # pragma: no cover
-            # Invalid download_type
-            raise registry_exceptions.BadDownloadTypeAbbreviation("Download type can only be composed of letters, numbers, hyphens or periods.")
-        elif not re.search('^[a-zA-Z0-9\_]+$', module_name):  # pragma: no cover
-            # bad module_name
-            raise registry_exceptions.BadDownloadModuleName("Download name isn't a valid Python module name.")
+        downloader = get_download_module(module_name)
         try:
-            downloader = None
-            # dangerous - we are really trusting the settings creators here.
-            exec("import %s.downloader as downloader" % module_name)
             return downloader.bulk_download(request, download_type, items)
         except TemplateDoesNotExist:
             debug = getattr(settings, 'DEBUG')
