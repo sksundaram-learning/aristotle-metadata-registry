@@ -27,7 +27,7 @@ class UserAwareForm(forms.Form):
 class UserAwareModelForm(UserAwareForm, autocomplete_light.ModelForm):
     class Meta:
         model = MDR._concept
-        exclude = ['superseded_by', '_is_public', '_is_locked', 'originURI']
+        exclude = ['superseded_by', '_is_public', '_is_locked', 'originURI', 'submitter']
 
     def _media(self):
         js = ('aristotle_mdr/aristotle.wizard.js', )  # , '/static/tiny_mce/tiny_mce.js', '/static/aristotle_mdr/aristotle.tinymce.js')
@@ -165,7 +165,7 @@ def subclassed_edit_modelform(set_model):
         class Meta(ConceptForm.Meta):
             model = set_model
             if set_model.edit_page_excludes:
-                exclude = set_model.edit_page_excludes
+                exclude = set(list(UserAwareModelForm._meta.exclude) + list(set_model.edit_page_excludes))
             else:
                 fields = '__all__'
     return MyForm

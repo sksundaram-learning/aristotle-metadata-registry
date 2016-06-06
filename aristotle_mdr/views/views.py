@@ -29,7 +29,6 @@ from aristotle_mdr import forms as MDRForms
 from aristotle_mdr import models as MDR
 from aristotle_mdr.utils import concept_to_clone_dict, get_concepts_for_apps
 from aristotle_mdr.views.utils import generate_visibility_matrix
-from aristotle_mdr import exceptions as registry_exceptions
 
 from haystack.views import SearchView, FacetedSearchView
 

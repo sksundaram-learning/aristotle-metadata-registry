@@ -1,5 +1,5 @@
 <ul class="dropdown-menu dropdown-menu-right" role="menu">
-    {% for opt in downloadOptions %}
+    {% for opt in download_options %}
         <li><a href="{% url 'aristotle:download' download_type=opt.0 iid=item.id %}">
             <i class="fa {{opt.2}}"></i> {{opt.1}}
         </a></li>

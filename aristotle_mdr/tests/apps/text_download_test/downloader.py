@@ -1,6 +1,9 @@
 from aristotle_mdr.utils import get_download_template_path_for_item
 from django.shortcuts import render
 
+item_register = {
+    'txt': '__all__'
+}
 
 def download(request, download_type, item):
 

@@ -12,6 +12,12 @@ import csv
 from aristotle_mdr.contrib.help.models import ConceptHelp
 
 
+item_register = {
+    'csv': {'aristotle_mdr': ['valuedomain']},
+    'pdf': '__template__'
+}
+
+
 def render_to_pdf(template_src, context_dict):
     # If the request template doesnt exist, we will give a default one.
     template = select_template([
@@ -82,17 +88,17 @@ def items_for_bulk_download(items, request):
                 if metadata_type not in item_querysets.keys():
                     item_querysets[metadata_type] = {'help': None, 'qs': qs}
                 else:
-                    item_querysets[metadata_type]['qs'] &= qs
+                    item_querysets[metadata_type]['qs'] |= qs
 
     for metadata_type, ids_set in iids.items():
         query = metadata_type.objects.filter(pk__in=ids_set)
         if metadata_type not in item_querysets.keys():
             item_querysets[metadata_type] = {'help': None, 'qs': query}
         else:
-            item_querysets[metadata_type]['qs'] &= query
+            item_querysets[metadata_type]['qs'] |= query
 
     for metadata_type in item_querysets.keys():
-        item_querysets[metadata_type]['qs'] = item_querysets[metadata_type]['qs'].visible(request.user)
+        item_querysets[metadata_type]['qs'] = item_querysets[metadata_type]['qs'].distinct().visible(request.user)
         item_querysets[metadata_type]['help'] = ConceptHelp.objects.filter(
             app_label=metadata_type._meta.app_label,
             concept_type=metadata_type._meta.model_name
