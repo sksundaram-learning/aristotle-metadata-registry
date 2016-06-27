@@ -99,7 +99,7 @@ class GenericAlterOneToManyView(FormView):
         context['item'] = self.item
         context['form_submit_text'] = self.form_submit_text or _('Add another')
         context['form_title'] = self.form_title or _('Add child item')
-        
+
         context['formset'] = self.formset or self.get_formset()(
             queryset=getattr(self.item, self.model_base_field).all(),
             # initial=[{'order': num_values, 'value': '', 'meaning': ''}]
