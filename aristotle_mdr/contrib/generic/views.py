@@ -165,8 +165,3 @@ class GenericAlterOneToManyView(FormView):
             return redirect(reverse("aristotle_mdr:item", args=[item.id]))
         else:
             return self.form_invalid(form)
-
-    def form_valid(self, form):
-        self.item.__setattr__(self.model_base_field, form.cleaned_data['items_to_add'])
-        self.item.save()
-        return HttpResponseRedirect(self.get_success_url())
