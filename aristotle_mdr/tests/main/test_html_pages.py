@@ -979,20 +979,25 @@ class ValueDomainViewPage(LoggedInViewConceptPages,TestCase):
 
     def test_anon_cannot_use_value_page(self):
         self.logout()
-        response = self.client.get(reverse('aristotle:valueDomain_edit_values',args=[self.item1.id,'permissible']))
-        self.assertRedirects(response,reverse('friendly_login')+"?next="+reverse('aristotle:valueDomain_edit_values',args=[self.item1.id,'permissible']))
-        response = self.client.get(reverse('aristotle:valueDomain_edit_values',args=[self.item1.id,'supplementary']))
-        self.assertRedirects(response,reverse('friendly_login')+"?next="+reverse('aristotle:valueDomain_edit_values',args=[self.item1.id,'supplementary']))
+        response = self.client.get(reverse('aristotle:permsissible_values_edit',args=[self.item1.id]))
+        self.assertRedirects(response,reverse('friendly_login')+"?next="+reverse('aristotle:permsissible_values_edit',args=[self.item1.id]))
+        response = self.client.get(reverse('aristotle:supplementary_values_edit',args=[self.item1.id]))
+        self.assertRedirects(response,reverse('friendly_login')+"?next="+reverse('aristotle:supplementary_values_edit',args=[self.item1.id]))
 
-    def loggedin_user_can_use_value_page(self,value_type,current_item,http_code):
-        response = self.client.get(reverse('aristotle:valueDomain_edit_values',args=[current_item.id,value_type]))
+    def loggedin_user_can_use_value_page(self,value_url,current_item,http_code):
+        response = self.client.get(reverse(value_url,args=[current_item.id]))
         self.assertEqual(response.status_code,http_code)
 
     def submitter_user_can_use_value_edit_page(self,value_type):
+        value_url = {
+            'permissible': 'aristotle:permsissible_values_edit',
+            'supplementary': 'aristotle:supplementary_values_edit'
+        }.get(value_type)
+        
         self.login_editor()
-        self.loggedin_user_can_use_value_page(value_type,self.item1,200)
-        self.loggedin_user_can_use_value_page(value_type,self.item2,403)
-        self.loggedin_user_can_use_value_page(value_type,self.item3,200)
+        self.loggedin_user_can_use_value_page(value_url,self.item1,200)
+        self.loggedin_user_can_use_value_page(value_url,self.item2,403)
+        self.loggedin_user_can_use_value_page(value_url,self.item3,200)
 
         # Invalid value domain types are caught in the URL runner. This test isn't required yet.
         # response = self.client.get(reverse('aristotle:valueDomain_edit_values',args=[self.item1.id,'accidentally'])) # a fake value domain type
@@ -1012,7 +1017,7 @@ class ValueDomainViewPage(LoggedInViewConceptPages,TestCase):
             "form-TOTAL_FORMS":num_vals+1, "form-INITIAL_FORMS": num_vals, "form-MAX_NUM_FORMS":1000,
 
             })
-        response = self.client.post(reverse('aristotle:valueDomain_edit_values',args=[self.item1.id,value_type]),data)
+        response = self.client.post(reverse(value_url,args=[self.item1.id]),data)
         self.item1 = models.ValueDomain.objects.get(pk=self.item1.pk)
 
         self.assertTrue(num_vals == getattr(self.item1,value_type+"Values").count())
@@ -1035,7 +1040,7 @@ class ValueDomainViewPage(LoggedInViewConceptPages,TestCase):
         self.item1 = models.ValueDomain.objects.get(pk=self.item1.pk)
         self.assertTrue(self.item1.is_locked())
         self.assertFalse(perms.user_can_edit(self.editor,self.item1))
-        self.loggedin_user_can_use_value_page(value_type,self.item1,403)
+        self.loggedin_user_can_use_value_page(value_url,self.item1,403)
 
 
     def test_submitter_can_use_permissible_value_edit_page(self):

@@ -9,9 +9,12 @@ from haystack.views import search_view_factory
 
 import aristotle_mdr.views as views
 import aristotle_mdr.forms as forms
+import aristotle_mdr.models as models
+from aristotle_mdr.contrib.generic.views import GenericAlterOneToManyView
+from django.utils.translation import ugettext_lazy as _
 
 autocomplete_light.autodiscover()
-sqs = SearchQuerySet()
+
 
 urlpatterns = patterns(
     'aristotle_mdr.views',
@@ -24,7 +27,29 @@ urlpatterns = patterns(
     # all the below take on the same form:
     # url(r'^itemType/(?P<iid>\d+)?/?
     # Allowing for a blank ItemId (iid) allows aristotle to redirect to /about/itemtype instead of 404ing
-    url(r'^valuedomain/(?P<iid>\d+)?/edit/values/(?P<value_type>permissible|supplementary)/?$', views.editors.valuedomain_value_edit, name='valueDomain_edit_values'),
+
+    url(r'^valuedomain/(?P<iid>\d+)?/edit/values/permissible/?$',
+        GenericAlterOneToManyView.as_view(
+            model_base=models.ValueDomain,
+            model_to_add=models.PermissibleValue,
+            model_base_field='permissiblevalue_set',
+            model_to_add_field='valueDomain',
+            ordering_field='order',
+            form_submit_text=_('Add a code'),
+            form_title=_('Change Permissible Values'),
+        ), name='permsissible_values_edit'),
+    url(r'^valuedomain/(?P<iid>\d+)?/edit/values/supplementary/?$',
+        GenericAlterOneToManyView.as_view(
+            model_base=models.ValueDomain,
+            model_to_add=models.SupplementaryValue,
+            model_base_field='supplementaryvalue_set',
+            model_to_add_field='valueDomain',
+            ordering_field='order',
+            form_submit_text=_('Add a code'),
+            form_title=_('Change Supplementary Values')
+        ), name='supplementary_values_edit'),
+
+    #url(r'^valuedomain/(?P<iid>\d+)?/edit/values/(?P<value_type>permissible|supplementary)/?$', views.editors.valuedomain_value_edit, name='valueDomain_edit_value_s'),
 
     url(r'^workgroup/(?P<iid>\d+)(?:-(?P<name_slug>[A-Za-z0-9\-]+))?/?$', views.workgroups.workgroup, name='workgroup'),
     url(r'^workgroup/(?P<iid>\d+)/members/?$', views.workgroups.members, name='workgroupMembers'),
