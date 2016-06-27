@@ -162,6 +162,5 @@ class GenericAlterOneToManyView(FormView):
                 reversion.revisions.set_comment(construct_change_message(request, None, [formset]))
 
             return HttpResponseRedirect(self.get_success_url())
-            return redirect(reverse("aristotle_mdr:item", args=[item.id]))
         else:
             return self.form_invalid(form)

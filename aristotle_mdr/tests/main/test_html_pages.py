@@ -999,10 +999,6 @@ class ValueDomainViewPage(LoggedInViewConceptPages,TestCase):
         self.loggedin_user_can_use_value_page(value_url,self.item2,403)
         self.loggedin_user_can_use_value_page(value_url,self.item3,200)
 
-        # Invalid value domain types are caught in the URL runner. This test isn't required yet.
-        # response = self.client.get(reverse('aristotle:valueDomain_edit_values',args=[self.item1.id,'accidentally'])) # a fake value domain type
-        # self.assertTrue(response.status_code,404)
-
         data = {}
         num_vals = getattr(self.item1,value_type+"Values").count()
         i=0
