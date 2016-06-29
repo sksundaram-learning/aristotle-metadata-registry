@@ -6,6 +6,10 @@
 
 <form method="post" action="{{ submit_url }}">{% csrf_token %}
 <div class="modal-body">
+        <ol class="breadcrumb">
+          <li><a href="{% url 'aristotle:item' item.id %}">{{ item.name }}</a></li>
+          <li class="active">{{ form_title }}</li>
+        </ol>
 <header>
     Use this form to attach {{model_to_add.get_verbose_name_plural}} to
     {{ model_base.get_verbose_name }}.

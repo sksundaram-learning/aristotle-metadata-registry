@@ -17,13 +17,10 @@ the `Python programming language <https://www.python.org/about/gettingstarted/>`
 .. toctree::
    :maxdepth: 2
 
-   new_content_type.rst
-   registering_new_content_types.rst
+   ./new_metadata_types/index.rst
    downloads.rst
    bulk_actions.rst
    templates.rst
    including_extra_content.rst
-   out_of_the_box_features.rst
    templatetags.rst
    using_permissions.rst
-   using_concept_manager.rst

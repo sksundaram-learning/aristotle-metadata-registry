@@ -35,7 +35,7 @@ urlpatterns = patterns(
             model_base_field='permissiblevalue_set',
             model_to_add_field='valueDomain',
             ordering_field='order',
-            form_submit_text=_('Add a code'),
+            form_add_another_text=_('Add a code'),
             form_title=_('Change Permissible Values'),
         ), name='permsissible_values_edit'),
     url(r'^valuedomain/(?P<iid>\d+)?/edit/values/supplementary/?$',
@@ -45,7 +45,7 @@ urlpatterns = patterns(
             model_base_field='supplementaryvalue_set',
             model_to_add_field='valueDomain',
             ordering_field='order',
-            form_submit_text=_('Add a code'),
+            form_add_another_text=_('Add a code'),
             form_title=_('Change Supplementary Values')
         ), name='supplementary_values_edit'),
 
