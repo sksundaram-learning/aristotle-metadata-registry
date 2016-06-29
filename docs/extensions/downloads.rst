@@ -69,5 +69,5 @@ PDF and CSV format for various content types which is linked below:
 How the ``download`` view works
 -------------------------------
 
-.. automodule:: aristotle_mdr.views.views
+.. automodule:: aristotle_mdr.views.downloads
    :members: download

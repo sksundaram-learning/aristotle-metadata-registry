@@ -227,6 +227,19 @@ man_pages = [
 # If true, show URL addresses after external links.
 #man_show_urls = False
 
+# -- Options for Nitpicking output ------------------------------------------------
+# From - https://github.com/astropy/astropy/blob/35501fcba6811705fcd53669742db8346727672d/docs/conf.py#L192
+
+nitpicky = True
+nitpick_ignore = []
+
+for line in open('nitpick-ignore'):
+    if line.strip() == "" or line.startswith("#"):
+        continue
+    dtype, target = line.split(None, 1)
+    target = target.strip()
+    nitpick_ignore.append((dtype, target))
+
 
 # -- Options for Texinfo output ------------------------------------------------
 

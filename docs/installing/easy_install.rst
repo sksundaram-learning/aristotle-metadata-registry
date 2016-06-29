@@ -43,12 +43,12 @@ For more information on configuring a more complete installation review the help
    additional settings, install requirements, setup a database and set up the static files.
 
 5. If required, browse to the directory of your project that was named in the above directory,
-    and edit the ``settings.py`` files to meet your requirements.
-   Although the installer generates a pseudo-random hash for the ``SECRET_KEY``,
+   and edit the ``settings.py`` files to meet your requirements.
+   Although the installer generates a pseudo-random hash for the ``SECRET_KEY``, 
    **It is strongly recommmended you generate a fresh** ``SECRET_KEY``. Also consider which
-   customisiation using the options in the ``ARISTOTLE_SETTINGS``
+   customisations to implement using the options in the ``ARISTOTLE_SETTINGS``
    dictionary - details of which can be found under :doc:`/installing/settings`.
-
+   
    The example registry includes commented out lines for some useful Aristotle-MDR extensions.
    If you wish to use these, remove the comments as directed by the documentation in ``settings.py``.
 
@@ -120,7 +120,7 @@ the easy installer a few additional steps are required.
 Creating a superuser for the registry
 =====================================
 
-`Creating a superuser is covered in more depth in the Django documentation<https://docs.djangoproject.com/en/1.8/ref/django-admin/#django-admin-createsuperuser>`_,
+`Creating a superuser is covered in more depth in the Django documentation <https://docs.djangoproject.com/en/1.8/ref/django-admin/#django-admin-createsuperuser>`_,
 however a quick guide is given here. These steps assume a valid database exists
 and has been appropriately set up with the Django ``migrate`` command.
 
