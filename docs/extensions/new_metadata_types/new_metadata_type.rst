@@ -15,7 +15,7 @@ This code creates a new "Question" object in the registry that can be progressed
 like any standard item in Aristotle-MDR. Once the the appropriate admin pages are
 set up, from a usability and publication standpoint this would be indistinguishable
 from an Aristotle-MDR item, and would instantly get a number of
-:doc:`features that are available to all Aristotle 'concepts' without having to write any additional code </extensions/out_of_the_box_features>`
+:doc:`features that are available to all Aristotle 'concepts' without having to write any additional code </extensions/new_metadata_types/out_of_the_box_features>`
 
 Once synced with the database, this immediately creates a new item type that not only has
 a ``name`` and ``description``, but also can immediately be associated with a workgroup, can be
@@ -130,7 +130,7 @@ Setting up search, admin pages and autocompletes for new items types
 
 The easiest way to configure an item for searching and editing within the
 django-admin app is using the ``aristotle_mdr.register.register_concept``
-method, described in :doc:`/extensions/registering_new_content_types`.
+method, described in :doc:`/extensions/new_metadata_types/registering_new_content_types`.
 
 
 Creating admin pages
@@ -296,7 +296,7 @@ can arise when extending from non-abstract classes:
 * Items that inherit from non-abstract classes do not inherit the Django object Managers,
   this is one of the reasons for the decision to make ``concept`` an abstract class.
   As such, it is **strongly adviced** that any new item types that inherit from concrete classes
-  specify the :doc:`Aristotle-MDR concept manager</extensions/using_concept_manager>`, like so::
+  specify the :doc:`Aristotle-MDR concept manager</extensions/new_metadata_types/using_concept_manager>`, like so::
 
     class CountrySpecificDataElement(aristotle.models.DataElement):
         countries = models.ManyToManyField(Country)

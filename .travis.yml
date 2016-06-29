@@ -30,9 +30,11 @@ before_install:
   - pip install pep8
 
 before_script:
+# Make a posgres database, run PEP tests, check documentation builds cleanly.
 #  - mysql -e 'create database aristotle_test_db;'
   - psql -c 'create database aristotle_test_db;' -U postgres
   - pep8 --exclude=migrations,tests,example_mdr --ignore=E501,E225,E123 aristotle_mdr
+  - cd docs ; sphinx-build -nW -b html -d _build/doctrees . _build/html ; cd ..
 
 install:
   - if [[ $DB == postgres ]]; then pip install -q psycopg2 --quiet; fi
@@ -42,6 +44,7 @@ install:
   - pip install -q Django==$DJ
   - "pip install -r requirements.txt"
   - "pip install django_tools"
+  - "pip install Sphinx sphinx-rtd-theme"
 
 # command to run tests
 script:

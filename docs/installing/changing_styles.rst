@@ -41,6 +41,8 @@ Changing the Bootstrap file by overriding the settings
 Aristotle uses `Django-bootstrap3 <https://github.com/dyve/django-bootstrap3>`_ to
 import bootstrap. By default Aristotle stores the boostrap file at::
 
+    /static/aristotle_mdr/bootstrap/
+
 but, an alternative solution is to override this value be redefining the `BOOTSTRAP3` setting
 in your projects ``settings.py``, like so::
 
