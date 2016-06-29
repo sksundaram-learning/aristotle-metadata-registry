@@ -26,6 +26,7 @@ class GenericAlterManyToSomethingFormView(FormView):
     model_to_add = None
     model_base_field = None
     form_title = None
+    form_submit_text = _('Save')
 
     def dispatch(self, request, *args, **kwargs):
         self.item = get_object_or_404(self.model_base, pk=self.kwargs['iid'])
@@ -43,6 +44,7 @@ class GenericAlterManyToSomethingFormView(FormView):
         context['item'] = self.item
         context['form_title'] = self.form_title or _('Add child item')
         context['submit_url'] = self.request.get_full_path()
+        context['form_submit_text'] = self.form_submit_text
         return context
 
     def get_success_url(self):
@@ -53,10 +55,10 @@ class GenericAlterManyToManyView(GenericAlterManyToSomethingFormView):
     """
     A view that provides a framework for altering ManyToMany relationships from
     one 'base' object to many others.
-    
+
     The URL pattern must pass a kwarg with the name `iid` that is the object from the
     `model_base` to use as the main link for the many to many relation.
-    
+
     * `model_base` - mandatory - The model with the instance to be altered
     * `model_to_add` - mandatory - The model that has instances we will link to the base.
     * `template_name`
@@ -65,8 +67,8 @@ class GenericAlterManyToManyView(GenericAlterManyToSomethingFormView):
     * `model_base_field` - mandatory - the field name that goes from the `model_base` to the `model_to_add`.
     * `form_title` - Title for the form
 
-    For example: I fwe have a mnay to many relationship from `DataElement`s to 
-    `Dataset`s, to alter the `DataElement`s attached to a `Dataset`, `Dataset` is the 
+    For example: I fwe have a mnay to many relationship from `DataElement`s to
+    `Dataset`s, to alter the `DataElement`s attached to a `Dataset`, `Dataset` is the
     `base_model` and `model_to_add` is `DataElement`.
     """
 
@@ -115,10 +117,10 @@ class GenericAlterOneToManyView(GenericAlterManyToSomethingFormView):
     A view that provides a framework for altering ManyToOne relationships
     (Include through models from ManyToMany relationships)
     from one 'base' object to many others.
-    
+
     The URL pattern must pass a kwarg with the name `iid` that is the object from the
     `model_base` to use as the main link for the many to many relation.
-    
+
     * `model_base` - mandatory - The model with the instance to be altered
     * `model_to_add` - mandatory - The model that has instances we will link to the base.
     * `template_name`
@@ -130,8 +132,8 @@ class GenericAlterOneToManyView(GenericAlterManyToSomethingFormView):
     * `form_add_another_text` - optional - string used for the button to add a new row to the form - defaults to "Add another"
     * `form_title` - Title for the form
 
-    For example: I fwe have a mnay to many relationship from `DataElement`s to 
-    `Dataset`s, to alter the `DataElement`s attached to a `Dataset`, `Dataset` is the 
+    For example: I fwe have a mnay to many relationship from `DataElement`s to
+    `Dataset`s, to alter the `DataElement`s attached to a `Dataset`, `Dataset` is the
     `base_model` and `model_to_add` is `DataElement`.
     """
 
