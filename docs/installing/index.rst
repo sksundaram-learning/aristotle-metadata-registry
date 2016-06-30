@@ -1,4 +1,4 @@
-Installing Aristotle MetaData Registry
+Installing Aristotle Metadata Registry
 ======================================
 
 

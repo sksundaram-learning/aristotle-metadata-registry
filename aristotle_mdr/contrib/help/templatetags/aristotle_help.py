@@ -8,6 +8,7 @@ from aristotle_mdr import perms
 import aristotle_mdr.models as MDR
 from aristotle_mdr.contrib.help.models import ConceptHelp
 from aristotle_mdr.templatetags.aristotle_tags import doc
+from django.conf import settings
 
 register = template.Library()
 
@@ -37,6 +38,10 @@ def relink(help_item, field):
         return ""
 
     import re
+    text = re.sub(
+        r'\{static\}',
+        "%s/aristotle_help/" % settings.STATIC_URL, text
+    )
 
     def make_link(match):
         from django.core.urlresolvers import reverse_lazy

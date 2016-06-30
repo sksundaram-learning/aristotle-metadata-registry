@@ -7,7 +7,8 @@
       <p>
           The <a href="/search/">search page</a> provides a form that gives users control to filter and sort search results.</p>
       <p>
-          When searching the "indexed text" refers to everything crawled by the search engine.
+      <img src="{static}/aristotle_mdr/search_filters.png">
+          When searching, the "indexed text" refers to everything crawled by the search engine.
           This always includes names, definitions, version and comments.
           Some items will also include additional text from associated items.
           For example, Data Elements include the text from its related Data Element Concept and Value Domain.</p>

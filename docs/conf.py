@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Aristotle MetaData Registry documentation build configuration file, created by
+# Aristotle Metadata Registry documentation build configuration file, created by
 # sphinx-quickstart on Fri Sep 12 00:32:37 2014.
 #
 # This file is execfile()d with the current directory set to its containing dir.
@@ -44,7 +44,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'Aristotle MetaData Registry'
+project = u'Aristotle Metadata Registry'
 copyright = u'2015, Samuel Spencer'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -171,7 +171,7 @@ html_static_path = ['_static']
 #html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'AristotleMetaDataRegistrydoc'
+htmlhelp_basename = 'AristotleMetadataRegistrydoc'
 
 
 # -- Options for LaTeX output --------------------------------------------------
@@ -190,7 +190,7 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'AristotleMetaDataRegistry.tex', u'Aristotle MetaData Registry Documentation',
+  ('index', 'AristotleMetadataRegistry.tex', u'Aristotle Metadata Registry Documentation',
    u'Samuel Spencer', 'manual'),
 ]
 
@@ -220,7 +220,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'aristotlemetadataregistry', u'Aristotle MetaData Registry Documentation',
+    ('index', 'aristotlemetadataregistry', u'Aristotle Metadata Registry Documentation',
      [u'Samuel Spencer'], 1)
 ]
 
@@ -247,8 +247,8 @@ for line in open('nitpick-ignore'):
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'AristotleMetaDataRegistry', u'Aristotle MetaData Registry Documentation',
-   u'Samuel Spencer', 'AristotleMetaDataRegistry', 'One line description of project.',
+  ('index', 'AristotleMetadataRegistry', u'Aristotle Metadata Registry Documentation',
+   u'Samuel Spencer', 'AristotleMetadataRegistry', 'One line description of project.',
    'Miscellaneous'),
 ]
 

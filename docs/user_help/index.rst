@@ -5,6 +5,7 @@ Creating and deploying user help
    :maxdepth: 2
 
    help_types.rst
+   help_syntax.rst
 
 Writing help files
 ------------------

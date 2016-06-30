@@ -1,7 +1,7 @@
-Aristotle MetaData Registry Mission Statement
+Aristotle Metadata Registry Mission Statement
 =============================================
 
-The core principle behind the design of the Aristotle MetaData Registry is to build
+The core principle behind the design of the Aristotle Metadata Registry is to build
 a framework for building ISO/IEC 11179 compliant Metadata Registries, using 100%
 Free Open Source Software, and released to the public as Free Open Source Software.
 
