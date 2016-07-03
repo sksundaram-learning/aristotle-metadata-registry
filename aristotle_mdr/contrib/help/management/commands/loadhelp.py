@@ -38,15 +38,21 @@ class Command(BaseCommand):
     help = 'Installs the named help fixture(s) in the database.'
 
     def add_arguments(self, parser):
-        parser.add_argument('--database', action='store', dest='database',
+        parser.add_argument(
+            '--database', action='store', dest='database',
             default=DEFAULT_DB_ALIAS, help='Nominates a specific database to load '
-            'fixtures into. Defaults to the "default" database.')
-        parser.add_argument('--app', action='store', dest='app_label',
-            default=None, help='Only look for fixtures in the specified app.')
-        parser.add_argument('--ignorenonexistent', '-i', action='store_true',
+            'fixtures into. Defaults to the "default" database.'
+        )
+        parser.add_argument(
+            '--app', action='store', dest='app_label',
+            default=None, help='Only look for fixtures in the specified app.'
+        )
+        parser.add_argument(
+            '--ignorenonexistent', '-i', action='store_true',
             dest='ignore', default=False,
             help='Ignores entries in the serialized data for fields that do not '
-            'currently exist on the model.')
+            'currently exist on the model.'
+        )
         parser.add_argument(
             '--update', '-U', action='store_true',
             dest='update', default=False,
@@ -108,11 +114,13 @@ class Command(BaseCommand):
             if self.fixture_count == 0 and self.hide_empty:
                 pass
             elif self.fixture_object_count == self.loaded_object_count:
-                self.stdout.write("Installed %d object(s) from %d fixture(s)" %
-                    (self.loaded_object_count, self.fixture_count))
+                self.stdout.write("Installed %d object(s) from %d fixture(s)" % (
+                    self.loaded_object_count, self.fixture_count)
+                )
             else:
-                self.stdout.write("Installed %d object(s) (of %d) from %d fixture(s)" %
-                    (self.loaded_object_count, self.fixture_object_count, self.fixture_count))
+                self.stdout.write("Installed %d object(s) (of %d) from %d fixture(s)" % (
+                    self.loaded_object_count, self.fixture_object_count, self.fixture_count)
+                )
 
     def handle(self, *fixture_labels, **options):
 
@@ -264,9 +272,9 @@ class Command(BaseCommand):
                 if any([os.path.basename(candidate).endswith(t) for t in targets]):
                     # Save the fixture_dir and fixture_name for future error messages.
                     fixture_files_in_dir.append((candidate, fixture_dir, candidate.split('/')[-1]))
-            
+
             dest_static_dir = os.path.join(settings.STATIC_ROOT, "aristotle_help")
-            src = os.path.join(fixture_dir,'static')
+            src = os.path.join(fixture_dir, 'static')
             if not os.path.exists(dest_static_dir):
                 os.makedirs(dest_static_dir)
             if os.path.exists(src):
