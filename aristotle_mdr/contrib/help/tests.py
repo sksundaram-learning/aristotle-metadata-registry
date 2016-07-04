@@ -46,3 +46,28 @@ class TestHelpPagesLoad(TestCase):
         for obj in regular_help:
             response = self.client.get(reverse('aristotle_help:help_page', args=[obj.slug]))
             self.assertEqual(response.status_code, 200)
+
+    def test_bad_help_template_tags(self):
+        from aristotle_mdr.contrib.help.templatetags import aristotle_help as tags
+
+        page = models.HelpPage()
+
+        rendered = tags.relink(page,'body')
+        self.assertTrue(rendered == "")
+
+        page = models.HelpPage(
+            body="[[some_page]]"
+            )
+        
+        rendered = tags.relink(page,'body')
+        self.assertTrue('unknown model' in rendered)
+
+    def test_good_help_template_tags(self):
+        from aristotle_mdr.contrib.help.templatetags import aristotle_help as tags
+
+        page = models.HelpPage(
+            body="[[aristotle_mdr.Property|s]]"
+            )
+        
+        rendered = tags.relink(page,'body')
+        self.assertTrue('Properties' in rendered)

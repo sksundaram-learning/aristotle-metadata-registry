@@ -11,7 +11,7 @@
 {% block help_content %}
 <h3><em>{{ model.get_verbose_name }}</em> - {% relink object 'brief' %}</h3>
 {% if object.offical_definition %}
-<blockquote>{% relink object 'offical_definition' %}
+<blockquote>{% relink object 'official_definition' %}
     {% if object.official_reference %}
         <small>{{ object.official_reference }}</small>
     {% endif %}
