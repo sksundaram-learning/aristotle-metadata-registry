@@ -52,14 +52,14 @@ class TestHelpPagesLoad(TestCase):
 
         page = models.HelpPage()
 
-        rendered = tags.relink(page,'body')
+        rendered = tags.relink(page, 'body')
         self.assertTrue(rendered == "")
 
         page = models.HelpPage(
             body="[[some_page]]"
-            )
-        
-        rendered = tags.relink(page,'body')
+        )
+
+        rendered = tags.relink(page, 'body')
         self.assertTrue('unknown model' in rendered)
 
     def test_good_help_template_tags(self):
@@ -67,7 +67,7 @@ class TestHelpPagesLoad(TestCase):
 
         page = models.HelpPage(
             body="[[aristotle_mdr.Property|s]]"
-            )
-        
-        rendered = tags.relink(page,'body')
+        )
+
+        rendered = tags.relink(page, 'body')
         self.assertTrue('Properties' in rendered)
