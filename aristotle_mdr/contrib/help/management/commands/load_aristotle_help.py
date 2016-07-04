@@ -251,9 +251,9 @@ class Command(BaseCommand):
             if self.verbosity >= 2:
                 self.stdout.write("Checking %s for fixtures..." % humanize(fixture_dir))
             fixture_files_in_dir = []
-            for dir_name,sub,candidates in os.walk(fixture_dir): #, search_name + '*')):
+            for dir_name, sub, candidates in os.walk(fixture_dir):  # , search_name + '*')):
                 for candidate in candidates:
-                    candidate = os.path.join(dir_name,candidate)
+                    candidate = os.path.join(dir_name, candidate)
                     if any([os.path.basename(candidate).endswith(t) for t in targets]):
                         # Save the fixture_dir and fixture_name for future error messages.
                         fixture_files_in_dir.append((candidate, fixture_dir, candidate.split('/')[-1]))
