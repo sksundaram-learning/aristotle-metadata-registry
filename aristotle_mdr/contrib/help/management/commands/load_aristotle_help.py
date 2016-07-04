@@ -3,13 +3,11 @@ from __future__ import unicode_literals
 """
 This is literally forked from djangos own loaddata, expect it saves the
 object not the serialisation.
-It also uses a modified fixture finder that allows for wildcard entry
+It also uses a modified fixture finder that loads everything in the 'aristotle_help_files' directory
 """
 
-import gzip
 import os
 import warnings
-import zipfile
 from itertools import product
 
 from django.apps import apps
@@ -27,10 +25,8 @@ from django.utils._os import upath
 from django.utils.encoding import force_text
 from django.utils.functional import cached_property
 
-from django.core.management.commands.loaddata import Command as loaddata
 from django.core.management.commands.loaddata import humanize
 
-import glob
 from django.utils import lru_cache
 
 
@@ -59,7 +55,7 @@ class Command(BaseCommand):
             help='Updates existing helps files if they exist.'
         )
 
-    def loaddata(self, fixture_labels):
+    def loadhelp(self, fixture_labels=['aristotle_help_files']):
         connection = connections[self.using]
 
         # Keep a count of the installed objects and fixtures
@@ -69,26 +65,16 @@ class Command(BaseCommand):
         self.models = set()
 
         self.serialization_formats = serializers.get_public_serializer_formats()
-        # Forcing binary mode may be revisited after dropping Python 2 support (see #22399)
-        self.compression_formats = {
-            None: (open, 'rb'),
-            'gz': (gzip.GzipFile, 'rb'),
-            # 'zip': (SingleZipReader, 'r'),
-        }
 
         # Django's test suite repeatedly tries to load initial_data fixtures
         # from apps that don't have any fixtures. Because disabling constraint
         # checks can be expensive on some database (especially MSSQL), bail
         # out early if no fixtures are found.
-        for fixture_label in fixture_labels:
-            if self.find_fixtures(fixture_label):
-                break
-        else:
+        if not self.find_fixtures():
             return
 
         with connection.constraint_checks_disabled():
-            for fixture_label in fixture_labels:
-                self.load_label(fixture_label)
+            self.load_label()
 
         # Since we disabled constraint checks, we must manually check for
         # any invalid keys that might have been added
@@ -132,7 +118,7 @@ class Command(BaseCommand):
         self.update = options.get('update')
 
         with transaction.atomic(using=self.using):
-            self.loaddata(['aristotle_help_files'])
+            self.loadhelp()
 
         # Close the DB connection -- unless we're still in a transaction. This
         # is required as a workaround for an  edge case in MySQL: if the same
@@ -141,15 +127,14 @@ class Command(BaseCommand):
         if transaction.get_autocommit(self.using):
             connections[self.using].close()
 
-    def load_label(self, fixture_label):
+    def load_label(self):
         """
         Loads fixtures files for a given label.
         """
         show_progress = self.verbosity >= 3
-        for fixture_file, fixture_dir, fixture_name in self.find_fixtures(fixture_label):
-            _, ser_fmt, cmp_fmt = self.parse_name(os.path.basename(fixture_file))
-            open_method, mode = self.compression_formats[cmp_fmt]
-            fixture = open_method(fixture_file, mode)
+        for fixture_file, fixture_dir, fixture_name in self.find_fixtures():
+            _, ser_fmt = self.parse_name(os.path.basename(fixture_file))
+            fixture = open(fixture_file, 'rb')
             try:
                 self.fixture_count += 1
                 objects_in_fixture = 0
@@ -231,13 +216,13 @@ class Command(BaseCommand):
                 )
 
     @lru_cache.lru_cache(maxsize=None)
-    def find_fixtures(self, fixture_label):
+    def find_fixtures(self, fixture_label='aristotle_help_files'):
         """
         Finds fixture files for a given label.
         """
-        fixture_name, ser_fmt, cmp_fmt = self.parse_name(fixture_label)
+
+        fixture_name, ser_fmt = self.parse_name(fixture_label)
         databases = [self.using, None]
-        cmp_fmts = list(self.compression_formats.keys()) if cmp_fmt is None else [cmp_fmt]
         ser_fmts = serializers.get_public_serializer_formats() if ser_fmt is None else [ser_fmt]
 
         if self.verbosity >= 2:
@@ -245,17 +230,15 @@ class Command(BaseCommand):
 
         if os.path.isabs(fixture_name):
             fixture_dirs = [os.path.dirname(fixture_name)]
-            fixture_name = os.path.basename(fixture_name)
         else:
             fixture_dirs = self.fixture_dirs
             if os.path.sep in os.path.normpath(fixture_name):
                 fixture_dirs = [os.path.join(dir_, os.path.dirname(fixture_name))
                                 for dir_ in fixture_dirs]
-                fixture_name = os.path.basename(fixture_name)
 
         suffixes = (
             '.'.join(ext for ext in combo if ext)
-            for combo in product(databases, ser_fmts, cmp_fmts)
+            for combo in product(databases, ser_fmts)
         )
 
         fixture_name = "*"
@@ -268,10 +251,12 @@ class Command(BaseCommand):
             if self.verbosity >= 2:
                 self.stdout.write("Checking %s for fixtures..." % humanize(fixture_dir))
             fixture_files_in_dir = []
-            for candidate in glob.iglob(os.path.join(fixture_dir, search_name + '*')):
-                if any([os.path.basename(candidate).endswith(t) for t in targets]):
-                    # Save the fixture_dir and fixture_name for future error messages.
-                    fixture_files_in_dir.append((candidate, fixture_dir, candidate.split('/')[-1]))
+            for dir_name,sub,candidates in os.walk(fixture_dir): #, search_name + '*')):
+                for candidate in candidates:
+                    candidate = os.path.join(dir_name,candidate)
+                    if any([os.path.basename(candidate).endswith(t) for t in targets]):
+                        # Save the fixture_dir and fixture_name for future error messages.
+                        fixture_files_in_dir.append((candidate, fixture_dir, candidate.split('/')[-1]))
 
             dest_static_dir = os.path.join(settings.STATIC_ROOT, "aristotle_help")
             src = os.path.join(fixture_dir, 'static')
@@ -280,10 +265,6 @@ class Command(BaseCommand):
             if os.path.exists(src):
                 from distutils import dir_util
                 dir_util.copy_tree(src, dest_static_dir)
-
-            if self.verbosity >= 2 and not fixture_files_in_dir:
-                self.stdout.write("No fixture '%s' in %s." %
-                                  (fixture_name, humanize(fixture_dir)))
 
             # Check kept for backwards-compatibility; it isn't clear why
             # duplicates are only allowed in different directories.
@@ -328,15 +309,9 @@ class Command(BaseCommand):
 
     def parse_name(self, fixture_name):
         """
-        Splits fixture name in name, serialization format, compression format.
+        Splits fixture name in name, serialization format.
         """
-        parts = fixture_name.rsplit('.', 2)
-
-        if len(parts) > 1 and parts[-1] in self.compression_formats:
-            cmp_fmt = parts[-1]
-            parts = parts[:-1]
-        else:
-            cmp_fmt = None
+        parts = fixture_name.rsplit('.', 1)
 
         if len(parts) > 1:
             if parts[-1] in self.serialization_formats:
@@ -351,4 +326,4 @@ class Command(BaseCommand):
 
         name = '.'.join(parts)
 
-        return name, ser_fmt, cmp_fmt
+        return name, ser_fmt
