@@ -25,21 +25,27 @@ class TestHelpPagesLoad(TestCase):
         call_command('load_aristotle_help')
         count_hp_1 = models.HelpPage.objects.all().count()
         page = models.HelpPage.objects.get(title="Advanced Search")
-        
+
         nixons_shiny_new_body = "I paid for this body and I'd no sooner return it than I would my little cocker spaniel dog, Checkers."
         page.body = nixons_shiny_new_body
         page.save()
-        page = models.HelpPage.objects.get(title="Advanced Search") #de-cache
+        page = models.HelpPage.objects.get(title="Advanced Search")  # de-cache
         self.assertTrue(page.body == nixons_shiny_new_body)
 
-        call_command('load_aristotle_help', update = True)
+        call_command('load_aristotle_help', update=False)
         count_hp_2 = models.HelpPage.objects.all().count()
-
         self.assertTrue(count_hp_2 == count_hp_1)
 
-        page = models.HelpPage.objects.get(title="Advanced Search") #de-cache
-        self.assertTrue(page.body != nixons_shiny_new_body)
+        page = models.HelpPage.objects.get(title="Advanced Search")  # de-cache
+        self.assertTrue(page.body == nixons_shiny_new_body)
 
+        call_command('load_aristotle_help', update=True)
+        count_hp_3 = models.HelpPage.objects.all().count()
+
+        self.assertTrue(count_hp_3 == count_hp_1)
+
+        page = models.HelpPage.objects.get(title="Advanced Search")  # de-cache
+        self.assertTrue(page.body != nixons_shiny_new_body)
 
     def test_help_pages_load(self):
         call_command('load_aristotle_help')
