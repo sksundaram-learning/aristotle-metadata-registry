@@ -14,7 +14,7 @@ class TestHelpPagesLoad(TestCase):
         count_hp_1 = models.HelpPage.objects.all().count()
         count_cp_1 = models.ConceptHelp.objects.all().count()
 
-        call_command('load_aristotle_help')
+        call_command('load_aristotle_help', verbosity=2)
 
         count_hp_2 = models.HelpPage.objects.all().count()
         count_cp_2 = models.ConceptHelp.objects.all().count()
