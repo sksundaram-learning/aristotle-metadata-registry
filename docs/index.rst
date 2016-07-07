@@ -1,4 +1,4 @@
-.. Aristotle MetaData Registry documentation master file, created by
+.. Aristotle Metadata Registry documentation master file, created by
    sphinx-quickstart on Fri Sep 12 00:32:37 2014.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.

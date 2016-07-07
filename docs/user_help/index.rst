@@ -5,6 +5,7 @@ Creating and deploying user help
    :maxdepth: 2
 
    help_types.rst
+   help_syntax.rst
 
 Writing help files
 ------------------
@@ -24,12 +25,12 @@ Importing help files
 --------------------
 
 The Aristotle-MDR provides a django command line action similar to the ``loadata``
-called ``loadhelp``. This adds an additional switch ``--update`` or ``-U`` that instead
-of failing when attempting to insert, will instead override help files.
+called ``load_aristotle_help``. This adds an additional switch ``--update`` or ``-U`` that 
+when attempting to insert, will instead override help files.
 
 For example::
 
-   ./manage.py loadhelp aristole_help/*
+   ./manage.py load_aristotle_help
 
 Will load all help files in the ``fixtures/aristotle_help/`` subdirectory of *all apps in ``INSTALLED_APPS``*.
 

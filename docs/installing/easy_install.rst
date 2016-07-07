@@ -2,7 +2,7 @@ Easy installer documentation
 ----------------------------
 
 This is a quick guide to setting up a new metadata registry based on
-the Aristotle MetaData Registry framework using the easy installer.
+the Aristotle Metadata Registry framework using the easy installer.
 
 Such a server should be considered for *demonstration* purposes, and deployment
 should be done in accordance with the best practices and specific requirements
