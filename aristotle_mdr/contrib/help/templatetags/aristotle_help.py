@@ -6,7 +6,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from aristotle_mdr import perms
 import aristotle_mdr.models as MDR
-from aristotle_mdr.contrib.help.models import ConceptHelp
+from aristotle_mdr.contrib.help.models import ConceptHelp, HelpPage
 from aristotle_mdr.templatetags.aristotle_tags import doc
 from django.conf import settings
 
@@ -45,32 +45,46 @@ def relink(help_item, field):
 
     def make_link(match):
         from django.core.urlresolvers import reverse_lazy
-
         try:
-            m = match.group(1).lower().replace(' ', '').split('.', 1)
-            flags = match.group(2) or ""
-            if len(m) == 1:
-                app = help_item.app_label
-                model = m[0]
+            help_type = match.group(1).strip('|') or 'c'
+            flags = match.group(3) or ""
+            if help_type is 'c':
+                model_details = match.group(2)
+    
+                m = model_details.lower().replace(' ', '').split('.', 1)
+                if len(m) == 1:
+                    app = help_item.app_label
+                    model = m[0]
+                else:
+                    app, model = m
+                if app:
+                    ct = ContentType.objects.get(app_label=app, model=model)
+                else:
+                    ct = ContentType.objects.get(model=model)
+                    app = ct.app_label
+                help_url = reverse_lazy("aristotle_help:concept_help", args=[app, model])
+
+                if 's' not in flags:
+                    name = ct.model_class().get_verbose_name()
+                else:
+                    name = ct.model_class().get_verbose_name_plural()
+            elif help_type == 'h':
+                help_page = HelpPage.objects.get(slug=match.group(2))
+                name = help_page.title
+                help_url = reverse("aristotle_help:help_page", args=[help_page.slug])
+
+            if 'u' in flags:
+                return help_url
             else:
-                app, model = m
-
-            ct = ContentType.objects.get(app_label=app, model=model)
-
-            if 's' not in flags:
-                name = ct.model_class().get_verbose_name()
-            else:
-                name=ct.model_class().get_verbose_name_plural()
-
-            return "<a href='{url}'>{name}</a>".format(
-                name=name,
-                url=reverse_lazy("aristotle_help:concept_help", args=[app, model])
-                )
+                return "<a class='help_link' href='{url}'>{name}</a>".format(
+                    name=name,
+                    url=help_url
+                    )
         except:
             return "unknown model - %s" % match.group(0)
 
     text = re.sub(
-        r"\[\[([[a-zA-Z _.]+)(\|[a-z]+)?\]\]",
+        r"\[\[((?:[hc]\|)?)([[a-zA-Z0-9 _\-.]+)(\|[a-z]+)?\]\]",
         make_link, text
     )
     return text

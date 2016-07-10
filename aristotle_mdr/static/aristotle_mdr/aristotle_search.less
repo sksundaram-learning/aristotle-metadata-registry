@@ -129,22 +129,24 @@ li.dropdown-menu-form,li.dropdown-menu-date, .sort-order-box {
         }
     }
 }
+/* Search changes */
 
 ol.searchResults {
+    border-collapse: separate;
+    border-spacing: 0px 10px;
     margin-left:0px;
     padding-left:0px;
     display:table;
-    &.active li div.result {
-        padding-left:20px;
-    }
     li {
+        background-color:#EEE;
         display:table-row;
+        list-style-type:none;
+
         &>div {
             display:table-cell;
             vertical-align: top;
+            padding:10px;
         }
-        padding:5px;
-        list-style-type:none;
         a {
             font-size:125%;
             padding-right:10px;
@@ -152,8 +154,8 @@ ol.searchResults {
         span.time, span.item_type {
             display:inline-block;
         }
-        .actions {
-            padding-top:3px;
+        .action {
+            
             * {
                 display:block;
                 padding-top:3px;
@@ -161,11 +163,10 @@ ol.searchResults {
             }
         }
         .result {
-            padding-bottom:2px;
-            padding-left:5px;
 
             .attr {
-                display:block;
+                display:inline-block;
+                padding-right: 10px;
                 color:gray;
                 font-size:90%;
             }

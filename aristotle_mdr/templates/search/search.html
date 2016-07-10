@@ -316,16 +316,19 @@
             {% for result in page.object_list %}
                 {% if result %}
                 <li>
-                    {% if user.is_active and result.object.concept %}
                     <div class="action">
-                        <input type='checkbox' id="id_items_{{result.object.id}}" name="items" value='{{ result.object.id }}' title='select to add to favourites'>
+                    {% if result.object.concept %}
+                        <span>
+                        <input type='checkbox' id="id_items_{{result.object.id}}" name="items" value='{{ result.object.id }}' title='{% trans "select to perform a bulk action" %}'>
+                            {% include "search/badge.html" with result=result %}
+                        </span>
                         {% if result.object.concept in request.user.profile.favourites.all %}
                             <i class="fa fa-bookmark" title="{% trans 'This item is in your favourites list' %}"></i>
                         {% endif %}
-                    </div>
                     {% else %}
-                    <div></div>
+                        <div></div>
                     {% endif %}
+                    </div>
                     {% include result.searchindex.template_name with item=result.object %}
                 </li>
                 {% endif %}

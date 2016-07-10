@@ -13,19 +13,19 @@ setup_test_environment()
 class CreateListPageTests(utils.LoggedInViewPages,TestCase):
     def test_create_list_active(self):
         self.logout()
-        response = self.client.get(reverse('aristotle:createList'))
+        response = self.client.get(reverse('aristotle:create_list'))
         self.assertEqual(response.status_code,302) # redirect to login
 
         self.login_viewer()
-        response = self.client.get(reverse('aristotle:createList'))
+        response = self.client.get(reverse('aristotle:create_list'))
         self.assertEqual(response.status_code,403) # unauthorised
 
         self.login_registrar()
-        response = self.client.get(reverse('aristotle:createList'))
+        response = self.client.get(reverse('aristotle:create_list'))
         self.assertEqual(response.status_code,403) # unauthorised
 
         self.login_editor()
-        response = self.client.get(reverse('aristotle:createList'))
+        response = self.client.get(reverse('aristotle:create_list'))
         self.assertEqual(response.status_code,200)
 
 

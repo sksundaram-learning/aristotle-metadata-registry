@@ -14,7 +14,7 @@
     {% endblock %}
     </ul>
 
-    <div class="col-sm-2">
+    <div class="col-sm-12 col-md-3">
     {% block sidebar %}
     <form id="helpSearch" action="{% url 'aristotle:search' %}" method="get"
     role="search">
@@ -28,7 +28,7 @@
     </form>
     {% endblock %}
     </div>
-    <div class="col-sm-8">
+    <div class="col-sm-12 col-md-9">
     <h1>{% block title %}Help{% endblock %}</h1>
 {% else %}
     <div class="modal-body">
