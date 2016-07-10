@@ -78,7 +78,6 @@ def relink(help_item, field):
             return "unknown model - %s" % match.group(0)
 
     def make_helppage_link(match):
-        from django.core.urlresolvers import reverse_lazy
         try:
             flags = match.group(2) or ""
 
