@@ -77,6 +77,8 @@ def user_can_edit(user, item):
 
 
 def user_is_editor(user, workgroup=None):
+    if user.is_anonymous():
+        return False
     if user.is_superuser:
         return True
     elif workgroup is None:
@@ -87,6 +89,8 @@ def user_is_editor(user, workgroup=None):
 
 
 def user_is_registrar(user, ra=None):
+    if user.is_anonymous():
+        return False
     if user.is_superuser:
         return True
     elif ra is None:

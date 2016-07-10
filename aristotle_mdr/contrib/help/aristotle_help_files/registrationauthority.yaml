@@ -4,6 +4,7 @@
     language: en
     body: >
         <blockquote>
+        <cite><a href="[[h|about-isoiec-11179|u]]">ISO/IEC 11179-6 : Section 4.4.2 </a></cite>
         An organization responsible for maintaining a register.
         </blockquote>
         

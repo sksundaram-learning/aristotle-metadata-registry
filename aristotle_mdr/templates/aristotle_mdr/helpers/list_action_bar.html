@@ -8,7 +8,6 @@
   </button>
   <ul class="dropdown-menu">
 
-{% if request.user.is_active %}
     {% for name,action in bulk_actions.items %}
         {% if name in hidden_actions %}
         {% elif request.user|can_use_action:name %}
@@ -18,6 +17,6 @@
             </button></li>
         {% endif %}
     {% endfor %}
-{% endif %}
+
 </ul>
 </div>

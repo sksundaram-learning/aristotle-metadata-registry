@@ -47,7 +47,7 @@ Create Data Element - Step {{ wizard.steps.step1 }}: {{step_title}}
             <!-- button name="wizard_goto_step" type="submit" value="{{ wizard.steps.first }}">{% trans "First step" %}</button -->
             <button class="btn btn-default pull-right" name="wizard_goto_step" type="submit" value="{{ wizard.steps.prev }}">{% trans "Back" %}</button>
         {% endif %}
-        <a href="{% url 'aristotle:createList' %}" class="btn btn-danger pull-right">{% trans "Cancel" %}</a>
+        <a href="{% url 'aristotle:create_list' %}" class="btn btn-danger pull-right">{% trans "Cancel" %}</a>
     </div>
 </form>
 {% endblock %}

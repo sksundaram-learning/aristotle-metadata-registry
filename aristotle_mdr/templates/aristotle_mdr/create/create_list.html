@@ -1,7 +1,11 @@
-{% extends 'aristotle_mdr/base.html' %}
+{% extends "aristotle_mdr/user/base.html" %}
 {% load aristotle_tags aristotle_help i18n %}
 
-{% block content %}
+{% block sidebar %}
+{% include "aristotle_mdr/user/userSideBar.html" with activeTab='create_list' %}
+{% endblock %}
+
+{% block page %}
 <h1>{% block title %}{% trans "Create New Items" %}{% endblock %}</h1>
 
 <p>

@@ -14,7 +14,7 @@ class TestHelpPagesLoad(TestCase):
         count_hp_1 = models.HelpPage.objects.all().count()
         count_cp_1 = models.ConceptHelp.objects.all().count()
 
-        call_command('load_aristotle_help', verbosity=2)
+        call_command('load_aristotle_help')
 
         count_hp_2 = models.HelpPage.objects.all().count()
         count_cp_2 = models.ConceptHelp.objects.all().count()
@@ -88,6 +88,13 @@ class TestHelpPagesLoad(TestCase):
         rendered = tags.relink(page, 'body')
         self.assertTrue('unknown model' in rendered)
 
+        page = models.HelpPage(
+            body="[[h|some_page]]"
+        )
+
+        rendered = tags.relink(page, 'body')
+        self.assertTrue('unknown help page' in rendered)
+
     def test_good_help_template_tags(self):
         from aristotle_mdr.contrib.help.templatetags import aristotle_help as tags
 
@@ -97,3 +104,45 @@ class TestHelpPagesLoad(TestCase):
 
         rendered = tags.relink(page, 'body')
         self.assertTrue('Properties' in rendered)
+
+        rendered = tags.relink_f(page.body)
+        self.assertTrue('Properties' in rendered)
+
+        page = models.HelpPage(
+            body="[[aristotle_mdr.Property|su]]"
+        )
+
+        rendered = tags.relink(page, 'body')
+        self.assertTrue('Properties' not in rendered)
+        self.assertTrue('class=\'help_link' not in rendered)
+        self.assertTrue('aristotle_mdr/property' in rendered)
+
+        rendered = tags.relink_f(page.body)
+        self.assertTrue('Properties' not in rendered)
+        self.assertTrue('class=\'help_link' not in rendered)
+        self.assertTrue('aristotle_mdr/property' in rendered)
+
+        page = models.HelpPage.objects.create(
+            title="myslug",
+            body=""
+        )
+
+        page = models.HelpPage(
+            body="[[h|myslug]]"
+        )
+
+        rendered = tags.relink(page, 'body')
+        self.assertTrue('myslug' in rendered)
+        self.assertTrue('class=\'help_link' in rendered)
+
+        rendered = tags.relink_f(page.body)
+        self.assertTrue('myslug' in rendered)
+        self.assertTrue('class=\'help_link' in rendered)
+
+        page = models.HelpPage(
+            body="[[h|myslug|u]]"
+        )
+
+        rendered = tags.relink(page, 'body')
+        self.assertTrue('myslug' in rendered)
+        self.assertTrue('class=\'help_link' not in rendered)
