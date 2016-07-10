@@ -43,35 +43,29 @@ def relink(help_item, field):
         "%s/aristotle_help/" % settings.STATIC_URL, text
     )
 
-    def make_link(match):
+    def make_concept_link(match):
         from django.core.urlresolvers import reverse_lazy
         try:
-            help_type = match.group(1).strip('|') or 'c'
-            flags = match.group(3) or ""
-            if help_type is 'c':
-                model_details = match.group(2)
-    
-                m = model_details.lower().replace(' ', '').split('.', 1)
-                if len(m) == 1:
-                    app = help_item.app_label
-                    model = m[0]
-                else:
-                    app, model = m
-                if app:
-                    ct = ContentType.objects.get(app_label=app, model=model)
-                else:
-                    ct = ContentType.objects.get(model=model)
-                    app = ct.app_label
-                help_url = reverse_lazy("aristotle_help:concept_help", args=[app, model])
+            flags = match.group(2) or ""
+            model_details = match.group(1)
 
-                if 's' not in flags:
-                    name = ct.model_class().get_verbose_name()
-                else:
-                    name = ct.model_class().get_verbose_name_plural()
-            elif help_type == 'h':
-                help_page = HelpPage.objects.get(slug=match.group(2))
-                name = help_page.title
-                help_url = reverse("aristotle_help:help_page", args=[help_page.slug])
+            m = model_details.lower().replace(' ', '').split('.', 1)
+            if len(m) == 1:
+                app = help_item.app_label
+                model = m[0]
+            else:
+                app, model = m
+            if app:
+                ct = ContentType.objects.get(app_label=app, model=model)
+            else:
+                ct = ContentType.objects.get(model=model)
+                app = ct.app_label
+            help_url = reverse_lazy("aristotle_help:concept_help", args=[app, model])
+
+            if 's' not in flags:
+                name = ct.model_class().get_verbose_name()
+            else:
+                name = ct.model_class().get_verbose_name_plural()
 
             if 'u' in flags:
                 return help_url
@@ -83,8 +77,31 @@ def relink(help_item, field):
         except:
             return "unknown model - %s" % match.group(0)
 
+    def make_helppage_link(match):
+        from django.core.urlresolvers import reverse_lazy
+        try:
+            flags = match.group(2) or ""
+
+            help_page = HelpPage.objects.get(slug=match.group(1))
+            name = help_page.title
+            help_url = reverse("aristotle_help:help_page", args=[help_page.slug])
+
+            if 'u' in flags:
+                return help_url
+            else:
+                return "<a class='help_link' href='{url}'>{name}</a>".format(
+                    name=name,
+                    url=help_url
+                    )
+        except:
+            return "unknown help page - %s" % match.group(0)
+
     text = re.sub(
-        r"\[\[((?:[hc]\|)?)([[a-zA-Z0-9 _\-.]+)(\|[a-z]+)?\]\]",
-        make_link, text
+        r"\[\[(?:h\|)([[a-zA-Z0-9 _\-.]+)(\|[a-z]+)?\]\]",
+        make_helppage_link, text
+    )
+    text = re.sub(
+        r"\[\[(?:c\|)?([[a-zA-Z _.]+)(\|[a-z]+)?\]\]",
+        make_concept_link, text
     )
     return text
