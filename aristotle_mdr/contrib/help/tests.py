@@ -122,7 +122,6 @@ class TestHelpPagesLoad(TestCase):
         self.assertTrue('class=\'help_link' not in rendered)
         self.assertTrue('aristotle_mdr/property' in rendered)
 
-
         page = models.HelpPage.objects.create(
             title="myslug",
             body=""
