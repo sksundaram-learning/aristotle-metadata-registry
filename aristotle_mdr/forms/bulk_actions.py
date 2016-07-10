@@ -150,7 +150,13 @@ class BulkActionForm(UserAwareForm):
         return txt
 
 
-class AddFavouriteForm(BulkActionForm):
+class LoggedInBulkActionForm(BulkActionForm):
+    @classmethod
+    def can_use(cls, user):
+        return user.is_active
+
+
+class AddFavouriteForm(LoggedInBulkActionForm):
     classes="fa-bookmark"
     action_text = _('Add favourite')
     items_label = "Items that will be added to your favourites list"
@@ -169,7 +175,7 @@ class AddFavouriteForm(BulkActionForm):
         }
 
 
-class RemoveFavouriteForm(BulkActionForm):
+class RemoveFavouriteForm(LoggedInBulkActionForm):
     classes="fa-minus-square"
     action_text = _('Remove favourite')
     items_label = "Items that will be removed from your favourites list"
@@ -233,7 +239,7 @@ class ChangeStateForm(ChangeStatusForm, BulkActionForm):
         return user_is_registrar(user)
 
 
-class RequestReviewForm(BulkActionForm):
+class RequestReviewForm(LoggedInBulkActionForm):
     confirm_page = "aristotle_mdr/actions/bulk_actions/request_review.html"
     classes="fa-flag"
     action_text = _('Request review')

@@ -122,7 +122,7 @@ class TestSearch(utils.LoggedInViewPages,TestCase):
         self.logout()
         
         response = self.client.get(reverse('aristotle:search')+"?q=xman")
-        self.assertTrue('div class="action"' not in response.content)
+        self.assertTrue('Add Favourite' not in response.content)
         
         response = self.client.post(reverse('friendly_login'),
                     {'username': 'stryker', 'password': 'mutantsMustDie'})

@@ -318,10 +318,9 @@
         </div>
         <div class="col-md-9">
 
-            {% if user.is_active %}
-                <form action="{% url 'aristotle:bulk_action' %}?next={{ request.get_full_path }}" method="POST">
-                {% csrf_token %}
-            {% endif %}
+            <form action="{% url 'aristotle:bulk_action' %}?next={{ request.get_full_path }}" method="POST">
+            {% csrf_token %}
+
             <ol start="{{ page.start_index }}"
                 class="searchResults {% ternary user.is_active 'active' '' %}">
             {% for result in page.object_list %}
@@ -348,10 +347,8 @@
             {% endfor %}
             </ol>
 
-            {% if user.is_active %}
-                {% include "aristotle_mdr/helpers/list_action_bar.html" with wrap=True %}
-                </form>
-            {% endif %}
+            {% include "aristotle_mdr/helpers/list_action_bar.html" with wrap=True %}
+            </form>
 
             {% include "aristotle_mdr/helpers/paginator.html" with page=page %}
         </div>
