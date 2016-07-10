@@ -36,7 +36,7 @@ def relink(help_item, field):
     text = getattr(help_item, field)
     if not text:
         return ""
-    return make_relink(text, app=help_item.app_label)
+    return make_relink(text, app_label=help_item.app_label)
 
 
 def make_relink(text, app_label=None):
@@ -45,7 +45,7 @@ def make_relink(text, app_label=None):
         r'\{static\}',
         "%s/aristotle_help/" % settings.STATIC_URL, text
     )
-    
+
     def make_concept_link(match):
         from django.core.urlresolvers import reverse_lazy
         app = app_label
