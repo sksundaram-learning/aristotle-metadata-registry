@@ -63,7 +63,7 @@ def make_relink(text, app_label=None):
             else:
                 ct = ContentType.objects.get(model=model)
                 app = ct.app_label
-            help_url = reverse_lazy("aristotle_help:concept_help", args=[app, model])
+            help_url = reverse("aristotle_help:concept_help", args=[app, model])
 
             if 's' not in flags:
                 name = ct.model_class().get_verbose_name()
