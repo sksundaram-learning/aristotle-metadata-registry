@@ -1,10 +1,10 @@
 {% load humanize %}
+{% load aristotle_help %}
 <div class="result">
 <a href="{% url 'aristotle_help:concept_help' item.app_label item.concept_type %}">{{ item.title }}</a>
-<span class="item_type">({{ result.model }})</span>
 <span class="item_type">(Metadata help page)</span>
 <p>
-    {{ item.body|truncatewords:20|striptags }}
+    {{ item.body|relink_f|truncatewords:20|striptags }}
 </p>
 <div class="attrs">
     <span class="attr">
