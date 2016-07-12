@@ -19,4 +19,3 @@ def startswith(string, substr):
 @register.filter
 def visible_count(model, user):
     return model.objects.all().visible(user).count()
-    
