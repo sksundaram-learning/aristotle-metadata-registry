@@ -14,3 +14,8 @@ def order_by(qs, order):
 @register.filter
 def startswith(string, substr):
     return string.startswith(substr)
+
+
+@register.filter
+def visible_count(model, user):
+    return model.objects.all().visible(user).count()

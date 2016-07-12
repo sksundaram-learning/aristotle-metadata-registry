@@ -28,7 +28,7 @@ class BrowseApps(TemplateView):
                     _("No name")  # Where no name is configured in the app_config, set a dummy so we don't keep trying
                 )
 
-            app_models['models'].append((m, m.model_class()))
+            app_models['models'].append(m)
             out[m.app_label] = app_models
         context['apps'] = out
         return context
