@@ -7,22 +7,13 @@ services:
  #- mysql
  - postgresql
 env:
-  - DJ=1.8 DB=sqlitememory TEST=main
-  - DJ=1.8 DB=sqlitefile   TEST=main
-  - DJ=1.8 DB=postgres     TEST=main
+  - DJ=1.8 DB=sqlitememory
+  - DJ=1.8 DB=sqlitefile
+  - DJ=1.8 DB=postgres
 #  - DJ=1.9 DB=sqlitememory TEST=main
 #  - DJ=1.9 DB=sqlitefile   TEST=main
 #  - DJ=1.9 DB=postgres     TEST=main
 
-  - DJ=1.8 DB=sqlitememory TEST=extensions
-  - DJ=1.8 DB=sqlitefile   TEST=extensions
-  - DJ=1.8 DB=postgres     TEST=extensions
-#  - DJ=1.9 DB=sqlitememory TEST=extensions
-#  - DJ=1.9 DB=sqlitefile   TEST=extensions
-#  - DJ=1.9 DB=postgres     TEST=extensions
-
-#  - DJ=1.9 DB=mysql
-#  - DJ=1.8 DB=mysql
 
 before_install:
   - npm install -g less@1.7.4 # Required for static-precompiler
@@ -48,8 +39,7 @@ install:
 
 # command to run tests
 script:
-  - if [[ $TEST == main ]]; then coverage run --branch --source=aristotle_mdr manage.py test aristotle_mdr.tests.main; fi
-  - if [[ $TEST == extensions ]]; then coverage run --branch --source=aristotle_mdr manage.py test aristotle_mdr.tests.extensions; fi
+  - coverage run --branch --source=aristotle_mdr manage.py test aristotle_mdr.tests;
 after_success:
   - coveralls
   - codecov
