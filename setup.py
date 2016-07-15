@@ -46,7 +46,7 @@ setup(
         'docutils',
 
         #Search requirements
-        'django-haystack',
+        'django-haystack==2.4.1',
         'Whoosh',
 
         #Rich text editors
