@@ -6,8 +6,6 @@ from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
 from notifications.signals import notify
 
-from aristotle_mdr.utils import url_slugify_concept, url_slugify_workgroup
-
 
 def favourite_updated(recipient, obj):
     notify.send(obj, recipient=recipient, verb="A favourited item has been changed:", target=obj)
