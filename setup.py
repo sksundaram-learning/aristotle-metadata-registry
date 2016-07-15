@@ -66,6 +66,7 @@ setup(
         # This was migrated out of django1.7, needed for django1.8
         'django-formtools',
 
+        'html5lib==1.0b8',
         'xhtml2pdf',
         #'django-tastypie'
 
