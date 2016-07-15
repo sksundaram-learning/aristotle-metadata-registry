@@ -87,7 +87,7 @@ An item being edited without changing screens
 Information for developers
 --------------------------
 
-Aristotle-MDR is free open-source software, and contributions are welcome on front-end web development,
+Aristotle-MDR is free open-source software and contributions are welcome on front-end web development,
 back-end server development, translation and content creation (such as more documentation).
 Review the wiki, open issues and existing documentation to get started.
 
