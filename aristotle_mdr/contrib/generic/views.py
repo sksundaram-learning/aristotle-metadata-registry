@@ -27,7 +27,7 @@ class GenericWithItemURLFormView(FormView):
 
     def dispatch(self, request, *args, **kwargs):
         self.item = get_object_or_404(self.model_base, pk=self.kwargs['iid'])
-        permission_method = self.permission
+
         if not (
             self.item and
             all([perm(request.user, self.item) for perm in self.permission_checks]) and
