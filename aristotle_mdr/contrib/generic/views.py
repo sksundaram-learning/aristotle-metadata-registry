@@ -22,12 +22,17 @@ import reversion
 
 
 class GenericWithItemURLFormView(FormView):
-    permission = user_can_view
+    user_checks = []
+    permission_checks = [user_can_view]
 
     def dispatch(self, request, *args, **kwargs):
         self.item = get_object_or_404(self.model_base, pk=self.kwargs['iid'])
         permission_method = self.permission
-        if not (self.item and permission_method(request.user, self.item)):
+        if not (
+            self.item and
+            all([perm(request.user, self.item) for perm in self.permission_checks]) and
+            all([perm(request.user) for perm in self.user_checks])
+        ):
             if request.user.is_anonymous():
                 return redirect(reverse('friendly_login') + '?next=%s' % request.path)
             else:
@@ -42,7 +47,7 @@ class GenericWithItemURLFormView(FormView):
 
 
 class GenericAlterManyToSomethingFormView(GenericWithItemURLFormView):
-    permission = user_can_edit
+    permission_checks = [user_can_edit]
     model_base = None
     model_to_add = None
     model_base_field = None
