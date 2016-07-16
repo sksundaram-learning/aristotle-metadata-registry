@@ -21,7 +21,7 @@ from aristotle_mdr.utils import construct_change_message
 import reversion
 
 
-class GenericWithItemURLFormView(FormView)
+class GenericWithItemURLFormView(FormView):
     def dispatch(self, request, *args, **kwargs):
         self.item = get_object_or_404(self.model_base, pk=self.kwargs['iid'])
         if not (self.item and user_can_edit(request.user, self.item)):
