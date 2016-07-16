@@ -26,7 +26,8 @@ class GenericWithItemURLFormView(FormView):
 
     def dispatch(self, request, *args, **kwargs):
         self.item = get_object_or_404(self.model_base, pk=self.kwargs['iid'])
-        if not (self.item and self.permission(request.user, self.item)):
+        permission_method = self.permission
+        if not (self.item and permission_method(request.user, self.item)):
             if request.user.is_anonymous():
                 return redirect(reverse('friendly_login') + '?next=%s' % request.path)
             else:
