@@ -23,7 +23,7 @@ import reversion
 
 class GenericWithItemURLFormView(FormView):
     permission = user_can_view
-    
+
     def dispatch(self, request, *args, **kwargs):
         self.item = get_object_or_404(self.model_base, pk=self.kwargs['iid'])
         if not (self.item and self.permission(request.user, self.item)):
