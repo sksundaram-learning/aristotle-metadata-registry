@@ -21,13 +21,7 @@ from aristotle_mdr.utils import construct_change_message
 import reversion
 
 
-class GenericAlterManyToSomethingFormView(FormView):
-    model_base = None
-    model_to_add = None
-    model_base_field = None
-    form_title = None
-    form_submit_text = _('Save')
-
+class GenericWithItemURLFormView(FormView)
     def dispatch(self, request, *args, **kwargs):
         self.item = get_object_or_404(self.model_base, pk=self.kwargs['iid'])
         if not (self.item and user_can_edit(request.user, self.item)):
@@ -35,7 +29,21 @@ class GenericAlterManyToSomethingFormView(FormView):
                 return redirect(reverse('friendly_login') + '?next=%s' % request.path)
             else:
                 raise PermissionDenied
-        return super(GenericAlterManyToSomethingFormView, self).dispatch(request, *args, **kwargs)
+        return super(GenericWithItemURLFormView, self).dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super(GenericWithItemURLFormView, self).get_context_data(**kwargs)
+        context['item'] = self.item
+        context['submit_url'] = self.request.get_full_path()
+        return context
+
+
+class GenericAlterManyToSomethingFormView(GenericWithItemURLFormView):
+    model_base = None
+    model_to_add = None
+    model_base_field = None
+    form_title = None
+    form_submit_text = _('Save')
 
     def get_context_data(self, **kwargs):
         context = super(GenericAlterManyToSomethingFormView, self).get_context_data(**kwargs)
@@ -43,7 +51,6 @@ class GenericAlterManyToSomethingFormView(FormView):
         context['model_base'] = self.model_base
         context['item'] = self.item
         context['form_title'] = self.form_title or _('Add child item')
-        context['submit_url'] = self.request.get_full_path()
         context['form_submit_text'] = self.form_submit_text
         return context
 
