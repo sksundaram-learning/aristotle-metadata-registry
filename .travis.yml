@@ -43,6 +43,7 @@ after_success:
   - coveralls
   - codecov
   - pep8 --exclude=migrations --ignore=E501,E225,E123 aristotle_mdr
+  - pip list
 
 # Lets run on the new infrastructure
 sudo: false

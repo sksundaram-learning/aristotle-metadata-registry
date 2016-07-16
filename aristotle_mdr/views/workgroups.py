@@ -107,3 +107,22 @@ def add_members(request, iid):
             "role": request.GET.get('role')
         }
     )
+
+
+@login_required
+def leave(request, iid):
+    workgroup = get_object_or_404(MDR.Workgroup, pk=iid)
+    if not (workgroup and request.user in workgroup.members):
+        raise PermissionDenied
+
+    if request.method == 'POST':  # If the form has been submitted...
+        workgroup.removeUser(request.user)
+        return HttpResponseRedirect(reverse("aristotle:userHome"))
+
+    return render(
+        request,
+        "aristotle_mdr/actions/workgroup_leave.html",
+        {
+            "item": workgroup,
+        }
+    )

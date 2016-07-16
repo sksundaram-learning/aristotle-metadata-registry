@@ -53,6 +53,7 @@ urlpatterns = patterns(
     url(r'^workgroup/(?P<iid>\d+)(?:-(?P<name_slug>[A-Za-z0-9\-]+))?/?$', views.workgroups.workgroup, name='workgroup'),
     url(r'^workgroup/(?P<iid>\d+)/members/?$', views.workgroups.members, name='workgroupMembers'),
     url(r'^workgroup/(?P<iid>\d+)/items/?$', views.workgroups.items, name='workgroupItems'),
+    url(r'^workgroup/(?P<iid>\d+)/leave/?$', views.workgroups.leave, name='workgroup_leave'),
     url(r'^workgroup/addMembers/(?P<iid>\d+)$', views.workgroups.add_members, name='addWorkgroupMembers'),
     url(r'^workgroup/(?P<iid>\d+)/archive/?$', views.workgroups.archive, name='archive_workgroup'),
     url(r'^remove/WorkgroupRole/(?P<iid>\d+)/(?P<role>[A-Za-z\-]+)/(?P<userid>\d+)/?$', views.workgroups.remove_role, name='removeWorkgroupRole'),
