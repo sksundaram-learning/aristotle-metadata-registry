@@ -16,15 +16,19 @@ class PublicationRecord(TimeStampedModel):
     VISIBILITY = Choices(
         (0, 'public', _('Public')),
         (1, 'active', _('Logged in users only')),
+        (2, 'hidden', _('Make hidden')),
     )
     visibility = models.IntegerField(
         choices=VISIBILITY,
         default=VISIBILITY.public,
-        help_text=_('Status of a review')
+        help_text=_('Specify who can see this item.')
     )
     user = models.ForeignKey(User)
     concept = models.OneToOneField(MDR._concept, related_name='publicationrecord')
-    publication_date = models.DateField(default=now)
+    publication_date = models.DateField(
+        default=now,
+        help_text=_("Enter a date in the future to specify the date is published from.")
+        )
     note = models.TextField(null=True, blank=True)
 
 

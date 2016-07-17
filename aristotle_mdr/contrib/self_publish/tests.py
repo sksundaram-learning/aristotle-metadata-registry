@@ -98,7 +98,6 @@ class TestSelfPublishing(utils.LoggedInViewPages, TestCase):
         self.assertTrue(response.status_code == 302)
 
         self.item = ObjectClass.objects.get(pk=self.item.pk)
-        print self.item.publicationrecord
         self.assertTrue(self.item._is_public)
 
         self.logout()
@@ -113,6 +112,23 @@ class TestSelfPublishing(utils.LoggedInViewPages, TestCase):
                 "note": "Published",
                 "publication_date": the_future,
                 "visibility": pub.PublicationRecord.VISIBILITY.public
+            }
+        )
+        self.assertTrue(response.status_code == 302)
+
+        self.item = ObjectClass.objects.get(pk=self.item.pk)
+        self.assertFalse(self.item._is_public)
+
+        self.logout()
+        response = self.client.get(self.item.get_absolute_url())
+        self.assertTrue(response.status_code == 302)
+
+        response = self.client.post(
+            reverse('aristotle_self_publish:publish_metadata', args=[self.item.pk]),
+            {
+                "note": "Published",
+                "publication_date": now().date().isoformat(),
+                "visibility": pub.PublicationRecord.VISIBILITY.hidden
             }
         )
         self.assertTrue(response.status_code == 302)
