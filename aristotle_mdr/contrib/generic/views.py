@@ -24,6 +24,7 @@ import reversion
 class GenericWithItemURLFormView(FormView):
     user_checks = []
     permission_checks = [user_can_view]
+    model_base = _concept
 
     def dispatch(self, request, *args, **kwargs):
         self.item = get_object_or_404(self.model_base, pk=self.kwargs['iid'])
@@ -45,6 +46,9 @@ class GenericWithItemURLFormView(FormView):
         context['submit_url'] = self.request.get_full_path()
         return context
 
+    def get_success_url(self):
+        return self.item.get_absolute_url()
+
 
 class GenericAlterManyToSomethingFormView(GenericWithItemURLFormView):
     permission_checks = [user_can_edit]
@@ -62,9 +66,6 @@ class GenericAlterManyToSomethingFormView(GenericWithItemURLFormView):
         context['form_title'] = self.form_title or _('Add child item')
         context['form_submit_text'] = self.form_submit_text
         return context
-
-    def get_success_url(self):
-        return self.item.get_absolute_url()
 
 
 class GenericAlterManyToManyView(GenericAlterManyToSomethingFormView):
@@ -199,7 +200,6 @@ class GenericAlterOneToManyView(GenericAlterManyToSomethingFormView):
             with transaction.atomic(), reversion.revisions.create_revision():
                 self.item.save()  # do this to ensure we are saving reversion records for the value domain, not just the values
                 formset.save(commit=False)
-                print self.item
                 for form in formset.forms:
                     if form['id'].value() not in [deleted_record['id'].value() for deleted_record in formset.deleted_forms]:
                         # Don't immediately save, we need to attach the parent object
