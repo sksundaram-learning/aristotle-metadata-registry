@@ -1238,7 +1238,7 @@ class PossumProfile(models.Model):
 
     @property
     def activeWorkgroup(self):
-        return self.savedActiveWorkgroup or self.editable_workgroups.first()
+        return self.savedActiveWorkgroup or None
 
     @property
     def workgroups(self):
