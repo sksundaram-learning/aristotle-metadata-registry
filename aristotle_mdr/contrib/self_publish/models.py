@@ -24,25 +24,25 @@ class PublicationRecord(TimeStampedModel):
     )
     user = models.ForeignKey(User)
     concept = models.OneToOneField(MDR._concept, related_name='publicationrecord')
-    publication_date = models.DateField(default=now, blank=True)
+    publication_date = models.DateField(default=now)
     note = models.TextField(null=True, blank=True)
 
 
-def concept_visibility_query(user):
-    q = Q(
+def concept_public_query():
+    return Q(
         publicationrecord__visibility=PublicationRecord.VISIBILITY.public,
-        publication_date__gte=now()
+        publicationrecord__publication_date__lte=now()
     )
+
+
+def concept_visibility_query(user):
+    q = concept_public_query()
     if user.is_active:
         q |= Q(
             publicationrecord__visibility=PublicationRecord.VISIBILITY.active,
-            publication_date__gte=now()
+            publicationrecord__publication_date__lte=now()
         )
     return q
-
-
-def concept_public_query():
-    return Q(publicationrecord__visibility=PublicationRecord.VISIBILITY.public)
 
 
 post_save.connect(MDR.recache_concept_states, sender=PublicationRecord)

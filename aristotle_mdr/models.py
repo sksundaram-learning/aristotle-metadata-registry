@@ -929,7 +929,6 @@ class Status(TimeStampedModel):
 
 
 def recache_concept_states(sender, instance, *args, **kwargs):
-    print(instance)
     instance.concept.recache_states()
 post_save.connect(recache_concept_states, sender=Status)
 post_delete.connect(recache_concept_states, sender=Status)

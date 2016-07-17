@@ -3,6 +3,10 @@ from django.core.urlresolvers import reverse
 from django.test import TestCase, override_settings, modify_settings
 from django.test.utils import setup_test_environment
 from django.contrib.auth.models import User
+from django.utils.timezone import now
+import datetime
+
+from reversion import revisions as reversion
 
 from aristotle_mdr.contrib.self_publish import models as pub
 from aristotle_mdr.forms.search import PermissionSearchQuerySet
@@ -21,40 +25,101 @@ setup_test_environment()
     )
 )
 class TestSelfPublishing(utils.LoggedInViewPages, TestCase):
-
-    def test_self_publish_queryset_anon(self):
-        u = User.objects.create_user(
+    def setUp(self):
+        super(TestSelfPublishing, self).setUp()
+        self.submitting_user = User.objects.create_user(
             username="self-publisher",
             email="self@publisher.net",
             password="self-publisher")
-        oc = ObjectClass.objects.create(
-            name="A self-published item",
-            definition="test",
-            submitter=u
-        )
+        with reversion.create_revision():
+            self.item = ObjectClass.objects.create(
+                name="A self-published item",
+                definition="test",
+                submitter=self.submitting_user
+            )
+
+    def test_self_publish_queryset_anon(self):
         self.logout()
-        response = self.client.get(oc.get_absolute_url())
+        response = self.client.get(self.item.get_absolute_url())
         self.assertTrue(response.status_code == 302)
 
-        oc = ObjectClass.objects.get(pk=oc.pk)
-        self.assertFalse(oc._is_public)
+        self.item = ObjectClass.objects.get(pk=self.item.pk)
+        self.assertFalse(self.item._is_public)
 
         psqs = PermissionSearchQuerySet()
         psqs = psqs.auto_query('published').apply_permission_checks()
         self.assertEqual(len(psqs), 0)
 
         pub.PublicationRecord.objects.create(
-            user=u,
-            concept=oc,
+            user=self.submitting_user,
+            concept=self.item,
             visibility=pub.PublicationRecord.VISIBILITY.public
         )
 
-        response = self.client.get(oc.get_absolute_url())
+        response = self.client.get(self.item.get_absolute_url())
         self.assertTrue(response.status_code == 200)
 
-        oc = ObjectClass.objects.get(pk=oc.pk)
-        self.assertTrue(oc._is_public)
+        self.item = ObjectClass.objects.get(pk=self.item.pk)
+        self.assertTrue(self.item._is_public)
 
         psqs = PermissionSearchQuerySet()
         psqs = psqs.auto_query('published').apply_permission_checks()
         self.assertEqual(len(psqs), 1)
+
+    def test_anon_cannot_view_self_publish(self):
+        self.logout()
+        response = self.client.get(
+            reverse('aristotle_self_publish:publish_metadata', args=[self.item.pk])
+        )
+        self.assertTrue(response.status_code == 302)
+
+    def login_publisher(self):
+        self.logout()
+        return self.client.post(reverse('friendly_login'), {'username': 'self-publisher', 'password': 'self-publisher'})
+
+    def test_submitter_can_self_publish(self):
+        self.login_publisher()
+        response = self.client.get(
+            reverse('aristotle_self_publish:publish_metadata', args=[self.item.pk])
+        )
+        self.assertTrue(response.status_code == 200)
+
+        self.item = ObjectClass.objects.get(pk=self.item.pk)
+        self.assertFalse(self.item._is_public)
+
+        response = self.client.post(
+            reverse('aristotle_self_publish:publish_metadata', args=[self.item.pk]),
+            {
+                "note": "Published",
+                "publication_date": now().date().isoformat(),
+                "visibility": pub.PublicationRecord.VISIBILITY.public
+            }
+        )
+        self.assertTrue(response.status_code == 302)
+
+        self.item = ObjectClass.objects.get(pk=self.item.pk)
+        print self.item.publicationrecord
+        self.assertTrue(self.item._is_public)
+
+        self.logout()
+        response = self.client.get(self.item.get_absolute_url())
+        self.assertTrue(response.status_code == 200)
+
+        self.login_publisher()
+        the_future = (now() + datetime.timedelta(days=100)).date().isoformat()
+        response = self.client.post(
+            reverse('aristotle_self_publish:publish_metadata', args=[self.item.pk]),
+            {
+                "note": "Published",
+                "publication_date": the_future,
+                "visibility": pub.PublicationRecord.VISIBILITY.public
+            }
+        )
+        self.assertTrue(response.status_code == 302)
+
+        self.item = ObjectClass.objects.get(pk=self.item.pk)
+        self.assertFalse(self.item._is_public)
+
+        self.logout()
+        response = self.client.get(self.item.get_absolute_url())
+        self.assertTrue(response.status_code == 302)
