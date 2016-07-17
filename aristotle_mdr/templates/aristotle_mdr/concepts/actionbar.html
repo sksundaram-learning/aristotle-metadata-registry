@@ -4,6 +4,7 @@
     {% if user.is_active %}
         {% include "aristotle_mdr/helpers/favourite_concept.html" %}
     {% endif %}
+    {% include "aristotle_mdr/helpers/extra_actions.html" %}
     {% if item.registry_cascade_items or user.is_active or item|can_edit:request.user %}
     <div class="btn-group">
       <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
