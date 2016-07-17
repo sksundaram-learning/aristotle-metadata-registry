@@ -3,6 +3,7 @@ from aristotle_mdr.contrib.self_publish.models import PublicationRecord
 from bootstrap3_datetime.widgets import DateTimePicker
 from django.forms import RadioSelect
 
+
 class MetadataPublishForm(ModelForm):
     class Meta:
         model = PublicationRecord
