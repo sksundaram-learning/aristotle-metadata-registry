@@ -26,7 +26,6 @@ setup_test_environment()
 )
 class TestSelfPublishing(utils.LoggedInViewPages, TestCase):
     def make_items(self):
-        super(TestSelfPublishing, self).setUp()
         self.submitting_user = User.objects.create_user(
             username="self-publisher",
             email="self@publisher.net",
@@ -81,6 +80,7 @@ class TestSelfPublishing(utils.LoggedInViewPages, TestCase):
         return self.client.post(reverse('friendly_login'), {'username': 'self-publisher', 'password': 'self-publisher'})
 
     def test_submitter_can_self_publish(self):
+        self.make_items()
         self.login_publisher()
         response = self.client.get(
             reverse('aristotle_self_publish:publish_metadata', args=[self.item.pk])
