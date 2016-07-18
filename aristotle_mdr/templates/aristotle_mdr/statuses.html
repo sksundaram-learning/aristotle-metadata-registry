@@ -1,6 +1,6 @@
 {% load i18n aristotle_tags %}
 {% if infoBox %}<dt class="large">{% endif %}
-<span>{% trans 'Registration status' %}</span>
+<span>{% trans 'Endorsed by' %}</span>
 {% if user.profile.is_registrar %}
     <a class="inline_action" href="{% url 'aristotle:changeStatus' item.id %}"
         data-toggle="modal" data-target="#statusChange">Change</a>
@@ -9,9 +9,6 @@
 {% endif %}
 {% if infoBox %}</dt><dd class="large">{% else %}:{% endif %}
 <ul>
-    {% if statuses and item %}
-    <li class="viewHistory"><strong><a href="{% url 'aristotle:registrationHistory' item.id %}">{% trans 'View registration history'%}</a></strong></li>
-    {% endif %}
     {% if statuses.all %}
         {% for status in statuses.all %}
         <li>
@@ -26,9 +23,12 @@
             : {% trans status.state_name %} on {{ status.registrationDate }}
             </li>
         {% empty %}
-            <li><em>{% trans 'Not registered' %}</em>
+            <li><em>{% trans 'Not endorsed' %}</em>
             </li>
         {% endfor %}
+    {% endif %}
+    {% if statuses and item %}
+    <li class="viewHistory"><strong><a href="{% url 'aristotle:registrationHistory' item.id %}">{% trans 'View registration history'%}</a></strong></li>
     {% endif %}
 </ul>
 {% if infoBox %}</dd>{% endif %}

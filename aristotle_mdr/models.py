@@ -2,13 +2,15 @@ from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import absolute_import
 
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.db import models, transaction
 from django.db.models import Q
 from django.db.models.signals import post_save, m2m_changed, post_delete
-from django.dispatch import receiver
+from django.dispatch import receiver, Signal
 from django.utils import timezone
+from django.utils.module_loading import import_string
 from django.utils.translation import ugettext_lazy as _
 
 from model_utils.managers import InheritanceManager, InheritanceQuerySet
@@ -47,6 +49,9 @@ STATES = Choices(
 
 
 VERY_RECENTLY_SECONDS = 15
+
+
+concept_visibility_updated = Signal(providing_args=["concept"])
 
 
 class baseAristotleObject(TimeStampedModel):
@@ -500,23 +505,26 @@ class ConceptQuerySet(InheritanceQuerySet):
             return self.public()
         q = Q(_is_public=True)
 
-        # User can see everything they've made.
-        q |= Q(submitter=user)
-
-        if user.profile.workgroups:
-            # User can see everything in their workgroups.
-            q |= Q(workgroup__in=user.profile.workgroups)
-            # q |= Q(workgroup__user__profile=user)
-        if user.profile.is_registrar:
-            # Registars can see items they have been asked to review
-            q |= Q(
-                Q(review_requests__registration_authority__registrars__profile__user=user) & ~Q(review_requests__status=REVIEW_STATES.cancelled)
-            )
-            # Registars can see items that have been registered in their registration authority
-            q |= Q(
-                Q(statuses__registrationAuthority__registrars__profile__user=user)
-            )
-
+        if user.is_active:
+            # User can see everything they've made.
+            q |= Q(submitter=user)
+            if user.profile.workgroups:
+                # User can see everything in their workgroups.
+                q |= Q(workgroup__in=user.profile.workgroups)
+                # q |= Q(workgroup__user__profile=user)
+            if user.profile.is_registrar:
+                # Registars can see items they have been asked to review
+                q |= Q(
+                    Q(review_requests__registration_authority__registrars__profile__user=user) & ~Q(review_requests__status=REVIEW_STATES.cancelled)
+                )
+                # Registars can see items that have been registered in their registration authority
+                q |= Q(
+                    Q(statuses__registrationAuthority__registrars__profile__user=user)
+                )
+        extra_q = settings.ARISTOTLE_SETTINGS.get('EXTRA_CONCEPT_QUERYSETS', {}).get('visible', None)
+        if extra_q:
+            for func in extra_q:
+                q |= import_string(func)(user)
         return self.filter(q)
 
     def editable(self, user):
@@ -689,9 +697,18 @@ class _concept(baseAristotleObject):
         """
         statuses = self.statuses.all()
         statuses = self.current_statuses(qs=statuses, when=when)
-        return True in [
+        pub_state = True in [
             s.state >= s.registrationAuthority.public_state for s in statuses
         ]
+
+        q = Q()
+        extra = False
+        extra_q = settings.ARISTOTLE_SETTINGS.get('EXTRA_CONCEPT_QUERYSETS', {}).get('public', None)
+        if extra_q:
+            for func in extra_q:
+                q |= import_string(func)()
+            extra = self.__class__.objects.filter(pk=self.pk).filter(q).exists()
+        return pub_state or extra
 
     def is_public(self):
         return self._is_public
@@ -719,6 +736,7 @@ class _concept(baseAristotleObject):
         self._is_public = self.check_is_public()
         self._is_locked = self.check_is_locked()
         self.save()
+        concept_visibility_updated.send(sender=self.__class__, concept=self)
 
     def current_statuses(self, qs=None, when=timezone.now()):
         if qs is None:
@@ -1220,7 +1238,7 @@ class PossumProfile(models.Model):
 
     @property
     def activeWorkgroup(self):
-        return self.savedActiveWorkgroup or self.editable_workgroups.first()
+        return self.savedActiveWorkgroup or None
 
     @property
     def workgroups(self):

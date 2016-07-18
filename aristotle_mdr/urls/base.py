@@ -45,6 +45,7 @@ urlpatterns = [
     url(r'^account/password/change/done/?$', 'django.contrib.auth.views.password_change_done', name='password_change_done'),
 ]
 
+
 if settings.DEBUG:
     from django.conf.urls.static import static
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

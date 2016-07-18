@@ -11,12 +11,13 @@ import haystack.signals as signals  # .RealtimeSignalProcessor as RealtimeSignal
 
 class AristotleSignalProcessor(signals.BaseSignalProcessor):
     def setup(self):
-        from aristotle_mdr.models import _concept, Workgroup, ReviewRequest
+        from aristotle_mdr.models import _concept, Workgroup, ReviewRequest, concept_visibility_updated
         # post_save.connect(self.handle_concept_save, sender=_concept)
         post_revision_commit.connect(self.handle_concept_revision)
         pre_delete.connect(self.handle_concept_delete, sender=_concept)
         post_save.connect(self.update_visibility_review_request, sender=ReviewRequest)
         m2m_changed.connect(self.update_visibility_review_request, sender=ReviewRequest.concepts.through)
+        concept_visibility_updated.connect(self.handle_concept_recache)
         super(AristotleSignalProcessor, self).setup()
 
     def teardown(self):  # pragma: no cover
@@ -25,6 +26,11 @@ class AristotleSignalProcessor(signals.BaseSignalProcessor):
         post_revision_commit.disconnect(self.handle_concept_revision)
         pre_delete.disconnect(self.handle_concept_delete, sender=_concept)
         super(AristotleSignalProcessor, self).teardown()
+
+    def handle_concept_recache(self, concept, **kwargs):
+        from aristotle_mdr.models import _concept
+        instance = concept.item
+        self.handle_save(instance.__class__, instance)
 
     def handle_concept_revision(self, instances, **kwargs):
         from aristotle_mdr.models import _concept
