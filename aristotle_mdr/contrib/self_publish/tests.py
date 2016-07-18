@@ -25,7 +25,7 @@ setup_test_environment()
     )
 )
 class TestSelfPublishing(utils.LoggedInViewPages, TestCase):
-    def setUp(self):
+    def make_items(self):
         super(TestSelfPublishing, self).setUp()
         self.submitting_user = User.objects.create_user(
             username="self-publisher",
@@ -39,6 +39,7 @@ class TestSelfPublishing(utils.LoggedInViewPages, TestCase):
             )
 
     def test_self_publish_queryset_anon(self):
+        self.make_items()
         self.logout()
         response = self.client.get(self.item.get_absolute_url())
         self.assertTrue(response.status_code == 302)
@@ -49,7 +50,6 @@ class TestSelfPublishing(utils.LoggedInViewPages, TestCase):
         psqs = PermissionSearchQuerySet()
         psqs = psqs.auto_query('published').apply_permission_checks()
 
-        print psqs
         self.assertEqual(len(psqs), 0)
 
         pub.PublicationRecord.objects.create(
@@ -69,6 +69,7 @@ class TestSelfPublishing(utils.LoggedInViewPages, TestCase):
         self.assertEqual(len(psqs), 1)
 
     def test_anon_cannot_view_self_publish(self):
+        self.make_items()
         self.logout()
         response = self.client.get(
             reverse('aristotle_self_publish:publish_metadata', args=[self.item.pk])
