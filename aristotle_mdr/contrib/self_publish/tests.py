@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.core.management import call_command
 from django.core.urlresolvers import reverse
 from django.test import TestCase, override_settings, modify_settings
 from django.test.utils import setup_test_environment
@@ -25,7 +26,8 @@ setup_test_environment()
     )
 )
 class TestSelfPublishing(utils.LoggedInViewPages, TestCase):
-    def make_items(self):
+    def setUp(self):
+        super(TestSelfPublishing, self).setUp()
         self.submitting_user = User.objects.create_user(
             username="self-publisher",
             email="self@publisher.net",
@@ -37,8 +39,10 @@ class TestSelfPublishing(utils.LoggedInViewPages, TestCase):
                 submitter=self.submitting_user
             )
 
+    def tearDown(self):
+        call_command('clear_index', interactive=False, verbosity=0)
+
     def test_self_publish_queryset_anon(self):
-        self.make_items()
         self.logout()
         response = self.client.get(self.item.get_absolute_url())
         self.assertTrue(response.status_code == 302)
@@ -68,7 +72,6 @@ class TestSelfPublishing(utils.LoggedInViewPages, TestCase):
         self.assertEqual(len(psqs), 1)
 
     def test_anon_cannot_view_self_publish(self):
-        self.make_items()
         self.logout()
         response = self.client.get(
             reverse('aristotle_self_publish:publish_metadata', args=[self.item.pk])
@@ -80,7 +83,6 @@ class TestSelfPublishing(utils.LoggedInViewPages, TestCase):
         return self.client.post(reverse('friendly_login'), {'username': 'self-publisher', 'password': 'self-publisher'})
 
     def test_submitter_can_self_publish(self):
-        self.make_items()
         self.login_publisher()
         response = self.client.get(
             reverse('aristotle_self_publish:publish_metadata', args=[self.item.pk])
