@@ -49,6 +49,7 @@ class TestSelfPublishing(utils.LoggedInViewPages, TestCase):
         psqs = PermissionSearchQuerySet()
         psqs = psqs.auto_query('published').apply_permission_checks()
 
+        print psqs
         self.assertEqual(len(psqs), 0)
 
         pub.PublicationRecord.objects.create(
