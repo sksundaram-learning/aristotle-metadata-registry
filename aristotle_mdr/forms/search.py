@@ -162,6 +162,8 @@ class PermissionSearchQuerySet(SearchQuerySet):
 
 
 class TokenSearchForm(FacetedSearchForm):
+    token_models = []
+    kwargs = {}
 
     def prepare_tokens(self):
         try:
@@ -200,7 +202,7 @@ class TokenSearchForm(FacetedSearchForm):
 
             else:
                 query_text.append(word)
-        self.models = token_models
+        self.token_models = token_models
         self.query_text = " ".join(query_text)
         self.kwargs = kwargs
         return kwargs
@@ -216,8 +218,8 @@ class TokenSearchForm(FacetedSearchForm):
 
         sqs = self.searchqueryset.auto_query(self.query_text)
 
-        if hasattr(self, 'models'):
-            sqs = sqs.models(*self.models)
+        if self.token_models:
+            sqs = sqs.models(*self.token_models)
         if kwargs:
             sqs = sqs.filter(**kwargs)
 
@@ -345,14 +347,15 @@ class PermissionSearchForm(TokenSearchForm):
     def search(self, repeat_search=False):
         # First, store the SearchQuerySet received from other processing.
         sqs = super(PermissionSearchForm, self).search()
-        sqs = sqs.models(*self.get_models())
+        if not self.token_models:
+            sqs = sqs.models(*self.get_models())
         self.repeat_search = repeat_search
 
-        has_filter = len(self.applied_filters) > 0
+        has_filter = self.kwargs or self.token_models or self.applied_filters
         if not has_filter and not self.query_text:
             return self.no_query_found()
 
-        if has_filter and not self.query_text:  # and not self.kwargs:
+        if self.applied_filters and not self.query_text:  # and not self.kwargs:
             # If there is a filter, but no query then we'll force some results.
             sqs = self.searchqueryset.order_by('-modified')
             self.filter_search = True
