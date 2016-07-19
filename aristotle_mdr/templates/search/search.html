@@ -166,6 +166,7 @@
     {% endif %}
     
     <div class="col-xs-12 results_header">
+    {% if query or form.filter_search %}
         <div class="row">
             <h3 class="col-sm-3">Results</h3>
             {% if form.auto_broaden_search %}
@@ -242,6 +243,7 @@
             {% endif %}
             </div>
         </div>
+    {% endif %}
 
             
     </div>
