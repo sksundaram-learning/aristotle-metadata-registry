@@ -338,11 +338,9 @@ class PermissionSearchForm(TokenSearchForm):
 
     @property
     def applied_filters(self):
-        if hasattr(self, 'cleaned_data'):
-            filters = [f for f in self.filters if self.cleaned_data.get(f, False)]
-        else:
-            filters = []
-        return
+        if not hasattr(self, 'cleaned_data'):
+            return []
+        return [f for f in self.filters if self.cleaned_data.get(f, False)]
 
     def search(self, repeat_search=False):
         # First, store the SearchQuerySet received from other processing.
@@ -350,10 +348,10 @@ class PermissionSearchForm(TokenSearchForm):
         sqs = sqs.models(*self.get_models())
         self.repeat_search = repeat_search
 
-        if not self.is_valid():
+        has_filter = len(self.applied_filters) > 0
+        if not has_filter and not self.query_text:
             return self.no_query_found()
 
-        has_filter = len(self.applied_filters) > 0
         if has_filter and not self.query_text:  # and not self.kwargs:
             # If there is a filter, but no query then we'll force some results.
             sqs = self.searchqueryset.order_by('-modified')
