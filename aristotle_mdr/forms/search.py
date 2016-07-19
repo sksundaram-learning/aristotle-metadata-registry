@@ -338,7 +338,11 @@ class PermissionSearchForm(TokenSearchForm):
 
     @property
     def applied_filters(self):
-        return [f for f in self.filters if self.cleaned_data.get(f, False)]
+        if hasattr(self, 'cleaned_data'):
+            filters = [f for f in self.filters if self.cleaned_data.get(f, False)]
+        else:
+            filters = []
+        return
 
     def search(self, repeat_search=False):
         # First, store the SearchQuerySet received from other processing.
