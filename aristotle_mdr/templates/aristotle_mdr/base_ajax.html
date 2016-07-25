@@ -2,9 +2,15 @@
 {% load bootstrap3 %}
 
 <div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">
+        <i class="fa fa-fw fa-times"></i>
+    </span><span class="sr-only">Close popover</span></button>
+    <a title="Expand" class="exapnd close" href="{{request.get_full_path}}">
+        <span>
+        <i class="fa fa-fw fa-expand"></i>
+        </span><span class="sr-only">Expand popover</span>
+    </a>
     <h4 class="modal-title">{% block title %}{% endblock %}
-        <a title="Expand" class="expand" href="{{request.get_full_path}}"><i class="fa fa-expand pull-right"></i></a>
     </h4>
 
 </div>
