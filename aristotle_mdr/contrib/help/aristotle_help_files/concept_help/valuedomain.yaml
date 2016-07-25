@@ -1,0 +1,47 @@
+- model: aristotle_mdr_help.concepthelp
+  fields:
+    app_label: aristotle_mdr
+    concept_type: valuedomain
+    language: en
+    brief: A definition of how to record the measurement a particular attribute, either
+        using a coded list of values or a description of the possible values.
+    offical_definition: a set of Permissible Values
+    official_reference: ISO/IEC 11179 - Clause 3.2.140
+    official_link: 
+    body: >
+        <p>A value domain provides a set of permissible values by which a [[data element]]
+        can be implemented. Value domains can be enumerated (e.g. Total centimetres NNN)
+        or non-enumerated (e.g. Sex code N).</p>
+        
+            <p>The union of a specific value domain with a specific [[data element concept]]
+            creates a [[data element]]. For example the data element concept
+            <em>Person&mdash;body height</em> can be implemented through union
+            with the <em>Total centimetres NNN</em> value domain. </p>
+        
+        <header><strong>Permissible values</strong></header>
+        <blockquote>
+        An expression of a Value Meaning allowed in a specific Value Domain
+        </blockquote>
+        
+        <header><strong>Permissible values</strong></header>
+        
+        <p>ISO/IEC 11179 allows for 2 different types of Value Domains - enumerated vs non-enumerated.
+        The distinction between these is that an enumerated value domain is <q>specified by a list of all its Value Meanings</q>,
+        while a non-enumerated value domain is <q>specified by a description rather than a list of all Permissible Values</q>.
+        </p>
+        <ul>
+            <li>
+                <em>An example of a enumerated value domain</em> would be a list of 10-year cohorts for recording a persons age:
+                <ul>
+                    <li> A code of A coresponsing to 0-15 years
+                    <li> A code of B coresponsing to 15-30 years
+                    <li> A code of C coresponsing to 30-45 years
+                    <li> A code of D coresponsing to 45+ years
+                </ul>
+                Here, every possible value within the set has been explicitly enumerated.
+            </li>
+            <li>
+                <em>An example of a non-enumerated value domain</em> would be an numeric range for recording a persons age,
+                where the number could be any two digit number greater than zero. While there is an implied set of values, these have not been expressly enumerated.
+            </li>
+        </ul>

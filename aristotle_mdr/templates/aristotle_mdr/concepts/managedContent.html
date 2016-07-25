@@ -26,7 +26,12 @@
             {{ item.version }}
         </em>
         {% endif %}
-        <small>({{ item.get_verbose_name }})</small>
+        <small>
+            (<a href="{% url 'aristotle_help:concept_help' item.meta.app_label item.meta.model_name %}"
+                title="{% trans 'Learn about this metadata type' %}"
+                data-toggle="modal" data-target="#infobox_modal"
+            >{{ item.get_verbose_name }}</a>)
+        </small>
 
         {# Screen reader quick links #}
         {% if item|can_edit:request.user and request.user.is_staff %}
@@ -35,52 +40,7 @@
             <a class="sr-only" accesskey="e" href="{% url 'aristotle:edit_item' item.id %}">{% trans 'Open item editor'%}</a>
         {% endif %}
     </h1>
-    <div class="btn-group pull-right">
-        {% if user.is_authenticated %}
-            {% include "aristotle_mdr/helpers/favourite_concept.html" %}
-        {% endif %}
-        {% if item|can_edit:request.user %}
-            {% if request.user.is_staff %}
-                <div class="btn-group">
-                  <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                    <i class="fa fa-pencil-square-o"></i> {% trans 'Edit'%} <span class="caret"></span>
-                  </button>
-                  <ul class="dropdown-menu dropdown-menu-right" role="menu">
-                    <li><a class="" href="{% url 'aristotle:edit_item' item.id %}"
-                                    data-toggle="modal" data-target="#infobox_adv_edit">
-                        <i class="fa fa-pencil-square-o"></i> {% trans 'Open item editor'%}
-                    </a></li>
-                    <li><a class="staff_action" href="{% adminEdit item %}">
-                        <i class="fa fa-pencil-square"></i> {% trans 'Edit in admin'%}
-                    </a></li>
-                    {# % endif % #}
-                    <li class="divider"></li>
-                    <li><a class="" href="{% url 'aristotle:clone_item' item.id %}">
-                        <i class="fa fa-code-fork"></i> {% trans 'Clone this item'%}
-                    </a></li>
-                    {% if request.user.is_staff %}
-                    <li><a class="staff_action" href="{% clone item %}">
-                        <i class="fa fa-code-fork"></i> {% trans 'Clone this item via admin'%}
-                    </a></li>
-                    {% endif %}
-                  </ul>
-                </div>
-            {% else %}
-                <button class="btn btn-default" href="{% url 'aristotle:edit_item' item.id %}"
-                        accesskey='e'
-                        data-toggle="modal" data-target="#infobox_adv_edit">
-                    <i class="fa fa-pencil-square"></i> {% trans 'Edit'%}
-                </button>
-            {% endif %}
-            {% bootstrap_modal "infobox_adv_edit" size='lg' %}
-        {% endif %}
-        <div class="btn-group">
-            <button accesskey="d" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-            <i class="fa fa-download"></i> {% trans 'Download'%} <span class="caret"></span>
-            </button>
-            {% downloadMenu item %}
-        </div>
-    </div>
+    {% include "aristotle_mdr/concepts/actionbar.html" %}
 </header>
 <section class="managed row">
     {% include "aristotle_mdr/concepts/infobox.html" %}
@@ -123,43 +83,7 @@
         {% endif %}
     </div>
     {% endif %}
-    {% if item.slots.exists %}
-    <div>
-    <h2>Additional Attributes</h2>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>
-                    {% trans 'Slot name' %}
-                </th>
-                <th>
-                    {% trans 'Details' %}
-                </th>
-                <th>
-                    {% trans 'Cardinality' %}
-                </th>
-                <th>
-                    {% trans 'Value' %}
-                </th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for slot in item.slots.all %}
-            <tr>
-                <td>
-                    {{ slot.type.slot_name }}
-                </td>
-                <td>{{slot.type.help_text}}</td>
-                <td>{{slot.type.get_cardinality_display}}</td>
-                <td>
-                    {{ slot.value }}
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    </div>
-    {% endif %}
+    {% include "aristotle_mdr/slots/slots_display.html" %}
     <h2>Related content</h2>
         {% block relationships %}{% endblock %}
         {% for extension in config.CONTENT_EXTENSIONS %}

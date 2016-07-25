@@ -4,7 +4,7 @@
 {% block title %}Help - {{ object.title }}{% endblock %}
 
 {% block breadcumbs %}
-    <li><a href="{% url 'help_base' %}">Help</a></li>
+    <li><a href="{% url 'aristotle_help:help_base' %}">Help</a></li>
     {% comment %}
     {% if app %}
     <li><a href="">{{ app.verbose_name }}</a></li>
@@ -14,9 +14,9 @@
 {% endblock %}
 
 {% block help_content %}
-<p>
+<div class="help_page_wrapper">
     {% relink object 'body' %}
-</p>
+</div>
 
 <p>
     Last modified: {{ object.modified }}

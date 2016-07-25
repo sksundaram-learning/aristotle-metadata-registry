@@ -29,7 +29,7 @@
             class="navbar-form navbar-left" role="search">
                 <label style="display:none;" for="searchText">Search:</label>
                 <div class="input-group">
-                    <input type="text" class="form-control" id="searchText" name="q" accesskey="q"></input>
+                    <input type="text" class="form-control" id="searchText" name="q" accesskey="q">
                     <span class="input-group-btn">
                     <button class="btn btn-primary" type="submit" title="{% trans 'Search' %}">
                         {% bootstrap_icon "search" %}&nbsp;
@@ -40,6 +40,9 @@
         {% endif %}
 
         <ul class="nav navbar-nav navbar-right">
+            <li >
+                <a accesskey="h" href="{% url 'aristotle_help:help_base' %}">{% trans 'Help'%}</a>
+            </li>
         {% if user.is_active %}
             <li class="dropdown">
                 <a href="{% url 'aristotle:userHome' %}" accesskey="u" class="dropdown-toggle" role="menu" data-toggle="dropdown" title="{% trans 'Open user menu' %}">
@@ -98,7 +101,7 @@
                 </ul>
             </li>
             <li class="dropdown">
-                <a href="{% url 'aristotle:createList' %}"
+                <a href="{% url 'aristotle:create_list' %}"
                     accesskey="o" class="dropdown-toggle" data-toggle="dropdown" title="{% trans 'Create new' %}...">
                     <i class="fa fa-plus"></i>
                     <span class="visible-xs-inline">{% trans 'Create new' %} ... </span>
@@ -129,7 +132,7 @@
                     {% endif %}
                     <li role="presentation" class="divider"></li>
                     <li>
-                        <a href="{% url 'aristotle:createList' %}">{% trans 'See all'%}...</a>
+                        <a href="{% url 'aristotle:create_list' %}">{% trans 'See all'%}...</a>
                     </li>
                 </ul>
             </li>
@@ -154,7 +157,7 @@
                 </a>
             </li>
         {% else %}
-            <li accesskey="l">
+            <li>
             <a href="{% url 'friendly_login' %}?next={{request.path}}">
                 <i class="fa fa-sign-in fa-lg"></i>  {% trans 'Log in'%}
             </a>

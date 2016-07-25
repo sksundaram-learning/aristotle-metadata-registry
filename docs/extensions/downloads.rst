@@ -18,11 +18,30 @@ of files for generating downloads. The files required in your app are:
 Other modules can be written, for example a download module may define models for
 recording a number of times an item is downloaded.
 
-Writing a ``downloader.download`` method
-----------------------------------------
-Your ``downloader.py`` file must contain a method with the following signature::
+Writing a ``downloader.py`` module
+----------------------------------
+Your ``downloader.py`` file must contain a register of download types and the metadata concept
+types which this module provides downloads for. This takes the form of a dictionary with keys
+being the download type provided, and the values define which concepts can be downloaded as
+that output format::
 
-    def download(request,downloadType,item):
+    item_register = {
+        'csv': {'aristotle_mdr': ['valuedomain']},
+        'xls': {'aristotle_mdr': ['__all__']},
+        'pdf': '__template__'
+        'txt': '__all__'
+    }
+
+Describing these options, this register specifies the following downloads:
+
+* ``csv`` provides downloads for Value Domains in the Aristotle-MDR module
+* ``xls`` provides downloads for all metadata types in the Aristotle-MDR module
+* ``pdf`` provides downloads for items in all modules, only if they have a download template
+* ``txt`` provides downloads for all metadata types in all modules
+
+The download module must also define  a method with the following signature::
+
+    def download(request, download_type, item):
 
 This is called from Aristotle-MDR when it catches a download type that has been
 registered for this module. The arguments are:
@@ -31,7 +50,7 @@ registered for this module. The arguments are:
   that was used to call the download view. The current user trying to download the
   item can be gotten by calling ``request.user``.
 
-* ``downloadType`` - a short string used to differentiate different download formats
+* ``download_type`` - a short string used to differentiate different download formats
 
 * ``item`` - the item to be downloaded, as retrieved from the database.
 
@@ -50,5 +69,5 @@ PDF and CSV format for various content types which is linked below:
 How the ``download`` view works
 -------------------------------
 
-.. automodule:: aristotle_mdr.views.views
+.. automodule:: aristotle_mdr.views.downloads
    :members: download

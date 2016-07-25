@@ -60,6 +60,9 @@
     </div>
     {% endfor %}
 {% endif %}
+{% if item.slots.count > 0 %}
+    {% include "aristotle_mdr/slots/pdf/slots_display.html" %}
+{% endif %}
 </section>
 
 {% endblock %}

@@ -9,6 +9,8 @@ from django.core.urlresolvers import reverse
 from django.db.models import Q
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
+from django.utils.decorators import method_decorator
+from django.views.generic import DetailView, ListView
 
 
 from aristotle_mdr import forms as MDRForms
@@ -214,7 +216,8 @@ def favourites(request):
     items = request.user.profile.favourites.select_subclasses()
     context = {
         'help': request.GET.get("help", False),
-        'favourite': request.GET.get("favourite", False)
+        'favourite': request.GET.get("favourite", False),
+        "select_all_list_queryset_filter": 'favourited_by__user=user'  # no information leakage here.
     }
     return paginated_list(request, items, "aristotle_mdr/user/userFavourites.html", context)
 
@@ -231,8 +234,53 @@ def registrar_tools(request):
 def review_list(request):
     if not request.user.profile.is_registrar:
         raise PermissionDenied
-    items = MDR._concept.objects.visible(request.user).filter(readyToReview=True, statuses=None).select_subclasses()
-    return paginated_list(request, items, "aristotle_mdr/user/userReadyForReview.html", {'items': items})
+    authorities = [i[0] for i in request.user.profile.registrarAuthorities.all().values_list('id')]
+
+    # Registars can see items they have been asked to review
+    q = Q(Q(registration_authority__id__in=authorities) & ~Q(status=MDR.REVIEW_STATES.cancelled))
+
+    reviews = MDR.ReviewRequest.objects.visible(request.user).filter(q)
+    return paginated_list(request, reviews, "aristotle_mdr/user/userReviewList.html", {'reviews': reviews})
+
+
+@login_required
+def my_review_list(request):
+    # Users can see any items they have been asked to review
+    q = Q(requester=request.user)
+    reviews = MDR.ReviewRequest.objects.visible(request.user).filter(q)
+    return paginated_list(request, reviews, "aristotle_mdr/user/my_review_list.html", {'reviews': reviews})
+
+
+class ReviewDetailsView(DetailView):
+    pk_url_kwarg = 'review_id'
+    template_name = "aristotle_mdr/user/request_review_details.html"
+    context_object_name = "review"
+
+    @method_decorator(login_required)
+    def dispatch(self, *args, **kwargs):
+        return super(ReviewDetailsView, self).dispatch(*args, **kwargs)
+
+    def get_queryset(self):
+        return MDR.ReviewRequest.objects.visible(self.request.user)
+
+
+class CreatedItemsListView(ListView):
+    paginate_by = 25
+    template_name = "aristotle_mdr/user/sandbox.html"
+
+    def get_queryset(self, *args, **kwargs):
+        return MDR._concept.objects.filter(submitter=self.request.user)  # ,statuses=None,review_requests=None)
+
+    def get_context_data(self, **kwargs):
+        # Call the base implementation first to get a context
+        context = super(CreatedItemsListView, self).get_context_data(**kwargs)
+        context['sort'] = self.request.GET.get('sort', 'name_asc')
+        return context
+
+    def get_ordering(self):
+        from aristotle_mdr.views.utils import paginate_sort_opts
+        self.order = self.request.GET.get('sort', 'name_asc')
+        return paginate_sort_opts.get(self.order)
 
 
 @login_required

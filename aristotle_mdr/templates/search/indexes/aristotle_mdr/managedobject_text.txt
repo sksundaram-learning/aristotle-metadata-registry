@@ -5,3 +5,7 @@
 {{ object.submitting_organisation }}
 {{ object.responsible_organisation }}
 {% for state in object.statuses.all %}{{ state.state_name }} {% endfor %}
+
+{% for slot in object.slots.all %}
+{{slot.type.slot_name}} {{slot.value}}
+{% endfor %}

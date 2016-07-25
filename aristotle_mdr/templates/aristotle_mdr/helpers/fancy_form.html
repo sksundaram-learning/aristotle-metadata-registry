@@ -1,6 +1,6 @@
 {% for field in form %}
 <div>
-    {{ field.label_tag }}
+    {{ field.label_tag }} {{field.help_text}}
     {% if field.errors %}
         <ul class="alert alert-danger">
             {% for f in field.errors %}

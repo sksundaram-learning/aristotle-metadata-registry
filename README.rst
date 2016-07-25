@@ -31,19 +31,22 @@ however `a number of extensions are available to extend functionality and add ad
 Quick start
 -----------
 
-1. Add "aristotle_mdr" to your INSTALLED_APPS setting like this::
+1. Install using the pip package manager::
+
+    pip install aristotle-metadata-registry
+
+#. Add "aristotle_mdr" to your INSTALLED_APPS setting like this::
 
     INSTALLED_APPS = (
         ...
         'haystack',
         'aristotle_mdr',
-        'grappelli',
         ...
     )
 
    To ensure that search indexing works properly ``haystack`` **must** be installed before `aristotle_mdr`.
    If you want to take advantage of Aristotle's access-key shortcut improvements for the admin interface,
-   make sure it is installed *before* ``grappelli``.
+   make sure it is installed *before* the django admin app.
 
 #. Include the Aristotle-MDR URLconf in your project ``urls.py``. Because Aristotle will
    form the majority of the interactions with the site, and the Aristotle includes a
@@ -84,7 +87,7 @@ An item being edited without changing screens
 Information for developers
 --------------------------
 
-Aristotle-MDR is free open-source software, and contributions are welcome on front-end web development,
+Aristotle-MDR is free open-source software and contributions are welcome on front-end web development,
 back-end server development, translation and content creation (such as more documentation).
 Review the wiki, open issues and existing documentation to get started.
 

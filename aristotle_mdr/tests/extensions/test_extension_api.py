@@ -35,7 +35,6 @@ class QuestionVisibility(utils.ManagedObjectVisibility, TestCase):
             workgroup=self.wg,
         )
 
-
 class QuestionAdmin(AdminPageForConcept, TestCase):
     itemType=Question
 
@@ -104,3 +103,52 @@ class QuestionnaireViewPage(LoggedInViewExtensionConceptPages, TestCase):
         self.assertEqual(response.status_code, 200)
         form = response.context['form']
         self.assertTrue('questions' not in form.fields)
+
+    def test_questions_attachment_editor(self):
+        self.login_editor()
+        response = self.client.get(reverse('extension_test:questionnaire_add_question', args=[self.item1.id]))
+        self.assertEqual(response.status_code, 200)
+        form = response.context['form']
+
+
+    def loggedin_user_can_use_value_page(self,value_url,current_item,http_code):
+        response = self.client.get(reverse(value_url,args=[current_item.id]))
+        self.assertEqual(response.status_code,http_code)
+
+    def test_submitter_can_use_generic_m2m_edit_page(self):
+        value_url = "extension_test:questionnaire_add_question"
+        self.login_editor()
+        self.loggedin_user_can_use_value_page(value_url,self.item1,200)
+        self.loggedin_user_can_use_value_page(value_url,self.item2,403)
+        self.loggedin_user_can_use_value_page(value_url,self.item3,200)
+
+        data = {}
+        num_vals = self.item1.questions.count()
+        self.assertTrue(num_vals == 0)
+
+        q1 = Question.objects.create(name="Q1",definition="Q1",submitter=self.editor)
+        q2 = Question.objects.create(name="Q2",definition="Q2",submitter=self.editor)
+        q3 = Question.objects.create(name="Q3",definition="Q3")
+        
+        
+        response = self.client.post(
+            reverse(value_url,args=[self.item1.id]),
+            {"items_to_add":[q1.pk,q2.pk,q3.pk],}
+        )
+        self.assertTrue('Select a valid choice' in response.content)
+        self.item1 = Questionnaire.objects.get(pk=self.item1.pk)
+        self.assertTrue(self.item1.questions.count() == 0)
+
+        response = self.client.post(
+            reverse(value_url,args=[self.item1.id]),
+            {"items_to_add":[q1.pk,q2.pk],}
+        )
+
+        self.item1 = Questionnaire.objects.get(pk=self.item1.pk)
+
+        self.assertTrue(self.item1.questions.count() > 0)
+        self.assertTrue(q1 in self.item1.questions.all())
+        self.assertTrue(q2 in self.item1.questions.all())
+        self.assertTrue(q3 not in self.item1.questions.all())
+
+

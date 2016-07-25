@@ -85,17 +85,17 @@ qthelp:
 	@echo
 	@echo "Build finished; now you can run "qcollectiongenerator" with the" \
 	      ".qhcp project file in $(BUILDDIR)/qthelp, like this:"
-	@echo "# qcollectiongenerator $(BUILDDIR)/qthelp/AristotleMetaDataRegistry.qhcp"
+	@echo "# qcollectiongenerator $(BUILDDIR)/qthelp/AristotleMetadataRegistry.qhcp"
 	@echo "To view the help file:"
-	@echo "# assistant -collectionFile $(BUILDDIR)/qthelp/AristotleMetaDataRegistry.qhc"
+	@echo "# assistant -collectionFile $(BUILDDIR)/qthelp/AristotleMetadataRegistry.qhc"
 
 devhelp:
 	$(SPHINXBUILD) -b devhelp $(ALLSPHINXOPTS) $(BUILDDIR)/devhelp
 	@echo
 	@echo "Build finished."
 	@echo "To view the help file:"
-	@echo "# mkdir -p $$HOME/.local/share/devhelp/AristotleMetaDataRegistry"
-	@echo "# ln -s $(BUILDDIR)/devhelp $$HOME/.local/share/devhelp/AristotleMetaDataRegistry"
+	@echo "# mkdir -p $$HOME/.local/share/devhelp/AristotleMetadataRegistry"
+	@echo "# ln -s $(BUILDDIR)/devhelp $$HOME/.local/share/devhelp/AristotleMetadataRegistry"
 	@echo "# devhelp"
 
 epub:

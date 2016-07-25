@@ -35,13 +35,13 @@ def concept_to_clone_dict(obj):
     return clone_dict
 
 
-def get_download_template_path_for_item(item, downloadType, subpath=''):
+def get_download_template_path_for_item(item, download_type, subpath=''):
     app_label = item._meta.app_label
     model_name = item._meta.model_name
     if subpath:
-        template = "%s/downloads/%s/%s/%s.html" % (app_label, downloadType, subpath, model_name)
+        template = "%s/downloads/%s/%s/%s.html" % (app_label, download_type, subpath, model_name)
     else:
-        template = "%s/downloads/%s/%s.html" % (app_label, downloadType, model_name)
+        template = "%s/downloads/%s/%s.html" % (app_label, download_type, model_name)
     return template
 
 

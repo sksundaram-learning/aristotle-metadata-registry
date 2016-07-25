@@ -30,14 +30,14 @@ class TestSearch(utils.LoggedInViewPages,TestCase):
         xmen = "professorX cyclops iceman angel beast phoenix wolverine storm nightcrawler"
 
         self.xmen_wg = models.Workgroup.objects.create(name="X Men")
-        self.xmen_wg.registrationAuthorities.add(self.ra)
+        # self.xmen_wg.registrationAuthorities.add(self.ra)
         self.xmen_wg.save()
 
         self.item_xmen = [
-            models.ObjectClass.objects.create(name=t,definition="known xman",workgroup=self.xmen_wg,readyToReview=True)\
+            models.ObjectClass.objects.create(name=t,definition="known xman",workgroup=self.xmen_wg)\
             for t in xmen.split()]
         for item in self.item_xmen:
-            registered = self.ra.register(item,models.STATES.standard,self.registrar)
+            registered = self.ra.register(item,models.STATES.standard,self.su)
             self.assertTrue(item in registered['success'])
             item = models._concept.objects.get(pk=item.pk).item # Stupid cache
             self.assertTrue(item.is_public())
@@ -46,10 +46,15 @@ class TestSearch(utils.LoggedInViewPages,TestCase):
         avengers = "thor spiderman ironman hulk captainAmerica"
 
         self.avengers_wg = models.Workgroup.objects.create(name="Avengers")
-        self.avengers_wg.registrationAuthorities.add(self.ra1)
+        # self.avengers_wg.registrationAuthorities.add(self.ra1)
         self.item_avengers = [
             models.ObjectClass.objects.create(name=t,workgroup=self.avengers_wg)
             for t in avengers.split()]
+
+    def test_empty_search_loads(self):
+        self.logout()
+        response = self.client.get(reverse('aristotle:search'))
+        self.assertTrue(response.status_code == 200)
 
     def test_one_result_search_doesnt_have__did_you_mean(self):
         self.logout()
@@ -68,8 +73,8 @@ class TestSearch(utils.LoggedInViewPages,TestCase):
     def test_search_delete_signal(self):
         self.login_superuser()
         with reversion.create_revision():
-            cable = models.ObjectClass.objects.create(name="cable",definition="known xman",workgroup=self.xmen_wg,readyToReview=True)
-            self.ra.register(cable,models.STATES.standard,self.registrar)
+            cable = models.ObjectClass.objects.create(name="cable",definition="known xman",workgroup=self.xmen_wg)
+            self.ra.register(cable,models.STATES.standard,self.su)
             cable.save()
         self.assertTrue(cable.is_public())
         response = self.client.get(reverse('aristotle:search')+"?q=cable")
@@ -122,7 +127,7 @@ class TestSearch(utils.LoggedInViewPages,TestCase):
         self.logout()
         
         response = self.client.get(reverse('aristotle:search')+"?q=xman")
-        self.assertTrue('div class="action"' not in response.content)
+        self.assertTrue('Add Favourite' not in response.content)
         
         response = self.client.post(reverse('friendly_login'),
                     {'username': 'stryker', 'password': 'mutantsMustDie'})
@@ -140,37 +145,23 @@ class TestSearch(utils.LoggedInViewPages,TestCase):
         response = self.client.get(reverse('aristotle:search')+"?q=xman")
         self.assertTrue('This item is in your favourites list' in response.content)
 
-    def test_registrar_search_after_adding_new_ra_to_workgroup(self):
+    def test_registrar_search_after_adding_new_status_request(self):
         self.logout()
         response = self.client.post(reverse('friendly_login'),
                     {'username': 'stryker', 'password': 'mutantsMustDie'})
 
         steve_rogers = models.ObjectClass.objects.get(name="captainAmerica")
         self.assertFalse(perms.user_can_view(self.registrar,steve_rogers))
+        review = models.ReviewRequest.objects.create(requester=self.su,registration_authority=self.ra)
+        review.concepts.add(steve_rogers)
+
         with reversion.create_revision():
-            steve_rogers.readyToReview = True
             steve_rogers.save()
-        self.assertFalse(perms.user_can_view(self.registrar,steve_rogers))
 
-        response = self.client.get(reverse('aristotle:search')+"?q=captainAmerica")
-        self.assertEqual(len(response.context['page'].object_list),0)
-
-        # Adding the registrars Authorities to the managing authorities of the workgroup
-        # should grant them access to see item in that workgroup now.
-        self.avengers_wg.registrationAuthorities.add(self.ra)
-        self.avengers_wg.save()
+        review = models.ReviewRequest.objects.create(requester=self.su,registration_authority=self.ra)
+        review.concepts.add(steve_rogers)
 
         self.assertTrue(perms.user_can_view(self.registrar,steve_rogers))
-
-        response = self.client.get(reverse('aristotle:search')+"?q=captainAmerica")
-        self.assertEqual(len(response.context['page'].object_list),0) # indexes are stale, so no results
-        #self.assertFalse(steve_rogers._is_public)
-
-        from django.core import management # Lets recache this workgroup
-        management.call_command('recache_workgroup_item_visibility', wg=[self.avengers_wg.pk], verbosity=0)
-
-        steve_rogers = models.ObjectClass.objects.get(pk=steve_rogers.pk)
-        #self.assertTrue(steve_rogers._is_public)
 
         response = self.client.get(reverse('aristotle:search')+"?q=captainAmerica")
         self.assertEqual(len(response.context['page'].object_list),1)
@@ -195,7 +186,7 @@ class TestSearch(utils.LoggedInViewPages,TestCase):
         with reversion.create_revision():
             dp = models.ObjectClass.objects.create(name="deadpool",
                     definition="not really an xman, no matter how much he tries",
-                    workgroup=self.weaponx_wg,readyToReview=False)
+                    workgroup=self.weaponx_wg)
         dp = models.ObjectClass.objects.get(pk=dp.pk) # Un-cache
         self.assertFalse(perms.user_can_view(self.viewer,dp))
         self.assertFalse(dp.is_public())
@@ -261,7 +252,7 @@ class TestSearch(utils.LoggedInViewPages,TestCase):
         with reversion.create_revision():
             dp = models.ObjectClass.objects.create(name="deadpool",
                     definition="not really an xman, no matter how much he tries",
-                    workgroup=self.weaponx_wg,readyToReview=False)
+                    workgroup=self.weaponx_wg)
         dp = models.ObjectClass.objects.get(pk=dp.pk) # Un-cache
         self.assertFalse(perms.user_can_view(self.viewer,dp))
         self.assertFalse(dp.is_public())
@@ -291,7 +282,11 @@ class TestSearch(utils.LoggedInViewPages,TestCase):
         with reversion.create_revision():
             dp = models.ObjectClass.objects.create(name="deadpool",
                     definition="not really an xman, no matter how much he tries",
-                    workgroup=self.xmen_wg,readyToReview=True)
+                    workgroup=self.xmen_wg)
+
+        review = models.ReviewRequest.objects.create(requester=self.su,registration_authority=self.ra)
+        review.concepts.add(dp)
+
         dp = models.ObjectClass.objects.get(pk=dp.pk) # Un-cache
         self.assertTrue(perms.user_can_view(self.registrar,dp))
         self.assertFalse(dp.is_public())
@@ -331,7 +326,11 @@ class TestSearch(utils.LoggedInViewPages,TestCase):
         with reversion.create_revision():
             dp = models.ObjectClass.objects.create(name="deadpool",
                     definition="not really an xman, no matter how much he tries",
-                    workgroup=self.xmen_wg,readyToReview=True)
+                    workgroup=self.xmen_wg)
+
+        review = models.ReviewRequest.objects.create(requester=self.su,registration_authority=self.ra)
+        review.concepts.add(dp)
+
         dp = models.ObjectClass.objects.get(pk=dp.pk) # Un-cache
         self.assertTrue(perms.user_can_view(self.registrar,dp))
         self.assertFalse(dp.is_public())
@@ -373,23 +372,24 @@ class TestTokenSearch(TestCase):
         import haystack
         haystack.connections.reload('default')
 
+        self.su = User.objects.create_superuser('super','','user')
+
         self.ra = models.RegistrationAuthority.objects.create(name="Kelly Act")
         self.registrar = User.objects.create_user('stryker','william.styker@weaponx.mil','mutantsMustDie')
         self.ra.giveRoleToUser('registrar',self.registrar)
         xmen = "wolverine professorX cyclops iceman angel beast phoenix storm nightcrawler"
         self.xmen_wg = models.Workgroup.objects.create(name="X Men")
-        self.xmen_wg.registrationAuthorities.add(self.ra)
         self.xmen_wg.save()
 
         self.item_xmen = [
-            models.ObjectClass.objects.create(name=t,version="0.%d.0"%(v+1),definition="known x-man",workgroup=self.xmen_wg,readyToReview=True)
+            models.ObjectClass.objects.create(name=t,version="0.%d.0"%(v+1),definition="known x-man",workgroup=self.xmen_wg)
             for v,t in enumerate(xmen.split())]
         self.item_xmen.append(
-            models.Property.objects.create(name="Power",definition="What power a mutant has?",workgroup=self.xmen_wg,readyToReview=True)
+            models.Property.objects.create(name="Power",definition="What power a mutant has?",workgroup=self.xmen_wg)
             )
 
         for item in self.item_xmen:
-            self.ra.register(item,models.STATES.standard,self.registrar)
+            self.ra.register(item,models.STATES.standard,self.su)
 
     def test_token_version_search(self):
         self.assertEqual(models.ObjectClass.objects.get(version='0.1.0').name,"wolverine")

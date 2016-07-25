@@ -17,7 +17,7 @@ Permissions-based ``ConceptManager``
 All correctly derived ``concept`` items should have their default manager set to
 the ``aristotle.models.ConceptManager``. For more information on how this works
 see the full documentation on the
-:doc:`ConceptManager and ConceptQuerySet <using_concept_manager>`.
+:doc:`ConceptManager and ConceptQuerySet <new_metadata_types/using_concept_manager>`.
 
 .. autoclass:: aristotle_mdr.models.ConceptManager
    :noindex:

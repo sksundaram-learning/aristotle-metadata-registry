@@ -1,4 +1,3 @@
-from django.apps import apps
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.conf import settings
@@ -12,7 +11,7 @@ from django.template.defaultfilters import slugify
 from django.template.loader import select_template
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import FormView
-from django.utils import timezone
+from django.utils.decorators import method_decorator
 import datetime
 
 import reversion
@@ -24,29 +23,16 @@ from aristotle_mdr import forms as MDRForms
 from aristotle_mdr import exceptions as registry_exceptions
 from aristotle_mdr import models as MDR
 
-from haystack.views import SearchView
-
-
-"""
-Dear future Sam,
-Finish this off, move it to CBVs for issue 283
-Develop a code for codfying the queryset, check against 'visible' because they will always be concepts
-
-Then pass this into the form. It should work? Probably.
-Love,
-past Sam.
-"""
-
-legal_queryset_bases = {
-    "wkgrp": MDR.Workgroup,
-    "regauth": MDR.RegistrationAuthority,
-}
-
 
 # TODO: Check permissions for this
-@login_required
 class BulkAction(FormView):
+    @method_decorator(login_required)
+    def dispatch(self, *args, **kwargs):
+        return super(BulkAction, self).dispatch(*args, **kwargs)
+
     def post(self, request, *args, **kwargs):
+        url = request.GET.get("next", "/")
+        message = ""
         actions = get_bulk_actions()
         action = request.POST.get("bulkaction", None)
 
@@ -56,32 +42,54 @@ class BulkAction(FormView):
         action_form = actions[action]['form']
         if action_form.confirm_page is None:
             # if there is no confirm page or extra details required, do the action and redirect
-            form = action_form(request.POST, user=request.user)  # A form bound to the POST data
+            form = action_form(request.POST, user=request.user, request=request)  # A form bound to the POST data
+
             if form.is_valid():
+                to_change = form.items_to_change
+                confirmed = request.POST.get("confirmed", None)
+                if to_change.count() > 10 and not confirmed:
+                    new_form = request.POST.copy()
+                    new_form.setlist('items', form.items_to_change.values_list('id', flat=True))
+                    form = action_form(new_form, user=request.user, request=request, items=[])
+                    return render(
+                        request,
+                        "aristotle_mdr/actions/bulk_actions/lots_of_things.html",
+                        {
+                            "items": to_change,
+                            "form": form,
+                            "next": url,
+                            "action": action,
+                        }
+                    )
                 message = form.make_changes()
                 messages.add_message(request, messages.INFO, message)
             else:
                 messages.add_message(request, messages.ERROR, form.errors)
             return HttpResponseRedirect(url)
         else:
-            form = action_form(request.POST, user=request.user)
+            form = action_form(request.POST, user=request.user, request=request)
             items = []
             if form.is_valid():
                 items = form.cleaned_data['items']
 
             confirmed = request.POST.get("confirmed", None)
+            if form.items_to_change:
+                new_form = request.POST.copy()
+                new_form.setlist('items', form.items_to_change.values_list('id', flat=True))
+                request.POST = new_form
 
             if confirmed:
                 # We've passed the confirmation page, try and save.
-                form = action_form(request.POST, user=request.user, items=items)  # A form bound to the POST data
+                form = action_form(request.POST, user=request.user, request=request, items=items)  # A form bound to the POST data
                 # there was an error with the form redisplay
                 if form.is_valid():
                     message = form.make_changes()
+
                     messages.add_message(request, messages.INFO, message)
                     return HttpResponseRedirect(url)
             else:
                 # we need a confirmation, render the next form
-                form = action_form(request.POST, user=request.user, items=items)
+                form = action_form(request.POST, user=request.user, request=request, items=items)
             return render(
                 request,
                 action_form.confirm_page,
@@ -95,58 +103,6 @@ class BulkAction(FormView):
         return HttpResponseRedirect(url)
 
 
-def bulk_action(request):
-    url = request.GET.get("next", "/")
-    message = ""
-    if request.method == 'POST':  # If the form has been submitted...
-        actions = get_bulk_actions()
-        action = request.POST.get("bulkaction", None)
-
-        if action is None:
-            # no action, messed up, redirect
-            return HttpResponseRedirect(url)
-        action_form = actions[action]['form']
-        if action_form.confirm_page is None:
-            # if there is no confirm page or extra details required, do the action and redirect
-            form = action_form(request.POST, user=request.user)  # A form bound to the POST data
-            if form.is_valid():
-                message = form.make_changes()
-                messages.add_message(request, messages.INFO, message)
-            else:
-                messages.add_message(request, messages.ERROR, form.errors)
-            return HttpResponseRedirect(url)
-        else:
-            form = action_form(request.POST, user=request.user)
-            items = []
-            if form.is_valid():
-                items = form.cleaned_data['items']
-
-            confirmed = request.POST.get("confirmed", None)
-
-            if confirmed:
-                # We've passed the confirmation page, try and save.
-                form = action_form(request.POST, user=request.user, items=items)  # A form bound to the POST data
-                # there was an error with the form redisplay
-                if form.is_valid():
-                    message = form.make_changes()
-                    messages.add_message(request, messages.INFO, message)
-                    return HttpResponseRedirect(url)
-            else:
-                # we need a confirmation, render the next form
-                form = action_form(request.POST, user=request.user, items=items)
-            return render(
-                request,
-                action_form.confirm_page,
-                {
-                    "items": items,
-                    "form": form,
-                    "next": url,
-                    "action": action,
-                }
-            )
-    return HttpResponseRedirect(url)
-
-
 def get_bulk_actions():
     import re
     config = getattr(settings, 'ARISTOTLE_SETTINGS', {})
@@ -154,7 +110,7 @@ def get_bulk_actions():
         actions = {}
         for action_name, form in config.get('BULK_ACTIONS', {}).items():
             if not re.search('^[a-zA-Z0-9\_\.]+$', form):  # pragma: no cover
-                # Invalid downloadType
+                # Invalid download_type
                 raise registry_exceptions.BadBulkActionModuleName("Bulk action isn't a valid Python module name.")
 
             module, form = form.rsplit('.', 1)

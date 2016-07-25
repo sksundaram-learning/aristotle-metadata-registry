@@ -20,7 +20,8 @@
         <dl>
             <dt>{% trans 'Type' context "Object Type" %}</dt>
             <dd>
-                <a href="{% aboutLink item %}"
+                <a href="{% url 'aristotle_help:concept_help' item.meta.app_label item.meta.model_name %}"
+                    title="{% trans 'Learn about this metadata type' %}"
                     data-toggle="modal" data-target="#infobox_modal"
                 >{{ item.get_verbose_name }}</a>
             </dd>
@@ -50,6 +51,10 @@
             {% block includes %}{% endblock %}
             {% endcomment %}
             {% include "aristotle_mdr/statuses.html" with statuses=item.current_statuses infoBox=True %}
+
+            {% if item.publicationrecord and not item.current_statuses %}
+                {% include "aristotle_self_publish/concepts/publication_details.html" with item=item %}
+            {% endif %}
 
             <dt>{% trans 'Last updated'%}</dt>
             <dd>
@@ -112,7 +117,7 @@
                 {% endif %}
             </li></ul>
             </dd>
-        {% if request.user|in_workgroup:item.workgroup %}
+        {% if item.workgroup and request.user|in_workgroup:item.workgroup %}
             <hr>
             <dt>{% trans 'Workgroup' %}</dt>
             <dd><a href="{% url 'aristotle:workgroup' iid=item.workgroup.id %}">{{ item.workgroup.name }}</a></dd>
@@ -130,6 +135,10 @@
                 {% endif %}
                 <a href="{% url 'aristotle:discussionsNew' %}?workgroup={{item.workgroup.id}}&item={{item.id}}">{% trans "Start a new discussion about this item" %}</a>
             </dd>
+        {% elif item.submitter == request.user %}
+            <hr>
+            <dt>{% trans 'Workgroup' %} </dt>
+            <dd><a href="{% url 'aristotle:userSandbox' %}">{% trans "Sandboxed Item" %}</a></dd>
         {% endif %}
         </dl>
         {% bootstrap_modal "infobox_modal" size='lg' %}

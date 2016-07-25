@@ -41,12 +41,11 @@ SOUTH_TESTS_MIGRATE = False
 MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
 
 INSTALLED_APPS = (
-    'aristotle_mdr',  # Comes before grappelli for overloads
+    'aristotle_mdr',
     'aristotle_mdr.contrib.generic',
     'aristotle_mdr.contrib.help',
     'aristotle_mdr.contrib.slots',
     'aristotle_mdr.contrib.browse',
-    'grappelli',
     'haystack',
     'django.contrib.admin',
     'django.contrib.admindocs',
@@ -81,7 +80,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    # 'aristotle_mdr.contrib.redirect.middleware.RedirectMiddleware',
+    'aristotle_mdr.contrib.redirect.middleware.RedirectMiddleware',
 
 
     # 'reversion.middleware.RevisionMiddleware',
@@ -107,6 +106,7 @@ STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     'static_precompiler.finders.StaticPrecompilerFinder',
 )
+ADMIN_MEDIA_PREFIX = '/static/admin/'
 
 if DEBUG:
     STATIC_PRECOMPILER_CACHE_TIMEOUT = 1
@@ -138,6 +138,8 @@ ARISTOTLE_SETTINGS = {
         'remove_favourites': 'aristotle_mdr.forms.bulk_actions.RemoveFavouriteForm',
         'change_state': 'aristotle_mdr.forms.bulk_actions.ChangeStateForm',
         'move_workgroup': 'aristotle_mdr.forms.bulk_actions.ChangeWorkgroupForm',
+        'request_review': 'aristotle_mdr.forms.bulk_actions.RequestReviewForm',
+        'bulk_download': 'aristotle_mdr.forms.bulk_actions.BulkDownloadForm',
     },
     'DASHBOARD_ADDONS': []
 }
@@ -161,7 +163,7 @@ CKEDITOR_CONFIGS = {
     },
 }
 
-HAYSTACK_SIGNAL_PROCESSOR = 'aristotle_mdr.signals.AristotleSignalProcessor'
+HAYSTACK_SIGNAL_PROCESSOR = 'aristotle_mdr.contrib.help.signals.AristotleHelpSignalProcessor'
 # HAYSTACK_SEARCH_RESULTS_PER_PAGE = 10
 HAYSTACK_CONNECTIONS = {
     'default': {
@@ -170,11 +172,3 @@ HAYSTACK_CONNECTIONS = {
         'INCLUDE_SPELLING': True,
     },
 }
-
-# Email settings required for password resets.
-if DEBUG:
-    EMAIL_HOST = 'smtp.gmail.com'
-    EMAIL_PORT = 587
-    EMAIL_HOST_USER = 'aristotle.email@gmail.com'
-    EMAIL_HOST_PASSWORD = 'aristotle.email1'
-    EMAIL_USE_TLS = True

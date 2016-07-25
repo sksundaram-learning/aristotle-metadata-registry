@@ -7,29 +7,13 @@ services:
  #- mysql
  - postgresql
 env:
-  - DJ=1.8 DB=sqlitememory TEST=main
-  - DJ=1.8 DB=sqlitefile   TEST=main
-  - DJ=1.8 DB=postgres     TEST=main
+  - DJ=1.8 DB=sqlitememory
+  - DJ=1.8 DB=sqlitefile
+  - DJ=1.8 DB=postgres
 #  - DJ=1.9 DB=sqlitememory TEST=main
 #  - DJ=1.9 DB=sqlitefile   TEST=main
 #  - DJ=1.9 DB=postgres     TEST=main
 
-  - DJ=1.8 DB=sqlitememory TEST=extensions
-  - DJ=1.8 DB=sqlitefile   TEST=extensions
-  - DJ=1.8 DB=postgres     TEST=extensions
-#  - DJ=1.9 DB=sqlitememory TEST=extensions
-#  - DJ=1.9 DB=sqlitefile   TEST=extensions
-#  - DJ=1.9 DB=postgres     TEST=extensions
-
-  - DJ=1.8 DB=sqlitememory TEST=querysets
-  - DJ=1.8 DB=sqlitefile   TEST=querysets
-  - DJ=1.8 DB=postgres     TEST=querysets
-#  - DJ=1.9 DB=sqlitememory TEST=querysets
-#  - DJ=1.9 DB=sqlitefile   TEST=querysets
-#  - DJ=1.9 DB=postgres     TEST=querysets
-
-#  - DJ=1.9 DB=mysql
-#  - DJ=1.8 DB=mysql
 
 before_install:
   - npm install -g less@1.7.4 # Required for static-precompiler
@@ -37,28 +21,29 @@ before_install:
   - pip install pep8
 
 before_script:
+# Make a posgres database, run PEP tests, check documentation builds cleanly.
 #  - mysql -e 'create database aristotle_test_db;'
-  - psql -c 'create database aristotle_test_db;' -U postgres
-  - pep8 --exclude=migrations,tests --ignore=E501,E225,E123 aristotle_mdr
+  - if [[ $DB == postgres ]]; then psql -c 'create database aristotle_test_db;' -U postgres; fi
+  - pep8 --exclude=migrations,tests,example_mdr --ignore=E501,E225,E123 aristotle_mdr
+  - cd docs ; sphinx-build -nW -b html -d _build/doctrees . _build/html ; cd ..
 
 install:
+  - "pip install --upgrade pip"
+  - "pip uninstall setuptools -y && pip install setuptools" # needed for updated version of html5lib
   - if [[ $DB == postgres ]]; then pip install -q psycopg2 --quiet; fi
 #  - if [[ $DB == mysql ]]; then pip install -q mysql-python; fi
-  - "pip install coveralls"
+  - "pip install -r requirements-test.txt"
   - "pip install ."
   - pip install -q Django==$DJ
-  - "pip install -r requirements.txt"
-  - "pip install django_tools"
 
 # command to run tests
 script:
-  - if [[ $TEST == main ]]; then coverage run --branch --source=aristotle_mdr manage.py test aristotle_mdr.tests.main; fi
-  - if [[ $TEST == extensions ]]; then coverage run --branch --source=aristotle_mdr manage.py test aristotle_mdr.tests.extensions; fi
-  - if [[ $TEST == querysets ]]; then coverage run --branch --source=aristotle_mdr manage.py test aristotle_mdr.tests.querysets; fi
+  - coverage run --branch --source=aristotle_mdr manage.py test aristotle_mdr.tests;
 after_success:
   - coveralls
   - codecov
   - pep8 --exclude=migrations --ignore=E501,E225,E123 aristotle_mdr
+  - pip list
 
 # Lets run on the new infrastructure
 sudo: false

@@ -117,6 +117,22 @@ class WorkgroupMemberTests(utils.LoggedInViewPages,TestCase):
         self.newuser = User.objects.create_user('nathan','','noobie')
         self.newuser.save()
 
+    def test_userCanLeaveWorkgroup(self):
+        self.login_viewer()
+        response = self.client.get(self.wg1.get_absolute_url())
+        self.assertEqual(response.status_code,200)
+
+        self.assertTrue(perms.user_in_workgroup(self.viewer,self.wg1))
+
+        response = self.client.get(reverse('aristotle:workgroup_leave',args=[self.wg1.id]))
+        self.assertEqual(response.status_code,200)
+
+        response = self.client.post(reverse('aristotle:workgroup_leave',args=[self.wg1.id]))
+        self.assertEqual(response.status_code,302)
+
+        response = self.client.get(self.wg1.get_absolute_url())
+        self.assertEqual(response.status_code,403)
+
     def test_viewer_cannot_add_or_remove_users(self):
         self.login_viewer()
         response = self.client.get(reverse('aristotle:addWorkgroupMembers',args=[self.wg1.id]))

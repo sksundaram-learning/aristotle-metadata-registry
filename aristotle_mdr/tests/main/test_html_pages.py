@@ -24,11 +24,16 @@ class AnonymousUserViewingThePages(TestCase):
         # Make sure notifications library isn't loaded for anon users as they'll never have notifications.
         self.assertTrue("notifications/notify.js" not in home.content)
         # At some stage this might need a better test to check the 500 page doesn't show... after notifications is fixed.
-        
+
+    def test_sitemaps(self):
+        home = self.client.get("/sitemap.xml")
+        self.assertEqual(home.status_code,200)
+        home = self.client.get("/sitemaps/sitemap_0.xml")
+        self.assertEqual(home.status_code,200)
+
     def test_visible_item(self):
         wg = models.Workgroup.objects.create(name="Setup WG")
         ra = models.RegistrationAuthority.objects.create(name="Test RA")
-        wg.registrationAuthorities.add(ra)
         item = models.ObjectClass.objects.create(name="Test OC",workgroup=wg)
         s = models.Status.objects.create(
                 concept=item,
@@ -46,7 +51,7 @@ class AnonymousUserViewingThePages(TestCase):
 
 def setUpModule():
     from django.core.management import call_command
-    call_command('loadhelp', 'aristotle_help/concept_help/*', verbosity=0, interactive=False)
+    call_command('load_aristotle_help', verbosity=0, interactive=False)
 
 class LoggedInViewConceptPages(utils.LoggedInViewPages):
     defaults = {}
@@ -121,6 +126,21 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.item1 = self.itemType.objects.get(pk=self.item1.pk)
         self.assertRedirects(response,url_slugify_concept(self.item1))
         self.assertEqual(self.item1.name,updated_name)
+
+    def test_submitter_can_save_item_with_no_workgroup_via_edit_page(self):
+        self.login_editor()
+        self.item1 = self.itemType.objects.create(name="Test Item 1 (visible to tested viewers)",submitter=self.editor,definition=" ",**self.defaults)
+        response = self.client.get(reverse('aristotle:edit_item',args=[self.item1.id]))
+        self.assertEqual(response.status_code,200)
+
+        updated_item = utils.model_to_dict_with_change_time(response.context['item'])
+        updated_name = updated_item['name'] + " updated!"
+        updated_item['name'] = updated_name
+        response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
+        self.item1 = self.itemType.objects.get(pk=self.item1.pk)
+        self.assertRedirects(response,url_slugify_concept(self.item1))
+        self.assertEqual(self.item1.name,updated_name)
+        self.assertEqual(self.item1.workgroup,None)
 
     def test_submitter_can_save_via_edit_page_with_change_comment(self):
         self.login_editor()
@@ -538,24 +558,8 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
             reverse('aristotle:supersede',args=[self.item1.id]),{'newerItem':""})
         self.assertEqual(response.status_code,302)
         self.item1 = self.itemType.objects.get(id=self.item1.id) # Stupid cache
-        print self.item1.superseded_by, response
         self.assertTrue(self.item1.superseded_by == None)
         self.assertTrue(self.item2.supersedes.count() == 0)
-
-    def test_editor_can_use_ready_to_review(self):
-        self.login_editor()
-        response = self.client.get(reverse('aristotle:mark_ready_to_review',args=[self.item1.id]))
-        self.assertEqual(response.status_code,200)
-        response = self.client.get(reverse('aristotle:mark_ready_to_review',args=[self.item2.id]))
-        self.assertEqual(response.status_code,403)
-        response = self.client.get(reverse('aristotle:mark_ready_to_review',args=[self.item3.id]))
-        self.assertEqual(response.status_code,200)
-
-        self.assertFalse(self.item1.readyToReview)
-        response = self.client.post(reverse('aristotle:mark_ready_to_review',args=[self.item1.id]))
-        self.assertRedirects(response,url_slugify_concept(self.item1))
-        self.item1 = self.itemType.objects.get(id=self.item1.id) # Stupid cache
-        self.assertTrue(self.item1.readyToReview)
 
     def test_viewer_cannot_view_deprecate_page(self):
         self.login_viewer()
@@ -576,7 +580,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
     def test_help_page_exists(self):
         self.logout()
         response = self.client.get(
-            reverse('concept_help',args=[self.itemType._meta.app_label,self.itemType._meta.model_name])
+            reverse('aristotle_help:concept_help',args=[self.itemType._meta.app_label,self.itemType._meta.model_name])
         )
         self.assertEqual(response.status_code,200)
 
@@ -618,9 +622,10 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         with reversion.create_revision():
             self.item1.name = "change 1"
             reversion.set_comment("change 1")
-            self.item1.readyToReview = True
             self.item1.save()
 
+        review = models.ReviewRequest.objects.create(requester=self.su,registration_authority=self.ra)
+        review.concepts.add(self.item1)
         with reversion.create_revision():
             self.item1.name = "change 2"
             reversion.set_comment("change 2")
@@ -658,12 +663,14 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
     def test_editor_can_revert_item_and_status_goes_back_too(self):
         self.login_editor()
         
+        # REVISION 0
         from reversion import revisions as reversion
         with reversion.create_revision():
             self.item1.readyToReview = True
             self.item1.save()
         original_name = self.item1.name
         
+        # REVISION 1
         response = self.client.get(reverse('aristotle:edit_item',args=[self.item1.id]))
         self.assertEqual(response.status_code,200)
         
@@ -672,10 +679,14 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         updated_item['name'] = updated_name
         change_comment = "I changed this because I can"
         updated_item['change_comments'] = change_comment
+
+        # REVISION 2
         response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
         self.item1 = self.itemType.objects.get(pk=self.item1.pk)
         self.assertEqual(self.item1.name,updated_name)
 
+        review = models.ReviewRequest.objects.create(requester=self.su,registration_authority=self.ra)
+        review.concepts.add(self.item1)
         r = self.ra.register(
             item=self.item1,
             state=models.STATES.incomplete,
@@ -686,6 +697,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.assertTrue(self.item1.statuses.all().count() == 1)
         self.assertTrue(self.item1.statuses.first().state == models.STATES.incomplete)
 
+        # REVISION 3
         response = self.client.get(reverse('aristotle:edit_item',args=[self.item1.id]))
         self.assertEqual(response.status_code,200)
         updated_item = utils.model_to_dict_with_change_time(response.context['item'])
@@ -693,17 +705,27 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         updated_item['name'] = updated_name_again
         change_comment = "I changed this again because I can"
         updated_item['change_comments'] = change_comment
+
+        # REVISION 4
         response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
         self.item1 = self.itemType.objects.get(pk=self.item1.pk)
         self.assertEqual(self.item1.name,updated_name_again)
 
+        # REVISION 5
         self.ra.register(self.item1,models.STATES.candidate,self.registrar)
         self.item1 = self.itemType.objects.get(pk=self.item1.pk) #decache
         self.assertTrue(self.item1.statuses.count() == 2)
         self.assertTrue(self.item1.statuses.last().state == models.STATES.candidate)
 
-        versions = list(reversion.Version.objects.filter(object_id=self.item1.id))
-        versions[4].revision.revert(delete=True) # The version that has the first status changes
+        from django.contrib.contenttypes.models import ContentType
+        ct = ContentType.objects.get_for_model(self.item1._meta.model)
+        versions = list(
+            reversion.Version.objects.filter(
+                object_id=self.item1.id,
+                content_type_id=ct.id
+            ).order_by('revision__date_created')
+        )
+        versions[2].revision.revert(delete=True) # The version that has the first status changes
 
         self.item1 = self.itemType.objects.get(pk=self.item1.pk) #decache
 
@@ -711,13 +733,16 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.assertTrue(self.item1.statuses.first().state == models.STATES.incomplete)
         self.assertEqual(self.item1.name,updated_name)
 
+        # Go back to the initial revision
         versions[0].revision.revert(delete=True)
         self.item1 = self.itemType.objects.get(pk=self.item1.pk) #decache
         self.assertTrue(self.item1.statuses.count() == 0)
         self.assertEqual(self.item1.name,original_name)
 
-        versions[9].revision.revert(delete=True) # Back to the latest version
+        
+        versions[4].revision.revert(delete=True) # Back to the latest version
         self.item1 = self.itemType.objects.get(pk=self.item1.pk) #decache
+        
         self.assertTrue(self.item1.statuses.count() == 2)
         self.assertTrue(self.item1.statuses.order_by('state')[0].state == models.STATES.incomplete)
         self.assertTrue(self.item1.statuses.order_by('state')[1].state == models.STATES.candidate)
@@ -789,9 +814,11 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.login_registrar()
 
         self.assertFalse(perms.user_can_view(self.registrar,self.item1))
-        self.item1.readyToReview = True
         self.item1.save()
         self.item1 = self.itemType.objects.get(pk=self.item1.pk)
+
+        review = models.ReviewRequest.objects.create(requester=self.su,registration_authority=self.ra)
+        review.concepts.add(self.item1)
 
         self.assertTrue(perms.user_can_view(self.registrar,self.item1))
         self.assertTrue(perms.user_can_change_status(self.registrar,self.item1))
@@ -822,9 +849,11 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.login_registrar()
 
         self.assertFalse(perms.user_can_view(self.registrar,self.item1))
-        self.item1.readyToReview = True
         self.item1.save()
         self.item1 = self.itemType.objects.get(pk=self.item1.pk)
+
+        review = models.ReviewRequest.objects.create(requester=self.su,registration_authority=self.ra)
+        review.concepts.add(self.item1)
 
         self.assertTrue(perms.user_can_view(self.registrar,self.item1))
         self.assertTrue(perms.user_can_change_status(self.registrar,self.item1))
@@ -859,48 +888,16 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
                     print sub_item
                 self.assertTrue(sub_item.is_registered)
 
-    def test_registrar_can_change_status_of_registry_owned_item(self):
-        self.login_registrar()
-        wg = self.item1.workgroup
-        wg.ownership = models.WORKGROUP_OWNERSHIP.registry
-        wg.registrationAuthorities = []
-        wg.save()
-        
-        self.assertFalse(perms.user_can_view(self.registrar,self.item1))
-        self.item1.readyToReview = True
-        self.item1.save()
-        self.item1 = self.itemType.objects.get(pk=self.item1.pk)
-
-        self.assertTrue(perms.user_can_view(self.registrar,self.item1))
-        self.assertTrue(perms.user_can_change_status(self.registrar,self.item1))
-
-        response = self.client.get(reverse('aristotle:changeStatus',args=[self.item1.id]))
-        self.assertEqual(response.status_code,200)
-
-        self.assertEqual(self.item1.statuses.count(),0)
-        response = self.client.post(
-            reverse('aristotle:changeStatus',args=[self.item1.id]),
-            {
-                'registrationAuthorities': [str(self.ra.id)],
-                'state': self.ra.public_state,
-                'changeDetails': "testing",
-                'cascadeRegistration': 0, # no
-            }
-        )
-        self.assertRedirects(response,url_slugify_concept(self.item1))
-
-        self.item1 = self.itemType.objects.get(pk=self.item1.pk)
-        self.assertEqual(self.item1.statuses.count(),1)
-        self.assertTrue(self.item1.is_registered)
-        self.assertTrue(self.item1.is_public())
 
     def test_registrar_cannot_use_faulty_statuses(self):
         self.login_registrar()
 
         self.assertFalse(perms.user_can_view(self.registrar,self.item1))
-        self.item1.readyToReview = True
         self.item1.save()
         self.item1 = self.itemType.objects.get(pk=self.item1.pk)
+
+        review = models.ReviewRequest.objects.create(requester=self.su,registration_authority=self.ra)
+        review.concepts.add(self.item1)
 
         self.assertTrue(perms.user_can_view(self.registrar,self.item1))
         self.assertTrue(perms.user_can_change_status(self.registrar,self.item1))
@@ -944,6 +941,18 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         response = self.client.get(reverse('aristotle:changeStatus',args=[self.item1.id]))
         self.assertRedirects(response,reverse('friendly_login')+"?next="+reverse('aristotle:changeStatus', args=[self.item1.id]))
 
+    def test_cascade_action(self):
+        self.logout()
+        check_url = reverse('aristotle:check_cascaded_states', args=[self.item1.pk])
+
+        response = self.client.get(check_url)
+        self.assertTrue(response.status_code,403)
+
+        self.login_editor()
+
+        response = self.client.get(check_url)
+        self.assertTrue(response.status_code,404)
+
 class ObjectClassViewPage(LoggedInViewConceptPages,TestCase):
     url_name='objectClass'
     itemType=models.ObjectClass
@@ -970,24 +979,25 @@ class ValueDomainViewPage(LoggedInViewConceptPages,TestCase):
 
     def test_anon_cannot_use_value_page(self):
         self.logout()
-        response = self.client.get(reverse('aristotle:valueDomain_edit_values',args=[self.item1.id,'permissible']))
-        self.assertRedirects(response,reverse('friendly_login')+"?next="+reverse('aristotle:valueDomain_edit_values',args=[self.item1.id,'permissible']))
-        response = self.client.get(reverse('aristotle:valueDomain_edit_values',args=[self.item1.id,'supplementary']))
-        self.assertRedirects(response,reverse('friendly_login')+"?next="+reverse('aristotle:valueDomain_edit_values',args=[self.item1.id,'supplementary']))
+        response = self.client.get(reverse('aristotle:permsissible_values_edit',args=[self.item1.id]))
+        self.assertRedirects(response,reverse('friendly_login')+"?next="+reverse('aristotle:permsissible_values_edit',args=[self.item1.id]))
+        response = self.client.get(reverse('aristotle:supplementary_values_edit',args=[self.item1.id]))
+        self.assertRedirects(response,reverse('friendly_login')+"?next="+reverse('aristotle:supplementary_values_edit',args=[self.item1.id]))
 
-    def loggedin_user_can_use_value_page(self,value_type,current_item,http_code):
-        response = self.client.get(reverse('aristotle:valueDomain_edit_values',args=[current_item.id,value_type]))
+    def loggedin_user_can_use_value_page(self,value_url,current_item,http_code):
+        response = self.client.get(reverse(value_url,args=[current_item.id]))
         self.assertEqual(response.status_code,http_code)
 
     def submitter_user_can_use_value_edit_page(self,value_type):
+        value_url = {
+            'permissible': 'aristotle:permsissible_values_edit',
+            'supplementary': 'aristotle:supplementary_values_edit'
+        }.get(value_type)
+        
         self.login_editor()
-        self.loggedin_user_can_use_value_page(value_type,self.item1,200)
-        self.loggedin_user_can_use_value_page(value_type,self.item2,403)
-        self.loggedin_user_can_use_value_page(value_type,self.item3,200)
-
-        # Invalid value domain types are caught in the URL runner. This test isn't required yet.
-        # response = self.client.get(reverse('aristotle:valueDomain_edit_values',args=[self.item1.id,'accidentally'])) # a fake value domain type
-        # self.assertTrue(response.status_code,404)
+        self.loggedin_user_can_use_value_page(value_url,self.item1,200)
+        self.loggedin_user_can_use_value_page(value_url,self.item2,403)
+        self.loggedin_user_can_use_value_page(value_url,self.item3,200)
 
         data = {}
         num_vals = getattr(self.item1,value_type+"Values").count()
@@ -1003,7 +1013,7 @@ class ValueDomainViewPage(LoggedInViewConceptPages,TestCase):
             "form-TOTAL_FORMS":num_vals+1, "form-INITIAL_FORMS": num_vals, "form-MAX_NUM_FORMS":1000,
 
             })
-        response = self.client.post(reverse('aristotle:valueDomain_edit_values',args=[self.item1.id,value_type]),data)
+        response = self.client.post(reverse(value_url,args=[self.item1.id]),data)
         self.item1 = models.ValueDomain.objects.get(pk=self.item1.pk)
 
         self.assertTrue(num_vals == getattr(self.item1,value_type+"Values").count())
@@ -1026,7 +1036,7 @@ class ValueDomainViewPage(LoggedInViewConceptPages,TestCase):
         self.item1 = models.ValueDomain.objects.get(pk=self.item1.pk)
         self.assertTrue(self.item1.is_locked())
         self.assertFalse(perms.user_can_edit(self.editor,self.item1))
-        self.loggedin_user_can_use_value_page(value_type,self.item1,403)
+        self.loggedin_user_can_use_value_page(value_url,self.item1,403)
 
 
     def test_submitter_can_use_permissible_value_edit_page(self):
@@ -1035,7 +1045,7 @@ class ValueDomainViewPage(LoggedInViewConceptPages,TestCase):
     def test_submitter_can_use_supplementary_value_edit_page(self):
         self.submitter_user_can_use_value_edit_page('supplementary')
 
-    def test_su_can_download_pdf(self):
+    def test_su_can_download_csv(self):
         self.login_superuser()
         response = self.client.get(reverse('aristotle:download',args=['csv-vd',self.item1.id]))
         self.assertEqual(response.status_code,200)
@@ -1079,7 +1089,6 @@ class DataElementConceptViewPage(LoggedInViewConceptPages,TestCase):
         oc = models.ObjectClass.objects.create(
             name="sub item OC",
             workgroup=self.item1.workgroup,
-            readyToReview = True
         )
         prop = models.Property.objects.create(
             name="sub item prop",
@@ -1089,9 +1098,65 @@ class DataElementConceptViewPage(LoggedInViewConceptPages,TestCase):
         self.item1.property = prop
         self.item1.save()
 
+
+    def test_cascade_action(self):
+        self.logout()
+        check_url = reverse('aristotle:check_cascaded_states', args=[self.item1.pk])
+
+        response = self.client.get(check_url)
+        self.assertTrue(response.status_code,403)
+
+        self.login_editor()
+
+        response = self.client.get(check_url)
+        self.assertTrue(response.status_code,200)
+        self.assertTrue(self.item1.objectClass.name in response.content)
+        self.assertTrue(self.item1.property.name in response.content)
+        
+        ra = models.RegistrationAuthority.objects.create(name="new RA")
+        item = self.item1.property
+        s = models.Status.objects.create(
+                concept=item,
+                registrationAuthority=ra,
+                registrationDate=timezone.now(),
+                state=ra.locked_state
+                )
+        s = models.Status.objects.create(
+                concept=item,
+                registrationAuthority=self.ra,
+                registrationDate=timezone.now(),
+                state=ra.locked_state
+                )
+        s = models.Status.objects.create(
+                concept=self.item1,
+                registrationAuthority=self.ra,
+                registrationDate=timezone.now(),
+                state=ra.public_state
+                )
+
+        response = self.client.get(check_url)
+        self.assertTrue(response.status_code,200)
+        self.assertTrue(self.item1.objectClass.name in response.content)
+        self.assertTrue(self.item1.property.name in response.content)
+        self.assertTrue('fa-times' in response.content) # The property has a different status
+
+
 class DataElementViewPage(LoggedInViewConceptPages,TestCase):
     url_name='dataElement'
     itemType=models.DataElement
+
+
+    def test_cascade_action(self):
+        self.logout()
+        check_url = reverse('aristotle:check_cascaded_states', args=[self.item1.pk])
+
+        response = self.client.get(check_url)
+        self.assertTrue(response.status_code,403)
+
+        self.login_editor()
+
+        response = self.client.get(check_url)
+        self.assertTrue(response.status_code,200)
 
 class DataElementDerivationViewPage(LoggedInViewConceptPages,TestCase):
     url_name='dataelementderivation'

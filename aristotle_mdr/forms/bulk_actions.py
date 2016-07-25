@@ -1,9 +1,12 @@
 import autocomplete_light
 
 from django import forms
+from django.conf import settings
 from django.core.exceptions import PermissionDenied
+from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.utils import timezone
+from django.utils.html import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 import aristotle_mdr.models as MDR
@@ -74,31 +77,63 @@ class ForbiddenAllowedModelMultipleChoiceField(forms.ModelMultipleChoiceField):
 class BulkActionForm(UserAwareForm):
     classes = ""
     confirm_page = None
+    all_in_queryset = forms.BooleanField(
+        label=_("All items"),
+        required=False,
+    )
+    qs = forms.CharField(
+        label=_("All items"),
+        required=False,
+    )
+
     # queryset is all as we try to be nice and process what we can in bulk
     # actions.
     items = ForbiddenAllowedModelMultipleChoiceField(
         queryset=MDR._concept.objects.all(),
         validate_queryset=MDR._concept.objects.all(),
-        label="Related items", required=False,
+        label="Related items",
+        required=False,
     )
-    item_label="Select some items"
+    items_label = "Select some items"
+    queryset = MDR._concept.objects.all()
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, form, *args, **kwargs):
         initial_items = kwargs.pop('items', [])
-        super(BulkActionForm, self).__init__(*args, **kwargs)
+        self.request = kwargs.pop('request')
         if 'user' in kwargs.keys():
-            self.user = kwargs.pop('user', None)
+            self.user = kwargs.get('user', None)
             queryset = MDR._concept.objects.visible(self.user)
         else:
             queryset = MDR._concept.objects.public()
 
+        super(BulkActionForm, self).__init__(form, *args, **kwargs)
+
         self.fields['items'] = ForbiddenAllowedModelMultipleChoiceField(
-            label=self.item_label,
+            label=self.items_label,
             validate_queryset=MDR._concept.objects.all(),
             queryset=queryset,
             initial=initial_items,
+            required=False,
             widget=autocomplete_light.MultipleChoiceWidget('Autocomplete_concept')
         )
+
+    @property
+    def items_to_change(self):
+        if bool(self.cleaned_data.get('all_in_queryset', False)):
+            filters = {}
+            for v in self.cleaned_data.get('qs', "").split(','):
+                if 'user' in v:
+                    # if the queryset even contains a user, cut it right off
+                    # otherwise, it could leak data if people tried to alter the query value
+                    k = v.split('user', 1)[0] + 'user'
+                    v = self.user
+                else:
+                    k, v = v.split('=', 1)
+                filters.update({k: v})
+            items = self.queryset.filter(**filters).visible(self.user)
+        else:
+            items = self.cleaned_data.get('items')
+        return items
 
     @classmethod
     def can_use(cls, user):
@@ -115,12 +150,19 @@ class BulkActionForm(UserAwareForm):
         return txt
 
 
-class AddFavouriteForm(BulkActionForm):
+class LoggedInBulkActionForm(BulkActionForm):
+    @classmethod
+    def can_use(cls, user):
+        return user.is_active
+
+
+class AddFavouriteForm(LoggedInBulkActionForm):
     classes="fa-bookmark"
-    action_text = _('Add bookmark')
+    action_text = _('Add favourite')
+    items_label = "Items that will be added to your favourites list"
 
     def make_changes(self):
-        items = self.cleaned_data.get('items')
+        items = self.items_to_change
         bad_items = [str(i.id) for i in items if not user_can_view(self.user, i)]
         items = items.visible(self.user)
         self.user.profile.favourites.add(*items)
@@ -133,12 +175,13 @@ class AddFavouriteForm(BulkActionForm):
         }
 
 
-class RemoveFavouriteForm(BulkActionForm):
+class RemoveFavouriteForm(LoggedInBulkActionForm):
     classes="fa-minus-square"
-    action_text = _('Remove bookmark')
+    action_text = _('Remove favourite')
+    items_label = "Items that will be removed from your favourites list"
 
     def make_changes(self):
-        items = self.cleaned_data.get('items')
+        items = self.items_to_change
         self.user.profile.favourites.remove(*items)
         return _('%(num_items)s items removed from favourites') % {'num_items': len(items)}
 
@@ -146,8 +189,8 @@ class RemoveFavouriteForm(BulkActionForm):
 class ChangeStateForm(ChangeStatusForm, BulkActionForm):
     confirm_page = "aristotle_mdr/actions/bulk_actions/change_status.html"
     classes="fa-university"
-    action_text = _('Change state')
-    items_label="These are the items that will be registered. Add or remove additional items with the autocomplete box.",
+    action_text = _('Change registration status')
+    items_label = "These are the items that will be registered. Add or remove additional items with the autocomplete box."
 
     def __init__(self, *args, **kwargs):
         super(ChangeStateForm, self).__init__(*args, **kwargs)
@@ -159,7 +202,7 @@ class ChangeStateForm(ChangeStatusForm, BulkActionForm):
             raise PermissionDenied
         ras = self.cleaned_data['registrationAuthorities']
         state = self.cleaned_data['state']
-        items = self.cleaned_data['items']
+        items = self.items_to_change
         regDate = self.cleaned_data['registrationDate']
         cascade = self.cleaned_data['cascadeRegistration']
         changeDetails = self.cleaned_data['changeDetails']
@@ -196,11 +239,68 @@ class ChangeStateForm(ChangeStatusForm, BulkActionForm):
         return user_is_registrar(user)
 
 
+class RequestReviewForm(LoggedInBulkActionForm):
+    confirm_page = "aristotle_mdr/actions/bulk_actions/request_review.html"
+    classes="fa-flag"
+    action_text = _('Request review')
+    items_label = "These are the items that will be reviewed. Add or remove additional items with the autocomplete box."
+
+    registration_authority=forms.ModelChoiceField(
+        label="Registration Authority",
+        queryset=MDR.RegistrationAuthority.objects.all(),
+    )
+    state = forms.ChoiceField(choices=MDR.STATES, widget=forms.RadioSelect)
+    message = forms.CharField(
+        required=False,
+        label=_("Message for the reviewing registrar"),
+        widget=forms.Textarea
+    )
+
+    def __init__(self, *args, **kwargs):
+        super(RequestReviewForm, self).__init__(*args, **kwargs)
+
+    def make_changes(self):
+        import reversion
+        ra = self.cleaned_data['registration_authority']
+        state = self.cleaned_data['state']
+        items = self.items_to_change
+        # cascade = self.cleaned_data['cascadeRegistration']
+        message = self.cleaned_data['message']
+
+        with transaction.atomic(), reversion.revisions.create_revision():
+            reversion.revisions.set_user(self.user)
+
+            review = MDR.ReviewRequest.objects.create(
+                requester=self.user,
+                registration_authority=ra,
+                message=message,
+                state=state
+            )
+            failed = []
+            success = []
+            for item in items:
+                if item.can_view(self.user):
+                    success.append(item)
+                else:
+                    failed.append(item)
+
+            review.concepts = success
+
+            user_message = mark_safe(_(
+                "%(num_items)s items requested for review - <a href='%(url)s'>see the review here</a>."
+            ) % {
+                'num_items': len(success),
+                'url': reverse('aristotle:userReviewDetails', args=[review.id])
+            })
+            reversion.revisions.set_comment(message + "\n\n" + user_message)
+            return user_message
+
+
 class ChangeWorkgroupForm(BulkActionForm):
     confirm_page = "aristotle_mdr/actions/bulk_actions/change_workgroup.html"
     classes="fa-users"
     action_text = _('Change workgroup')
-    items_label="These are the items that will be moved between workgroups. Add or remove additional items with the autocomplete box.",
+    items_label="These are the items that will be moved between workgroups. Add or remove additional items with the autocomplete box."
 
     def __init__(self, *args, **kwargs):
         super(ChangeWorkgroupForm, self).__init__(*args, **kwargs)
@@ -270,3 +370,41 @@ class ChangeWorkgroupForm(BulkActionForm):
     @classmethod
     def can_use(cls, user):
         return user_can_move_any_workgroup(user)
+
+
+class DownloadActionForm(BulkActionForm):
+    def make_changes(self):
+        items = self.items_to_change
+        from aristotle_mdr.contrib.redirect.exceptions import Redirect
+        raise Redirect(url=reverse('aristotle:bulk_download', kwargs={'download_type': self.download_type}) + ('?title=%s&' % self.title) + "&".join(['items=%s' % i.id for i in items]))
+
+
+class QuickPDFDownloadForm(DownloadActionForm):
+    classes="fa-file-pdf-o"
+    action_text = _('Quick PDF download')
+    items_label = "Items that are downloaded"
+    download_type= 'pdf'
+    title = None
+
+
+class BulkDownloadForm(DownloadActionForm):
+    confirm_page = "aristotle_mdr/actions/bulk_actions/bulk_download.html"
+    classes="fa-download"
+    action_text = _('Bulk download')
+    items_label="These are the items that will be downloaded"
+
+    title = forms.CharField(
+        required=False,
+        label=_("Title for the document"),
+        # widget=forms.Textarea
+    )
+    download_type = forms.ChoiceField(
+        choices=[(setting[0], setting[1]) for setting in getattr(settings, 'ARISTOTLE_DOWNLOADS', [])],
+        widget=forms.RadioSelect
+    )
+
+    def make_changes(self):
+        self.download_type = self.cleaned_data['download_type']
+        self.title = self.cleaned_data['title']
+        items = self.cleaned_data['items']
+        super(BulkDownloadForm, self).make_changes()

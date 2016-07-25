@@ -59,8 +59,11 @@ class AristotleAutocompletes(utils.LoggedInViewPages, TestCase):
         self.assertTrue('AC3' not in response.content)
         self.assertTrue('AC4' not in response.content)
         
-        self.item1.readyToReview = True
         self.item1.save()
+
+        review = models.ReviewRequest.objects.create(requester=self.su,registration_authority=self.ra)
+        review.concepts.add(self.item1)
+
         registered = self.ra.register(self.item1,models.STATES.standard,self.registrar,
             registrationDate=timezone.now()+datetime.timedelta(days=-1)
         )
@@ -96,16 +99,20 @@ class AristotleAutocompletes(utils.LoggedInViewPages, TestCase):
 
         dp = models.ObjectClass.objects.create(name="deadpool",
                 definition="not really an xman, no matter how much he tries",
-                workgroup=self.wg1,readyToReview=True)
+                workgroup=self.wg1)
+
+        review = models.ReviewRequest.objects.create(requester=self.su,registration_authority=self.ra)
+        review.concepts.add(dp)
+
         dp = models.ObjectClass.objects.get(pk=dp.pk) # Un-cache
         self.assertTrue(perms.user_can_view(self.registrar,dp))
         self.assertFalse(dp.is_public())
 
-        self.ra.register(dp,models.STATES.incomplete,self.registrar,
+        self.ra.register(dp,models.STATES.incomplete,self.su,
             registrationDate=timezone.now()+datetime.timedelta(days=-7)
         )
 
-        self.ra.register(dp,models.STATES.standard,self.registrar,
+        self.ra.register(dp,models.STATES.standard,self.su,
             registrationDate=timezone.now()+datetime.timedelta(days=-1)
         )
 

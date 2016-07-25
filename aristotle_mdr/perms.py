@@ -77,6 +77,8 @@ def user_can_edit(user, item):
 
 
 def user_is_editor(user, workgroup=None):
+    if user.is_anonymous():
+        return False
     if user.is_superuser:
         return True
     elif workgroup is None:
@@ -87,6 +89,8 @@ def user_is_editor(user, workgroup=None):
 
 
 def user_is_registrar(user, ra=None):
+    if user.is_anonymous():
+        return False
     if user.is_superuser:
         return True
     elif ra is None:
@@ -113,18 +117,30 @@ def user_can_change_status(user, item):
         return False
     if user.is_superuser:
         return True
-    # TODO: restrict to only those registration authorities of that items based
-    # on the items workgroup, unless the item is visible to the user.
-    from aristotle_mdr.models import WORKGROUP_OWNERSHIP
-    if item.readyToReview and user.registrar_in.count() > 0:
-        if item.workgroup.ownership == WORKGROUP_OWNERSHIP.authority:
-            return any(
-                (user in ra.registrars.all()
-                    for ra in item.workgroup.registrationAuthorities.all())
-            )
-        else:
-            return True
+
+    # If this item has any requested reviews for a registration authority this user is a registrar of:
+    if item.review_requests.visible(user):
+        return True
+    if user.profile.is_registrar and item.is_public():
+        return True
     return False
+
+
+def user_can_view_review(user, review):
+    # A user can see all their requests
+    if review.requester == user:
+        return True
+
+    if user.is_superuser:
+        return True
+
+    # None else can see a cancelled request
+    from aristotle_mdr.models import REVIEW_STATES
+    if review.status == REVIEW_STATES.cancelled:
+        return False
+
+    # If a registrar is in the registration authority for the request they can see it.
+    return user.registrar_in.filter(pk=review.registration_authority.pk).exists()
 
 
 def user_in_workgroup(user, wg):

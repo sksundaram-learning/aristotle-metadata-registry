@@ -8,6 +8,7 @@ Create Data Element Concept - Step {{ wizard.steps.step1 }}: {{step_title}}
 {% block extra_head_scripts %}
     <link rel="stylesheet" href="{{ STATIC_URL }}{% compile 'aristotle_mdr/aristotle.wizard.less' %}" />
     <link rel="stylesheet" href="{{ STATIC_URL }}{% compile 'aristotle_mdr/aristotle_search.less' %}" />
+    {% include 'autocomplete_light/static.html' %}
 {% endblock %}
 
 {% block head %}
@@ -34,7 +35,7 @@ Create Data Element Concept - Step {{ wizard.steps.step1 }}: {{step_title}}
 
     <div class="modal-footer">
         <button class="btn btn-primary pull-right" type="submit" value="submit">{% trans "Next" %}</button>
-        <a href="{% url 'aristotle:createList' %}" class="btn btn-danger">{% trans "Cancel" %}</a>
+        <a href="{% url 'aristotle:create_list' %}" class="btn btn-danger">{% trans "Cancel" %}</a>
         {% if wizard.steps.prev %}
             <!-- button name="wizard_goto_step" type="submit" value="{{ wizard.steps.first }}">{% trans "First step" %}</button -->
             <button class="btn btn-default" name="wizard_goto_step" type="submit" value="{{ wizard.steps.prev }}">{% trans "Back" %}</button>

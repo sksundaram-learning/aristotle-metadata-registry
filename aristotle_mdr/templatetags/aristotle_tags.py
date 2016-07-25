@@ -275,12 +275,6 @@ def historyLink(item):
 
 
 @register.simple_tag
-def aboutLink(item):
-    app_name = item._meta.app_label
-    return reverse("%s:about" % app_name, args=[item.help_name])
-
-
-@register.simple_tag
 def downloadMenu(item):
     """
     Returns the complete download menu for a partcular item. It accepts the id of
@@ -296,18 +290,36 @@ def downloadMenu(item):
     from django.template import Context
     downloadOpts = getattr(settings, 'ARISTOTLE_DOWNLOADS', "")
     from aristotle_mdr.utils import get_download_template_path_for_item
+    from aristotle_mdr.utils.downloads import get_download_module
+
     downloadsForItem = []
+    app_label = item._meta.app_label
+    model_name = item._meta.model_name
     for d in downloadOpts:
-        downloadType = d[0]
-        try:
-            get_template(get_download_template_path_for_item(item, downloadType))
-            downloadsForItem.append(d)
-        except template.TemplateDoesNotExist:
-            pass  # This is ok.
-        except:
-            pass  # Something very bad has happened in the template.
+        download_type = d[0]
+        module_name = d[3]
+        downloader = get_download_module(module_name)
+        item_register = getattr(downloader, 'item_register', {})
+
+        dl = item_register.get(download_type, {})
+        if type(dl) is not str:
+            if dl.get(app_label, []) == '__all__':
+                downloadsForItem.append(d)
+            elif model_name in dl.get(app_label, []):
+                downloadsForItem.append(d)
+        else:
+            if dl == '__all__':
+                downloadsForItem.append(d)
+            elif dl == '__template__':
+                try:
+                    get_template(get_download_template_path_for_item(item, download_type))
+                    downloadsForItem.append(d)
+                except template.TemplateDoesNotExist:
+                    pass  # This is ok.
+                except:
+                    pass  # Something very bad has happened in the template.
     return get_template("aristotle_mdr/helpers/downloadMenu.html").render(
-        Context({'item': item, 'downloadOptions': downloadsForItem, })
+        Context({'item': item, 'download_options': downloadsForItem, })
         )
 
 
@@ -382,15 +394,10 @@ def template_path(item, _type):
 
 
 @register.filter
-def owned_by_registry(item):
-    return item.workgroup.ownership == MDR.WORKGROUP_OWNERSHIP.registry
-
-
-@register.filter
-def owned_by_ra(item, ra_id):
-    if item.workgroup.ownership == MDR.WORKGROUP_OWNERSHIP.registry:
-        return False
-
-    ra = MDR.RegistrationAuthority.objects.get(pk=ra_id)
-
-    return ra in item.workgroup.registrationAuthorities.all()
+def visibility_text(item):
+    visibility = _("hidden")
+    if item._is_locked:
+        visibility = _("locked")
+    if item._is_public:
+        visibility = _("public")
+    return visibility

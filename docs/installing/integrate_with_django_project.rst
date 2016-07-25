@@ -5,7 +5,7 @@ Integrating Aristotle-MDR with a Django project
 For new users looking at getting a site up and running look at the
 :doc:`/installing/easy_install`.
 
-The first step is `starting a project as described in the Django tutorial<https://docs.djangoproject.com/en/1.7/intro/tutorial01/>`_.
+The first step is `starting a project as described in the Django tutorial <https://docs.djangoproject.com/en/1.7/intro/tutorial01/>`_.
 Once this is done, follow the steps below to setup Aristotle-MDR.
 
 1. Add "aristotle_mdr" to your INSTALLED_APPS setting like this::
@@ -14,13 +14,12 @@ Once this is done, follow the steps below to setup Aristotle-MDR.
         ...
         'haystack',
         'aristotle_mdr',
-        'grappelli',
         ...
     )
 
    To ensure that search indexing works properly `haystack` **must** be installed before `aristotle_mdr`.
    If you want to take advantage of Aristotle's WCAG-2.0 access-key shortcut improvements for the admin interface,
-   make sure it is installed *before* `grappelli`.
+   make sure it is installed *before* the django admin app.
 
 2. Include the Aristotle-MDR URLconf in your project urls.py. Because Aristotle will
    form the majority of the interactions with the site, as well as including a

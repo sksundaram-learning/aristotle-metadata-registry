@@ -108,3 +108,8 @@ def search_state_to_text(state):
 def restriction_to_text(state):
     from aristotle_mdr.search_indexes import RESTRICTION
     return RESTRICTION[state]
+
+
+@register.filter
+def first_letters(string):
+    return ''.join(s[0].upper() for s in string.split(" "))

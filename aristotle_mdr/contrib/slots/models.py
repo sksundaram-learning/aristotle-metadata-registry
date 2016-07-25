@@ -43,7 +43,6 @@ class SlotDefinition(TimeStampedModel):
         return "{0.slot_name}".format(self)
 
     def clean(self):
-        print ContentType.objects.filter(model=self.concept_type).all()
         if not ContentType.objects.filter(app_label=self.app_label, model=self.concept_type).exists():
             raise ValidationError(_('The concept type specified below does not exist.'))
 
@@ -56,11 +55,28 @@ class Slot(TimeStampedModel):
     # on save confirm the cardinality
     type = models.ForeignKey(SlotDefinition)
     concept = models.ForeignKey(MDR._concept, related_name='slots')
-    value = models.CharField(max_length=256)
+    value = models.TextField()
 
     def clean(self):
         if hasattr(self, 'type') and self.type is not None and not self.concept.__class__ != self.type.model_class():
             raise ValidationError('This slot is not allowed on this model')
 
-    def __str__(self):
-        return "{0.type}.{0.value}".format(self)
+    def __unicode__(self):
+        return u"{0} - {1}".format(self.type, self.value)
+
+
+def concepts_with_similar_slots(user, _type=None, value=None, slot=None):
+    assert(slot is not None or _type is not None)
+    if slot is not None:
+        _type = slot.type
+        value = slot.value
+
+    slots = MDR._concept.objects.visible(user).filter(slots__type=_type)
+
+    if value is not None:
+        slots = slots.filter(slots__value=value)
+
+    if slot is not None:
+        slots = slots.exclude(id=slot.concept.id)
+
+    return slots

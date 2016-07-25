@@ -15,10 +15,9 @@ admin.autodiscover()
 urlpatterns = [
     url(r'^login/?$', friendly_redirect_login, name='friendly_login'),
     url(r'^logout/?$', 'django.contrib.auth.views.logout', {'next_page': '/'}),
-    url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
-    url(r'^admin/', include(admin.site.urls)),
+    url(r'^django/admin/doc/', include('django.contrib.admindocs.urls')),
+    url(r'^django/admin/', include(admin.site.urls)),
     url(r'^autocomplete/', include('autocomplete_light.urls')),
-    url(r'^grappelli/', include('grappelli.urls')),  # grappelli URLS
     url(r'^ckeditor/', include('aristotle_mdr.urls.ckeditor_uploader')),
     url(r'^account/notifications/', include(notifications.urls, namespace="notifications")),
     url(r'^account/password/reset/$', password_reset),  # , {'template_name': 'my_templates/password_reset.html'}
@@ -36,7 +35,8 @@ urlpatterns = [
     ),
     url(r'^user/password/reset/(?P<uidb64>[0-9A-Za-z]+)-(?P<token>.+)/$',
         'django.contrib.auth.views.password_reset_confirm',
-        {'post_reset_redirect': '/user/password/done/'}),
+        {'post_reset_redirect': '/user/password/done/'},
+        name='password_reset_confirm',),
     url(r'^user/password/done/$',
         'django.contrib.auth.views.password_reset_complete'),
 
@@ -44,6 +44,7 @@ urlpatterns = [
     url(r'^account/password/change/?$', 'django.contrib.auth.views.password_change', name='password_change'),
     url(r'^account/password/change/done/?$', 'django.contrib.auth.views.password_change_done', name='password_change_done'),
 ]
+
 
 if settings.DEBUG:
     from django.conf.urls.static import static

@@ -25,7 +25,7 @@ Writing a functional bulk action
 
 A bulk action form is just a specialised Django form for acting on multiple 
 Aristotle-MDR concepts, with a few small additions that come from inheriting
-from ``aristotle_mdr.form.bulk_actions.BulkActionForm``.
+from ``aristotle_mdr.forms.bulk_actions.BulkActionForm``.
 
 After inheriting to make a form function some properties should exist.
 

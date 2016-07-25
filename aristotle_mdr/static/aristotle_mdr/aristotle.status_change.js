@@ -11,7 +11,7 @@
 
 $("#changeStatus input").change(function() {
     var state = $('#changeStatus input[name=state]:checked').val();
-    var selected_ras = $("#changeStatus input[name=registrationAuthorities]:checked");
+    var selected_ras = $("#changeStatus input[name^=registration]:checked");
     if ((typeof state === "undefined") || (selected_ras.length == 0)){
         $('#potential').html(select_state_to_see);   
     } else {

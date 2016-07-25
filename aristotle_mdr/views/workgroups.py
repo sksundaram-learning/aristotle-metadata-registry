@@ -36,7 +36,12 @@ def items(request, iid):
     if not user_in_workgroup(request.user, wg):
         raise PermissionDenied
     items = MDR._concept.objects.filter(workgroup=iid).select_subclasses()
-    context = {"item": wg, "workgroup": wg, "user_is_admin": user_is_workgroup_manager(request.user, wg)}
+    context = {
+        "item": wg,
+        "workgroup": wg,
+        "user_is_admin": user_is_workgroup_manager(request.user, wg),
+        "select_all_list_queryset_filter": 'workgroup__pk=%s' % wg.pk
+    }
     return paginated_list(request, items, "aristotle_mdr/workgroupItems.html", context)
 
 
@@ -100,5 +105,24 @@ def add_members(request, iid):
             "item": workgroup,
             "form": form,
             "role": request.GET.get('role')
+        }
+    )
+
+
+@login_required
+def leave(request, iid):
+    workgroup = get_object_or_404(MDR.Workgroup, pk=iid)
+    if not (workgroup and request.user in workgroup.members):
+        raise PermissionDenied
+
+    if request.method == 'POST':  # If the form has been submitted...
+        workgroup.removeUser(request.user)
+        return HttpResponseRedirect(reverse("aristotle:userHome"))
+
+    return render(
+        request,
+        "aristotle_mdr/actions/workgroup_leave.html",
+        {
+            "item": workgroup,
         }
     )

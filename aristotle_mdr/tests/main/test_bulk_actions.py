@@ -8,10 +8,9 @@ import aristotle_mdr.tests.utils as utils
 from django.test.utils import setup_test_environment
 setup_test_environment()
 
-
-class BulkWorkgroupActionsPage(utils.LoggedInViewPages, TestCase):
+class BulkActionsTest(utils.LoggedInViewPages):
     def setUp(self):
-        super(BulkWorkgroupActionsPage, self).setUp()
+        super(BulkActionsTest, self).setUp()
 
         # There would be too many tests to test every item type against every other
         # But they all have identical logic, so one test should suffice
@@ -19,6 +18,9 @@ class BulkWorkgroupActionsPage(utils.LoggedInViewPages, TestCase):
         self.item2 = models.ObjectClass.objects.create(name="OC2", workgroup=self.wg1)
         self.item3 = models.ObjectClass.objects.create(name="OC3", workgroup=self.wg1)
         self.item4 = models.Property.objects.create(name="Prop4", workgroup=self.wg2)
+
+
+class BulkWorkgroupActionsPage(BulkActionsTest, TestCase):
 
     def test_bulk_add_favourite_on_permitted_items(self):
         self.login_editor()
@@ -165,13 +167,14 @@ class BulkWorkgroupActionsPage(utils.LoggedInViewPages, TestCase):
 
     def test_bulk_status_change_on_permitted_items(self):
         self.login_registrar()
-        self.item1.readyToReview = True
-        self.item2.readyToReview = True
-        self.item1.save()
-        self.item2.save()
+        review = models.ReviewRequest.objects.create(requester=self.su,registration_authority=self.ra)
+        review.concepts.add(self.item1)
+        review.concepts.add(self.item2)
 
         self.assertTrue(perms.user_can_change_status(self.registrar, self.item1))
+        self.assertTrue(perms.user_can_change_status(self.registrar, self.item2))
         self.assertFalse(self.item1.is_registered)
+        self.assertFalse(self.item2.is_registered)
         response = self.client.post(
             reverse('aristotle:bulk_action'),
             {
@@ -189,12 +192,12 @@ class BulkWorkgroupActionsPage(utils.LoggedInViewPages, TestCase):
 
     def test_bulk_status_change_on_forbidden_items(self):
         self.login_registrar()
-        self.item1.readyToReview = True
-        self.item4.readyToReview = True
-        self.item1.save()
-        self.item4.save()
+        review = models.ReviewRequest.objects.create(requester=self.su,registration_authority=self.ra)
+        review.concepts.add(self.item1)
+        # review.concepts.add(self.item4)
 
         self.assertTrue(perms.user_can_change_status(self.registrar, self.item1))
+        self.assertFalse(perms.user_can_change_status(self.registrar, self.item4))
         self.assertFalse(self.item1.is_registered)
         self.assertFalse(self.item2.is_registered)
         self.assertFalse(self.item4.is_registered)
@@ -226,3 +229,177 @@ class BulkWorkgroupActionsPage(utils.LoggedInViewPages, TestCase):
         self.assertEqual(response.redirect_chain[0][1], 302)
 
     # TODO: bulk action *and* cascade, where a user doesn't have permission for child elements.
+
+
+    @override_settings(ARISTOTLE_SETTINGS=dict(settings.ARISTOTLE_SETTINGS, WORKGROUP_CHANGES=['submitter']))
+    def test_bulk_workgroup_change_with_all_from_workgroup_list(self):
+        #phew thats one hell of a test
+        
+        self.new_workgroup = models.Workgroup.objects.create(name="new workgroup")
+        self.new_workgroup.submitters.add(self.editor)
+        self.login_editor()
+        
+        self.assertTrue(self.item1.concept not in self.new_workgroup.items.all())
+        self.assertTrue(self.item2.concept not in self.new_workgroup.items.all())
+        self.assertTrue(self.item4.concept not in self.new_workgroup.items.all())
+
+        response = self.client.post(
+            reverse('aristotle:bulk_action'),
+            {
+                'bulkaction': 'move_workgroup',
+                'items': [],
+                'workgroup': [self.new_workgroup.id],
+                "confirmed": True,
+                'qs': 'workgroup__pk=%s'%self.wg1.pk,
+                'all_in_queryset': True
+            },
+            follow=True
+        )
+
+        self.assertTrue(self.item1.concept in self.new_workgroup.items.all())
+        self.assertTrue(self.item2.concept in self.new_workgroup.items.all())
+        self.assertTrue(self.item4.concept not in self.new_workgroup.items.all())
+
+
+        self.logout()
+        self.login_superuser()
+
+
+        response = self.client.post(
+            reverse('aristotle:bulk_action'),
+            {
+                'bulkaction': 'move_workgroup',
+                'items': [],
+                'workgroup': [self.wg1.pk],
+                "confirmed": True,
+                'qs': 'workgroup__pk=%s'%self.new_workgroup.id,
+                'all_in_queryset': True
+            },
+            follow=True
+        )
+
+        self.assertTrue(self.item1.concept in self.wg1.items.all())
+        self.assertTrue(self.item2.concept in self.wg1.items.all())
+        self.assertTrue(self.item4.concept not in self.wg1.items.all())
+
+    def test_bulk_review_request_on_permitted_items(self):
+        self.login_viewer()
+
+        self.assertTrue(perms.user_can_view(self.viewer, self.item1))
+        self.assertTrue(perms.user_can_view(self.viewer, self.item2))
+
+        self.assertTrue(models.ReviewRequest.objects.count() == 0)
+        
+        response = self.client.post(
+            reverse('aristotle:bulk_action'),
+            {
+                'bulkaction': 'request_review',
+                'state': 1,
+                'items': [self.item1.id, self.item2.id],
+                'registration_authority': self.ra.id,
+                "message": "review these plz",
+                'confirmed': 'confirmed',
+            }
+        )
+
+        self.assertTrue(models.ReviewRequest.objects.count() == 1)
+        review = models.ReviewRequest.objects.first()
+
+        self.assertTrue(review.concepts.count() == 2)
+        self.assertTrue(self.item1.concept in review.concepts.all())
+        self.assertTrue(self.item2.concept in review.concepts.all())
+
+    def test_bulk_review_request_on_forbidden_items(self):
+        self.login_viewer()
+
+        self.assertTrue(perms.user_can_view(self.viewer, self.item1))
+        self.assertFalse(perms.user_can_view(self.viewer, self.item4))
+
+        self.assertTrue(models.ReviewRequest.objects.count() == 0)
+        
+        response = self.client.post(
+            reverse('aristotle:bulk_action'),
+            {
+                'bulkaction': 'request_review',
+                'state': 1,
+                'items': [self.item1.id, self.item4.id],
+                'registration_authority': self.ra.id,
+                "message": "review these plz",
+                'confirmed': 'confirmed',
+            }
+        )
+
+        self.assertTrue(models.ReviewRequest.objects.count() == 1)
+        review = models.ReviewRequest.objects.first()
+
+        self.assertTrue(review.concepts.count() == 1)
+        self.assertTrue(self.item1.concept in review.concepts.all())
+        self.assertFalse(self.item4.concept in review.concepts.all())
+
+class QuickPDFDownloadTests(BulkActionsTest, TestCase):
+
+    def test_bulk_quick_pdf_download_on_permitted_items(self):
+        self.login_editor()
+
+        self.assertEqual(self.editor.profile.favourites.count(), 0)
+        response = self.client.post(
+            reverse('aristotle:bulk_action'),
+            {
+                'bulkaction': 'quick_pdf_download',
+                'items': [self.item1.id, self.item2.id],
+            }
+        )
+        self.assertEqual(response.status_code, 302)
+
+    def test_bulk_quick_pdf_download_on_forbidden_items(self):
+        self.login_editor()
+
+        self.assertEqual(self.editor.profile.favourites.count(), 0)
+        response = self.client.post(
+            reverse('aristotle:bulk_action'),
+            {
+                'bulkaction': 'quick_pdf_download',
+                'items': [self.item1.id, self.item4.id],
+            },
+            follow=True
+        )
+        self.assertEqual(len(response.redirect_chain), 1)
+        self.assertEqual(response.redirect_chain[0][1], 302)
+
+
+class BulkDownloadTests(BulkActionsTest, TestCase):
+    download_type="pdf"
+
+    def test_bulk_pdf_download_on_permitted_items(self):
+        self.login_editor()
+
+        self.assertEqual(self.editor.profile.favourites.count(), 0)
+        response = self.client.post(
+            reverse('aristotle:bulk_action'),
+            {
+                'bulkaction': 'bulk_download',
+                'items': [self.item1.id, self.item2.id],
+                "title": "The title",
+                "download_type": self.download_type,
+                'confirmed': 'confirmed',
+            }
+        )
+        self.assertEqual(response.status_code, 302)
+
+    def test_bulk_pdf_download_on_forbidden_items(self):
+        self.login_editor()
+
+        self.assertEqual(self.editor.profile.favourites.count(), 0)
+        response = self.client.post(
+            reverse('aristotle:bulk_action'),
+            {
+                'bulkaction': 'bulk_download',
+                'items': [self.item1.id, self.item4.id],
+                "title": "The title",
+                "download_type": self.download_type,
+                'confirmed': 'confirmed',
+            },
+            follow=True
+        )
+        self.assertEqual(len(response.redirect_chain), 1)
+        self.assertEqual(response.redirect_chain[0][1], 302)

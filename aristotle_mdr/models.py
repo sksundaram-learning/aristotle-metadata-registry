@@ -2,13 +2,15 @@ from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import absolute_import
 
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.db import models, transaction
 from django.db.models import Q
 from django.db.models.signals import post_save, m2m_changed, post_delete
-from django.dispatch import receiver
+from django.dispatch import receiver, Signal
 from django.utils import timezone
+from django.utils.module_loading import import_string
 from django.utils.translation import ugettext_lazy as _
 
 from model_utils.managers import InheritanceManager, InheritanceQuerySet
@@ -47,6 +49,9 @@ STATES = Choices(
 
 
 VERY_RECENTLY_SECONDS = 15
+
+
+concept_visibility_updated = Signal(providing_args=["concept"])
 
 
 class baseAristotleObject(TimeStampedModel):
@@ -265,6 +270,10 @@ class RegistrationAuthority(registryGroup):
         )
 
     def cascaded_register(self, item, state, user, *args, **kwargs):
+        if not perms.user_can_change_status(user, item):
+            # Return a failure as this item isn't allowed
+            return {'success': [], 'failed': [item] + item.registry_cascade_items}
+
         revision_message = _(
             "Cascade registration of item '%(name)s' (id:%(iid)s)\n"
         ) % {
@@ -279,27 +288,24 @@ class RegistrationAuthority(registryGroup):
             reversion.revisions.set_comment(revision_message)
 
             for child_item in [item] + item.registry_cascade_items:
-                registered = self._register(
+                self._register(
                     child_item, state, user, *args, **kwargs
                 )
-                if registered:
-                    seen_items['success'] = seen_items['success'] + [child_item]
-                else:
-                    seen_items['failed'] = seen_items['failed'] + [child_item]
-        print(seen_items)
+                seen_items['success'] = seen_items['success'] + [child_item]
         return seen_items
 
     def register(self, item, state, user, *args, **kwargs):
+        if not perms.user_can_change_status(user, item):
+            # Return a failure as this item isn't allowed
+            return {'success': [], 'failed': [item]}
+
         revision_message = kwargs.get('changeDetails', "")
         with transaction.atomic(), reversion.revisions.create_revision():
             reversion.revisions.set_user(user)
             reversion.revisions.set_comment(revision_message)
-            registered = self._register(item, state, user, *args, **kwargs)
+            self._register(item, state, user, *args, **kwargs)
 
-        if registered:
-            return {'success': [item], 'failed': []}
-        else:
-            return {'success': [], 'failed': [item]}
+        return {'success': [item], 'failed': []}
 
     def _register(self, item, state, user, *args, **kwargs):
         changeDetails = kwargs.get('changeDetails', "")
@@ -309,10 +315,6 @@ class RegistrationAuthority(registryGroup):
             or timezone.now().date()
         until_date = kwargs.get('until_date', None)
 
-        if not perms.user_can_change_status(user, item):
-            # Return a failure as this item isn't allowed
-            return False
-
         Status.objects.create(
             concept=item,
             registrationAuthority=self,
@@ -321,7 +323,6 @@ class RegistrationAuthority(registryGroup):
             changeDetails=changeDetails,
             until_date=until_date
         )
-        return True
 
     def giveRoleToUser(self, role, user):
         if role == 'registrar':
@@ -349,12 +350,6 @@ def update_registration_authority_states(sender, instance, created, **kwargs):
             logger.critical(message)
 
 
-WORKGROUP_OWNERSHIP = Choices(
-    (0, 'registry', _('Registry')),
-    (1, 'authority', _('Registration Authorities')),
-)
-
-
 class Workgroup(registryGroup):
     """
     A workgroup is a collection of associated users given control to work on a
@@ -367,27 +362,11 @@ class Workgroup(registryGroup):
     created in that workgroup.
     """
     template = "aristotle_mdr/workgroup.html"
-    ownership = models.IntegerField(
-        choices=WORKGROUP_OWNERSHIP,
-        default=WORKGROUP_OWNERSHIP.authority,
-        help_text=_("Specifies the 'owner' of the content of the workgroup. "
-                    "Selecting 'registry' allows any registration authority "
-                    "to progress and make items public, 'Registration "
-                    "authorities' specifies that only registration "
-                    "authorities associated with this workgroup may control "
-                    "their visibility.")
-    )
     archived = models.BooleanField(
         default=False,
         help_text=_("Archived workgroups can no longer have new items or "
                     "discussions created within them."),
         verbose_name=_('Archived'),
-    )
-    registrationAuthorities = models.ManyToManyField(
-        RegistrationAuthority,
-        blank=True,
-        related_name="workgroups",
-        verbose_name=_('Registration Authorities'),
     )
 
     viewers = models.ManyToManyField(
@@ -465,44 +444,6 @@ class Workgroup(registryGroup):
         self.managers.remove(user)
 
 
-@receiver(post_save, sender=Workgroup)
-def update_ownership(sender, instance, created, **kwargs):
-    # only log if its an edit, not a newly created workgroup
-    if not created and instance.tracker.has_changed('ownership'):
-        message = (
-            "Workgroup '{wg}' changed ownership, "
-            "cached public states for items in this workgroup are now "
-            "stale and need to be manually updated."
-        ).format(wg=instance.name)
-        logger.critical(message)
-# This would be like the below, but again, a better solution is needed.
-
-
-def update_registation_authorities(sender, instance, action, **kwargs):
-    # this will be slow, but necessary... perhaps this will encourage people
-    # to not change or add registration authorities to workgroups willy-nilly.
-    if action in ['post_add', 'post_remove', 'post_clear']:
-        created = instance.created >= timezone.now() - \
-            datetime.timedelta(seconds=VERY_RECENTLY_SECONDS)
-        # Don't fire this off if the object was created very recently within
-        # about the last 15 seconds.
-        if not created:
-            message = (
-                "Workgroup '{wg}' has altered registration authorities, "
-                "cached public states for items in this workgroup are now "
-                "stale and need to be manually updated."
-            ).format(wg=instance.name)
-            logger.critical(message)
-    # In practice it seems the below is far too slow, so a better alternative
-    # is needed.
-    #    for item in instance.items.all():
-    #        item.recache_states()
-m2m_changed.connect(
-    update_registation_authorities,
-    sender=Workgroup.registrationAuthorities.through
-)
-
-
 class discussionAbstract(TimeStampedModel):
     body = models.TextField()
     author = models.ForeignKey(User)
@@ -550,9 +491,7 @@ class ConceptQuerySet(InheritanceQuerySet):
     def visible(self, user):
         """
         Returns a queryset that returns all items that the given user has
-        permission to view. For speed reasons and django queryset limitations,
-        *doesn't* use `perms.user_can_view` however, is guaranteed to follow
-        the same logic.
+        permission to view.
 
         It is **chainable** with other querysets. For example, both of these
         will work and return the same list::
@@ -565,26 +504,33 @@ class ConceptQuerySet(InheritanceQuerySet):
         if user.is_anonymous():
             return self.public()
         q = Q(_is_public=True)
-        if user.profile.workgroups:
-            # User can see everything in their workgroups.
-            q |= Q(workgroup__in=user.profile.workgroups)
-            # q |= Q(workgroup__user__profile=user)
-        if user.profile.is_registrar:
-            authorities = user.profile.registrarAuthorities.all()
-            # User can see everything that is "readyToReview" or registered in
-            # their workgroup.
-            q |= Q(workgroup__registrationAuthorities__in=authorities,
-                   readyToReview=True)
-            q |= Q(workgroup__registrationAuthorities__in=authorities,
-                   statuses__registrationAuthority__in=authorities)
+
+        if user.is_active:
+            # User can see everything they've made.
+            q |= Q(submitter=user)
+            if user.profile.workgroups:
+                # User can see everything in their workgroups.
+                q |= Q(workgroup__in=user.profile.workgroups)
+                # q |= Q(workgroup__user__profile=user)
+            if user.profile.is_registrar:
+                # Registars can see items they have been asked to review
+                q |= Q(
+                    Q(review_requests__registration_authority__registrars__profile__user=user) & ~Q(review_requests__status=REVIEW_STATES.cancelled)
+                )
+                # Registars can see items that have been registered in their registration authority
+                q |= Q(
+                    Q(statuses__registrationAuthority__registrars__profile__user=user)
+                )
+        extra_q = settings.ARISTOTLE_SETTINGS.get('EXTRA_CONCEPT_QUERYSETS', {}).get('visible', None)
+        if extra_q:
+            for func in extra_q:
+                q |= import_string(func)(user)
         return self.filter(q)
 
     def editable(self, user):
         """
         Returns a queryset that returns all items that the given user has
-        permission to edit. For speed reasons and django queryset limitations,
-        *doesn't* use `perms.user_can_edit` however, is guaranteed to follow
-        the same logic.
+        permission to edit.
 
         It is **chainable** with other querysets. For example, both of these
         will work and return the same list::
@@ -597,11 +543,15 @@ class ConceptQuerySet(InheritanceQuerySet):
         if user.is_anonymous():
             return self.none()
         q = Q()
+
+        # User can edit everything they've made thats not locked
+        q |= Q(submitter=user, _is_locked=False)
+
         if user.submitter_in.exists() or user.steward_in.exists():
             if user.submitter_in.exists():
-                q |= Q(_is_locked=False, workgroup__in=user.submitter_in.all())
+                q |= Q(_is_locked=False, workgroup__submitters__profile__user=user)
             if user.steward_in.exists():
-                q |= Q(workgroup__in=user.steward_in.all())
+                q |= Q(workgroup__stewards__profile__user=user)
             return self.filter(q)
         else:
             return self.none()
@@ -630,14 +580,10 @@ class ConceptManager(InheritanceManager):
     It provides access to the ``ConceptQuerySet`` to allow for easy
     permissions-based filtering of ISO 11179 Concept-based items.
     """
-    def get_query_set(self):
-        return ConceptQuerySet(self.model)
-
     def get_queryset(self):
         return ConceptQuerySet(self.model)
 
     def __getattr__(self, attr, *args):
-        # Only let the slow ones through to the queryset
         if attr in ['editable', 'visible', 'public']:
             return getattr(self.get_queryset(), attr, *args)
         else:
@@ -653,8 +599,11 @@ class _concept(baseAristotleObject):
     """
     objects = ConceptManager()
     template = "aristotle_mdr/concepts/managedContent.html"
-    readyToReview = models.BooleanField(default=False)
-    workgroup = models.ForeignKey(Workgroup, related_name="items")
+    workgroup = models.ForeignKey(Workgroup, related_name="items", null=True, blank=True)
+    submitter = models.ForeignKey(
+        User, related_name="created_items",
+        null=True, blank=True,
+        help_text=_('This is the person who first created an item. Users can always see items they made.'))
     # We will query on these, so want them cached with the items themselves
     # To be usable these must be updated when statuses are changed
     _is_public = models.BooleanField(default=False)
@@ -678,45 +627,10 @@ class _concept(baseAristotleObject):
         return len(changed.keys()) > 0
 
     def can_edit(self, user):
-        if self.is_public():
-            return self.workgroup.stewards.filter(pk=user.pk).exists()
-        elif self.is_locked():
-            return self.workgroup.stewards.filter(pk=user.pk).exists()
-        elif self.is_registered:
-            return self.workgroup.submitters.filter(pk=user.pk).exists() \
-                or self.workgroup.stewards.filter(pk=user.pk).exists()
-        else:
-            return self.workgroup.submitters.filter(pk=user.pk).exists() \
-                or self.workgroup.stewards.filter(pk=user.pk).exists()
+        return _concept.objects.filter(pk=self.pk).editable(user).exists()
 
     def can_view(self, user):
-        if self.is_public():
-            return True
-        elif user.is_anonymous():
-            return False
-        # If the user can view objects in this workgroup
-        if self.workgroup.members.filter(pk=user.pk).exists():
-            return True
-        # If the item is registered and the user is a registrar view view
-        # permissions in that authority.
-        if self.is_registered:
-            for s in self.statuses.all():
-                ra = s.registrationAuthority
-                if ra.registrars.filter(pk=user.pk).exists():
-                    return True
-        if self.readyToReview:
-            if self.workgroup.ownership == WORKGROUP_OWNERSHIP.authority:
-                for ra in self.workgroup.registrationAuthorities.all():
-                    if ra.registrars.filter(pk=user.pk).exists():
-                        return True
-            else:
-                if self.workgroup.registrationAuthorities.count() > 0:
-                    for ra in self.workgroup.registrationAuthorities.all():
-                        if ra.registrars.filter(pk=user.pk).exists():
-                            return True
-                else:
-                    return True
-        return False
+        return _concept.objects.filter(pk=self.pk).visible(user).exists()
 
     @property
     def item(self):
@@ -778,23 +692,23 @@ class _concept(baseAristotleObject):
 
     def check_is_public(self, when=timezone.now()):
         """
-            A concept is public if any registration authority of the workgroup
+            A concept is public if any registration authority
             has advanced it to a public state in that RA.
         """
-        if self.workgroup.ownership == WORKGROUP_OWNERSHIP.authority:
-            authorities = self.workgroup.registrationAuthorities.all()
-            if authorities:
-                statuses = self.statuses.filter(
-                    registrationAuthority__in=authorities
-                )
-            else:
-                statuses = self.statuses.none()
-        elif self.workgroup.ownership == WORKGROUP_OWNERSHIP.registry:
-            statuses = self.statuses.all()
+        statuses = self.statuses.all()
         statuses = self.current_statuses(qs=statuses, when=when)
-        return True in [
+        pub_state = True in [
             s.state >= s.registrationAuthority.public_state for s in statuses
         ]
+
+        q = Q()
+        extra = False
+        extra_q = settings.ARISTOTLE_SETTINGS.get('EXTRA_CONCEPT_QUERYSETS', {}).get('public', None)
+        if extra_q:
+            for func in extra_q:
+                q |= import_string(func)()
+            extra = self.__class__.objects.filter(pk=self.pk).filter(q).exists()
+        return pub_state or extra
 
     def is_public(self):
         return self._is_public
@@ -803,16 +717,10 @@ class _concept(baseAristotleObject):
 
     def check_is_locked(self, when=timezone.now()):
         """
-        A concept is locked if any registration authority of the workgroup
+        A concept is locked if any registration authority
         has advanced it to a locked state in that RA.
         """
-        if self.workgroup.ownership == WORKGROUP_OWNERSHIP.authority:
-            authorities = self.workgroup.registrationAuthorities.all()
-            statuses = self.statuses.filter(
-                registrationAuthority__in=authorities
-            )
-        elif self.workgroup.ownership == WORKGROUP_OWNERSHIP.registry:
-            statuses = self.statuses.all()
+        statuses = self.statuses.all()
         statuses = self.current_statuses(qs=statuses, when=when)
         return True in [
             s.state >= s.registrationAuthority.locked_state for s in statuses
@@ -828,6 +736,7 @@ class _concept(baseAristotleObject):
         self._is_public = self.check_is_public()
         self._is_locked = self.check_is_locked()
         self.save()
+        concept_visibility_updated.send(sender=self.__class__, concept=self)
 
     def current_statuses(self, qs=None, when=timezone.now()):
         if qs is None:
@@ -918,6 +827,73 @@ class concept(_concept):
         Return self, because we already have the correct item.
         """
         return self
+
+
+REVIEW_STATES = Choices(
+    (0, 'submitted', _('Submitted')),
+    (5, 'cancelled', _('Cancelled')),
+    (10, 'accepted', _('Accepted')),
+    (15, 'rejected', _('Rejected')),
+)
+
+
+class ReviewRequestQuerySet(models.QuerySet):
+    def visible(self, user):
+        """
+        Returns a queryset that returns all reviews that the given user has
+        permission to view.
+
+        It is **chainable** with other querysets. For example, both of these
+        will work and return the same list::
+
+            ObjectClass.objects.filter(name__contains="Person").visible()
+            ObjectClass.objects.visible().filter(name__contains="Person")
+        """
+        if user.is_superuser:
+            return self.all()
+        if user.is_anonymous():
+            return self.none()
+        q = Q(requester=user)  # Users can always see reviews they requested
+        if user.profile.is_registrar:
+            # Registars can see reviews for the registration authority
+            q |= Q(
+                Q(registration_authority__registrars__profile__user=user) & ~Q(status=REVIEW_STATES.cancelled)
+            )
+        return self.filter(q)
+
+
+class ReviewRequestManager(models.Manager):
+    def get_queryset(self):
+        return ReviewRequestQuerySet(self.model, using=self._db)
+
+    def __getattr__(self, attr, *args):
+        if attr in ['visible']:
+            return getattr(self.get_queryset(), attr, *args)
+        else:
+            return getattr(self.__class__, attr, *args)
+
+
+class ReviewRequest(TimeStampedModel):
+    objects = ReviewRequestManager()
+    concepts = models.ManyToManyField(_concept, related_name="review_requests")
+    registration_authority = models.ForeignKey(
+        RegistrationAuthority,
+        help_text=_("The registration authority the requester wishes to endorse the metadata item")
+    )
+    requester = models.ForeignKey(User, help_text=_("The user requesting a review"), related_name='requested_reviews')
+    message = models.TextField(blank=True, null=True, help_text=_("An optional message accompanying a request"))
+    reviewer = models.ForeignKey(User, null=True, help_text=_("The user performing a review"), related_name='reviewed_requests')
+    response = models.TextField(blank=True, null=True, help_text=_("An optional message responding to a request"))
+    status = models.IntegerField(
+        choices=REVIEW_STATES,
+        default=REVIEW_STATES.submitted,
+        help_text=_('Status of a review')
+    )
+    state = models.IntegerField(
+        choices=STATES,
+        blank=True, null=True,
+        help_text=_("The state at which a user wishes a metadata item to be endorsed")
+    )
 
 
 class Status(TimeStampedModel):
@@ -1159,7 +1135,18 @@ class DataElementConcept(concept):
 
     @property_
     def registry_cascade_items(self):
-        return [self.objectClass, self.property]
+        out = []
+        if self.objectClass:
+            out.append(self.objectClass)
+        if self.property:
+            out.append(self.property)
+        return out
+
+    def get_download_items(self):
+        return [
+            (ObjectClass, ObjectClass.objects.filter(dataelementconcept=self)),
+            (Property, Property.objects.filter(dataelementconcept=self)),
+        ]
 
 
 # Yes this name looks bad - blame 11179:3:2013 for renaming "administered item"
@@ -1184,8 +1171,21 @@ class DataElement(concept):
 
     @property
     def registry_cascade_items(self):
-        return ([self.dataElementConcept, self.valueDomain] +
-                self.dataElementConcept.registry_cascade_items)
+        out = []
+        if self.valueDomain:
+            out.append(self.valueDomain)
+        if self.dataElementConcept:
+            out.append(self.dataElementConcept)
+            out += self.dataElementConcept.registry_cascade_items
+        return out
+
+    def get_download_items(self):
+        return [
+            (ObjectClass, ObjectClass.objects.filter(dataelementconcept=self.dataElementConcept)),
+            (Property, Property.objects.filter(dataelementconcept=self.dataElementConcept)),
+            (DataElementConcept, DataElementConcept.objects.filter(dataelement=self)),
+            (ValueDomain, ValueDomain.objects.filter(dataelement=self)),
+        ]
 
 
 class DataElementDerivation(concept):
@@ -1238,7 +1238,7 @@ class PossumProfile(models.Model):
 
     @property
     def activeWorkgroup(self):
-        return self.savedActiveWorkgroup or self.editable_workgroups.first()
+        return self.savedActiveWorkgroup or None
 
     @property
     def workgroups(self):
@@ -1316,72 +1316,6 @@ post_save.connect(create_user_profile, sender=User)
 #  owner = models.ManyToManyField(User, related_name='owned_collections')
 #  viewer = models.ManyToManyField(User, related_name='subscribed_collections')
 
-def defaultData():
-    system = User.objects.get(username="aristotle")
-    iso, c = RegistrationAuthority.objects.get_or_create(
-        name="ISO/IEC",
-        definition="ISO/IEC"
-    )
-    iso_wg, c = Workgroup.objects.get_or_create(name="ISO/IEC Workgroup")
-    dataTypes = [
-        ("Boolean", ("A binary value expressed using a string (e.g. true or "
-                     "false).")),
-        ("Currency", ("A numeric value expressed using a particular medium of "
-                      "exchange.")),
-        ("Date/Time", ("A specific instance of time expressed in numeric "
-                       "form.")),
-        ("Number", ("A sequence of numeric characters which may contain "
-                    "decimals, excluding codes with 'leading' characters "
-                    "e.g. '01','02','03'. ")),
-        ("String", ("A sequence of alphabetic and/or numeric characters, "
-                    "including 'leading' characters e.g. '01','02','03'.")),
-    ]
-    print("making datatypes:  ", end="")
-    for name, desc in dataTypes:
-        dt, created = DataType.objects.get_or_create(
-            name=name,
-            definition=desc,
-            workgroup=iso_wg
-        )
-        iso.register(dt, STATES.standard, system, datetime.date(2000, 1, 1))
-        print("{name} ".format(name=name), end="")
-    print("")
-
-    sys_wg, c = Workgroup.objects.get_or_create(name="System Workgroup")
-    unitsOfMeasure = [
-        ("Length", [
-            ("Centimetre", "cm"),
-            ("Millimetre", "mm"),
-        ]),
-        ("Temperature", [
-            ("Degree", "Celsius"),
-        ]),
-        ("Time", [
-            ("Second", "s"),
-            ("Minute", "min"),
-            ("Hour", "h"),
-            ("Day", "D"),
-            ("Year", "Y"),
-        ]),
-        ("Weight", [
-            ("Gram", "g"),
-            ("Kilogram", "Kg"),
-        ]),
-    ]
-    for measure, units in unitsOfMeasure:
-        m, created = Measure.objects.get_or_create(name=measure, definition="")
-        print("making measure: {name}".format(name=measure), end="")
-        print("  : units of measure:  ", end="")
-        for name, symbol in units:
-            u, created = UnitOfMeasure.objects.get_or_create(
-                name=name,
-                symbol=symbol,
-                measure=m,
-                workgroup=sys_wg
-            )
-            print("{name}".format(name=name), end="")
-        print("")
-
 
 @receiver(post_save)
 def concept_saved(sender, instance, created, **kwargs):
@@ -1396,11 +1330,12 @@ def concept_saved(sender, instance, created, **kwargs):
         return
     for p in instance.favourited_by.all():
         messages.favourite_updated(recipient=p.user, obj=instance)
-    for user in instance.workgroup.viewers.all():
-        if created:
-            messages.workgroup_item_new(recipient=user, obj=instance)
-        else:
-            messages.workgroup_item_updated(recipient=user, obj=instance)
+    if instance.workgroup:
+        for user in instance.workgroup.viewers.all():
+            if created:
+                messages.workgroup_item_new(recipient=user, obj=instance)
+            else:
+                messages.workgroup_item_updated(recipient=user, obj=instance)
     try:
         # This will fail during first load, and if admins delete aristotle.
         system = User.objects.get(username="aristotle")
@@ -1444,209 +1379,3 @@ def new_post_created(sender, **kwargs):
     for user in post.workgroup.members.all():
         if user != post.author:
             messages.new_post_created(post, user)
-
-
-# Loads example data, this is never used in formal testing.
-def exampleData():  # pragma: no cover
-
-    sys_wg, c = Workgroup.objects.get_or_create(name="System Workgroup")
-    unitsOfMeasure = [
-        ("Length", [
-            ("Millimetre", "mm"),
-        ]),
-        ("Time", [
-            ("Hour and minute", ""),
-            ("Week", ""),
-        ]),
-    ]
-    for measure, units in unitsOfMeasure:
-        m, created = Measure.objects.get_or_create(name=measure, definition="")
-        print("making measure: {name}".format(name=measure), end="")
-        print("  : units of measure:  ", end="")
-        for name, symbol in units:
-            u, created = UnitOfMeasure.objects.get_or_create(
-                name=name,
-                symbol=symbol,
-                measure=m,
-                workgroup=sys_wg
-            )
-            print("{name}".format(name=name), end="")
-        print("")
-    # defaultData()
-    print("configuring users")
-
-    if not User.objects.filter(username__iexact='possum').first():
-        user = User.objects.create_superuser('possum', '', 'pilches')
-        print("making superuser")
-
-    # Set up based workgroup and workers.
-    pw, c = Workgroup.objects.get_or_create(name="Possum Workgroup")
-    users = [
-        ('vicky', 'Viewer'),
-        ('stewie', 'Steward'),
-        ('mandy', 'Manager'),
-        ('suzie', 'Submitter'),
-    ]
-    for name, role in users:
-        user = User.objects.filter(username__iexact=name).first()
-        if not user:
-            user = User.objects.create_user(name, '', role)
-            print("making user: {name}".format(name=name))
-        user.first_name = name.title()
-        user.last_name = role
-        print("updated user's name to {fn} {ln}".format(
-            fn=user.first_name,
-            ln=user.last_name
-        ))
-        pw.giveRoleToUser(role.lower(), user)
-        user.save()
-
-    oldoc, c = ObjectClass.objects.get_or_create(
-        name="Person",
-        workgroup=pw,
-        definition="A human being, whether man or woman."
-    )
-    oc, c = ObjectClass.objects.get_or_create(
-        name="Person",
-        workgroup=pw,
-        definition="A human being, whether man, woman or child."
-    )
-    oc.synonyms = "People"
-    oc.readyToReview = True
-    oc.save()
-    oldoc.superseded_by = oc
-    oldoc.save()
-    p, c = Property.objects.get_or_create(
-        name="Age",
-        workgroup=pw,
-        definition="The length of life or existence."
-    )
-    dec, c = DataElementConcept.objects.get_or_create(
-        name="Person-Age",
-        workgroup=pw,
-        definition="The age of the person.",
-        objectClass=oc,
-        property=p
-    )
-    dec, c = DataElementConcept.objects.get_or_create(
-        name="Person-Age",
-        workgroup=pw,
-        definition="The age of the person.",
-        objectClass=oc,
-        property=p
-    )
-    W, c = Property.objects.get_or_create(
-        name="Weight",
-        workgroup=pw,
-        definition="The weight of an object."
-    )
-    H, c = Property.objects.get_or_create(
-        name="Height",
-        workgroup=pw,
-        definition=("The height of an object, usually measured from the "
-                    "ground to its highest point.")
-    )
-    WW, c = DataElementConcept.objects.get_or_create(
-        name="Person-Weight",
-        workgroup=pw,
-        definition="The weight of the person.",
-        objectClass=oc,
-        property=W
-    )
-    HH, c = DataElementConcept.objects.get_or_create(
-        name="Person-Height",
-        workgroup=pw,
-        definition="The height of the person.",
-        objectClass=oc,
-        property=H
-    )
-
-    vd, c = ValueDomain.objects.get_or_create(
-        name="Total years N[NN]",
-        workgroup=pw,
-        definition="Total number of completed years.",
-        format="X[XX]",
-        maximum_length=3,
-        unit_of_measure=UnitOfMeasure.objects.filter(
-            name__iexact='Week'
-        ).first(),
-        data_type=DataType.objects.filter(name__iexact='Number').first(),
-    )
-    de, c = DataElement.objects.get_or_create(
-        name="Person-age, total years N[NN]",
-        workgroup=pw,
-        definition=("The age of the person in (completed) years at a specific "
-                    "point in time."),
-        dataElementConcept=dec,
-        valueDomain=vd
-    )
-    p, c = Property.objects.get_or_create(
-        name="Sex",
-        workgroup=pw,
-        definition="A gender."
-    )
-    dec, c = DataElementConcept.objects.get_or_create(
-        name="Person-Sex",
-        workgroup=pw,
-        definition="The sex of the person.",
-        objectClass=oc,
-        property=p
-    )
-    vd, c = ValueDomain.objects.get_or_create(
-        name="Sex Code",
-        workgroup=pw,
-        definition="A code for sex.",
-        format="X",
-        maximum_length=3,
-        unit_of_measure=UnitOfMeasure.objects.filter(
-            name__iexact='Week'
-        ).first(),
-        data_type=DataType.objects.filter(name__iexact='Number').first(),
-    )
-    for val, mean in [(1, 'Male'), (2, 'Female')]:
-        codeVal = PermissibleValue(
-            value=val,
-            meaning=mean,
-            valueDomain=vd,
-            order=1
-        )
-        codeVal.save()
-    de, c = DataElement.objects.get_or_create(
-        name="Person-sex, Code N",
-        workgroup=pw,
-        definition="The sex of the person with a code.",
-    )
-    de.dataElementConcept = dec
-    de.valueDomain = vd
-    de.save()
-
-    print("Configuring registration authority")
-    ra, c = RegistrationAuthority.objects.get_or_create(
-        name="Welfare",
-        definition="Welfare Authority"
-    )
-    ra, c = RegistrationAuthority.objects.get_or_create(
-        name="Health",
-        definition="Health Authority"
-    )
-    users = [('reggie', 'Registrar'),
-             ]
-    pw.registrationAuthorities.add(ra)
-    pw.save()
-    for name, role in users:
-        user = User.objects.filter(username__iexact=name).first()
-        if not user:
-            user = User.objects.create_user(name, '', role)
-            print("making user: {name}".format(name=name))
-        user.first_name = name.title()
-        user.last_name = role
-        ra.giveRoleToUser(role, user)
-        user.save()
-
-    # Let's register a thing :/
-    reg, c = Status.objects.get_or_create(
-        concept=oc,
-        registrationAuthority=ra,
-        registrationDate=datetime.date(2009, 4, 28),
-        state=STATES.standard
-    )

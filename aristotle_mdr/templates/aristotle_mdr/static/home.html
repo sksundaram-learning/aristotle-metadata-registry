@@ -25,11 +25,11 @@
     <div class="col-xs-12 col-sm-6 col-md-4 ">
         <div class="panel panel-default">
             <div class="panel-heading">
-                <h2 class="panel-title"><a href="{% url 'help_page' 'what-is-metadata' %}">What is metadata?</a></h2>
+                <h2 class="panel-title"><a href="{% url 'aristotle_help:help_page' 'what-is-metadata' %}">What is metadata?</a></h2>
             </div>
             <div class="panel-body">
-                <a href="{% url 'help_page' 'about-isoiec-11179' %}">What is ISO/IEC 11179?</a>
-                <a href="{% url 'help_page' 'what-is-a-metadata-registry' %}">What is a metadata registry?</a>
+                <a href="{% url 'aristotle_help:help_page' 'about-isoiec-11179' %}">What is ISO/IEC 11179?</a>
+                <a href="{% url 'aristotle_help:help_page' 'what-is-a-metadata-registry' %}">What is a metadata registry?</a>
                 <a href="{% url 'aristotle:about' 'aristotle_mdr' %}">What is <em>Aristotle-MDR</em>?</a>
             </div>
         </div>
@@ -42,6 +42,7 @@
             <div class="panel-body">
                 <a href="{% url 'aristotle:allRegistrationAuthorities' %}">Current registration authorities</a>
                 <a href="{% url 'browse_apps' %}">Browse the registry</a>
+                <a href="{% url 'aristotle:compare_concepts' %}">Compare metadata</a>
                 {% if config.CONTENT_EXTENSIONS %}
                 <a href="{% url 'aristotle:extensions' %}">View current extensions</a>
                 {% endif %}
@@ -67,9 +68,9 @@
                 <h2 class="panel-title"><a href="">How can I add content?</a></h2>
             </div>
             <div class="panel-body">
-                <a href="{% url 'help_page' 'what-are-workgroups' %}">What is a workgroup?</a>
-                <a href="{% url 'help_page' 'how-does-content-become-visible' %}">How does content become visible?</a>
-                <a href="{% url 'help_page' 'registry-roles' %}">What roles exist within a registry?</a>
+                <a href="{% url 'aristotle_help:help_page' 'what-are-workgroups' %}">What is a workgroup?</a>
+                <a href="{% url 'aristotle_help:help_page' 'how-does-content-become-visible' %}">How does content become visible?</a>
+                <a href="{% url 'aristotle_help:help_page' 'registry-roles' %}">What roles exist within a registry?</a>
             </div>
         </div>
     </div>
@@ -79,19 +80,19 @@
                 <h2 class="panel-title"><a href="{% url 'aristotle:about' 'metadata_standards' %}">About metadata standards</a></h2>
             </div>
             <div class="panel-body">
-                <a href="{% url 'help_page' 'what-makes-a-standard' %}">What makes metadata "standard"?</a>
-                <a href="{% url 'help_page' 'versioning-content' %}">Versioning content</a>
-                <a href="{% url 'help_page' 'registration-authorities' %}">What is a registration authority?</a>
+                <a href="{% url 'aristotle_help:help_page' 'what-makes-a-standard' %}">What makes metadata "standard"?</a>
+                <a href="{% url 'aristotle_help:help_page' 'versioning-content' %}">Versioning content</a>
+                <a href="{% url 'aristotle_help:help_page' 'registration-authorities' %}">What is a registration authority?</a>
             </div>
         </div>
     </div>
     <div class="col-xs-12 col-sm-6 col-md-4 ">
         <div class="panel panel-default">
             <div class="panel-heading">
-                <h2 class="panel-title"><a href="{% url 'help_base' %}">Need more help?</a></h2>
+                <h2 class="panel-title"><a href="{% url 'aristotle_help:help_base' %}">Need more help?</a></h2>
             </div>
             <div class="panel-body">
-                <a href="{% url 'help_concepts' %}">Help on all registry items</a>
+                <a href="{% url 'aristotle_help:help_concepts' %}">Help on all registry items</a>
                 <a href="http://aristotle-metadata-registry.rtfd.org/en/latest/">Documentation for programmers</a>
             </div>
         </div>

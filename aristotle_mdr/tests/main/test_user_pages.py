@@ -31,6 +31,23 @@ class UserHomePages(utils.LoggedInViewPages, TestCase):
         self.assertEqual(response.status_code, 200)
         response = self.client.get(reverse('aristotle:userRecentItems',))
         self.assertEqual(response.status_code, 200)
+        response = self.client.get(reverse('aristotle:userSandbox',))
+        self.assertEqual(response.status_code, 200)
+        response = self.client.get(reverse('aristotle:userRoles',))
+        self.assertEqual(response.status_code, 200)
+        response = self.client.get(reverse('aristotle:userMyReviewRequests',))
+        self.assertEqual(response.status_code, 200)
+
+    def test_user_can_view_sandbox(self):
+        self.login_viewer()
+        self.item1 = models.ObjectClass.objects.create(
+            name="Test Item 1 (visible to tested viewers)",definition=" ",submitter=self.viewer)
+        self.item2 = models.ObjectClass.objects.create(
+            name="Test Item 1 (visible to tested viewers)",definition=" ")
+        response = self.client.get(reverse('aristotle:userSandbox',))
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(self.item1.concept in response.context['page'])
+        self.assertTrue(self.item2.concept not in response.context['page'])
 
     def test_user_can_edit_own_details(self):
         self.login_viewer()
@@ -61,53 +78,6 @@ class UserHomePages(utils.LoggedInViewPages, TestCase):
         response = self.client.get(reverse('aristotle:userAdminStats',))
         self.assertEqual(response.status_code,403)
         self.logout()
-
-
-    def test_user_can_see_how_to_publish_content_in_workgroups(self):
-        self.login_viewer()
-
-        from aristotle_mdr.models import WORKGROUP_OWNERSHIP
-        wg1 = models.Workgroup.objects.create(
-            name="Test WG",
-            ownership=WORKGROUP_OWNERSHIP.registry
-        )
-        wg1.giveRoleToUser('viewer',self.viewer)
-        
-        response = self.client.get(wg1.get_absolute_url())
-        self.assertEqual(response.status_code,200)
-
-        self.assertTrue(
-            "Content in this registry can be made visible by <em>any</em> "
-            "Registration Authority." in response.content
-        )
-        self.assertTrue(
-            "<em>locked</em> if its status is locked in" in response.content
-            and "<em>any</em> registration authority"  in response.content
-        )        
-        ra = models.RegistrationAuthority.objects.create(name="RA1")
-        wg2 = models.Workgroup.objects.create(
-            name="Test WG",
-            ownership=WORKGROUP_OWNERSHIP.authority
-        )
-        wg2.registrationAuthorities.add(ra)
-        wg2.save()
-
-        wg2.giveRoleToUser('viewer',self.viewer)
-        response = self.client.get(wg2.get_absolute_url())
-        self.assertEqual(response.status_code,200)
-        
-        self.assertTrue(
-            "<em>locked</em> if its status is:" in response.content
-        )
-        self.assertTrue(
-            "<li>%s or above in" % ra.get_locked_state_display() in response.content
-        )
-        self.assertTrue(
-            "<em>publically visible</em> if its status is:" in response.content
-        )
-        self.assertTrue(
-            "<li>%s or above in" % ra.get_public_state_display() in response.content
-        )
 
 
     def test_user_can_filter_and_sort_workgroups(self):
@@ -186,24 +156,6 @@ class UserHomePages(utils.LoggedInViewPages, TestCase):
         self.assertEqual(response.status_code,200)
         response = self.client.get(reverse('aristotle:userReadyForReview',))
         self.assertEqual(response.status_code,200)
-
-    def test_registrar_has_valid_items_in_ready_to_review(self):
-
-        item1 = models.ObjectClass.objects.create(name="Test Item 1",definition=" ",workgroup=self.wg1)
-        item2 = models.ObjectClass.objects.create(name="Test Item 2",definition=" ",workgroup=self.wg2)
-        item3 = models.ObjectClass.objects.create(name="Test Item 3",definition=" ",workgroup=self.wg1,readyToReview=True)
-        item4 = models.ObjectClass.objects.create(name="Test Item 4",definition=" ",workgroup=self.wg2,readyToReview=True)
-
-        self.login_registrar()
-
-        response = self.client.get(reverse('aristotle:userReadyForReview',))
-        self.assertEqual(response.status_code,200)
-
-        self.assertTrue(len(response.context['items']),1)
-        self.assertTrue(item3 in response.context['items'])
-        self.assertTrue(item1 not in response.context['items'])
-        self.assertTrue(item2 not in response.context['items'])
-        self.assertTrue(item4 not in response.context['items'])
 
     def test_superuser_can_access_tools(self):
         self.login_superuser()

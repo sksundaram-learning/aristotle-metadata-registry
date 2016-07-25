@@ -1,12 +1,12 @@
-{% extends "aristotle_mdr/base.html" %}
+{% extends request.is_ajax|yesno:"aristotle_mdr/base_ajax.html,aristotle_mdr/base.html" %}
 {% load i18n static compile_static %}
 
 {% block extra_head_scripts %}
-    {# <link rel="stylesheet" href="{{ STATIC_URL }}{% compile 'aristotle_mdr/aristotle.help.less' %}" /> #}
+    <link rel="stylesheet" href="{{ STATIC_URL }}{% compile 'aristotle_mdr/aristotle.help.less' %}" />
 {% endblock %}
 
-
 {% block content %}
+{% if not request.is_ajax %}
 
     <ul class="breadcrumb">
     {% block breadcumbs %}
@@ -14,7 +14,7 @@
     {% endblock %}
     </ul>
 
-    <div class="col-sm-2">
+    <div class="col-sm-12 col-md-3">
     {% block sidebar %}
     <form id="helpSearch" action="{% url 'aristotle:search' %}" method="get"
     role="search">
@@ -28,11 +28,15 @@
     </form>
     {% endblock %}
     </div>
-
-    <div class="col-sm-8">
+    <div class="col-sm-12 col-md-9">
     <h1>{% block title %}Help{% endblock %}</h1>
+{% else %}
+    <div class="modal-body">
+{% endif %}
+
     {% block help_content %}
     {% endblock %}
+
     </div>
 
 {% endblock %}

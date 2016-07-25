@@ -1,4 +1,5 @@
 from django.conf.urls import patterns, include, url
+from aristotle_mdr.contrib.generic.views import GenericAlterManyToManyView
 
 
 urlpatterns = patterns(

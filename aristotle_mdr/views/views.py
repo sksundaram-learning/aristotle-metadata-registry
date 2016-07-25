@@ -28,7 +28,7 @@ from aristotle_mdr.utils import cache_per_item_user, concept_to_dict, construct_
 from aristotle_mdr import forms as MDRForms
 from aristotle_mdr import models as MDR
 from aristotle_mdr.utils import concept_to_clone_dict, get_concepts_for_apps
-from aristotle_mdr import exceptions as registry_exceptions
+from aristotle_mdr.views.utils import generate_visibility_matrix
 
 from haystack.views import SearchView, FacetedSearchView
 
@@ -62,11 +62,6 @@ class ConceptHistoryCompareView(HistoryCompareDetailView):
         return super(ConceptHistoryCompareView, self).dispatch(*args, **kwargs)
 
 
-class HelpTemplateView(TemplateView):
-    def get_template_names(self):
-        return ['aristotle_mdr/static/help/%s.html' % self.kwargs['template']]
-
-
 def get_if_user_can_view(objtype, user, iid):
     item = get_object_or_404(objtype, pk=iid)
     if user_can_view(user, item):
@@ -84,78 +79,6 @@ def render_if_user_can_view(item_type, request, *args, **kwargs):
 def render_if_user_can_edit(item_type, request, *args, **kwargs):
     request = kwargs.pop('request')
     return render_if_condition_met(request, user_can_edit, item_type, *args, **kwargs)
-
-
-def download(request, downloadType, iid=None):
-    """
-    By default, ``aristotle_mdr.views.download`` is called whenever a URL matches
-    the pattern defined in ``aristotle_mdr.urls_aristotle``::
-
-        download/(?P<downloadType>[a-zA-Z0-9\-\.]+)/(?P<iid>\d+)/?
-
-    This is passed into ``download`` which resolves the item id (``iid``), and
-    determins if a user has permission to view the request item with that id. If
-    a user is allowed to download this file, ``download`` iterates through each
-    download type defined in ``ARISTOTLE_DOWNLOADS``.
-
-    A download option tuple takes the following form form::
-
-        ('file_type','display_name','font_awesome_icon_name','module_name'),
-
-    With ``file_type`` allowing only ASCII alphanumeric and underscores,
-    ``display_name`` can be any valid python string,
-    ``font_awesome_icon_name`` can be any Font Awesome icon and
-    ``module_name`` is the name of the python module that provides a downloader
-    for this file type.
-
-    For example, included with Aristotle-MDR is a PDF downloader which has the
-    download definition tuple::
-
-            ('pdf','PDF','fa-file-pdf-o','aristotle_mdr'),
-
-    Where a ``file_type`` multiple is defined multiple times, **the last matching
-    instance in the tuple is used**.
-
-    Next, the module that is defined for a ``file_type`` is dynamically imported using
-    ``exec``, and is wrapped in a ``try: except`` block to catch any exceptions. If
-    the ``module_name`` does not match the regex ``^[a-zA-Z0-9\_]+$`` ``download``
-    raises an exception.
-
-    If the module is able to be imported, ``downloader.py`` from the given module
-    is imported, this file **MUST** have a ``download`` function defined which returns
-    a Django ``HttpResponse`` object of some form.
-    """
-    item = MDR._concept.objects.get_subclass(pk=iid)
-    item = get_if_user_can_view(item.__class__, request.user, iid)
-    if not item:
-        if request.user.is_anonymous():
-            return redirect(reverse('friendly_login') + '?next=%s' % request.path)
-        else:
-            raise PermissionDenied
-
-    downloadOpts = getattr(settings, 'ARISTOTLE_DOWNLOADS', "")
-    module_name = ""
-    for d in downloadOpts:
-        dt = d[0]
-        if dt == downloadType:
-            module_name = d[3]
-    if module_name:
-        import re
-        if not re.search('^[a-zA-Z0-9\-\.]+$', downloadType):  # pragma: no cover
-            # Invalid downloadType
-            raise registry_exceptions.BadDownloadTypeAbbreviation("Download type can only be composed of letters, numbers, hyphens or periods.")
-        elif not re.search('^[a-zA-Z0-9\_]+$', module_name):  # pragma: no cover
-            # bad module_name
-            raise registry_exceptions.BadDownloadModuleName("Download name isn't a valid Python module name.")
-        try:
-            downloader = None
-            # dangerous - we are really trusting the settings creators here.
-            exec("import %s.downloader as downloader" % module_name)
-            return downloader.download(request, downloadType, item)
-        except TemplateDoesNotExist:
-            raise Http404
-
-    raise Http404
 
 
 def concept(*args, **kwargs):
@@ -301,27 +224,6 @@ def allRegistrationAuthorities(request):
 # Actions
 
 
-def mark_ready_to_review(request, iid):
-    item = get_object_or_404(MDR._concept, pk=iid).item
-    if not (item and user_can_edit(request.user, item)):
-        if request.user.is_anonymous():
-            return redirect(reverse('friendly_login') + '?next=%s' % request.path)
-        else:
-            raise PermissionDenied
-
-    if request.method == 'POST':  # If the form has been submitted...
-        if item.is_registered:
-            raise PermissionDenied
-        else:
-            with transaction.atomic(), reversion.revisions.create_revision():
-                reversion.revisions.set_user(request.user)
-                item.readyToReview = not item.readyToReview
-                item.save()
-        return HttpResponseRedirect(url_slugify_concept(item))
-    else:
-        return render(request, "aristotle_mdr/actions/mark_ready_to_review.html", {"item": item})
-
-
 def changeStatus(request, iid):
     item = get_object_or_404(MDR._concept, pk=iid).item
     if not (item and user_can_change_status(request.user, item)):
@@ -359,31 +261,7 @@ def changeStatus(request, iid):
             return HttpResponseRedirect(url_slugify_concept(item))
     else:
         form = MDRForms.ChangeStatusForm(user=request.user)
-    matrix={}
-
-    visibility = "hidden"
-    if item._is_locked:
-        visibility = "locked"
-    if item._is_public:
-        visibility = "public"
-
-    from aristotle_mdr.models import WORKGROUP_OWNERSHIP, STATES
     import json
-
-    for ra in request.user.profile.registrarAuthorities:
-        if item.workgroup.ownership == WORKGROUP_OWNERSHIP.authority:
-            owner = ra in item.workgroup.registrationAuthorities.all()
-        elif item.workgroup.ownership == WORKGROUP_OWNERSHIP.registry:
-            owner = True
-        ra_matrix = {'name': ra.name, 'states': {}}
-        for s, _ in STATES:
-            if s > ra.public_state:
-                ra_matrix['states'][s] = [visibility, "public"][owner]
-            elif s > ra.locked_state:
-                ra_matrix['states'][s] = [visibility, "locked"][owner]
-            else:
-                ra_matrix['states'][s] = [visibility, "hidden"][owner]
-        matrix[ra.id] = ra_matrix
 
     return render(
         request,
@@ -391,8 +269,7 @@ def changeStatus(request, iid):
         {
             "item": item,
             "form": form,
-            "status_matrix": json.dumps(matrix),
-            "visibility": visibility
+            "status_matrix": json.dumps(generate_visibility_matrix(request.user)),
         }
     )
 
@@ -446,63 +323,6 @@ def deprecate(request, iid):
     else:
         form = MDRForms.DeprecateForm(user=request.user, item=item, qs=qs)
     return render(request, "aristotle_mdr/actions/deprecateItems.html", {"item": item, "form": form})
-
-
-def valuedomain_value_edit(request, iid, value_type):
-    item = get_object_or_404(MDR.ValueDomain, pk=iid).item
-    if not user_can_edit(request.user, item):
-        if request.user.is_anonymous():
-            return redirect(reverse('friendly_login') + '?next=%s' % request.path)
-        else:
-            raise PermissionDenied
-    value_model = {
-        'permissible': MDR.PermissibleValue,
-        'supplementary': MDR.SupplementaryValue
-    }.get(value_type, None)
-    if not value_model:
-        raise Http404
-
-    num_values = value_model.objects.filter(valueDomain=item.id).count()
-    if num_values > 0:
-        extra = 0
-    else:
-        extra = 1
-    ValuesFormSet = modelformset_factory(
-        value_model,
-        can_delete=True,  # dont need can_order is we have an order field
-        fields=('order', 'value', 'meaning'),
-        extra=extra
-        )
-    if request.method == 'POST':
-        formset = ValuesFormSet(request.POST, request.FILES)
-        if formset.is_valid():
-                with transaction.atomic(), reversion.revisions.create_revision():
-                    item.save()  # do this to ensure we are saving reversion records for the value domain, not just the values
-                    formset.save(commit=False)
-                    for form in formset.forms:
-                        if form['value'].value() == '' and form['meaning'].value() == '':
-                            continue  # Skip over completely blank entries.
-                        if form['id'].value() not in [deleted_record['id'].value() for deleted_record in formset.deleted_forms]:
-                            value = form.save(commit=False)  # Don't immediately save, we need to attach the value domain
-                            value.valueDomain = item
-                            value.save()
-                    for obj in formset.deleted_objects:
-                        obj.delete()
-                    # formset.save(commit=True)
-                    reversion.revisions.set_user(request.user)
-                    reversion.revisions.set_comment(construct_change_message(request, None, [formset]))
-
-                return redirect(reverse("aristotle_mdr:item", args=[item.id]))
-    else:
-        formset = ValuesFormSet(
-            queryset=value_model.objects.filter(valueDomain=item.id),
-            initial=[{'order': num_values, 'value': '', 'meaning': ''}]
-            )
-    return render(
-        request,
-        "aristotle_mdr/actions/edit_value_domain_values.html",
-        {'item': item, 'formset': formset, 'value_type': value_type, 'value_model': value_model}
-    )
 
 
 def extensions(request):

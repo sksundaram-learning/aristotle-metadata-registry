@@ -59,12 +59,12 @@ class WorkgroupFilter(RelatedFieldListFilter):
 
 class WorkgroupAdmin(CompareVersionAdmin):
     fieldsets = [
-        (None, {'fields': ['name', 'definition', 'ownership', 'registrationAuthorities']}),
+        (None, {'fields': ['name', 'definition']}),
         ('Members', {'fields': ['managers', 'stewards', 'submitters', 'viewers']}),
     ]
-    filter_horizontal = ['managers', 'stewards', 'submitters', 'viewers', 'registrationAuthorities']
-    list_display = ('name', 'definition', 'ownership', 'archived')
-    list_filter = ('ownership', 'archived', 'registrationAuthorities')
+    filter_horizontal = ['managers', 'stewards', 'submitters', 'viewers']
+    list_display = ('name', 'definition', 'archived')
+    list_filter = ('archived',)
     search_fields = ('name', 'definition')
 
     def get_queryset(self, request):
@@ -94,13 +94,9 @@ class WorkgroupAdmin(CompareVersionAdmin):
 
 
 class ConceptAdmin(CompareVersionAdmin, admin.ModelAdmin):
-    class Media:
-        js = [
-            '/static/grappelli/tinymce/jscripts/tiny_mce/tiny_mce.js'
-        ]
 
     form = MDRForms.admin.AdminConceptForm
-    list_display = ['name', 'description_stub', 'created', 'modified', 'workgroup', 'is_public', 'is_locked', 'readyToReview']  # ,'status']
+    list_display = ['name', 'description_stub', 'created', 'modified', 'workgroup', 'is_public', 'is_locked']  # ,'status']
     list_filter = ['created', 'modified', ('workgroup', WorkgroupFilter)]  # , 'statuses']
     search_fields = ['name', 'synonyms']
     inlines = [StatusInline]

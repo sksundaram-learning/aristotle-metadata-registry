@@ -150,11 +150,14 @@ class ConceptWizard(PermissionWizard):
     def done(self, form_list, **kwargs):
         reversion.set_user(self.request.user)
         reversion.set_comment("Added via concept wizard")
-        item = None
+        saved_item = None
 
         for form in form_list:
-            item = form.save()
-        return HttpResponseRedirect(url_slugify_concept(item))
+            saved_item = form.save(commit=False)
+            if saved_item is not None:
+                saved_item.submitter = self.request.user
+                saved_item.save()
+        return HttpResponseRedirect(url_slugify_concept(saved_item))
 
     def find_duplicates(self):
         if hasattr(self, 'duplicate_items'):
@@ -442,7 +445,10 @@ class DataElementConceptWizard(MultiStepAristotleWizard):
         pr = self.get_property()
         dec = None
         for form in form_list:
-            saved_item = form.save()
+            saved_item = form.save(commit=False)
+            if saved_item is not None:
+                saved_item.submitter = self.request.user
+                saved_item.save()
             if type(saved_item) == MDR.Property:
                 pr = saved_item
                 messages.success(
@@ -773,7 +779,10 @@ class DataElementWizard(MultiStepAristotleWizard):
         dec = self.get_data_element_concept()
         de = None
         for form in form_list:
-            saved_item = form.save()
+            saved_item = form.save(commit=False)
+            if saved_item is not None:
+                saved_item.submitter = self.request.user
+                saved_item.save()
             if type(saved_item) == MDR.Property:
                 pr = saved_item
                 messages.success(

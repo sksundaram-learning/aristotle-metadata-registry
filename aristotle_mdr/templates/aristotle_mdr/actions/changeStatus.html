@@ -20,7 +20,7 @@
             {{ form.items }}
         </div>
         <div id="visibilty">
-            This item is currently {{visibility}}.
+            This item is currently {{item|visibility_text}}.
             <span id="potential">
             {% trans 'Select a new state to see how the visibility of this item will change.' %}
             </span>
@@ -61,15 +61,7 @@
                 {{ form.state }}
                 <ul>
                     <li class="alert alert-info">
-                        {% if item|owned_by_registry %}
-                            All registration authorities in this registry can alter 
-                            the visibility of this item.
-                        {% else %}
-                            Only registration authorities with an eye icon below
-                            can alter the visibility of this item. Other registration
-                            statuses will still be recorded and displayed to users with
-                            the correct permission.
-                        {% endif %}
+                        Changing the registration status of an item may impact who can view or make changes to metadata.
                     </li>
                 {% for val,label_text in form.registrationAuthorities.field.choices %}
                     <li>
@@ -78,11 +70,6 @@
                         <a href="{% url 'aristotle_mdr:registrationAuthority' iid=val %}" title="Visit the registration authority page to learn more about state meanings for this authority" class="pull-right">
                             <i class="fa fa-fw fa-university"></i>
                         </a>
-                        {% if item|owned_by_ra:val %}
-                        <span class="pull-right" title="This registration authority has the ability to control an items visibility.">
-                            <i class="fa fa-fw fa-eye"></i>
-                        </span>
-                        {% endif %}
                     </li>
                 {% endfor %}
                 </ul>
@@ -105,12 +92,9 @@
         <input type="submit" class="btn btn-primary" value="Update Status" />
     </div>
 </form>
-<pre>
-    {{status_matrix}}
-</pre>
 <script>
     status_matrix = {{status_matrix|safe}};
-    current_visibility = "{{visibility}}";
+    current_visibility = "{{item|visibility_text}}";
     {# VISIBILITY_STATUS will be replaced in javascript #}
     same_visibility_text = "{% trans 'After saving, this item will stay VISIBILITY_STATUS' %}";
     {# VISIBILITY_STATUS will be replaced in javascript #}

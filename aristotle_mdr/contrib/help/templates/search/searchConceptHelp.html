@@ -1,6 +1,16 @@
 {% load humanize %}
+{% load aristotle_help %}
 <div class="result">
-<a href="{% url 'concept_help' item.app_label item.concept_type %}">{{ item.title }}</a>
-<span class="item_type">(Help page)</span>
-<span class="attr"><span class="time">Created: {{ item.created }}</span> | <span class="time">Last modified: {{ item.modified|naturaltime }}</span></span>
-{{ item.body|truncatewords:20|striptags }}</div>
+<a href="{% url 'aristotle_help:concept_help' item.app_label item.concept_type %}">{{ item.title }}</a>
+<span class="item_type">(Metadata help page)</span>
+<p>
+    {{ item.body|relink_f|truncatewords:20|striptags }}
+</p>
+<div class="attrs">
+    <span class="attr">
+        {# <span class="time">Created: {{ item.created }}</span> #}
+        <header class="time">Last modified:</header>
+        {{ item.modified }}
+    </span>
+</div>
+</div>

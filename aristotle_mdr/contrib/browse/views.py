@@ -9,6 +9,7 @@ from aristotle_mdr.utils import get_concepts_for_apps
 
 class BrowseApps(TemplateView):
     template_name = "aristotle_mdr_browse/apps_list.html"
+    ordering = 'app_label'
 
     def get_context_data(self, **kwargs):
         context = super(BrowseApps, self).get_context_data(**kwargs)
@@ -27,7 +28,7 @@ class BrowseApps(TemplateView):
                     _("No name")  # Where no name is configured in the app_config, set a dummy so we don't keep trying
                 )
 
-            app_models['models'].append((m, m.model_class()))
+            app_models['models'].append(m)
             out[m.app_label] = app_models
         context['apps'] = out
         return context
@@ -79,6 +80,7 @@ class BrowseConcepts(AppBrowser):
         context = super(BrowseConcepts, self).get_context_data(**kwargs)
         context['model'] = self.model
         context['model_name'] = self.model._meta.model_name
+        context['sort'] = self.order
         return context
 
     def get_template_names(self):
@@ -87,14 +89,6 @@ class BrowseConcepts(AppBrowser):
         return names
 
     def get_ordering(self):
-        _order_map = {
-            'name': 'name',
-            'wg': 'workgroup__name',
-            'mod': 'modified',
-        }
-        order_map = {}
-        order_map.update([(k + '_asc', v) for k, v in _order_map.items()])
-        order_map.update([(k + '_desc', "-" + v) for k, v in _order_map.items()])
-
-        order = self.request.GET.get('order', 'name')
-        return order_map.get(order)
+        from aristotle_mdr.views.utils import paginate_sort_opts
+        self.order = self.request.GET.get('sort', 'name_asc')
+        return paginate_sort_opts.get(self.order)

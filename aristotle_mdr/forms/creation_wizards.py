@@ -27,7 +27,7 @@ class UserAwareForm(forms.Form):
 class UserAwareModelForm(UserAwareForm, autocomplete_light.ModelForm):
     class Meta:
         model = MDR._concept
-        exclude = ['readyToReview', 'superseded_by', '_is_public', '_is_locked', 'originURI']
+        exclude = ['superseded_by', '_is_public', '_is_locked', 'originURI', 'submitter']
 
     def _media(self):
         js = ('aristotle_mdr/aristotle.wizard.js', )  # , '/static/tiny_mce/tiny_mce.js', '/static/aristotle_mdr/aristotle.tinymce.js')
@@ -49,7 +49,10 @@ class WorkgroupVerificationMixin(forms.ModelForm):
         # cleaning before checking gives a "invalid selection" even if a user isn't allowed to change workgroups.
         if self.instance.pk is not None:
             if 'workgroup' in self.data.keys() and str(self.data['workgroup']) is not None:
-                if str(self.data['workgroup']) != str(self.instance.workgroup.pk):
+                old_wg_pk = None
+                if self.instance.workgroup:
+                    old_wg_pk = str(self.instance.workgroup.pk)
+                if str(self.data['workgroup']) != str(old_wg_pk):
                     if not user_can_move_any_workgroup(self.user):
                         raise forms.ValidationError(WorkgroupVerificationMixin.cant_move_any_permission_error)
                     if not user_can_remove_from_workgroup(self.user, self.instance.workgroup):
@@ -162,7 +165,7 @@ def subclassed_edit_modelform(set_model):
         class Meta(ConceptForm.Meta):
             model = set_model
             if set_model.edit_page_excludes:
-                exclude = set_model.edit_page_excludes
+                exclude = set(list(UserAwareModelForm._meta.exclude) + list(set_model.edit_page_excludes))
             else:
                 fields = '__all__'
     return MyForm

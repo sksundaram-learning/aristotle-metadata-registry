@@ -9,23 +9,51 @@ from haystack.views import search_view_factory
 
 import aristotle_mdr.views as views
 import aristotle_mdr.forms as forms
+import aristotle_mdr.models as models
+from aristotle_mdr.contrib.generic.views import GenericAlterOneToManyView
+from django.utils.translation import ugettext_lazy as _
 
 autocomplete_light.autodiscover()
-sqs = SearchQuerySet()
+
 
 urlpatterns = patterns(
     'aristotle_mdr.views',
 
     url(r'^/?$', TemplateView.as_view(template_name='aristotle_mdr/static/home.html'), name="home"),
+    url(r'^manifest.json$', TemplateView.as_view(template_name='aristotle_mdr/manifest.json', content_type='application/json')),
+    url(r'^sitemap.xml$', views.sitemaps.main, name='sitemap_xml'),
+    url(r'^sitemaps/sitemap_(?P<page>[0-9]+).xml$', views.sitemaps.page_range, name='sitemap_range_xml'),
 
     # all the below take on the same form:
     # url(r'^itemType/(?P<iid>\d+)?/?
     # Allowing for a blank ItemId (iid) allows aristotle to redirect to /about/itemtype instead of 404ing
-    url(r'^valuedomain/(?P<iid>\d+)?/edit/values/(?P<value_type>permissible|supplementary)/?$', views.editors.valuedomain_value_edit, name='valueDomain_edit_values'),
+
+    url(r'^valuedomain/(?P<iid>\d+)?/edit/values/permissible/?$',
+        GenericAlterOneToManyView.as_view(
+            model_base=models.ValueDomain,
+            model_to_add=models.PermissibleValue,
+            model_base_field='permissiblevalue_set',
+            model_to_add_field='valueDomain',
+            ordering_field='order',
+            form_add_another_text=_('Add a code'),
+            form_title=_('Change Permissible Values'),
+        ), name='permsissible_values_edit'),
+    url(r'^valuedomain/(?P<iid>\d+)?/edit/values/supplementary/?$',
+        GenericAlterOneToManyView.as_view(
+            model_base=models.ValueDomain,
+            model_to_add=models.SupplementaryValue,
+            model_base_field='supplementaryvalue_set',
+            model_to_add_field='valueDomain',
+            ordering_field='order',
+            form_add_another_text=_('Add a code'),
+            form_title=_('Change Supplementary Values')
+        ), name='supplementary_values_edit'),
+
 
     url(r'^workgroup/(?P<iid>\d+)(?:-(?P<name_slug>[A-Za-z0-9\-]+))?/?$', views.workgroups.workgroup, name='workgroup'),
     url(r'^workgroup/(?P<iid>\d+)/members/?$', views.workgroups.members, name='workgroupMembers'),
     url(r'^workgroup/(?P<iid>\d+)/items/?$', views.workgroups.items, name='workgroupItems'),
+    url(r'^workgroup/(?P<iid>\d+)/leave/?$', views.workgroups.leave, name='workgroup_leave'),
     url(r'^workgroup/addMembers/(?P<iid>\d+)$', views.workgroups.add_members, name='addWorkgroupMembers'),
     url(r'^workgroup/(?P<iid>\d+)/archive/?$', views.workgroups.archive, name='archive_workgroup'),
     url(r'^remove/WorkgroupRole/(?P<iid>\d+)/(?P<role>[A-Za-z\-]+)/(?P<userid>\d+)/?$', views.workgroups.remove_role, name='removeWorkgroupRole'),
@@ -46,6 +74,7 @@ urlpatterns = patterns(
     url(r'^item/(?P<iid>\d+)/clone/?$', views.editors.CloneItemView.as_view(), name='clone_item'),
     url(r'^item/(?P<iid>\d+)/history/?$', views.ConceptHistoryCompareView.as_view(), name='item_history'),
     url(r'^item/(?P<iid>\d+)/registrationHistory/?$', views.registrationHistory, name='registrationHistory'),
+    url(r'^item/(?P<iid>\d+)/child_states/?$', views.actions.CheckCascadedStates.as_view(), name='check_cascaded_states'),
 
     url(r'^item/(?P<iid>\d+)(?:\/(?P<model_slug>\w+)\/(?P<name_slug>.+))?/?$', views.concept, name='item'),
     url(r'^item/(?P<iid>\d+)(?:\/.*)?$', views.concept, name='item'),  # Catch every other 'item' URL and throw it for a redirect
@@ -53,18 +82,18 @@ urlpatterns = patterns(
     url(r'^unmanaged/measure/(?P<iid>\d+)(?:\/(?P<model_slug>\w+)\/(?P<name_slug>.+))?/?$', views.measure, name='measure'),
 
     # url(r'^create/?$', views.item, name='item'),
-    url(r'^create/?$', views.create_list, name='createList'),
+    url(r'^create/?$', views.create_list, name='create_list'),
     url(r'^create/(aristotle_mdr/)?dataelementconcept$', views.wizards.DataElementConceptWizard.as_view(), name='createDataElementConcept'),
     url(r'^create/(aristotle_mdr/)?dataelement$', views.wizards.DataElementWizard.as_view(), name='createDataElement'),
     url(r'^create/(?P<app_label>.+)/(?P<model_name>.+)/?$', views.wizards.create_item, name='createItem'),
     url(r'^create/(?P<model_name>.+)/?$', views.wizards.create_item, name='createItem'),
 
-    url(r'^download/(?P<downloadType>[a-zA-Z0-9\-\.]+)/(?P<iid>\d+)/?$', views.download, name='download'),
+    url(r'^download/bulk/(?P<download_type>[a-zA-Z0-9\-\.]+)/?$', views.downloads.bulk_download, name='bulk_download'),
+    url(r'^download/(?P<download_type>[a-zA-Z0-9\-\.]+)/(?P<iid>\d+)/?$', views.downloads.download, name='download'),
 
     url(r'^action/supersede/(?P<iid>\d+)$', views.supersede, name='supersede'),
     url(r'^action/deprecate/(?P<iid>\d+)$', views.deprecate, name='deprecate'),
-    url(r'^action/bulkaction/?$', views.bulk_actions.bulk_action, name='bulk_action'),
-    url(r'^action/r2r/(?P<iid>\d+)?$', views.mark_ready_to_review, name='mark_ready_to_review'),
+    url(r'^action/bulkaction/?$', views.bulk_actions.BulkAction.as_view(), name='bulk_action'),
     url(r'^action/compare/?$', views.comparator.compare_concepts, name='compare_concepts'),
 
     url(r'^changestatus/(?P<iid>\d+)$', views.changeStatus, name='changeStatus'),
@@ -72,18 +101,26 @@ urlpatterns = patterns(
 
     url(r'^account/?$', RedirectView.as_view(url='account/home/', permanent=True)),
     url(r'^account/home/?$', views.user_pages.home, name='userHome'),
+    url(r'^account/sandbox/?$', views.user_pages.CreatedItemsListView.as_view(), name='userSandbox'),
     url(r'^account/roles/?$', views.user_pages.roles, name='userRoles'),
     url(r'^account/admin/?$', views.user_pages.admin_tools, name='userAdminTools'),
     url(r'^account/admin/statistics/?$', views.user_pages.admin_stats, name='userAdminStats'),
     url(r'^account/edit/?$', views.user_pages.edit, name='userEdit'),
     url(r'^account/recent/?$', views.user_pages.recent, name='userRecentItems'),
     url(r'^account/favourites/?$', views.user_pages.favourites, name='userFavourites'),
+    url(r'^account/reviews/?$', views.user_pages.my_review_list, name='userMyReviewRequests'),
+    url(r'^account/reviews/cancel/(?P<review_id>\d+)/?$', views.actions.ReviewCancelView.as_view(), name='userReviewCancel'),
     url(r'^account/workgroups/?$', views.user_pages.workgroups, name='userWorkgroups'),
     url(r'^account/workgroups/archives/?$', views.user_pages.workgroup_archives, name='user_workgroups_archives'),
     url(r'^account/notifications(?:/folder/(?P<folder>all))?/?$', views.user_pages.inbox, name='userInbox'),
 
+
+    url(r'^action/review/(?P<iid>\d+)?$', views.actions.SubmitForReviewView.as_view(), name='request_review'),
     url(r'^account/registrartools/?$', views.user_pages.registrar_tools, name='userRegistrarTools'),
-    url(r'^account/registrartools/readyforreview/?$', views.user_pages.review_list, name='userReadyForReview'),
+    url(r'^account/registrartools/review/?$', views.user_pages.review_list, name='userReadyForReview'),
+    url(r'^account/registrartools/review/details/(?P<review_id>\d+)/?$', views.user_pages.ReviewDetailsView.as_view(), name='userReviewDetails'),
+    url(r'^account/registrartools/review/accept/(?P<review_id>\d+)/?$', views.actions.ReviewAcceptView.as_view(), name='userReviewAccept'),
+    url(r'^account/registrartools/review/reject/(?P<review_id>\d+)/?$', views.actions.ReviewRejectView.as_view(), name='userReviewReject'),
 
     url(r'^registrationauthority/(?P<iid>\d+)?(?:\/(?P<name_slug>.+))?/?$', views.registrationauthority, name='registrationAuthority'),
     url(r'^registrationauthorities/?$', views.allRegistrationAuthorities, name='allRegistrationAuthorities'),

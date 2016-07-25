@@ -20,7 +20,7 @@
 {% endblock %}
 {% block title %}{% trans "Search" %}{% if query %} {% trans "results" context 'Search results' %} - {{ query }}{% endif %}{% endblock %}
 {% block content %}
-    <form method="get"> {# open main_search_form #}
+    <form method="get" class="row"> {# open main_search_form #}
         <div id="searchbar" class="row">
             <div class="col-sm-8 col-sm-offset-2">
                 <div class="input-group">
@@ -50,7 +50,7 @@
                     {{ form.myWorkgroups_only.label }}
                 </label>
             {% endif %}
-            <span style="display:inline-block"><i class="fa fa-life-ring fa-fw"></i> <a href="{% url 'help_page' 'advanced-search' %}">Advanced help</a></span>
+            <span style="display:inline-block"><i class="fa fa-life-ring fa-fw"></i> <a href="{% url 'aristotle_help:help_page' 'advanced-search' %}">Advanced help</a></span>
         </div>
         <nav class="navbar navbar-default searchAdvanced" role="navigation">
           <div class="container-fluid">
@@ -149,7 +149,7 @@
           </div>
         </nav>
     </form> {# close main_search_form for when results #}
-
+<div class="row">
     {% if form.errors %}
     <div class="col-md-10 col-md-offset-1">
         <p>
@@ -164,16 +164,73 @@
         </p>
     </div>
     {% endif %}
-    {#  ----- If there are spelling suggestions, show them. ----- #}
-    {% if form.auto_correct_spell_search or form.has_spelling_suggestions %}
-        {% if form.auto_correct_spell_search %}
-        <div id="spelling" class="col-md-10 col-md-offset-1">
-            {% if page.object_list %}
-                <p><strong>No results for:</strong> {{ form.original_query }}
+    
+    <div class="col-xs-12 results_header">
+    {% if query or form.filter_search %}
+        <div class="row">
+            <h3 class="col-sm-3">Results</h3>
+            {% if form.auto_broaden_search %}
+                <div class="alert alert-warning" role="alert">
+                    <p>There were no results for "{{ form.q.value }}" with your requested filters.
+                    </p>
+                    <p>
+                        We've automatically removed the filters and re-run your search.
+                    </p>
+                </div>
+            {% endif %}
+            <div class="col-sm-9">
+                {% if form.applied_filters %}
+                <div>
+                    Showing only items where
+                    {% search_describe_filters form %}
+                </div>
+                {% endif %}
+    
+                <p class="results_count">
+                    {% if page.has_other_pages %}
+                    Showing {{ page.start_index }} - {{ page.end_index }} of <span class="count">{{ page.paginator.count }}</span> results.
+                    {% else %}
+                    Showing <span class="count">{{ page.paginator.count }}</span> results.
+                    {% endif %}
                 </p>
-                <strong>Searching instead for:</strong>
-                <span>
-                    <a href="?q={{form.suggested_query}}">
+            
+            {#  ----- If there are spelling suggestions, show them. ----- #}
+            {% if form.auto_correct_spell_search or form.has_spelling_suggestions %}
+                {% if form.auto_correct_spell_search %}
+                <div id="spelling" class="col-md-10 col-md-offset-1">
+                    {% if page.object_list %}
+                        <p><strong>No results for:</strong> {{ form.original_query }}
+                        </p>
+                        <strong>Searching instead for:</strong>
+                        <span>
+                            <a href="?q={{form.suggested_query}}">
+                            {% for word,suggestion in form.spelling_suggestions %}
+                                {% if suggestion %}
+                                    <em>{{ suggestion }}</em>
+                                {% else %}
+                                    {{ word }}
+                                {% endif %}
+                            {% endfor %}
+                            </a>
+                        </span>
+                    {% else %}
+                        <p><strong>No results for:</strong> {{ form.original_query }}
+                        </p>
+                        <strong>Tried searching instead for:</strong>
+                        <span>
+                        {% for word,suggestion in form.spelling_suggestions %}
+                            {% if suggestion %}
+                                <em>{{ suggestion }}</em>
+                            {% else %}
+                                {{ word }}
+                            {% endif %}
+                        {% endfor %}, but no results were found.
+                        </span>
+                    {% endif %}
+                </div>{# closes div#spelling #}
+                {% elif form.has_spelling_suggestions  %}
+                    Did you mean:
+                    <a href="?q={{ form.suggested_query }}">
                     {% for word,suggestion in form.spelling_suggestions %}
                         {% if suggestion %}
                             <em>{{ suggestion }}</em>
@@ -182,40 +239,20 @@
                         {% endif %}
                     {% endfor %}
                     </a>
-                </span>
-            {% else %}
-                <p><strong>No results for:</strong> {{ form.original_query }}
-                </p>
-                <strong>Tried searching instead for:</strong>
-                <span>
-                {% for word,suggestion in form.spelling_suggestions %}
-                    {% if suggestion %}
-                        <em>{{ suggestion }}</em>
-                    {% else %}
-                        {{ word }}
-                    {% endif %}
-                {% endfor %}, but no results were found.
-                </span>
-            {% endif %}
-        </div>{# closes div#spelling #}
-        {% elif form.has_spelling_suggestions  %}
-            Did you mean:
-            <a href="?q={{ form.suggested_query }}">
-            {% for word,suggestion in form.spelling_suggestions %}
-                {% if suggestion %}
-                    <em>{{ suggestion }}</em>
-                {% else %}
-                    {{ word }}
                 {% endif %}
-            {% endfor %}
-            </a>
-        {% endif %}
+            {% endif %}
+            </div>
+        </div>
     {% endif %}
+
+            
+    </div>
+
     {#  ----- MAIN RESULTS PAGE STARTS HERE ----- #}
     {% if query or form.filter_search %}
         {% if page.object_list %}
-        <div class="col-md-3 panel panel-default facets">
-            <div class='panel-heading'>Refine your results</div>
+        <div class="col-md-3 facets">
+            <header>Refine your results</header>
             <dl class="panel-body">
                 {% if form.facets.fields.facet_model_ct %}
                 <dt>Item types</dt>
@@ -283,49 +320,27 @@
         </div>
         <div class="col-md-9">
 
-            {% if form.auto_broaden_search %}
-                <div class="alert alert-warning" role="alert">
-                    <p>There were no results for "{{ form.q.value }}" with your requested filters.
-                    </p>
-                    <p>
-                        We've automatically removed the filters and re-run your search.
-                    </p>
-                </div>
-            {% endif %}
-            <h3>Results</h3>
-            {% if form.applied_filters %}
-            <div>
-                Showing only items where
-                {% search_describe_filters form %}
-            </div>
-            {% endif %}
+            <form action="{% url 'aristotle:bulk_action' %}?next={{ request.get_full_path }}" method="POST">
+            {% csrf_token %}
 
-            <p>
-                {% if page.has_other_pages %}
-                Showing {{ page.start_index }} - {{ page.end_index }} of {{ page.paginator.count }} results.
-                {% else %}
-                Showing {{ page.paginator.count }} results.
-                {% endif %}
-            </p>
-            {% if user.is_active %}
-                <form action="{% url 'aristotle:bulk_action' %}?next={{ request.get_full_path }}" method="POST">
-                {% csrf_token %}
-            {% endif %}
             <ol start="{{ page.start_index }}"
                 class="searchResults {% ternary user.is_active 'active' '' %}">
             {% for result in page.object_list %}
                 {% if result %}
                 <li>
-                    {% if user.is_active and result.object.concept %}
                     <div class="action">
-                        <input type='checkbox' id="id_items_{{result.object.id}}" name="items" value='{{ result.object.id }}' title='select to add to favourites'>
+                    {% if result.object.concept %}
+                        <span>
+                        <input type='checkbox' id="id_items_{{result.object.id}}" name="items" value='{{ result.object.id }}' title='{% trans "select to perform a bulk action" %}'>
+                            {% include "search/badge.html" with result=result %}
+                        </span>
                         {% if result.object.concept in request.user.profile.favourites.all %}
                             <i class="fa fa-bookmark" title="{% trans 'This item is in your favourites list' %}"></i>
                         {% endif %}
-                    </div>
                     {% else %}
-                    <div></div>
+                        <div></div>
                     {% endif %}
+                    </div>
                     {% include result.searchindex.template_name with item=result.object %}
                 </li>
                 {% endif %}
@@ -334,10 +349,8 @@
             {% endfor %}
             </ol>
 
-            {% if user.is_active %}
-                {% include "aristotle_mdr/helpers/list_action_bar.html" with wrap=True %}
-                </form>
-            {% endif %}
+            {% include "aristotle_mdr/helpers/list_action_bar.html" with wrap=True %}
+            </form>
 
             {% include "aristotle_mdr/helpers/paginator.html" with page=page %}
         </div>
@@ -384,4 +397,5 @@
         </div>
     {% endif %}
 
+{% bootstrap_modal 'search_concept_help' %}
 {% endblock %}
