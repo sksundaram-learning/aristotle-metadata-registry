@@ -440,6 +440,8 @@ class LoggedInViewPages(object):
         self.editor.save()
         self.viewer = User.objects.create_user('vicky', '', 'viewer')
         self.registrar = User.objects.create_user('reggie', '', 'registrar')
+        
+        self.regular = User.objects.create_user('regular', '', 'thanks_steve')
 
         self.wg1.submitters.add(self.editor)
         self.wg1.managers.add(self.manager)
@@ -466,6 +468,12 @@ class LoggedInViewPages(object):
     def login_superuser(self):
         self.logout()
         response = self.client.post(reverse('friendly_login'), {'username': 'super', 'password': 'user'})
+        self.assertEqual(response.status_code, 302)
+        return response
+
+    def login_regular_user(self):
+        self.logout()
+        response = self.client.post(reverse('friendly_login'), {'username': 'regular', 'password': 'thanks_steve'})
         self.assertEqual(response.status_code, 302)
         return response
 
