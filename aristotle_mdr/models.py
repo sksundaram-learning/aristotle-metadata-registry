@@ -552,9 +552,7 @@ class ConceptQuerySet(InheritanceQuerySet):
                 q |= Q(_is_locked=False, workgroup__submitters__profile__user=user)
             if user.steward_in.exists():
                 q |= Q(workgroup__stewards__profile__user=user)
-            return self.filter(q)
-        else:
-            return self.none()
+        return self.filter(q)
 
     def public(self):
         """
