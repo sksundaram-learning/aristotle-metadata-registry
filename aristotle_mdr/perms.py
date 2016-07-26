@@ -79,13 +79,7 @@ def user_can_edit(user, item):
 def user_is_editor(user, workgroup=None):
     if user.is_anonymous():
         return False
-    if user.is_superuser:
-        return True
-    elif workgroup is None:
-        return user.submitter_in.count() > 0 or user.steward_in.count() > 0
-    else:
-        return user.submitter_in.filter(workgroup=workgroup).exists() or \
-            user.steward_in.filter(workgroup=workgroup).exists()
+    return user.is_active
 
 
 def user_is_registrar(user, ra=None):
