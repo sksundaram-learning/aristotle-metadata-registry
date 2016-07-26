@@ -115,7 +115,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.assertEqual(response.status_code,403)
 
     def test_regular_can_view_own_items_edit_page(self):
-        self.login_regular()
+        self.login_regular_user()
         response = self.client.get(reverse('aristotle:edit_item',args=[self.item1.id]))
         self.assertEqual(response.status_code,403)
         response = self.client.get(reverse('aristotle:edit_item',args=[self.item2.id]))
@@ -125,7 +125,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.assertEqual(response.status_code,200)
 
     def test_regular_can_save_via_edit_page(self):
-        self.login_regular()
+        self.login_regular_user()
         self.regular_item = self.itemType.objects.create(name="regular item",definition=" ", submitter=self.regular,**self.defaults)
         response = self.client.get(reverse('aristotle:edit_item',args=[self.regular_item.id]))
         self.assertEqual(response.status_code,200)
