@@ -114,6 +114,30 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         response = self.client.get(reverse('aristotle:edit_item',args=[self.item2.id]))
         self.assertEqual(response.status_code,403)
 
+    def test_regular_can_view_own_items_edit_page(self):
+        self.login_regular_user()
+        response = self.client.get(reverse('aristotle:edit_item',args=[self.item1.id]))
+        self.assertEqual(response.status_code,403)
+        response = self.client.get(reverse('aristotle:edit_item',args=[self.item2.id]))
+        self.assertEqual(response.status_code,403)
+        self.regular_item = self.itemType.objects.create(name="regular item",definition=" ", submitter=self.regular,**self.defaults)
+        response = self.client.get(reverse('aristotle:edit_item',args=[self.regular_item.id]))
+        self.assertEqual(response.status_code,200)
+
+    def test_regular_can_save_via_edit_page(self):
+        self.login_regular_user()
+        self.regular_item = self.itemType.objects.create(name="regular item",definition=" ", submitter=self.regular,**self.defaults)
+        response = self.client.get(reverse('aristotle:edit_item',args=[self.regular_item.id]))
+        self.assertEqual(response.status_code,200)
+
+        updated_item = utils.model_to_dict_with_change_time(response.context['item'])
+        updated_name = updated_item['name'] + " updated!"
+        updated_item['name'] = updated_name
+        response = self.client.post(reverse('aristotle:edit_item',args=[self.regular_item.id]), updated_item)
+        self.regular_item = self.itemType.objects.get(pk=self.regular_item.pk)
+        self.assertRedirects(response,url_slugify_concept(self.regular_item))
+        self.assertEqual(self.regular_item.name,updated_name)
+
     def test_submitter_can_save_via_edit_page(self):
         self.login_editor()
         response = self.client.get(reverse('aristotle:edit_item',args=[self.item1.id]))

@@ -52,7 +52,7 @@ class WorkgroupVerificationMixin(forms.ModelForm):
                 old_wg_pk = None
                 if self.instance.workgroup:
                     old_wg_pk = str(self.instance.workgroup.pk)
-                if str(self.data['workgroup']) != str(old_wg_pk):
+                if str(self.data['workgroup']) != str(old_wg_pk) and not (str(self.data['workgroup']) == "" and old_wg_pk is None):
                     if not user_can_move_any_workgroup(self.user):
                         raise forms.ValidationError(WorkgroupVerificationMixin.cant_move_any_permission_error)
                     if not user_can_remove_from_workgroup(self.user, self.instance.workgroup):

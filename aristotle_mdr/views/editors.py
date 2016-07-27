@@ -77,17 +77,7 @@ class EditItemView(PermissionFormView):
         form = self.get_form()
         slot_formset = None
 
-        new_wg = request.POST.get('workgroup', None)
-        old_wg = None
-        old_wg_pk = None
-        if self.item.workgroup:
-            old_wg = self.item.workgroup
-            old_wg_pk = str(self.item.workgroup.pk)
-        workgroup_changed = not(old_wg_pk == new_wg)
-
         if form.is_valid():
-            workgroup_changed = old_wg != form.cleaned_data['workgroup']
-
             with transaction.atomic(), reversion.revisions.create_revision():
                 item = form.save(commit=False)
                 slot_formset = self.get_slots_formset()(request.POST, request.FILES, item.concept)
