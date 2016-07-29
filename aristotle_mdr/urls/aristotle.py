@@ -10,7 +10,7 @@ from haystack.views import search_view_factory
 import aristotle_mdr.views as views
 import aristotle_mdr.forms as forms
 import aristotle_mdr.models as models
-from aristotle_mdr.contrib.generic.views import GenericAlterOneToManyView
+from aristotle_mdr.contrib.generic.views import GenericAlterOneToManyView, generic_foreign_key_factory_view
 from django.utils.translation import ugettext_lazy as _
 
 autocomplete_light.autodiscover()
@@ -49,6 +49,10 @@ urlpatterns = patterns(
             form_title=_('Change Supplementary Values')
         ), name='supplementary_values_edit'),
 
+    url(r'^item/(?P<iid>\d+)?/alter_relationship/(?P<fk_field>[A-Za-z\-_]+)/?$',
+        generic_foreign_key_factory_view,
+        name='generic_foreign_key_editor'),
+
 
     url(r'^workgroup/(?P<iid>\d+)(?:-(?P<name_slug>[A-Za-z0-9\-]+))?/?$', views.workgroups.workgroup, name='workgroup'),
     url(r'^workgroup/(?P<iid>\d+)/members/?$', views.workgroups.members, name='workgroupMembers'),
@@ -83,8 +87,8 @@ urlpatterns = patterns(
 
     # url(r'^create/?$', views.item, name='item'),
     url(r'^create/?$', views.create_list, name='create_list'),
-    url(r'^create/(aristotle_mdr/)?dataelementconcept$', views.wizards.DataElementConceptWizard.as_view(), name='createDataElementConcept'),
-    url(r'^create/(aristotle_mdr/)?dataelement$', views.wizards.DataElementWizard.as_view(), name='createDataElement'),
+    url(r'^create/w/(aristotle_mdr/)?dataelementconcept$', views.wizards.DataElementConceptWizard.as_view(), name='createDataElementConcept'),
+    url(r'^create/w/(aristotle_mdr/)?dataelement$', views.wizards.DataElementWizard.as_view(), name='createDataElement'),
     url(r'^create/(?P<app_label>.+)/(?P<model_name>.+)/?$', views.wizards.create_item, name='createItem'),
     url(r'^create/(?P<model_name>.+)/?$', views.wizards.create_item, name='createItem'),
 

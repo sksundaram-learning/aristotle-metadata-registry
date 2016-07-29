@@ -1110,18 +1110,83 @@ class DataElementConceptViewPage(LoggedInViewConceptPages,TestCase):
     
     def setUp(self, *args, **kwargs):
         super(DataElementConceptViewPage, self).setUp(*args, **kwargs)
-        oc = models.ObjectClass.objects.create(
+        self.oc = models.ObjectClass.objects.create(
             name="sub item OC",
             workgroup=self.item1.workgroup,
         )
-        prop = models.Property.objects.create(
+        self.prop = models.Property.objects.create(
             name="sub item prop",
             workgroup=self.item1.workgroup
         )
-        self.item1.objectClass = oc
-        self.item1.property = prop
+        self.item1.objectClass = self.oc
+        self.item1.property = self.prop
         self.item1.save()
 
+    def test_foreign_key_popups(self):
+        self.logout()
+
+        check_url = reverse('aristotle:generic_foreign_key_editor', args=[self.item1.pk, 'objectclassarino'])
+        response = self.client.get(check_url)
+        self.assertTrue(response.status_code,404)
+
+        check_url = reverse('aristotle:generic_foreign_key_editor', args=[self.item1.pk, 'objectclass'])
+        response = self.client.get(check_url)
+        self.assertTrue(response.status_code,403)
+
+        response = self.client.post(check_url,{'objectClass':''})
+        self.assertTrue(response.status_code,403)
+        self.item1 = self.item1.__class__.objects.get(pk=self.item1.pk)
+        self.assertTrue(self.item1.objectClass is not None)
+    
+        self.login_editor()
+        response = self.client.get(check_url)
+        self.assertTrue(response.status_code,200)
+
+        response = self.client.post(check_url,{'objectClass':''})
+        self.assertTrue(response.status_code,302)
+        self.item1 = self.item1.__class__.objects.get(pk=self.item1.pk)
+        self.assertTrue(self.item1.objectClass is None)
+
+        response = self.client.post(check_url,{'objectClass':self.prop.pk})
+        self.assertTrue(response.status_code,200)
+        self.item1 = self.item1.__class__.objects.get(pk=self.item1.pk)
+        self.assertTrue(self.item1.objectClass is None)
+
+        another_oc = models.ObjectClass.objects.create(
+            name="editor can't see this",
+            definition="",
+        )
+        response = self.client.post(check_url,{'objectClass':another_oc.pk})
+        self.assertTrue(response.status_code,200)
+        self.item1 = self.item1.__class__.objects.get(pk=self.item1.pk)
+        self.assertTrue(self.item1.objectClass is None)
+
+
+        response = self.client.post(check_url,{'objectClass':self.oc.pk})
+        self.assertTrue(response.status_code,302)
+        self.item1 = self.item1.__class__.objects.get(pk=self.item1.pk)
+        self.assertTrue(self.item1.objectClass == self.oc)
+
+    def test_regular_cannot_save_a_property_they_cant_see_via_edit_page(self):
+        self.login_regular_user()
+        self.regular_item = self.itemType.objects.create(name="regular item",definition=" ", submitter=self.regular,**self.defaults)
+        response = self.client.get(reverse('aristotle:edit_item',args=[self.regular_item.id]))
+        self.assertEqual(response.status_code,200)
+
+        updated_item = utils.model_to_dict_with_change_time(response.context['item'])
+        updated_name = updated_item['name'] + " updated!"
+        updated_item['name'] = updated_name
+        updated_item['property'] = self.prop.pk
+
+        self.assertFalse(self.prop.can_view(self.regular))
+
+        response = self.client.post(reverse('aristotle:edit_item',args=[self.regular_item.id]), updated_item)
+        self.regular_item = self.itemType.objects.get(pk=self.regular_item.pk)
+
+        self.assertEqual(response.status_code,200)
+        self.assertTrue('not one of the available choices' in response.context['form'].errors['property'][0])
+        self.assertFalse(self.regular_item.name == updated_name)
+        self.assertFalse(self.regular_item.property == self.prop)
 
     def test_cascade_action(self):
         self.logout()
