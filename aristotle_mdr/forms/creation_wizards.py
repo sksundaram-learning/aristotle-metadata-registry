@@ -115,10 +115,10 @@ class ConceptForm(WorkgroupVerificationMixin, UserAwareModelForm):
         self.fields['name'].widget = forms.widgets.TextInput()
         self.show_slots_tab = True
 
-        for f in self.fields:
-            if hasattr(self.fields[f], 'queryset'):
-                if hasattr(self.fields[f].queryset, 'visible'):
-                    self.fields[f].queryset = self.fields[f].queryset.visible(self.user)
+        # for f in self.fields:
+        #     if hasattr(self.fields[f], 'queryset'):
+        #         if hasattr(self.fields[f].queryset, 'visible'):
+        #             self.fields[f].queryset = self.fields[f].queryset.visible(self.user)
 
     def concept_fields(self):
         # version/workgroup are displayed with name/definition
