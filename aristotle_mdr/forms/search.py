@@ -126,6 +126,7 @@ class PermissionSearchQuerySet(SearchQuerySet):
             sqs = sqs.filter(q)
             return sqs
 
+        q = SQ(submitter_id=user.pk)  # users can see items they create
         if user.is_superuser:
             q = SQ()  # Super-users can see everything
         else:
