@@ -111,11 +111,6 @@ class ConceptForm(WorkgroupVerificationMixin, UserAwareModelForm):
         first_load = kwargs.pop('first_load', None)
         super(ConceptForm, self).__init__(*args, **kwargs)
 
-        for f in self.fields:
-            if hasattr(self.fields[f], 'queryset'):
-                if hasattr(self.fields[f].queryset, 'visible'):
-                    self.fields[f].queryset = self.fields[f].queryset.all().visible(self.user)
-
         if not self.user.is_superuser:
             self.fields['workgroup'].queryset = self.user.profile.editable_workgroups
         self.fields['name'].widget = forms.widgets.TextInput()
