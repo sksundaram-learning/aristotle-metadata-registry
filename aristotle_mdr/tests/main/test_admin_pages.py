@@ -458,8 +458,7 @@ class DataElementDerivationAdminPage(AdminPageForConcept,TestCase):
     itemType=models.DataElementDerivation
     def setUp(self):
         super(DataElementDerivationAdminPage, self).setUp(instant_create=False)
-        self.ded_wg = models.Workgroup.objects.create(name="Derived WG")
-        self.derived_de = models.DataElement.objects.create(name='derivedDE',definition="",workgroup=self.ded_wg)
+        self.derived_de = models.DataElement.objects.create(name='derivedDE',definition="",workgroup=self.wg1)
         self.ra.register(self.derived_de,models.STATES.standard,self.registrar)
         self.create_defaults = {'derives':self.derived_de}
         self.form_defaults = {'derives':self.derived_de.id}
