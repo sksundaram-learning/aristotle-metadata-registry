@@ -1,4 +1,4 @@
-﻿import autocomplete_light
+import autocomplete_light
 
 from django import forms
 from django.contrib.admin.widgets import FilteredSelectMultiple

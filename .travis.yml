@@ -38,7 +38,9 @@ install:
 
 # command to run tests
 script:
-  - coverage run --branch --source=aristotle_mdr manage.py test aristotle_mdr.tests;
+#  - coverage run --branch --source=aristotle_mdr manage.py test aristotle_mdr.tests;
+  - coverage run --branch --source=aristotle_mdr manage.py test aristotle_mdr.tests.main.test_html_pages.DataElementDerivationViewPage.test_submitter_can_save_via_edit_page ;
+
 after_success:
   - coveralls
   - codecov
