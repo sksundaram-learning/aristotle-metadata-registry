@@ -114,9 +114,7 @@ class ConceptForm(WorkgroupVerificationMixin, UserAwareModelForm):
         for f in self.fields:
             if hasattr(self.fields[f], 'queryset'):
                 if hasattr(self.fields[f].queryset, 'visible'):
-                    print(self.fields[f].queryset.all())
                     self.fields[f].queryset = self.fields[f].queryset.all().visible(self.user)
-                    print(self.fields[f].queryset.all())
 
         if not self.user.is_superuser:
             self.fields['workgroup'].queryset = self.user.profile.editable_workgroups
