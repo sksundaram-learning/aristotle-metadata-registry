@@ -24,7 +24,7 @@ class UserAwareForm(forms.Form):
         super(UserAwareForm, self).__init__(*args, **kwargs)
 
 
-class UserAwareModelForm(UserAwareForm, forms.ModelForm): #, autocomplete_light.ModelForm):
+class UserAwareModelForm(UserAwareForm, forms.ModelForm):  # , autocomplete_light.ModelForm):
     class Meta:
         model = MDR._concept
         exclude = ['superseded_by', '_is_public', '_is_locked', 'originURI', 'submitter']
