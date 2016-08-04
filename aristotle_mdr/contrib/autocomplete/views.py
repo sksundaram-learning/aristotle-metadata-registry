@@ -46,8 +46,6 @@ class GenericConceptAutocomplete(GenericAutocomplete):
         else:
             qs = self.model.objects.visible(self.request.user)
 
-        print qs
-
         if self.q:
             qs = qs.filter(name__icontains=self.q)
         return qs
