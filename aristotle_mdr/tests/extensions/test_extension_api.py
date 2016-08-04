@@ -135,6 +135,7 @@ class QuestionnaireViewPage(LoggedInViewExtensionConceptPages, TestCase):
             reverse(value_url,args=[self.item1.id]),
             {"items_to_add":[q1.pk,q2.pk,q3.pk],}
         )
+
         self.assertTrue('Select a valid choice' in response.content)
         self.item1 = Questionnaire.objects.get(pk=self.item1.pk)
         self.assertTrue(self.item1.questions.count() == 0)

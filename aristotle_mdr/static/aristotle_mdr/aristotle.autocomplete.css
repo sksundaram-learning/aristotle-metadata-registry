@@ -12,14 +12,18 @@ input[type='text'].autocomplete {
 
 .autocomplete-item {
     display:block;
-    .title small {
-        display:inline-block;
-        font-weight:normal;
-    }
-    .details {
-        padding-left:20px;
-    }
-    * {
-        white-space:normal;
-    }
 }
+
+.autocomplete-item .title small {
+    display:inline-block;
+    font-weight:normal;
+}
+
+.autocomplete-item .details {
+    padding-left:20px;
+}
+
+.autocomplete-item * {
+    white-space:normal;
+}
+

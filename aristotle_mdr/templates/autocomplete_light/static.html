@@ -1,5 +1,4 @@
-{% load compile_static %}
 {% load static from staticfiles %}
 
-<link rel="stylesheet" href="{{ STATIC_URL }}{% compile 'aristotle_mdr/aristotle.autocomplete.less' %}" />
+<link rel="stylesheet" type="text/css" href="{% static 'aristotle_mdr/aristotle.autocomplete.css' %}" />
 <script src="{% static 'aristotle_mdr/aristotle.autocomplete.js' %}" type="text/javascript"></script>

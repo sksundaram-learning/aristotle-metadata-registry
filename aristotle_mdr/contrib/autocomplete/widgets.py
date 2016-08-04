@@ -3,6 +3,25 @@ from django.core.urlresolvers import reverse
 
 
 class ConceptAutocompleteBase(object):
+
+    class Media:
+        """Automatically include static files for the admin."""
+
+        css = {
+            'all': (
+                'autocomplete_light/vendor/select2/dist/css/select2.css',
+                'autocomplete_light/select2.css',
+                'aristotle_mdr/aristotle.autocomplete.css',
+            )
+        }
+        js = (
+            'autocomplete_light/jquery.init.js',
+            'autocomplete_light/autocomplete.init.js',
+            'autocomplete_light/vendor/select2/dist/js/select2.full.js',
+            'autocomplete_light/select2.js',
+            'aristotle_mdr/aristotle.autocomplete.js',
+        )
+
     def __init__(self, *args, **kwargs):
         self.model = kwargs.pop('model', None)
         if self.model:

@@ -6,6 +6,7 @@
 $( document ).ready( function() {
     $('a.ac_preview_link').click( function(e) {
         e.stopPropagation();
+        alert('hello');
         return false;
     });
 });

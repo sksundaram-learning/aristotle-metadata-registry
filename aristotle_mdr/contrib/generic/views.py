@@ -193,7 +193,7 @@ class GenericAlterManyToManyView(GenericAlterManyToSomethingFormView):
                 queryset=self.model_to_add.objects.visible(self.request.user),
                 label="Attach",
                 required=False,
-                widget=widgets.ConceptAutocompleteSelect(
+                widget=widgets.ConceptAutocompleteSelectMultiple(
                     model=self.model_to_add
                 )
             )

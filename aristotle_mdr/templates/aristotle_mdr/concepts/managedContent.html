@@ -5,7 +5,7 @@
 
 {% block extra_head_scripts %}
     {% if item|can_edit:request.user %}
-        <link rel="stylesheet" href="{{ STATIC_URL }}{% compile 'aristotle_mdr/aristotle.autocomplete.less' %}" />
+        <link rel="stylesheet" type="text/css" href="{% static 'aristotle_mdr/aristotle.autocomplete.css' %}" />
     {% endif %}
     <link rel="stylesheet" href="{{ STATIC_URL }}{% compile 'aristotle_mdr/aristotle.visuals.less' %}" />
 {% endblock %}
