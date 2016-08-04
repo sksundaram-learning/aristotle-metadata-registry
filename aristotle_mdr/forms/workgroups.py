@@ -14,7 +14,7 @@ class AddMembers(forms.Form):
     users = forms.ModelMultipleChoiceField(
         label=_("Select users"),
         queryset=User.objects.all(),
-        #widget=autocomplete_light.MultipleChoiceWidget('Autocomplete_AristotleUser')
+        # widget=autocomplete_light.MultipleChoiceWidget('Autocomplete_AristotleUser')
     )
 
     def clean_roles(self):

@@ -9,13 +9,14 @@ from django.template import Context
 class GenericAutocomplete(autocomplete.Select2QuerySetView):
     model = None
     template_name = "autocomplete_light/item.html"
+
     def dispatch(self, request, *args, **kwargs):
         if kwargs.get('app_name', None) and kwargs.get('model_name', None):
             self.model = get_object_or_404(
                 ContentType, app_label=kwargs['app_name'], model=kwargs['model_name']
             ).model_class()
         return super(GenericAutocomplete, self).dispatch(request, *args, **kwargs)
-        
+
     def get_queryset(self):
         # Don't forget to filter out results depending on the visitor !
         if not self.request.user.is_authenticated():
@@ -38,7 +39,7 @@ class GenericAutocomplete(autocomplete.Select2QuerySetView):
 class GenericConceptAutocomplete(GenericAutocomplete):
     model = models._concept
     template_name = "autocomplete_light/concept.html"
-    
+
     def get_queryset(self):
         if not self.request.user.is_authenticated():
             qs = self.model.objects.public()

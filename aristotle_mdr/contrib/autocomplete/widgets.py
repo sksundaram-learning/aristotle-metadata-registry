@@ -1,6 +1,7 @@
 from dal.autocomplete import ModelSelect2Multiple, ModelSelect2
 from django.core.urlresolvers import reverse
 
+
 class ConceptAutocompleteBase(object):
     def __init__(self, *args, **kwargs):
         self.model = kwargs.pop('model', None)
@@ -11,7 +12,7 @@ class ConceptAutocompleteBase(object):
             )
         else:
             url = 'aristotle-autocomplete:concept'
-        
+
         kwargs.update(
             url=url,
             attrs={'data-html': 'true'}

@@ -1,9 +1,10 @@
 from django.contrib.contenttypes.models import ContentType
 from django.shortcuts import get_object_or_404
 
+
 class GenericAutocomplete(autocomplete.Select2QuerySetView):
     model = None
-    
+
     def dispatch(self, request, *args, **kwargs):
         print args, kwargs
         if 'app_name' in kwargs.keys() and 'model_name' in kwargs.keys():
@@ -11,7 +12,7 @@ class GenericAutocomplete(autocomplete.Select2QuerySetView):
                 ContentType, app_label=kwargs['app_name'], model=kwargs['model_name']
             ).model_class()
         return super(GenericAutocomplete, self).dispatch(request, *args, **kwargs)
-        
+
     def get_queryset(self):
         # Don't forget to filter out results depending on the visitor !
         if not self.request.user.is_authenticated():

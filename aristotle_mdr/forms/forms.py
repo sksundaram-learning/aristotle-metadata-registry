@@ -10,6 +10,7 @@ from aristotle_mdr.perms import user_can_edit, user_can_view
 from aristotle_mdr.forms.creation_wizards import UserAwareForm
 from aristotle_mdr.contrib.autocomplete import widgets
 
+
 class UserSelfEditForm(forms.Form):
     template = "aristotle_mdr/userEdit.html"
 
