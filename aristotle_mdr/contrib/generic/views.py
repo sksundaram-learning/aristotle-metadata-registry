@@ -11,8 +11,7 @@ from django.shortcuts import redirect, get_object_or_404
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import FormView, ListView, TemplateView
 
-import autocomplete_light
-
+from aristotle_mdr.contrib.autocomplete import widgets
 from aristotle_mdr.utils import get_concepts_for_apps
 from aristotle_mdr.models import _concept
 from aristotle_mdr.perms import user_can_edit, user_can_view
@@ -130,8 +129,8 @@ class GenericAlterForeignKey(GenericAlterManyToSomethingFormView):
                 model = self.model_base
                 fields = (self.model_base_field,)
                 widgets = {
-                    self.model_base_field: autocomplete_light.ChoiceWidget(
-                        foreign_model.get_autocomplete_name()
+                    self.model_base_field: widgets.ConceptAutocompleteSelect(
+                        model=foreign_model
                     )
                 }
 
@@ -194,9 +193,9 @@ class GenericAlterManyToManyView(GenericAlterManyToSomethingFormView):
                 queryset=self.model_to_add.objects.visible(self.request.user),
                 label="Attach",
                 required=False,
-                widget=autocomplete_light.MultipleChoiceWidget(
-                    self.model_to_add.get_autocomplete_name()
-                ),
+                widget=widgets.ConceptAutocompleteSelect(
+                    model=self.model_to_add
+                )
             )
         return M2MForm
 

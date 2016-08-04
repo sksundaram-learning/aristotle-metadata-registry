@@ -8,7 +8,9 @@ from django.utils.translation import ugettext_lazy as _
 import aristotle_mdr.models as MDR
 from aristotle_mdr.exceptions import NoUserGivenForUserForm
 from aristotle_mdr.perms import user_can_move_between_workgroups, user_can_move_any_workgroup, user_can_remove_from_workgroup, user_can_move_to_workgroup
-import autocomplete_light
+from aristotle_mdr.contrib.autocomplete import widgets
+
+from dal import autocomplete
 
 
 class UserAwareForm(forms.Form):
@@ -114,9 +116,11 @@ class ConceptForm(WorkgroupVerificationMixin, UserAwareModelForm):
         for f in self.fields:
             if hasattr(self.fields[f], 'queryset'):
                 if hasattr(self.fields[f].queryset, 'visible'):
-                    # print self.user, f, self.fields[f].queryset
                     self.fields[f].queryset = self.fields[f].queryset.all().visible(self.user)
-                    # print self.user, f, self.fields[f].queryset
+                    self.fields[f].widget = widgets.ConceptAutocompleteSelect(
+                        model=self.fields[f].queryset.model
+                    )
+                    self.fields[f].widget.choices = self.fields[f].choices
 
         if not self.user.is_superuser:
             self.fields['workgroup'].queryset = self.user.profile.editable_workgroups

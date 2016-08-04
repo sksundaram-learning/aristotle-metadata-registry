@@ -1,6 +1,4 @@
 import notifications.urls
-import autocomplete_light
-# import every app/autocomplete_light_registry.py
 
 from django.conf import settings
 from django.conf.urls import patterns, include, url
@@ -9,7 +7,6 @@ from django.contrib import admin
 from django.views.generic.base import RedirectView
 from aristotle_mdr.views.user_pages import friendly_redirect_login
 
-autocomplete_light.autodiscover()
 admin.autodiscover()
 
 urlpatterns = [
@@ -17,7 +14,6 @@ urlpatterns = [
     url(r'^logout/?$', 'django.contrib.auth.views.logout', {'next_page': '/'}),
     url(r'^django/admin/doc/', include('django.contrib.admindocs.urls')),
     url(r'^django/admin/', include(admin.site.urls)),
-    url(r'^autocomplete/', include('autocomplete_light.urls')),
     url(r'^ckeditor/', include('aristotle_mdr.urls.ckeditor_uploader')),
     url(r'^account/notifications/', include(notifications.urls, namespace="notifications")),
     url(r'^account/password/reset/$', password_reset),  # , {'template_name': 'my_templates/password_reset.html'}

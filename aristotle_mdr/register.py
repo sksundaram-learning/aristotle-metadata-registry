@@ -13,12 +13,12 @@ used within the admin site and search, but should be considered internal methods
 and future releases of Aristotle-MDR may break code that uses these methods.
 """
 from __future__ import absolute_import
-import autocomplete_light
+# import autocomplete_light
 
 from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
 
-from aristotle_mdr import autocomplete_light_registry as reg
+# from aristotle_mdr import autocomplete_light_registry as reg
 from aristotle_mdr.search_indexes import conceptIndex
 
 import aristotle_mdr.search_indexes as search_index
@@ -49,7 +49,7 @@ def register_concept(concept_class, *args, **kwargs):
 
     register_concept_reversions(concept_class, *args, **kwargs)  # must come before admin
     register_concept_admin(concept_class, *args, **kwargs)
-    register_concept_autocomplete(concept_class, *args, **kwargs)
+    # register_concept_autocomplete(concept_class, *args, **kwargs)
     register_concept_search_index(concept_class, *args, **kwargs)
 
 

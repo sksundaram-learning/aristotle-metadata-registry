@@ -1,11 +1,8 @@
-import autocomplete_light
 from django.conf.urls import patterns, url
 from aristotle_mdr.contrib.generic.views import GenericAlterManyToManyView
 
 from extension_test import views
 from extension_test import models
-
-autocomplete_light.autodiscover()
 
 urlpatterns = patterns(
     '',

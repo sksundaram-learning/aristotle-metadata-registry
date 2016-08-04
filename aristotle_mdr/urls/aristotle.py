@@ -1,5 +1,3 @@
-import autocomplete_light
-
 from django.conf.urls import patterns, url
 from django.views.generic import TemplateView
 from django.views.generic.base import RedirectView
@@ -12,8 +10,6 @@ import aristotle_mdr.forms as forms
 import aristotle_mdr.models as models
 from aristotle_mdr.contrib.generic.views import GenericAlterOneToManyView, generic_foreign_key_factory_view
 from django.utils.translation import ugettext_lazy as _
-
-autocomplete_light.autodiscover()
 
 
 urlpatterns = patterns(
