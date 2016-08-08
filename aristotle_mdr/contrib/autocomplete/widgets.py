@@ -19,7 +19,6 @@ class ConceptAutocompleteBase(object):
             'autocomplete_light/autocomplete.init.js',
             'autocomplete_light/vendor/select2/dist/js/select2.full.js',
             'autocomplete_light/select2.js',
-            'aristotle_mdr/aristotle.autocomplete.js',
         )
 
     def __init__(self, *args, **kwargs):

@@ -3,7 +3,6 @@
 {% block title %}Supersede {{ item.name }} with newer version{% endblock %}
 
 {% block content %}
-
 <form method="post" action="{% url 'aristotle:supersede' iid=item.id %}">{% csrf_token %}
     <div class="modal-body">
         <header>This form allows you to supersede an item, by indicating a new version exists.
@@ -28,5 +27,7 @@
             <input type="submit" class="btn btn-primary" value="Supersede" />
     </div>
 </form>
-{% include 'autocomplete_light/static.html' %}
+{% block extra_head_scripts %}
+    {{form.media}}
+{% endblock %}
 {% endblock %}

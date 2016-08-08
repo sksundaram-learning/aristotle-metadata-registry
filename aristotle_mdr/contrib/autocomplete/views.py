@@ -1,9 +1,11 @@
 from django.contrib.contenttypes.models import ContentType
 from django.shortcuts import get_object_or_404
-from aristotle_mdr import models
-from dal import autocomplete
 from django.template.loader import get_template
 from django.template import Context
+from django.utils import six
+
+from aristotle_mdr import models
+from dal import autocomplete
 
 
 class GenericAutocomplete(autocomplete.Select2QuerySetView):
@@ -28,12 +30,26 @@ class GenericAutocomplete(autocomplete.Select2QuerySetView):
             qs = qs.filter(name__icontains=self.q)
         return qs
 
-    def get_result_label(self, result):
+    def get_result_title(self, result):
+        """Return the title of a result."""
+        return six.text_type(result)
+
+    def get_result_text(self, result):
         """Return the label of a result."""
 
         template = get_template(self.template_name)
         context = Context({"result": result})
         return template.render(context)
+
+    def get_results(self, context):
+        """Return data for the 'results' key of the response."""
+        return [
+            {
+                'id': self.get_result_value(result),
+                'title': self.get_result_title(result),
+                'text': self.get_result_text(result),
+            } for result in context['object_list']
+        ]
 
 
 class GenericConceptAutocomplete(GenericAutocomplete):

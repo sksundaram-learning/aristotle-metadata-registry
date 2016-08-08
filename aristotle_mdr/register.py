@@ -49,7 +49,6 @@ def register_concept(concept_class, *args, **kwargs):
 
     register_concept_reversions(concept_class, *args, **kwargs)  # must come before admin
     register_concept_admin(concept_class, *args, **kwargs)
-    # register_concept_autocomplete(concept_class, *args, **kwargs)
     register_concept_search_index(concept_class, *args, **kwargs)
 
 
@@ -67,18 +66,6 @@ def register_concept_reversions(concept_class, *args, **kwargs):
 
     for cls in follow_classes:
         reversion.register(cls)
-
-
-def register_concept_autocomplete(concept_class, *args, **kwargs):
-    """ Registers the given ``concept`` with ``autocomplete_light`` based on the
-    in-built ``aristotle_mdr.autocomplete_light_registry.PermissionsAutocomplete``.
-    This ensures the autocomplete for the registered conforms to Aristotle permissions.
-
-    :param concept concept_class: The model that is to be registered
-    """
-    x = reg.autocompleteTemplate.copy()
-    x['name'] = 'Autocomplete' + concept_class.__name__
-    autocomplete_light.register(concept_class, reg.PermissionsAutocomplete, **x)
 
 
 def register_concept_search_index(concept_class, *args, **kwargs):

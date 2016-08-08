@@ -6,7 +6,7 @@
 {% block title %}All Discussions{% endblock %}
 
 {% block extra_head_scripts %}
-    {{ block.super }}
+    <link rel="stylesheet" href="{{ STATIC_URL }}{% compile 'aristotle_mdr/aristotle.dashboard.less' %}" />
     <link rel="stylesheet" href="{{ STATIC_URL }}{% compile 'aristotle_mdr/aristotle_discussions.less' %}" />
 {% endblock %}
 

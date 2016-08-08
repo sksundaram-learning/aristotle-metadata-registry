@@ -1,4 +1,6 @@
-
+.select2-selection {
+    overflow: hidden;
+}
 .yourlabs-autocomplete {
     width:450px;
     max-height:250px;

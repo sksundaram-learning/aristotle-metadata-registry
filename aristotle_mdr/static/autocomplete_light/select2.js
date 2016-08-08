@@ -1,12 +1,11 @@
 /*
 
-Direct copy of the below file.
-When this is included in django-autocomplete-light safe to remove
+Modification of 
 https://github.com/yourlabs/django-autocomplete-light/blob/63abc0308e1cf308233538d9ed3e969b51f08fc4/src/dal_select2/static/autocomplete_light/select2.js
 
 */
 
-;(function ($) {
+(function ($) {
     function add_forwards(element) {
         var forward = element.attr('data-autocomplete-light-forward');
         if (forward !== undefined) {
@@ -40,6 +39,14 @@ https://github.com/yourlabs/django-autocomplete-light/blob/63abc0308e1cf30823353
             if (element.attr('data-html')) {
                 var $result = $('<span>');
                 $result.html(item.text);
+
+                /* inserted for Aristotle */
+                $result.on('mouseup', '.ac_preview_link', function(e) {
+                    e.stopPropagation();
+                    return false;
+                });
+                /* end insert */
+
                 return $result;
             } else {
                 return item.text;
