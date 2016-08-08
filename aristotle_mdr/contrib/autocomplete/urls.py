@@ -7,4 +7,9 @@ urlpatterns = [
         views.GenericConceptAutocomplete.as_view(),
         name='concept',
     ),
+    url(
+        r'^user$',
+        views.UserAutocomplete.as_view(),
+        name='user',
+    ),
 ]

@@ -30,7 +30,6 @@ class ConceptAutocompleteBase(object):
             )
         else:
             url = 'aristotle-autocomplete:concept'
-
         kwargs.update(
             url=url,
             attrs={'data-html': 'true'}
@@ -44,3 +43,9 @@ class ConceptAutocompleteSelectMultiple(ConceptAutocompleteBase, ModelSelect2Mul
 
 class ConceptAutocompleteSelect(ConceptAutocompleteBase, ModelSelect2):
     pass
+
+class UserAutocompleteSelect(ModelSelect2):
+    url = 'aristotle-autocomplete:user'
+
+class UserAutocompleteSelectMultiple(ModelSelect2Multiple):
+    url = 'aristotle-autocomplete:user'
