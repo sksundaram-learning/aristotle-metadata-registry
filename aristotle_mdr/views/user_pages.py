@@ -268,6 +268,10 @@ class CreatedItemsListView(ListView):
     paginate_by = 25
     template_name = "aristotle_mdr/user/sandbox.html"
 
+    @method_decorator(login_required)
+    def dispatch(self, *args, **kwargs):
+        return super(CreatedItemsListView, self).dispatch(*args, **kwargs)
+
     def get_queryset(self, *args, **kwargs):
         return MDR._concept.objects.filter(submitter=self.request.user)  # ,statuses=None,review_requests=None)
 
