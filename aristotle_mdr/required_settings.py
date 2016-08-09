@@ -164,6 +164,7 @@ CKEDITOR_CONFIGS = {
             {'name': 'insert', 'items': ['Image', 'Table', 'HorizontalRule', 'SpecialChar']},
             {'name': 'document', 'items': ['Maximize', 'Source']},
         ],
+        'width': "",
     },
 }
 

@@ -44,8 +44,10 @@ class ConceptAutocompleteSelectMultiple(ConceptAutocompleteBase, ModelSelect2Mul
 class ConceptAutocompleteSelect(ConceptAutocompleteBase, ModelSelect2):
     pass
 
+
 class UserAutocompleteSelect(ModelSelect2):
     url = 'aristotle-autocomplete:user'
+
 
 class UserAutocompleteSelectMultiple(ModelSelect2Multiple):
     url = 'aristotle-autocomplete:user'
