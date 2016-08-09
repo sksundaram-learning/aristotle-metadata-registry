@@ -1,5 +1,3 @@
-import autocomplete_light
-
 from django import forms
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
@@ -18,6 +16,7 @@ from aristotle_mdr.perms import (
     user_can_move_any_workgroup
 )
 from aristotle_mdr.forms.creation_wizards import UserAwareForm
+from aristotle_mdr.contrib.autocomplete import widgets
 
 
 class ForbiddenAllowedModelMultipleChoiceField(forms.ModelMultipleChoiceField):
@@ -114,7 +113,7 @@ class BulkActionForm(UserAwareForm):
             queryset=queryset,
             initial=initial_items,
             required=False,
-            widget=autocomplete_light.MultipleChoiceWidget('Autocomplete_concept')
+            widget=widgets.ConceptAutocompleteSelectMultiple()
         )
 
     @property

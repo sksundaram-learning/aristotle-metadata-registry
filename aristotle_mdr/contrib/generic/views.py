@@ -11,14 +11,31 @@ from django.shortcuts import redirect, get_object_or_404
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import FormView, ListView, TemplateView
 
-import autocomplete_light
-
+from aristotle_mdr.contrib.autocomplete import widgets
 from aristotle_mdr.utils import get_concepts_for_apps
 from aristotle_mdr.models import _concept
 from aristotle_mdr.perms import user_can_edit, user_can_view
 from aristotle_mdr.utils import construct_change_message
 
 import reversion
+
+
+def generic_foreign_key_factory_view(request, **kwargs):
+    item = get_object_or_404(_concept, pk=kwargs['iid']).item
+    field = None
+
+    for f in item._meta.fields:
+        if f.name.lower() == kwargs['fk_field'].lower():
+            field = f.name
+
+    if not field:
+        raise Http404
+
+    return GenericAlterForeignKey.as_view(
+        model_base=item.__class__,
+        model_base_field=field,
+        form_title=_('Add Object Class')
+    )(request, **kwargs)
 
 
 class GenericWithItemURLFormView(FormView):
@@ -68,6 +85,81 @@ class GenericAlterManyToSomethingFormView(GenericWithItemURLFormView):
         return context
 
 
+class GenericAlterForeignKey(GenericAlterManyToSomethingFormView):
+    """
+    A view that provides a framework for altering ManyToOne relationships
+    (Include through models from ManyToMany relationships)
+    from one 'base' object to many others.
+
+    The URL pattern must pass a kwarg with the name `iid` that is the object from the
+    `model_base` to use as the main link for the many to many relation.
+
+    * `model_base` - mandatory - The model with the instance to be altered
+    * `model_to_add` - mandatory - The model that has instances we will link to the base.
+    * `template_name`
+        - optional - The template used to display the form.
+        - default - "aristotle_mdr/generic/actions/alter_foreign_key.html"
+    * `model_base_field` - mandatory - the name of the field that goes from the `model_base` to the `model_to_add`.
+    * `model_to_add_field` - mandatory - the name of the field on the `model_to_add` model that links to the `model_base` model.
+    * `form_title` - Title for the form
+
+    For example: If we have a many to many relationship from `DataElement`s to
+    `Dataset`s, to alter the `DataElement`s attached to a `Dataset`, `Dataset` is the
+    `base_model` and `model_to_add` is `DataElement`.
+    """
+
+    template_name = "aristotle_mdr/generic/actions/alter_foreign_key.html"
+    model_to_add_field = None
+    form = None
+
+    def get_context_data(self, **kwargs):
+        context = super(GenericAlterForeignKey, self).get_context_data(**kwargs)
+        context['form_add_another_text'] = self.form_submit_text or _('Add another')
+        form = self.form or self.get_form()(instance=self.item)
+        context['form'] = form
+        return context
+
+    def get_form(self, form_class=None):
+        foreign_model = self.model_base._meta.get_field(self.model_base_field).related_model
+        qs = foreign_model.objects.visible(self.request.user)
+        model_base_field = self.model_base_field
+
+        class FKOnlyForm(forms.ModelForm):
+            class Meta():
+                model = self.model_base
+                fields = (self.model_base_field,)
+                widgets = {
+                    self.model_base_field: widgets.ConceptAutocompleteSelect(
+                        model=foreign_model
+                    )
+                }
+
+            def __init__(self, *args, **kwargs):
+                super(FKOnlyForm, self).__init__(*args, **kwargs)
+                self.fields[model_base_field].queryset = qs
+
+        return FKOnlyForm
+
+    def post(self, request, *args, **kwargs):
+        """
+        Handles POST requests, instantiating a form instance with the passed
+        POST variables and then checked for validity.
+        """
+        form = self.get_form()
+        self.form = form(self.request.POST, self.request.FILES, instance=self.item)
+        if self.form.is_valid():
+            with transaction.atomic(), reversion.revisions.create_revision():
+                self.form.save()  # do this to ensure we are saving reversion records for the value domain, not just the values
+                reversion.revisions.set_user(request.user)
+                reversion.revisions.set_comment(
+                    _("Altered relationship of '%s' on %s") % (self.model_base_field, self.item)
+                )
+
+            return HttpResponseRedirect(self.get_success_url())
+        else:
+            return self.form_invalid(form)
+
+
 class GenericAlterManyToManyView(GenericAlterManyToSomethingFormView):
     """
     A view that provides a framework for altering ManyToMany relationships from
@@ -84,7 +176,7 @@ class GenericAlterManyToManyView(GenericAlterManyToSomethingFormView):
     * `model_base_field` - mandatory - the field name that goes from the `model_base` to the `model_to_add`.
     * `form_title` - Title for the form
 
-    For example: I fwe have a mnay to many relationship from `DataElement`s to
+    For example: If we have a many to many relationship from `DataElement`s to
     `Dataset`s, to alter the `DataElement`s attached to a `Dataset`, `Dataset` is the
     `base_model` and `model_to_add` is `DataElement`.
     """
@@ -101,9 +193,9 @@ class GenericAlterManyToManyView(GenericAlterManyToSomethingFormView):
                 queryset=self.model_to_add.objects.visible(self.request.user),
                 label="Attach",
                 required=False,
-                widget=autocomplete_light.MultipleChoiceWidget(
-                    self.model_to_add.get_autocomplete_name()
-                ),
+                widget=widgets.ConceptAutocompleteSelectMultiple(
+                    model=self.model_to_add
+                )
             )
         return M2MForm
 
@@ -144,12 +236,12 @@ class GenericAlterOneToManyView(GenericAlterManyToSomethingFormView):
         - optional - The template used to display the form.
         - default - "aristotle_mdr/generic/actions/alter_many_to_many.html"
     * `model_base_field` - mandatory - the name of the field that goes from the `model_base` to the `model_to_add`.
-    * `model_to_add_field` - mdandatory - the name of the field on the `model_to_add` model that links to the `model_base` model.
+    * `model_to_add_field` - mandatory - the name of the field on the `model_to_add` model that links to the `model_base` model.
     * `ordering_field` - optional - name of the ordering field, if entered this field is hidden and updated using a drag-and-drop library
     * `form_add_another_text` - optional - string used for the button to add a new row to the form - defaults to "Add another"
     * `form_title` - Title for the form
 
-    For example: I fwe have a mnay to many relationship from `DataElement`s to
+    For example: If we have a many to many relationship from `DataElement`s to
     `Dataset`s, to alter the `DataElement`s attached to a `Dataset`, `Dataset` is the
     `base_model` and `model_to_add` is `DataElement`.
     """

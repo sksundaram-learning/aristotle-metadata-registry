@@ -360,6 +360,41 @@ class TestSearch(utils.LoggedInViewPages,TestCase):
 
         self.assertTrue(int(dp_result.statuses[0]) == int(models.STATES.candidate))
 
+    def test_user_can_search_own_content(self):
+        self.logout()
+        self.login_regular_user()
+        response = self.client.get(reverse('aristotle:search')+"?q=pokemon")
+        self.assertEqual(response.status_code,200)
+        self.assertEqual(len(response.context['page'].object_list),0)
+        
+        url = reverse('aristotle:createItem', args=['aristotle_mdr', 'objectclass'])
+        
+        step_1_data = {
+            'dynamic_aristotle_wizard-current_step': 'initial',
+            'initial-name':"pokemon",
+        }
+
+        response = self.client.post(url, step_1_data)
+        response = self.client.post(url, {
+            'dynamic_aristotle_wizard-current_step': 'results',
+            'results-name':"pokemon",
+            'results-definition':"Test Definition",
+            'results-workgroup':""
+            }
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(models.ObjectClass.objects.filter(name="pokemon").exists())
+
+        response = self.client.get(reverse('aristotle:search')+"?q=pokemon")
+        self.assertEqual(response.status_code,200)
+        self.assertEqual(len(response.context['page'].object_list),1)
+
+        self.logout()
+        self.login_editor()
+        response = self.client.get(reverse('aristotle:search')+"?q=pokemon")
+        self.assertEqual(response.status_code,200)
+        self.assertEqual(len(response.context['page'].object_list),0)
+
 class TestTokenSearch(TestCase):
     def tearDown(self):
         call_command('clear_index', interactive=False, verbosity=0)

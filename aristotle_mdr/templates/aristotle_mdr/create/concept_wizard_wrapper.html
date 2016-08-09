@@ -28,10 +28,12 @@ Create new {{ model_name }} - Step {{ wizard.steps.step1 }} of {{ wizard.steps.c
                 {% trans "Back" %}
             </button>
         {% endif %}
+        {% block next_button %}
             <button type="submit" class="btn btn-primary" value="{% trans "submit" %}">
                 {% trans "Next" %}
                 <i class="fa fa-angle-double-right"></i>
             </button>
+        {% endblock %}
     </form>
 </div>
 {% endblock %}

@@ -401,7 +401,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.assertEqual(response.status_code,200)
         updated_item = utils.model_to_dict_with_change_time(response.context['item'])
         updated_item['workgroup'] = str(self.wg_other.pk)
-
+        # print updated_item
         response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
         self.assertEqual(response.status_code,200)
 
@@ -410,10 +410,12 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.assertTrue('Select a valid choice.' in form.errors['workgroup'][0])
 
         self.wg_other.submitters.add(self.editor)
-
+        # print self.editor, models.Property.objects.visible(self.editor), [i.pk for i in models.Property.objects.visible(self.editor)], updated_item
+        response = self.client.get(reverse('aristotle:edit_item',args=[self.item1.id]))
+        # print response
         response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
+        # print response
         self.assertEqual(response.status_code,302)
-
         updated_item['workgroup'] = str(self.wg2.pk)
         response = self.client.post(reverse('aristotle:edit_item',args=[self.item1.id]), updated_item)
         self.assertEqual(response.status_code,200)
@@ -1110,18 +1112,91 @@ class DataElementConceptViewPage(LoggedInViewConceptPages,TestCase):
     
     def setUp(self, *args, **kwargs):
         super(DataElementConceptViewPage, self).setUp(*args, **kwargs)
-        oc = models.ObjectClass.objects.create(
+        self.oc = models.ObjectClass.objects.create(
             name="sub item OC",
             workgroup=self.item1.workgroup,
         )
-        prop = models.Property.objects.create(
+        self.prop = models.Property.objects.create(
             name="sub item prop",
             workgroup=self.item1.workgroup
         )
-        self.item1.objectClass = oc
-        self.item1.property = prop
+        self.item1.objectClass = self.oc
+        self.item1.property = self.prop
         self.item1.save()
+        self.assertTrue(self.oc.can_view(self.editor))
+        self.assertTrue(self.prop.can_view(self.editor))
 
+    def test_foreign_key_popups(self):
+        self.logout()
+
+        check_url = reverse('aristotle:generic_foreign_key_editor', args=[self.item1.pk, 'objectclassarino'])
+        response = self.client.get(check_url)
+        self.assertTrue(response.status_code,404)
+
+        check_url = reverse('aristotle:generic_foreign_key_editor', args=[self.item1.pk, 'objectclass'])
+        response = self.client.get(check_url)
+        self.assertTrue(response.status_code,403)
+
+        response = self.client.post(check_url,{'objectClass':''})
+        self.assertTrue(response.status_code,403)
+        self.item1 = self.item1.__class__.objects.get(pk=self.item1.pk)
+        self.assertTrue(self.item1.objectClass is not None)
+    
+        self.login_editor()
+        response = self.client.get(check_url)
+        self.assertTrue(response.status_code,200)
+
+        response = self.client.post(check_url,{'objectClass':''})
+        self.assertTrue(response.status_code,302)
+        self.item1 = self.item1.__class__.objects.get(pk=self.item1.pk)
+        self.assertTrue(self.item1.objectClass is None)
+
+        response = self.client.post(check_url,{'objectClass':self.prop.pk})
+        self.assertTrue(response.status_code,200)
+        self.item1 = self.item1.__class__.objects.get(pk=self.item1.pk)
+        self.assertTrue(self.item1.objectClass is None)
+
+        another_oc = models.ObjectClass.objects.create(
+            name="editor can't see this",
+            definition="",
+        )
+        response = self.client.post(check_url,{'objectClass':another_oc.pk})
+        self.assertTrue(response.status_code,200)
+        self.item1 = self.item1.__class__.objects.get(pk=self.item1.pk)
+        self.assertTrue(self.item1.objectClass is None)
+
+
+        response = self.client.post(check_url,{'objectClass':self.oc.pk})
+        self.assertTrue(response.status_code,302)
+        self.item1 = self.item1.__class__.objects.get(pk=self.item1.pk)
+        self.assertTrue(self.item1.objectClass == self.oc)
+
+    def test_regular_cannot_save_a_property_they_cant_see_via_edit_page(self):
+        self.login_regular_user()
+        self.regular_item = self.itemType.objects.create(name="regular item",definition=" ", submitter=self.regular,**self.defaults)
+        response = self.client.get(reverse('aristotle:edit_item',args=[self.regular_item.id]))
+        self.assertEqual(response.status_code,200)
+
+        updated_item = utils.model_to_dict_with_change_time(response.context['item'])
+        updated_name = updated_item['name'] + " updated!"
+        updated_item['name'] = updated_name
+
+        different_prop = models.Property.objects.create(
+            name="sub item prop 2",
+            workgroup=self.item1.workgroup
+        )
+        updated_item['property'] = different_prop.pk
+
+        self.assertFalse(self.prop.can_view(self.regular))
+        self.assertFalse(different_prop.can_view(self.regular))
+        # print updated_item
+        response = self.client.post(reverse('aristotle:edit_item',args=[self.regular_item.id]), updated_item)
+        self.regular_item = self.itemType.objects.get(pk=self.regular_item.pk)
+        # print self.regular_item.property
+        self.assertEqual(response.status_code,200)
+        self.assertTrue('not one of the available choices' in response.context['form'].errors['property'][0])
+        self.assertFalse(self.regular_item.name == updated_name)
+        self.assertFalse(self.regular_item.property == self.prop)
 
     def test_cascade_action(self):
         self.logout()
@@ -1184,9 +1259,9 @@ class DataElementViewPage(LoggedInViewConceptPages,TestCase):
 
 class DataElementDerivationViewPage(LoggedInViewConceptPages,TestCase):
     url_name='dataelementderivation'
-    @property
-    def defaults(self):
-        return {'derives':models.DataElement.objects.create(name='derivedDE',definition="",workgroup=self.wg1)}
+    # @property
+    # def defaults(self):
+    #     return {'derives':models.DataElement.objects.create(name='derivedDE',definition="",workgroup=self.wg1)}
     itemType=models.DataElementDerivation
 
 class LoggedInViewUnmanagedPages(utils.LoggedInViewPages):

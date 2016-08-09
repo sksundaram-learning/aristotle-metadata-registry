@@ -26,6 +26,8 @@
             <input type="submit" class="btn btn-primary" value="Deprecate" />
     </div>
 </form>
-{% include 'autocomplete_light/static.html' %}
-
+{% block extra_head_scripts %}
+    {{form.media}}
+    {% include 'autocomplete_light/static.html' %}
+{% endblock %}
 {% endblock %}

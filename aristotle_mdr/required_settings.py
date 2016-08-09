@@ -46,6 +46,10 @@ INSTALLED_APPS = (
     'aristotle_mdr.contrib.help',
     'aristotle_mdr.contrib.slots',
     'aristotle_mdr.contrib.browse',
+
+    'dal',
+    'dal_select2',
+
     'haystack',
     'django.contrib.admin',
     'django.contrib.admindocs',
@@ -64,7 +68,7 @@ INSTALLED_APPS = (
     'bootstrap3_datetime',
     'reversion',  # https://github.com/etianen/django-reversion
     'reversion_compare',  # https://github.com/jedie/django-reversion-compare
-    'autocomplete_light',
+
     'notifications',
 )
 
@@ -160,6 +164,7 @@ CKEDITOR_CONFIGS = {
             {'name': 'insert', 'items': ['Image', 'Table', 'HorizontalRule', 'SpecialChar']},
             {'name': 'document', 'items': ['Maximize', 'Source']},
         ],
+        'width': "",
     },
 }
 

@@ -458,9 +458,14 @@ class DataElementDerivationAdminPage(AdminPageForConcept,TestCase):
     itemType=models.DataElementDerivation
     def setUp(self):
         super(DataElementDerivationAdminPage, self).setUp(instant_create=False)
-        self.ded_wg = models.Workgroup.objects.create(name="Derived WG")
-        self.derived_de = models.DataElement.objects.create(name='derivedDE',definition="",workgroup=self.ded_wg)
-        self.ra.register(self.derived_de,models.STATES.standard,self.registrar)
+        from reversion import revisions as reversion
+        with reversion.create_revision():
+            self.ded_wg = models.Workgroup.objects.create(name="Derived WG")
+            self.derived_de = models.DataElement.objects.create(name='derivedDE',definition="",workgroup=self.ded_wg)
+        x=self.ra.register(self.derived_de,models.STATES.standard,self.su)
         self.create_defaults = {'derives':self.derived_de}
         self.form_defaults = {'derives':self.derived_de.id}
+        
+        self.derived_de = models.DataElement.objects.get(pk=self.derived_de.pk)
+        self.assertTrue(self.derived_de.is_public())
         self.create_items()

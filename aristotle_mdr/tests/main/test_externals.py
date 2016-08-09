@@ -22,7 +22,7 @@ class AristotleAutocompletes(utils.LoggedInViewPages, TestCase):
         # There would be too many tests to test every item type against every other
         # But they all have identical logic, so one test should suffice
         self.item1 = models.ObjectClass.objects.create(name="AC1", workgroup=self.wg1)
-        self.item2 = models.ObjectClass.objects.create(name="AC2", workgroup=self.wg1)
+        self.item2 = models.ObjectClass.objects.create(name="AC2", submitter=self.editor)
         self.item3 = models.ObjectClass.objects.create(name="AC3", workgroup=self.wg2)
         self.item4 = models.Property.objects.create(name="AC4", workgroup=self.wg1)
 
@@ -36,7 +36,9 @@ class AristotleAutocompletes(utils.LoggedInViewPages, TestCase):
         #  c. autocompletes don't return items invisible to users
 
         response = self.client.get(
-            '/autocomplete/Autocomplete_concept/',
+            reverse(
+                'aristotle-autocomplete:concept',
+            ),
             {
                 'q': 'AC',
             }
@@ -48,7 +50,10 @@ class AristotleAutocompletes(utils.LoggedInViewPages, TestCase):
         self.assertTrue('AC4' in response.content)
         
         response = self.client.get(
-            '/autocomplete/AutocompleteObjectClass/',
+            reverse(
+                'aristotle-autocomplete:concept',
+                args=['aristotle_mdr', 'objectclass']
+            ),
             {
                 'q': 'AC',
             }
@@ -71,7 +76,10 @@ class AristotleAutocompletes(utils.LoggedInViewPages, TestCase):
 
         self.logout()
         response = self.client.get(
-            '/autocomplete/AutocompleteObjectClass/',
+            reverse(
+                'aristotle-autocomplete:concept',
+                args=['aristotle_mdr', 'objectclass']
+            ),
             {
                 'q': 'AC',
             }
@@ -117,7 +125,10 @@ class AristotleAutocompletes(utils.LoggedInViewPages, TestCase):
         )
 
         response = self.client.get(
-            '/autocomplete/AutocompleteObjectClass/',
+            reverse(
+                'aristotle-autocomplete:concept',
+                args=['aristotle_mdr', 'objectclass']
+            ),
             {
                 'q': 'deadpoo',
             }

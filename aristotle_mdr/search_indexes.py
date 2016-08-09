@@ -79,6 +79,7 @@ class conceptIndex(baseObjectIndex):
     is_public = indexes.BooleanField()
     restriction = indexes.IntegerField(faceted=True)
     version = indexes.CharField(model_attr="version")
+    submitter_id = indexes.IntegerField(model_attr="submitter_id", null=True)
     facet_model_ct = indexes.IntegerField(faceted=True)
 
     template_name = "search/searchItem.html"
