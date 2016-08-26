@@ -1,8 +1,11 @@
-
+"""
+This file contains code required for the v1.3 -> 1.4 data migrations
+"""
 from django.db import migrations, models
 import ckeditor_uploader.fields
 
 from django.db.migrations.operations.base import Operation
+
 
 class classproperty(object):
 
@@ -11,6 +14,7 @@ class classproperty(object):
 
     def __get__(self, owner_self, owner_cls):
         return self.fget(owner_cls)
+
 
 class MoveConceptFields(Operation):
 
@@ -23,32 +27,29 @@ class MoveConceptFields(Operation):
         pass
 
     def database_forwards(self, app_label, schema_editor, from_state, to_state):
-        concept_table_name = "%s_%s"%(app_label,self.model_name)
-        for column in ['comments',
-            'origin_URI',
-            'references',
-            'responsible_organisation',
-            'short_name',
-            'submitting_organisation',
-            'superseded_by_id',
-            'synonyms',
-            'version']:
+        concept_table_name = "%s_%s" % (app_label, self.model_name)
+        for column in [
+            'comments', 'origin_URI', 'references', 'responsible_organisation',
+            'short_name', 'submitting_organisation', 'superseded_by_id',
+            'synonyms', 'version'
+        ]:
             base_query = """
-                update aristotle_mdr__concept 
+                update aristotle_mdr__concept
                     set temp_col_%s = (
-                               select "%s"."%s"
-                                 from %s 
-                                where %s._concept_ptr_id = aristotle_mdr__concept.id
-                              )
+                        select "%s"."%s"
+                        from %s
+                        where %s._concept_ptr_id = aristotle_mdr__concept.id
+                    )
                     where exists ( select * from %s where %s._concept_ptr_id = aristotle_mdr__concept.id)
             """ % tuple(
-                [column,concept_table_name,column,concept_table_name,concept_table_name,concept_table_name,concept_table_name]
+                [column, concept_table_name, column, concept_table_name, concept_table_name, concept_table_name, concept_table_name]
             )
 
             schema_editor.execute(base_query)
 
     def describe(self):
         return "Creates extension %s" % self.name
+
 
 class ConceptMigrationAddConceptFields(migrations.Migration):
     operations = [
@@ -99,11 +100,11 @@ class ConceptMigrationAddConceptFields(migrations.Migration):
         ),
     ]
 
+
 class ConceptMigration(migrations.Migration):
 
     @classproperty
     def operations(cls):
-
         copy_operations = []
         delete_operations = []
 
@@ -147,8 +148,8 @@ class ConceptMigration(migrations.Migration):
                     name='version',
                 )
             ]
+        return copy_operations + delete_operations
 
-        return copy_operations+delete_operations
 
 class ConceptMigrationRenameConceptFields(migrations.Migration):
     operations = [
