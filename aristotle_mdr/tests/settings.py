@@ -54,16 +54,6 @@ if 'TRAVIS' in os.environ:
             'NAME': ':memory:',
         }
 
-class DisableMigrations(object):
-
-    def __contains__(self, item):
-        return True
-
-    def __getitem__(self, item):
-        return "notmigrations"
-
-MIGRATION_MODULES = DisableMigrations()
-
 INSTALLED_APPS = (
     # The good stuff
     'aristotle_mdr.contrib.self_publish',

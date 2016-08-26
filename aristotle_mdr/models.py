@@ -607,6 +607,28 @@ class _concept(baseAristotleObject):
     _is_public = models.BooleanField(default=False)
     _is_locked = models.BooleanField(default=False)
 
+    short_name = models.CharField(max_length=100, blank=True)
+    version = models.CharField(max_length=20, blank=True)
+    synonyms = models.CharField(max_length=200, blank=True)
+    references = RichTextField(blank=True)
+    origin_URI = models.URLField(
+        blank=True,
+        help_text="If imported, the original location of the item"
+    )
+    comments = RichTextField(
+        help_text="Descriptive comments about the metadata item.",
+        blank=True
+    )
+    submitting_organisation = models.CharField(max_length=256, blank=True)
+    responsible_organisation = models.CharField(max_length=256, blank=True)
+
+    superseded_by = models.ForeignKey(
+        'self',
+        related_name='supersedes',
+        blank=True,
+        null=True
+    )
+
     tracker = FieldTracker()
 
     comparator = comparators.Comparator
@@ -788,28 +810,6 @@ class concept(_concept):
     field. It is not possible to include this model in a ``ForeignKey`` or
     ``ManyToManyField``.
     """
-    short_name = models.CharField(max_length=100, blank=True)
-    version = models.CharField(max_length=20, blank=True)
-    synonyms = models.CharField(max_length=200, blank=True)
-    references = RichTextField(blank=True)
-    origin_URI = models.URLField(
-        blank=True,
-        help_text="If imported, the original location of the item"
-    )
-    comments = RichTextField(
-        help_text="Descriptive comments about the metadata item.",
-        blank=True
-    )
-    submitting_organisation = models.CharField(max_length=256, blank=True)
-    responsible_organisation = models.CharField(max_length=256, blank=True)
-
-    superseded_by = models.ForeignKey(
-        'self',
-        related_name='supersedes',
-        blank=True,
-        null=True
-    )
-
     objects = ConceptManager()
 
     class Meta:
