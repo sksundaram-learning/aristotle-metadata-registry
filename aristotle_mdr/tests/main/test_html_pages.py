@@ -643,16 +643,17 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
     def test_editor_can_view_item_history__and__compare(self):
         self.login_editor()
 
-        from reversion import revisions as reversion
+        #from reversion import revisions as reversion
+        import reversions
         
-        with reversion.create_revision():
+        with reversion.revisions.create_revision():
             self.item1.name = "change 1"
             reversion.set_comment("change 1")
             self.item1.save()
 
         review = models.ReviewRequest.objects.create(requester=self.su,registration_authority=self.ra)
         review.concepts.add(self.item1)
-        with reversion.create_revision():
+        with reversion.revisions.create_revision():
             self.item1.name = "change 2"
             reversion.set_comment("change 2")
             r = self.ra.register(
@@ -691,8 +692,9 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.login_editor()
         
         # REVISION 0
-        from reversion import revisions as reversion
-        with reversion.create_revision():
+        import reversion
+        #from reversion import revisions as reversion
+        with reversion.revisions.create_revision():
             self.item1.readyToReview = True
             self.item1.save()
         original_name = self.item1.name
@@ -747,7 +749,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         from django.contrib.contenttypes.models import ContentType
         ct = ContentType.objects.get_for_model(self.item1._meta.model)
         versions = list(
-            reversion.Version.objects.filter(
+            reversion.models.Version.objects.filter(
                 object_id=self.item1.id,
                 content_type_id=ct.id
             ).order_by('revision__date_created')
