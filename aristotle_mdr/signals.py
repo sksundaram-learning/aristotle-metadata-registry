@@ -1,5 +1,5 @@
 from django.db.models.signals import post_save, post_delete, pre_delete, m2m_changed
-#from reversion.signals import post_revision_commit
+# from reversion.signals import post_revision_commit
 from django.db.models.signals import post_save
 import haystack.signals as signals  # .RealtimeSignalProcessor as RealtimeSignalProcessor
 # Don't import aristotle_mdr.models directly, only pull in whats required,
@@ -44,7 +44,7 @@ class AristotleSignalProcessor(signals.BaseSignalProcessor):
     # Safe to delete after 2016-07-01
     def handle_concept_save(self, sender, instance, **kwargs):
         obj = instance.item
-        self.handle_save(obj.__class__,obj, **kwargs)
+        self.handle_save(obj.__class__, obj, **kwargs)
 
     def handle_concept_delete(self, sender, instance, **kwargs):
         # Delete index *before* the object, as we need to query it to check the actual subclass.
