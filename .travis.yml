@@ -7,12 +7,12 @@ services:
  #- mysql
  - postgresql
 env:
-  - DJ='>1.8,<1.9' DB=sqlitememory
-  - DJ='>1.8,<1.9' DB=sqlitefile
-  - DJ='>1.8,<1.9' DB=postgres
-#   - DJ='>1.10,<1.11' DB=sqlitememory
-#   - DJ='>1.10,<1.11' DB=sqlitefile
-#   - DJ='>1.10,<1.11' DB=postgres
+  - DJANGO_VERSION='>1.8,<1.9' DB=sqlitememory
+  - DJANGO_VERSION='>1.8,<1.9' DB=sqlitefile
+  - DJANGO_VERSION='>1.8,<1.9' DB=postgres
+#   - DJANGO_VERSION='>1.10,<1.11' DB=sqlitememory
+#   - DJANGO_VERSION='>1.10,<1.11' DB=sqlitefile
+#   - DJANGO_VERSION='>1.10,<1.11' DB=postgres
 
 
 before_install:
@@ -34,7 +34,7 @@ install:
 #  - if [[ $DB == mysql ]]; then pip install -q mysql-python; fi
   - "pip install -r requirements-test.txt"
   - "pip install ."
-  - pip install Django=$DJ # So we can test multiple versions (once we support that)
+  - pip install 'Django=$DJANGO_VERSION' # So we can test multiple versions (once we support that)
 # Tell us exactly what versions we are running on!
   - pip list
 
