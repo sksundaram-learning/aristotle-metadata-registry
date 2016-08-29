@@ -406,7 +406,8 @@ class AdminPageForConcept(utils.LoggedInViewPages):
             self.item1.save()
         self.assertTrue(self.item1.statuses.count() == old_count + 1)
         
-        revisions = reversion.default_revision_manager.get_for_object(self.item1)
+        from reversion.models import Version
+        revisions = Version.objects.get_for_object(self.item1)
 
         response = self.client.get(
             reverse(

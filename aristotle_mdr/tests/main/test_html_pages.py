@@ -662,7 +662,8 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
             )
             self.item1.save()
 
-        revisions = reversion.default_revision_manager.get_for_object(self.item1)
+        from reversion.models import Version
+        revisions = Version.objects.get_for_object(self.item1)
 
         response = self.client.get(reverse('aristotle:item_history',args=[self.item1.id]))
         self.assertEqual(response.status_code,200)

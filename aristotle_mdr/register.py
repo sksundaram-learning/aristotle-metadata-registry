@@ -57,8 +57,6 @@ def register_concept_reversions(concept_class, *args, **kwargs):
     follows = kwargs.get('reversion', {}).get('follow', [])
     follows += [
         '_concept_ptr',
-        'statuses',
-        'workgroup',
     ]
     follow_classes = kwargs.get('reversion', {}).get('follow_classes', [])
 

@@ -19,7 +19,6 @@ from django.utils.decorators import method_decorator
 import datetime
 
 import reversion
-from reversion.revisions import default_revision_manager
 from reversion_compare.views import HistoryCompareDetailView
 
 from aristotle_mdr.perms import user_can_view, user_can_edit, user_can_change_status
@@ -115,11 +114,8 @@ def render_if_condition_met(request, condition, objtype, iid, model_slug=None, n
 
     # We add a user_can_edit flag in addition to others as we have odd rules around who can edit objects.
     isFavourite = request.user.is_authenticated() and request.user.profile.is_favourite(item)
-
-    last_edit = default_revision_manager.get_for_object_reference(
-        item.__class__,
-        item.pk,
-    ).first()
+    from reversion.models import Version
+    last_edit = Version.objects.get_for_object(item).first()
 
     default_template = "%s/concepts/%s.html" % (item.__class__._meta.app_label, item.__class__._meta.model_name)
     template = select_template([default_template, item.template])
