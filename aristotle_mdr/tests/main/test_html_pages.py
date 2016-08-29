@@ -579,7 +579,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.item1.superseded_by = self.item2
         self.item1.save()
         
-        self.assertTrue(self.item1 in self.item2.supersedes.all())
+        self.assertTrue(self.item1 in self.item2.supersedes.all().select_subclasses())
         response = self.client.post(
             reverse('aristotle:supersede',args=[self.item1.id]),{'newerItem':""})
         self.assertEqual(response.status_code,302)
@@ -644,7 +644,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.login_editor()
 
         #from reversion import revisions as reversion
-        import reversions
+        import reversion
         
         with reversion.revisions.create_revision():
             self.item1.name = "change 1"
