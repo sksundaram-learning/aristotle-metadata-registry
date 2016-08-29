@@ -46,22 +46,22 @@ class MoveConceptFields(Operation):
                 """ % tuple(
                     [column, concept_table_name, column, concept_table_name, concept_table_name, concept_table_name, concept_table_name]
                 )
-    
         else:
-            concept_table_name = "%s_%s"%(app_label,self.model_name)
+            concept_table_name = "%s_%s" % (app_label, self.model_name)
             base_query = """
-            UPDATE  aristotle_mdr__concept JOIN %s ON 
-                    aristotle_mdr__concept.id = %s._concept_ptr_id
-            SET     aristotle_mdr__concept.temp_col_comments = %s.comments,
-                    aristotle_mdr__concept.temp_col_origin_URI = %s.origin_URI,
-                    aristotle_mdr__concept.temp_col_references = %s.references,
-                    aristotle_mdr__concept.temp_col_responsible_organisation = %s.responsible_organisation,
-                    aristotle_mdr__concept.temp_col_short_name = %s.short_name,
-                    aristotle_mdr__concept.temp_col_submitting_organisation = %s.submitting_organisation,
-                    aristotle_mdr__concept.temp_col_superseded_by_id = %s.superseded_by_id,
-                    aristotle_mdr__concept.temp_col_synonyms = %s.synonyms,
-                    aristotle_mdr__concept.temp_col_version = %s.version,
-            ;""" % tuple([concept_table_name]*11)
+                UPDATE  aristotle_mdr__concept JOIN %s ON
+                        aristotle_mdr__concept.id = %s._concept_ptr_id
+                SET     aristotle_mdr__concept.temp_col_comments = %s.comments,
+                        aristotle_mdr__concept.temp_col_origin_URI = %s.origin_URI,
+                        aristotle_mdr__concept.temp_col_references = %s.references,
+                        aristotle_mdr__concept.temp_col_responsible_organisation = %s.responsible_organisation,
+                        aristotle_mdr__concept.temp_col_short_name = %s.short_name,
+                        aristotle_mdr__concept.temp_col_submitting_organisation = %s.submitting_organisation,
+                        aristotle_mdr__concept.temp_col_superseded_by_id = %s.superseded_by_id,
+                        aristotle_mdr__concept.temp_col_synonyms = %s.synonyms,
+                        aristotle_mdr__concept.temp_col_version = %s.version
+                ;
+            """ % tuple([concept_table_name] * 11)
         schema_editor.execute(base_query)
 
     def describe(self):
