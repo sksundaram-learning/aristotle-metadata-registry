@@ -46,6 +46,7 @@ class MoveConceptFields(Operation):
                 """ % tuple(
                     [column, concept_table_name, column, concept_table_name, concept_table_name, concept_table_name, concept_table_name]
                 )
+                schema_editor.execute(base_query)
         else:
             concept_table_name = "%s_%s" % (app_label, self.model_name)
             base_query = """
@@ -62,7 +63,7 @@ class MoveConceptFields(Operation):
                         aristotle_mdr__concept.temp_col_version = %s.version
                 ;
             """ % tuple([concept_table_name] * 11)
-        schema_editor.execute(base_query)
+            schema_editor.execute(base_query)
 
     def describe(self):
         return "Creates extension %s" % self.name
