@@ -1,5 +1,7 @@
 """
-This file contains code required for the v1.3 -> 1.4 data migrations
+This file contains code required for the v1.3.x -> 1.4.x data migrations
+At some point, we will squash the entire migration path for <1.4 and remove this before we have too many users
+running this code.
 """
 from django.db import migrations, models
 import ckeditor_uploader.fields
@@ -28,7 +30,7 @@ class MoveConceptFields(Operation):
 
     def database_forwards(self, app_label, schema_editor, from_state, to_state):
 
-        if True:  # schema_editor.connection.vendor == 'sqlite':
+        if schema_editor.connection.vendor == 'sqlite':
             concept_table_name = "%s_%s" % (app_label, self.model_name)
             for column in [
                 'comments', 'origin_URI', 'references', 'responsible_organisation',
@@ -50,17 +52,18 @@ class MoveConceptFields(Operation):
         else:
             concept_table_name = "%s_%s" % (app_label, self.model_name)
             base_query = """
-                UPDATE  aristotle_mdr__concept JOIN %s ON
-                        aristotle_mdr__concept.id = %s._concept_ptr_id
-                SET     aristotle_mdr__concept.temp_col_comments = %s.comments,
-                        aristotle_mdr__concept.temp_col_origin_URI = %s.origin_URI,
-                        aristotle_mdr__concept.temp_col_references = %s.references,
-                        aristotle_mdr__concept.temp_col_responsible_organisation = %s.responsible_organisation,
-                        aristotle_mdr__concept.temp_col_short_name = %s.short_name,
-                        aristotle_mdr__concept.temp_col_submitting_organisation = %s.submitting_organisation,
-                        aristotle_mdr__concept.temp_col_superseded_by_id = %s.superseded_by_id,
-                        aristotle_mdr__concept.temp_col_synonyms = %s.synonyms,
-                        aristotle_mdr__concept.temp_col_version = %s.version
+                UPDATE  "aristotle_mdr__concept" 
+                SET     "temp_col_comments" = "%s"."comments",
+                        "temp_col_origin_URI" = "%s"."origin_URI",
+                        "temp_col_references" = "%s"."references",
+                        "temp_col_responsible_organisation" = "%s"."responsible_organisation",
+                        "temp_col_short_name" = "%s"."short_name",
+                        "temp_col_submitting_organisation" = "%s"."submitting_organisation",
+                        "temp_col_superseded_by_id" = "%s"."superseded_by_id",
+                        "temp_col_synonyms" = "%s"."synonyms",
+                        "temp_col_version" = "%s"."version"
+                FROM    %s
+                WHERE   "aristotle_mdr__concept"."id" = "%s"."_concept_ptr_id"
                 ;
             """ % tuple([concept_table_name] * 11)
             schema_editor.execute(base_query)
