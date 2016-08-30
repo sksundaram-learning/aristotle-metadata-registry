@@ -52,7 +52,7 @@ class MoveConceptFields(Operation):
         else:
             concept_table_name = "%s_%s" % (app_label, self.model_name)
             base_query = """
-                UPDATE  "aristotle_mdr__concept" 
+                UPDATE  "aristotle_mdr__concept"
                 SET     "temp_col_comments" = "%s"."comments",
                         "temp_col_origin_URI" = "%s"."origin_URI",
                         "temp_col_references" = "%s"."references",
