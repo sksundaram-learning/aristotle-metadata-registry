@@ -30,7 +30,7 @@ before_script:
 install:
   - "pip install --upgrade pip"
   - "pip uninstall setuptools -y && pip install setuptools" # needed for updated version of html5lib
-  - if [[ $DB == postgres ]]; then pip install -q psycopg2 --quiet; fi
+  - if [[ $DB == postgres ]]; then pip install -q psycopg2; fi
 #  - if [[ $DB == mysql ]]; then pip install -q mysql-python; fi
   - "pip install -r requirements-test.txt"
   - "pip install ."
