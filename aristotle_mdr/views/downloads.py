@@ -3,29 +3,18 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.core.exceptions import PermissionDenied, ImproperlyConfigured
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.urlresolvers import reverse
-from django.db import transaction
-from django.forms.models import modelformset_factory
 from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.shortcuts import render, redirect, get_object_or_404
 from django.template import RequestContext, TemplateDoesNotExist
 from django.template.defaultfilters import slugify
 from django.template.loader import select_template
 from django.utils.translation import ugettext_lazy as _
-from django.views.generic import TemplateView
-from django.utils import timezone
-from django.utils.decorators import method_decorator
-import datetime
 import re
 
-import reversion
-from reversion.revisions import default_revision_manager
-from reversion_compare.views import HistoryCompareDetailView
-
-from aristotle_mdr.perms import user_can_view, user_can_edit, user_can_change_status
+from aristotle_mdr.perms import user_can_view
 from aristotle_mdr import perms
-from aristotle_mdr.utils import cache_per_item_user, concept_to_dict, construct_change_message, url_slugify_concept
+from aristotle_mdr.utils import cache_per_item_user
 from aristotle_mdr import forms as MDRForms
 from aristotle_mdr import models as MDR
 from aristotle_mdr.views import get_if_user_can_view

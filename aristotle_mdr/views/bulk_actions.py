@@ -14,9 +14,6 @@ from django.views.generic import FormView
 from django.utils.decorators import method_decorator
 import datetime
 
-import reversion
-from reversion.revisions import default_revision_manager
-
 from aristotle_mdr.perms import user_can_view, user_can_edit, user_can_change_status
 from aristotle_mdr.utils import cache_per_item_user, concept_to_dict, construct_change_message, url_slugify_concept
 from aristotle_mdr import forms as MDRForms

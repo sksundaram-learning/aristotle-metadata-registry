@@ -53,8 +53,8 @@ setup(
         'django-ckeditor>=5.0.0',
 
         # Revision control
-        "django-reversion==1.10.1",
-        'django-reversion-compare>=0.6.1',
+        "django-reversion>=2.0,<2.1",
+        'django-reversion-compare>=0.7,<0.8',
         'diff-match-patch',
 
         # Fancy UI stuff

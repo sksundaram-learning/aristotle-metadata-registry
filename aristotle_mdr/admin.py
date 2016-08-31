@@ -14,7 +14,7 @@ import reversion
 
 from aristotle_mdr.register import register_concept
 reversion.revisions.register(MDR.Status)
-reversion.revisions.register(MDR._concept, follow=['statuses', 'workgroup'])
+reversion.revisions.register(MDR._concept, follow=['statuses', 'workgroup', 'slots'])
 reversion.revisions.register(MDR.Workgroup)
 
 

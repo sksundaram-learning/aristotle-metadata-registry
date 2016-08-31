@@ -122,6 +122,8 @@ BOOTSTRAP3 = {
     'base_url': '/static/aristotle_mdr/bootstrap/',
 }
 
+ADD_REVERSION_ADMIN = True
+
 # We need this to make sure users can see all extensions.
 AUTHENTICATION_BACKENDS = ('aristotle_mdr.backends.AristotleBackend',)
 

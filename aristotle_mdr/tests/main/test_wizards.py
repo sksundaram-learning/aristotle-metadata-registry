@@ -402,6 +402,7 @@ class DataElementWizardPage(ConceptWizardPage,TestCase):
         pass
     def test_editor_can_make_object__has_prior_components(self):
         self.login_editor()
+
         from reversion.revisions import create_revision
         with create_revision():
             ani   = models.ObjectClass.objects.create(name="animagus",definition="",workgroup=self.wg1)
