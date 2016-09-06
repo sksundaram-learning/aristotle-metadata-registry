@@ -316,6 +316,19 @@
                     </dd>
                 {% endfor %}
                 {% endif %}
+
+                {% for field,details in form.extra_facet_fields.items %}
+                    <dt>{{details.details.title}}</dt>
+                    {% for f,count in details.values %}
+                    {% if f %}
+                    <dd>
+                        <a href="{{ request.get_full_path }}&amp;f={{field}}::{{ f|urlencode }}">
+                            {% facet_display details.details f %}</a>
+                        ({{ count }})
+                    </dd>
+                    {% endif %}
+                    {% endfor %}
+                {% endfor %}
             </dl>
         </div>
         <div class="col-md-9">

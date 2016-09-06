@@ -10,6 +10,9 @@ from aristotle_mdr import perms
 from django.core.urlresolvers import reverse
 from reversion_compare.admin import CompareVersionAdmin
 
+from aristotle_mdr.search_indexes import conceptIndex
+from haystack import indexes
+
 import reversion
 
 from aristotle_mdr.register import register_concept
@@ -258,14 +261,34 @@ register_concept(
     }
 )
 
+
+class aristotle_mdr_DataElementConceptSearchIndex(conceptIndex,indexes.Indexable):
+    data_element_concept = indexes.IntegerField(model_attr="id", faceted=True, null=True)
+    data_element_concept.title = 'Data element concept'
+    data_element_concept.display = lambda i: MDR.DataElementConcept.objects.filter(pk=i).values_list('name', flat=True)[0]
+
+    def get_model(self):
+        return MDR.DataElementConcept
+
+
+class aristotle_mdr_DataElementSearchIndex(conceptIndex,indexes.Indexable):
+    data_element_concept = indexes.IntegerField(model_attr="dataElementConcept_id", faceted=True, null=True)
+    data_element_concept.title = 'Data element concept'
+    data_element_concept.display = lambda i: MDR.DataElementConcept.objects.filter(pk=i).values_list('name', flat=True)[0]
+
+    def get_model(self):
+        return MDR.DataElement
+
 register_concept(
     MDR.DataElementConcept,
     name_suggest_fields=['objectClass', 'property'],
     extra_fieldsets=[('Components', {'fields': ['objectClass', 'property']})],
     reversion={
         'follow': ['objectClass', 'property'],
-    }
+    },
+    custom_search_index=aristotle_mdr_DataElementConceptSearchIndex
 )
+
 
 register_concept(
     MDR.DataElement,
@@ -273,7 +296,8 @@ register_concept(
     extra_fieldsets=[('Components', {'fields': ['dataElementConcept', 'valueDomain']})],
     reversion={
         'follow': ['dataElementConcept', 'valueDomain'],
-    }
+    },
+    custom_search_index=aristotle_mdr_DataElementSearchIndex
 )
 
 register_concept(

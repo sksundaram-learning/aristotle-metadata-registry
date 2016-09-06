@@ -113,3 +113,11 @@ def restriction_to_text(state):
 @register.filter
 def first_letters(string):
     return ''.join(s[0].upper() for s in string.split(" "))
+
+
+@register.simple_tag
+def facet_display(details, val):
+    if details.get('display', None):
+        return details['display'](val)
+    else:
+        return val

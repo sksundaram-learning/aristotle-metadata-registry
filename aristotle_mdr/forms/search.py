@@ -319,6 +319,7 @@ class PermissionSearchForm(TokenSearchForm):
         required=False, label=_('Item type'),
         widget=BootstrapDropdownSelectMultiple
     )
+    # F for facet!
 
     def __init__(self, *args, **kwargs):
         kwargs['searchqueryset'] = PermissionSearchQuerySet()
@@ -377,6 +378,10 @@ class PermissionSearchForm(TokenSearchForm):
             user_workgroups_only=self.cleaned_data['myWorkgroups_only']
         )
 
+        for _facet in self.request.GET.getlist('f', []):
+            _facet, value = _facet.split("::", 1)
+            sqs = sqs.filter(**{_facet: value})
+
         self.has_spelling_suggestions = False
         if not self.repeat_search:
 
@@ -417,8 +422,28 @@ class PermissionSearchForm(TokenSearchForm):
                 if _filter not in self.applied_filters:
                     sqs = sqs.facet(facet, sort='count')
 
+        extra_facets = []
+        extra_facets_details = {}
+        from aristotle_mdr.search_indexes import registered_indexes
+        for model_index in registered_indexes:
+            for name, field in model_index.fields.items():
+                if field.faceted:
+                    if name not in (filters_to_facets.values() + logged_in_facets.values()):
+                        extra_facets.append(name)
+                        extra_facets_details[name]={
+                            'title': getattr(field, 'title', name),
+                            'display': getattr(field, 'display', None),
+                        }
+                        sqs = sqs.facet(name, sort='count')
+
         self.facets = sqs.facet_counts()
+
         if 'fields' in self.facets:
+            self.extra_facet_fields = dict([
+                (k, {'values': v, 'details': extra_facets_details[k]})
+                for k, v in self.facets['fields'].items()
+                if k in extra_facets
+            ])
             for facet, counts in self.facets['fields'].items():
                 # Return the 5 top results for each facet in order of number of results.
                 self.facets['fields'][facet] = sorted(counts, key=lambda x: -x[1])[:5]
