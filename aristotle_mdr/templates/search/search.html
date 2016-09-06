@@ -317,8 +317,17 @@
                 {% endfor %}
                 {% endif %}
 
-                {% for field,details in form.extra_facet_fields.items %}
+                {% for field,details in form.extra_facet_fields %}
                     <dt>{{details.details.title}}</dt>
+                    {% if details.details.applied %}
+                    <ul>
+                        {% for af in details.details.applied %}
+                        <li>
+                            <a href='?{% unfacet request field af|urlencode %}'>{{ af }} <span class='badge pull-right'><i class="fa fa-times"></i></span></a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
                     {% for f,count in details.values %}
                     {% if f %}
                     <dd>

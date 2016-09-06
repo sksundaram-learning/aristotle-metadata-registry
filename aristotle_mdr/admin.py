@@ -262,7 +262,7 @@ register_concept(
 )
 
 
-class aristotle_mdr_DataElementConceptSearchIndex(conceptIndex,indexes.Indexable):
+class aristotle_mdr_DataElementConceptSearchIndex(conceptIndex, indexes.Indexable):
     data_element_concept = indexes.IntegerField(model_attr="id", faceted=True, null=True)
     data_element_concept.title = 'Data element concept'
     data_element_concept.display = lambda i: MDR.DataElementConcept.objects.filter(pk=i).values_list('name', flat=True)[0]
@@ -271,7 +271,7 @@ class aristotle_mdr_DataElementConceptSearchIndex(conceptIndex,indexes.Indexable
         return MDR.DataElementConcept
 
 
-class aristotle_mdr_DataElementSearchIndex(conceptIndex,indexes.Indexable):
+class aristotle_mdr_DataElementSearchIndex(conceptIndex, indexes.Indexable):
     data_element_concept = indexes.IntegerField(model_attr="dataElementConcept_id", faceted=True, null=True)
     data_element_concept.title = 'Data element concept'
     data_element_concept.display = lambda i: MDR.DataElementConcept.objects.filter(pk=i).values_list('name', flat=True)[0]

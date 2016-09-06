@@ -378,9 +378,13 @@ class PermissionSearchForm(TokenSearchForm):
             user_workgroups_only=self.cleaned_data['myWorkgroups_only']
         )
 
+        extra_facets_details = {}
         for _facet in self.request.GET.getlist('f', []):
             _facet, value = _facet.split("::", 1)
             sqs = sqs.filter(**{_facet: value})
+            facets_details = extra_facets_details.get(_facet, {'applied': []})
+            facets_details['applied'] = facets_details['applied'] + [value]
+            extra_facets_details[_facet] = facets_details
 
         self.has_spelling_suggestions = False
         if not self.repeat_search:
@@ -423,30 +427,33 @@ class PermissionSearchForm(TokenSearchForm):
                     sqs = sqs.facet(facet, sort='count')
 
         extra_facets = []
-        extra_facets_details = {}
+        # extra_facets_details = {}
         from aristotle_mdr.search_indexes import registered_indexes
         for model_index in registered_indexes:
             for name, field in model_index.fields.items():
                 if field.faceted:
                     if name not in (filters_to_facets.values() + logged_in_facets.values()):
                         extra_facets.append(name)
-                        extra_facets_details[name]={
+
+                        x = extra_facets_details.get(name, {})
+                        x.update(**{
                             'title': getattr(field, 'title', name),
                             'display': getattr(field, 'display', None),
-                        }
+                        })
+                        extra_facets_details[name]= x
                         sqs = sqs.facet(name, sort='count')
 
         self.facets = sqs.facet_counts()
 
         if 'fields' in self.facets:
-            self.extra_facet_fields = dict([
-                (k, {'values': v, 'details': extra_facets_details[k]})
+            self.extra_facet_fields = [
+                (k, {'values': sorted(v, key=lambda x: -x[1])[:10], 'details': extra_facets_details[k]})
                 for k, v in self.facets['fields'].items()
                 if k in extra_facets
-            ])
+            ]
             for facet, counts in self.facets['fields'].items():
                 # Return the 5 top results for each facet in order of number of results.
-                self.facets['fields'][facet] = sorted(counts, key=lambda x: -x[1])[:5]
+                self.facets['fields'][facet] = sorted(counts, key=lambda x: -x[1])[:10]
 
         return sqs
 
