@@ -326,8 +326,8 @@ class AdminPageForConcept(utils.LoggedInViewPages):
         self.assertRedirects(response,reverse("admin:%s_%s_changelist"%(self.itemType._meta.app_label,self.itemType._meta.model_name)))
 
         self.item1 = self.itemType.objects.get(pk=self.item1.pk)
-        self.assertTrue(self.item2 in self.item1.supersedes.all().select_subclasses())
-        self.assertTrue(self.item3 in self.item1.supersedes.all().select_subclasses())
+        self.assertTrue(self.item2 in self.item1.supersedes.all())
+        self.assertTrue(self.item3 in self.item1.supersedes.all())
 
     def test_superseded_by_saves(self):
         self.item2 = self.itemType.objects.create(name="admin_page_test_oc_2",definition=" ",workgroup=self.wg1,**self.create_defaults)
@@ -355,7 +355,7 @@ class AdminPageForConcept(utils.LoggedInViewPages):
         self.assertRedirects(response,reverse("admin:%s_%s_changelist"%(self.itemType._meta.app_label,self.itemType._meta.model_name)))
 
         self.item1 = self.itemType.objects.get(pk=self.item1.pk)
-        self.assertTrue(self.item2 == self.item1.superseded_by.item)
+        self.assertTrue(self.item2 == self.item1.superseded_by)
 
     def test_history_page_loads(self):
         self.login_editor()
@@ -372,8 +372,7 @@ class AdminPageForConcept(utils.LoggedInViewPages):
         with reversion.create_revision():
             self.item1.name = new_name
             self.item1.save()
-        from reversion.models import Version
-        version_list = Version.objects.get_for_object(self.item1)
+        version_list = reversion.get_for_object(self.item1)
 
         self.login_editor()
         response = self.client.get(

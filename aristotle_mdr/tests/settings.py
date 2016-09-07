@@ -54,6 +54,19 @@ if 'TRAVIS' in os.environ:
             'NAME': ':memory:',
         }
 
+if 'ARISTOTLE_TESTS_SKIP_MIGRATIONS' in os.environ:
+    print("Skipping migrations")
+    class DisableMigrations(object):
+    
+        def __contains__(self, item):
+            return True
+    
+        def __getitem__(self, item):
+            return "notmigrations"
+    
+    MIGRATION_MODULES = DisableMigrations()
+
+
 INSTALLED_APPS = (
     # The good stuff
     'aristotle_mdr.contrib.self_publish',
@@ -61,6 +74,7 @@ INSTALLED_APPS = (
     'extension_test',
     'text_download_test',
 ) + INSTALLED_APPS
+
 
 HAYSTACK_CONNECTIONS = {
     'default': {
