@@ -96,7 +96,7 @@ class TestSelfPublishing(utils.LoggedInViewPages, TestCase):
             reverse('aristotle_self_publish:publish_metadata', args=[self.item.pk]),
             {
                 "note": "Published",
-                "publication_date": now().date().isoformat(),
+                "publication_date": (now() - datetime.timedelta(day=1)).date().isoformat(),
                 "visibility": pub.PublicationRecord.VISIBILITY.public
             }
         )
