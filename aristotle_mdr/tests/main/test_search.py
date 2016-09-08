@@ -395,48 +395,6 @@ class TestSearch(utils.LoggedInViewPages,TestCase):
         self.assertEqual(response.status_code,200)
         self.assertEqual(len(response.context['page'].object_list),0)
 
-    def test_facet_search(self):
-        self.logout()
-
-        with reversion.create_revision():
-            dec = models.DataElementConcept.objects.create(
-                name="Pokemon-CP",
-                definition="a Pokemons combat power"
-            )
-            de = models.DataElement.objects.create(
-                name="Pokemon-CP, Go",
-                definition="a Pokemons combat power as recorded in the Pokemon-Go scale",
-                dataElementConcept=dec
-            )
-
-        self.login_superuser()
-        # with reversion.create_revision():
-        #     cable = models.ObjectClass.objects.create(name="cable",definition="known xman",workgroup=self.xmen_wg)
-        #     self.ra.register(cable,models.STATES.standard,self.su)
-        #     cable.save()
-        
-        from aristotle_mdr.forms.search import PermissionSearchQuerySet
-        response = self.client.get(reverse('aristotle:search')+"?q=pokemon")
-        
-        objs = response.context['page'].object_list
-        self.assertEqual(len(objs),2)
-        extra_facets = response.context['form'].extra_facet_fields
-        self.assertTrue(len(extra_facets) == 1)
-        self.assertTrue(extra_facets[0][0] == 'data_element_concept')
-
-        psqs = PermissionSearchQuerySet()
-        psqs = psqs.auto_query('pokemon').apply_permission_checks(self.su)
-
-        self.assertEqual(len(psqs),2)
-
-        response = self.client.get(reverse('aristotle:search')+"?q=pokemon&f=data_element_concept::%s"%dec.pk)
-
-        objs = response.context['page'].object_list
-        self.assertEqual(len(objs),1)
-        self.assertTrue(objs[0].object.pk,de.pk)
-
-
-
 class TestTokenSearch(TestCase):
     def tearDown(self):
         call_command('clear_index', interactive=False, verbosity=0)
