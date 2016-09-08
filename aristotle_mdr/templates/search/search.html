@@ -318,15 +318,22 @@
                 {% endif %}
 
                 {% for field,details in form.extra_facet_fields %}
+                    {% if details.values %}
                     <dt>{{details.details.title}}</dt>
                     {% if details.details.applied %}
-                    <ul>
+                    <dd>
+                    Active facets
+                    <ul class='active-facets'>
                         {% for af in details.details.applied %}
                         <li>
-                            <a href='?{% unfacet request field af|urlencode %}'>{{ af }} <span class='badge pull-right'><i class="fa fa-times"></i></span></a>
+                            <a href='?{% unfacet request field af|urlencode %}'>
+                                <span class='badge'><i class="fa fa-times"></i></span>
+                                {% facet_display details.details af %}
+                            </a>
                         </li>
                         {% endfor %}
                     </ul>
+                    </dd>
                     {% endif %}
                     {% for f,count in details.values %}
                     {% if f %}
@@ -337,6 +344,7 @@
                     </dd>
                     {% endif %}
                     {% endfor %}
+                    {% endif %}
                 {% endfor %}
             </dl>
         </div>

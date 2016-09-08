@@ -12,7 +12,6 @@ import haystack.signals as signals  # .RealtimeSignalProcessor as RealtimeSignal
 
 class AristotleSignalProcessor(signals.BaseSignalProcessor):
     def setup(self):
-        print "here"
         from aristotle_mdr.models import _concept, Workgroup, ReviewRequest, concept_visibility_updated
         post_save.connect(self.handle_concept_save)
         # post_revision_commit.connect(self.handle_concept_revision)
@@ -40,9 +39,6 @@ class AristotleSignalProcessor(signals.BaseSignalProcessor):
             if isinstance(instance, _concept) and type(instance) is not _concept:
                 self.handle_save(instance.__class__, instance)
 
-    # Keeping this just in case, but its unlikely to be used again after the
-    # transition to post_revision_commit signals.
-    # Safe to delete after 2016-07-01
     def handle_concept_save(self, sender, instance, **kwargs):
         from aristotle_mdr.models import _concept
         if not issubclass(sender, _concept):
