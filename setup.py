@@ -40,6 +40,7 @@ setup(
         "Django>=1.8,<1.9",
         'pytz',
         'pyyaml',
+        'lesscpy',
 
         'django-model-utils==2.3.1',
         'django-notifications-hq>=1.0', #At least 0.8 for live notifications.
