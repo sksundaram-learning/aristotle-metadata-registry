@@ -54,7 +54,7 @@ if 'TRAVIS' in os.environ:
             'NAME': ':memory:',
         }
 
-if 'ARISTOTLE_TESTS_SKIP_MIGRATIONS' in os.environ:
+if 'ARISTOTLE_DEV_SKIP_MIGRATIONS' in os.environ:  # pragma: no cover
     print("Skipping migrations")
     class DisableMigrations(object):
     
