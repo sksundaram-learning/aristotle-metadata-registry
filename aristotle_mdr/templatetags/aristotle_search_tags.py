@@ -113,3 +113,25 @@ def restriction_to_text(state):
 @register.filter
 def first_letters(string):
     return ''.join(s[0].upper() for s in string.split(" "))
+
+
+@register.simple_tag
+def facet_display(details, val):
+    if details.get('display', None):
+        return details['display'](val)
+    else:
+        return val
+
+
+@register.simple_tag
+def unfacet(request, field, value):
+    # http://stackoverflow.com/questions/2047622/how-to-paginate-django-with-other-get-variables
+    dict_ = request.GET.copy()
+    if 'f' in dict_.keys():
+        f = dict_.getlist('f')
+        facet = '%s::%s' % (field, value)
+        if facet in f:
+            f.remove(facet)
+            dict_.setlist('f', f)
+
+    return dict_.urlencode()

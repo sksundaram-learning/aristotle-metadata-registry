@@ -21,6 +21,8 @@ RESTRICTION.update([(k, v) for k, v in BASE_RESTRICTION.items()])
 RESTRICTION.update([(str(k), v) for k, v in BASE_RESTRICTION.items()])
 RESTRICTION.update([(v, k) for k, v in BASE_RESTRICTION.items()])
 
+registered_indexes = []
+
 
 class ConceptFallbackCharField(indexes.CharField):
     def prepare_template(self, obj):

@@ -179,3 +179,7 @@ HAYSTACK_CONNECTIONS = {
         'INCLUDE_SPELLING': True,
     },
 }
+
+# STATIC_PRECOMPILER_COMPILERS = (
+#     ('static_precompiler.compilers.LESS', {"executable": "lesscpy"}),
+# )
