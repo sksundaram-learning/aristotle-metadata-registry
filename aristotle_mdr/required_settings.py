@@ -180,6 +180,6 @@ HAYSTACK_CONNECTIONS = {
     },
 }
 
-STATIC_PRECOMPILER_COMPILERS = (
-    ('static_precompiler.compilers.LESS', {"executable": "lesscpy"}),
-)
+# STATIC_PRECOMPILER_COMPILERS = (
+#     ('static_precompiler.compilers.LESS', {"executable": "lesscpy"}),
+# )
