@@ -72,6 +72,9 @@ setup(
 
         # required for help, but thats required
         'django-autoslug',
+        # for more 'real-time' notifications
+        'channels',
+        'asgi-redis',
 
     ],
 

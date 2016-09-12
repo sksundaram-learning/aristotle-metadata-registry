@@ -112,6 +112,16 @@ def render_if_condition_met(request, condition, objtype, iid, model_slug=None, n
         else:
             raise PermissionDenied
 
+    from channels import Channel
+    import json
+    c = Channel("aristotle_mdr.notifications").send({
+        "item":item.pk,
+        "text": json.dumps({
+            "id": item.id,
+            "content": item.name
+        })
+    })
+
     # We add a user_can_edit flag in addition to others as we have odd rules around who can edit objects.
     isFavourite = request.user.is_authenticated() and request.user.profile.is_favourite(item)
     from reversion.models import Version

@@ -47,6 +47,8 @@ INSTALLED_APPS = (
     'aristotle_mdr.contrib.slots',
     'aristotle_mdr.contrib.browse',
 
+    'channels',
+
     'dal',
     'dal_select2',
 
@@ -179,3 +181,5 @@ HAYSTACK_CONNECTIONS = {
         'INCLUDE_SPELLING': True,
     },
 }
+
+from aristotle_mdr.channels.settings import *

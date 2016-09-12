@@ -16,6 +16,7 @@ from django.utils.translation import ugettext_lazy as _
 from model_utils.managers import InheritanceManager, InheritanceQuerySet
 from model_utils.models import TimeStampedModel
 from model_utils import Choices, FieldTracker
+from channels import Channel
 
 import reversion  # import revisions
 
@@ -1314,6 +1315,15 @@ post_save.connect(create_user_profile, sender=User)
 #  owner = models.ManyToManyField(User, related_name='owned_collections')
 #  viewer = models.ManyToManyField(User, related_name='subscribed_collections')
 
+def fire(channel, obj=None, **kwargs):
+    from django.utils.module_loading import import_string
+    if hasattr(settings,'CHANNEL_LAYERS'):
+        kwargs.update(obj_id=obj.pk)
+        c = Channel("aristotle_mdr.channels.%s"%channel).send(kwargs)
+    else:
+        message = kwargs
+        import_string("aristotle_mdr.channels.%s"%channel)(message, obj=obj)
+
 
 @receiver(post_save)
 def concept_saved(sender, instance, created, **kwargs):
@@ -1326,30 +1336,7 @@ def concept_saved(sender, instance, created, **kwargs):
     if kwargs.get('raw'):
         # Don't run during loaddata
         return
-    for p in instance.favourited_by.all():
-        messages.favourite_updated(recipient=p.user, obj=instance)
-    if instance.workgroup:
-        for user in instance.workgroup.viewers.all():
-            if created:
-                messages.workgroup_item_new(recipient=user, obj=instance)
-            else:
-                messages.workgroup_item_updated(recipient=user, obj=instance)
-    try:
-        # This will fail during first load, and if admins delete aristotle.
-        system = User.objects.get(username="aristotle")
-        for post in instance.relatedDiscussions.all():
-            DiscussionComment.objects.create(
-                post=post,
-                body='The item "{name}" (id:{iid}) has been changed.\n\n\
-                    <a href="{url}">View it on the main site.</a>.'.format(
-                    name=instance.name,
-                    iid=instance.id,
-                    url=reverse("aristotle:item", args=[instance.id])
-                ),
-                author=system,
-            )
-    except:
-        pass
+    fire("concept_changes.concept_saved", obj=instance, created=created)
 
 
 @receiver(post_save, sender=DiscussionComment)
@@ -1363,7 +1350,7 @@ def new_comment_created(sender, **kwargs):
         return  # We don't need to notify a topic poster of an edit.
     if comment.author == post.author:
         return  # We don't need to tell someone they replied to themselves
-    messages.new_comment_created(comment)
+    fire("concept_changes.new_comment_created", obj=instance)
 
 
 @receiver(post_save, sender=DiscussionPost)
@@ -1374,6 +1361,7 @@ def new_post_created(sender, **kwargs):
         return
     if not kwargs['created']:
         return  # We don't need to notify a topic poster of an edit.
+    fire("concept_changes.new_post_created", obj=instance)
     for user in post.workgroup.members.all():
         if user != post.author:
             messages.new_post_created(post, user)
