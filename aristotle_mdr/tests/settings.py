@@ -35,7 +35,7 @@ if 'TRAVIS' in os.environ:
     # elif os.eviron.get('DB') == 'mysql':
     elif os.environ.get('DB') == 'sqlitememory':
         print("Running TRAVIS-CI test-suite with memory-based SQLite")
-        from aristotle_mdr.tests.settings_templates.db.sqlite import DATABASES
+        from aristotle_mdr.tests.settings_templates.db.sqlite_mem import DATABASES
 
     if os.environ.get('SEARCH') == 'whoosh':
         print("Running TRAVIS-CI test-suite with whoosh")
