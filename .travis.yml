@@ -19,9 +19,9 @@ before_install:
   - npm install -g less@1.7.4 # Required for static-precompiler
   - pip install codecov
   - pip install pep8
+  - redis-server
 
 before_script:
-  - 
 # Make a posgres database, run PEP tests, check documentation builds cleanly.
 #   - if [[ $DB == mysql ]]; then mysql -e 'create database aristotle_test_db;'; fi
   - if [[ $DB == postgres ]]; then psql -c 'create database aristotle_test_db;' -U postgres; fi

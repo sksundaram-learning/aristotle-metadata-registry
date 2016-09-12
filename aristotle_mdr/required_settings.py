@@ -48,7 +48,8 @@ INSTALLED_APPS = (
     'aristotle_mdr.contrib.browse',
 
     'channels',
-
+    'haystack_channels',
+    
     'dal',
     'dal_select2',
 
