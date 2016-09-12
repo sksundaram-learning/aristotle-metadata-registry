@@ -4,7 +4,7 @@ CHANNEL_LAYERS = {
         "CONFIG": {
             "hosts": [("localhost", 6379)],
         },
-        "ROUTING": "aristotle_mdr.channels.routing.channel_routing",
+        "ROUTING": "aristotle_mdr.contrib.channels.routing.channel_routing",
     },
 }
 
