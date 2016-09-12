@@ -1,3 +1,5 @@
+import os
+
 HAYSTACK_CONNECTIONS = {
     'default': {
         'ENGINE': 'aristotle_mdr.contrib.whoosh_backend.FixedWhooshEngine',
