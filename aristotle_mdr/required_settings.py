@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
-from aristotle_mdr.channels.settings import CELERY_RESULT_BACKEND, CHANNEL_LAYERS, HAYSTACK_SIGNAL_PROCESSOR
+from aristotle_mdr.channels.settings import CHANNEL_LAYERS, HAYSTACK_SIGNAL_PROCESSOR
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 TEMPLATE_DIRS = [os.path.join(BASE_DIR, 'templates')]
