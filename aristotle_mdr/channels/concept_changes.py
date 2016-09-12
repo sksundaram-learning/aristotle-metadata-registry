@@ -1,13 +1,14 @@
-# In consumers.py
 from channels import Group
 from aristotle_mdr import models as MDR
 from aristotle_mdr import messages
 
+
 def safe_object(message, model, **kwargs):
-    if kwargs.get('obj',None):
+    if kwargs.get('obj', None):
         instance = kwargs['obj']
     else:
         instance = model.objects.filter(pk=message['obj_id']).first()
+
 
 def concept_saved(message, **kwargs):
     instance = safe_object(message, MDR._concept, **kwargs)
@@ -39,14 +40,15 @@ def concept_saved(message, **kwargs):
     except:
         pass
 
+
 def new_comment_created(message, **kwargs):
-    from aristotle.models import DiscussionComment 
+    from aristotle.models import DiscussionComment
     comment = safe_object(message, DiscussionComment, **kwargs)
     messages.new_comment_created(comment)
 
 
 def new_post_created(message, **kwargs):
-    from aristotle.models import DiscussionPost 
+    from aristotle.models import DiscussionPost
     post = safe_object(message, DiscussionPost, kwargs)
 
     for user in post.workgroup.members.all():

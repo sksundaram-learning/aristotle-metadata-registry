@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+from aristotle_mdr.channels.settings import CELERY_RESULT_BACKEND, CHANNEL_LAYERS, HAYSTACK_SIGNAL_PROCESSOR
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 TEMPLATE_DIRS = [os.path.join(BASE_DIR, 'templates')]
@@ -49,7 +50,7 @@ INSTALLED_APPS = (
 
     'channels',
     'haystack_channels',
-    
+
     'dal',
     'dal_select2',
 
@@ -173,7 +174,7 @@ CKEDITOR_CONFIGS = {
     },
 }
 
-HAYSTACK_SIGNAL_PROCESSOR = 'aristotle_mdr.contrib.help.signals.AristotleHelpSignalProcessor'
+# HAYSTACK_SIGNAL_PROCESSOR = 'aristotle_mdr.contrib.help.signals.AristotleHelpSignalProcessor'
 # HAYSTACK_SEARCH_RESULTS_PER_PAGE = 10
 HAYSTACK_CONNECTIONS = {
     'default': {
@@ -182,8 +183,6 @@ HAYSTACK_CONNECTIONS = {
         'INCLUDE_SPELLING': True,
     },
 }
-
-from aristotle_mdr.channels.settings import *
 
 # STATIC_PRECOMPILER_COMPILERS = (
 #     ('static_precompiler.compilers.LESS', {"executable": "lesscpy"}),

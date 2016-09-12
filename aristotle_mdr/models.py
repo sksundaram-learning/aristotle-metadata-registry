@@ -1317,12 +1317,12 @@ post_save.connect(create_user_profile, sender=User)
 
 def fire(channel, obj=None, **kwargs):
     from django.utils.module_loading import import_string
-    if hasattr(settings,'CHANNEL_LAYERS'):
+    if hasattr(settings, 'CHANNEL_LAYERS'):
         kwargs.update(obj_id=obj.pk)
-        c = Channel("aristotle_mdr.channels.%s"%channel).send(kwargs)
+        c = Channel("aristotle_mdr.channels.%s" % channel).send(kwargs)
     else:
         message = kwargs
-        import_string("aristotle_mdr.channels.%s"%channel)(message, obj=obj)
+        import_string("aristotle_mdr.channels.%s" % channel)(message, obj=obj)
 
 
 @receiver(post_save)
