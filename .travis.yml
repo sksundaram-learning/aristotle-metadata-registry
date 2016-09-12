@@ -14,12 +14,13 @@ env:
 #   - DJANGO_VERSION='1.10,<1.11' DB=sqlitefile
 #   - DJANGO_VERSION='1.10,<1.11' DB=postgres
 
+services:
+  - redis-server
 
 before_install:
   - npm install -g less@1.7.4 # Required for static-precompiler
   - pip install codecov
   - pip install pep8
-  - redis-server
 
 before_script:
 # Make a posgres database, run PEP tests, check documentation builds cleanly.
