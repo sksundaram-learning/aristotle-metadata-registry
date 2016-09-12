@@ -1,9 +1,3 @@
-import redislite
-rsl = redislite.Redis('/tmp/redis.db')
-BROKER_URL = 'redis+socket://' + rsl.socket_file
-CELERY_RESULT_BACKEND = BROKER_URL
-
-
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "asgi_redis.RedisChannelLayer",
