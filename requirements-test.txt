@@ -3,4 +3,4 @@ coveralls
 Sphinx
 sphinx-rtd-theme
 
--e git+git://github.com/LegoStormtroopr/django-haystack-channels#egg=haystack_channels
+-e git+git://github.com/LegoStormtroopr/django-haystack-channels#egg=django-haystack-channels
