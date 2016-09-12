@@ -1302,27 +1302,14 @@ def create_user_profile(sender, instance, created, **kwargs):
 post_save.connect(create_user_profile, sender=User)
 
 
-# """
-# A collection is a user specified sharable collections of content.
-# Collection owners can add and remove other owners, editors and viewers
-#                   and add or remove content from the collection
-#            viewers can see content in the collection
-# In all cases, people can only see or add content they have permission to view
-# in the wider registry.
-# """
-# class Collection(models.Model):
-#  items = models.ManyToManyField(_concept,related_name='in_collections')
-#  owner = models.ManyToManyField(User, related_name='owned_collections')
-#  viewer = models.ManyToManyField(User, related_name='subscribed_collections')
-
 def fire(channel, obj=None, **kwargs):
     from django.utils.module_loading import import_string
     if hasattr(settings, 'CHANNEL_LAYERS'):
         kwargs.update(obj_id=obj.pk)
-        c = Channel("aristotle_mdr.channels.%s" % channel).send(kwargs)
+        c = Channel("aristotle_mdr.contrib.channels.%s" % channel).send(kwargs)
     else:
         message = kwargs
-        import_string("aristotle_mdr.channels.%s" % channel)(message, obj=obj)
+        import_string("aristotle_mdr.contrib.channels.%s" % channel)(message, obj=obj)
 
 
 @receiver(post_save)

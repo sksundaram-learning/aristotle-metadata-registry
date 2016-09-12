@@ -28,31 +28,21 @@ DATABASES = {
 if 'TRAVIS' in os.environ:
     if os.environ.get('DB') == 'sqlitefile':
         print("Running TRAVIS-CI test-suite with file-based SQLite")
-        DATABASES['default'] = {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': 'test_database',
-            'USER': '',
-            'PASSWORD': '',
-            'HOST': '',
-            'PORT': '',
-        }
+        from aristotle_mdr.tests.settings_templates.db.sqlite import DATABASES
     elif os.environ.get('DB') == 'postgres':
         print("Running TRAVIS-CI test-suite with POSTGRESQL")
-        DATABASES['default'] = {
-            'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'NAME': 'aristotle_test_db',
-            'USER': 'postgres',
-            'PASSWORD': '',
-            'HOST': 'localhost',
-            'PORT': '',
-        }
+        from aristotle_mdr.tests.settings_templates.db.postgres import DATABASES
     # elif os.eviron.get('DB') == 'mysql':
     elif os.environ.get('DB') == 'sqlitememory':
         print("Running TRAVIS-CI test-suite with memory-based SQLite")
-        DATABASES['default'] = {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': ':memory:',
-        }
+        from aristotle_mdr.tests.settings_templates.db.sqlite import DATABASES
+
+    if os.environ.get('SEARCH') == 'whoosh':
+        print("Running TRAVIS-CI test-suite with whoosh")
+        from aristotle_mdr.tests.settings_templates.search.whoosh import HAYSTACK_CONNECTIONS
+    elif os.environ.get('SEARCH') == 'elasticsearch':
+        print("Running TRAVIS-CI test-suite with elasticsearch")
+        from aristotle_mdr.tests.settings_templates.search.elasticsearch import HAYSTACK_CONNECTIONS
 
 if 'ARISTOTLE_DEV_SKIP_MIGRATIONS' in os.environ:  # pragma: no cover
     print("Skipping migrations")

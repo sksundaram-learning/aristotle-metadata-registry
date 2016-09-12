@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
-from aristotle_mdr.channels.settings import CHANNEL_LAYERS, HAYSTACK_SIGNAL_PROCESSOR
+from aristotle_mdr.contrib.channels.settings import CHANNEL_LAYERS, HAYSTACK_SIGNAL_PROCESSOR
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 TEMPLATE_DIRS = [os.path.join(BASE_DIR, 'templates')]
@@ -120,7 +120,6 @@ if DEBUG:
     STATIC_PRECOMPILER_CACHE_TIMEOUT = 1
     STATIC_PRECOMPILER_DISABLE_AUTO_COMPILE = False
 
-GRAPPELLI_ADMIN_TITLE = "Aristotle admin interface"
 BOOTSTRAP3 = {
     # The Bootstrap base URL
     'base_url': '/static/aristotle_mdr/bootstrap/',

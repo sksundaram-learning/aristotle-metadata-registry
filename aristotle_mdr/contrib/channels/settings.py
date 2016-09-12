@@ -8,4 +8,4 @@ CHANNEL_LAYERS = {
     },
 }
 
-HAYSTACK_SIGNAL_PROCESSOR = 'aristotle_mdr.channels.signals.AristotleChannelsSignalProcessor'
+HAYSTACK_SIGNAL_PROCESSOR = 'aristotle_mdr.contrib.channels.signals.AristotleChannelsSignalProcessor'
