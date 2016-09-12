@@ -183,3 +183,7 @@ HAYSTACK_CONNECTIONS = {
 }
 
 from aristotle_mdr.channels.settings import *
+
+# STATIC_PRECOMPILER_COMPILERS = (
+#     ('static_precompiler.compilers.LESS', {"executable": "lesscpy"}),
+# )

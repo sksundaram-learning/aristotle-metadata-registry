@@ -21,6 +21,7 @@ before_install:
   - pip install pep8
 
 before_script:
+  - 
 # Make a posgres database, run PEP tests, check documentation builds cleanly.
 #   - if [[ $DB == mysql ]]; then mysql -e 'create database aristotle_test_db;'; fi
   - if [[ $DB == postgres ]]; then psql -c 'create database aristotle_test_db;' -U postgres; fi

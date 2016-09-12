@@ -316,6 +316,36 @@
                     </dd>
                 {% endfor %}
                 {% endif %}
+
+                {% for field,details in form.extra_facet_fields %}
+                    {% if details.values %}
+                    <dt>{{details.details.title}}</dt>
+                    {% if details.details.applied %}
+                    <dd>
+                    Active facets
+                    <ul class='active-facets'>
+                        {% for af in details.details.applied %}
+                        <li>
+                            <a href='?{% unfacet request field af|urlencode %}'>
+                                <span class='badge'><i class="fa fa-times"></i></span>
+                                {% facet_display details.details af %}
+                            </a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    </dd>
+                    {% endif %}
+                    {% for f,count in details.values %}
+                    {% if f %}
+                    <dd>
+                        <a href="{{ request.get_full_path }}&amp;f={{field}}::{{ f|urlencode }}">
+                            {% facet_display details.details f %}</a>
+                        ({{ count }})
+                    </dd>
+                    {% endif %}
+                    {% endfor %}
+                    {% endif %}
+                {% endfor %}
             </dl>
         </div>
         <div class="col-md-9">
