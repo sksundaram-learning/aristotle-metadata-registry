@@ -75,7 +75,7 @@ setup(
         'django-autoslug',
         # for more 'real-time' notifications
         'channels',
-        'haystack_channels',
+        'django-haystack-channels',
         'asgi-redis',
 
     ],
