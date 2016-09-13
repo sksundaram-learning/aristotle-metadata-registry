@@ -24,6 +24,13 @@ DATABASES = {
             'NAME': 'test_database',
     }
 }
+HAYSTACK_CONNECTIONS = {
+    'default': {
+        'ENGINE': 'aristotle_mdr.contrib.whoosh_backend.FixedWhooshEngine',
+        'PATH': os.path.join(os.path.dirname(__file__), 'aristotle_mdr/tests/whoosh_index'),
+        'INCLUDE_SPELLING': True,
+    },
+}
 
 if 'TRAVIS' in os.environ:
     if os.environ.get('DB') == 'sqlitefile':
@@ -65,14 +72,6 @@ INSTALLED_APPS = (
     'text_download_test',
 ) + INSTALLED_APPS
 
-
-HAYSTACK_CONNECTIONS = {
-    'default': {
-        'ENGINE': 'aristotle_mdr.contrib.whoosh_backend.FixedWhooshEngine',
-        'PATH': os.path.join(os.path.dirname(__file__), 'aristotle_mdr/tests/whoosh_index'),
-        'INCLUDE_SPELLING': True,
-    },
-}
 
 # https://docs.djangoproject.com/en/1.6/topics/testing/overview/#speeding-up-the-tests
 # We do a lot of user log in testing, this should speed stuff up.
