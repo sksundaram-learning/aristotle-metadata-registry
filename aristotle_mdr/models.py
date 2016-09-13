@@ -1337,7 +1337,7 @@ def new_comment_created(sender, **kwargs):
         return  # We don't need to notify a topic poster of an edit.
     if comment.author == post.author:
         return  # We don't need to tell someone they replied to themselves
-    fire("concept_changes.new_comment_created", obj=instance)
+    fire("concept_changes.new_comment_created", obj=comment)
 
 
 @receiver(post_save, sender=DiscussionPost)
@@ -1348,7 +1348,7 @@ def new_post_created(sender, **kwargs):
         return
     if not kwargs['created']:
         return  # We don't need to notify a topic poster of an edit.
-    fire("concept_changes.new_post_created", obj=instance)
+    fire("concept_changes.new_post_created", obj=comment)
     for user in post.workgroup.members.all():
         if user != post.author:
             messages.new_post_created(post, user)

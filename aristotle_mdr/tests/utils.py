@@ -557,3 +557,14 @@ class LoggedInViewPages(object):
                     print(response.context['errors'])
                 print(e)
                 raise
+
+    def assertDelayedEqual(self, *args):
+        # This is useful when testing channels.
+        # If updates aren't done in 1+2+3+4= 10seconds, then there is a problem.
+        for i in range(1,5):
+            try:
+                self.assertEqual(*args)
+                break
+            except:
+                sleep(i) # sleep for progressively longer, just to give it a fighting chance to finish.
+        self.assertEqual(*args)
