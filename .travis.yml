@@ -48,9 +48,9 @@ install:
 # command to run tests
 script:
 # Start a few workers
-  - ./manage.py runworker &
-  - ./manage.py runworker &
+  - ./manage.py runworker > worker1.log 2>&1 &
   - coverage run --branch --source=aristotle_mdr manage.py test aristotle_mdr.tests;
+  - cat worker1.log
 after_success:
   - coveralls
   - codecov
