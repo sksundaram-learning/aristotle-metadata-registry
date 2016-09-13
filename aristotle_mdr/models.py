@@ -1348,7 +1348,4 @@ def new_post_created(sender, **kwargs):
         return
     if not kwargs['created']:
         return  # We don't need to notify a topic poster of an edit.
-    fire("concept_changes.new_post_created", obj=comment)
-    for user in post.workgroup.members.all():
-        if user != post.author:
-            messages.new_post_created(post, user)
+    fire("concept_changes.new_post_created", obj=post)
