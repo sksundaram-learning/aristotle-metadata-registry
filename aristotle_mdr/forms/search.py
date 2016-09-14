@@ -326,7 +326,7 @@ class PermissionSearchForm(TokenSearchForm):
         super(PermissionSearchForm, self).__init__(*args, **kwargs)
 
         self.fields['ra'].choices = [(ra.id, ra.name) for ra in MDR.RegistrationAuthority.objects.all()]
-        self.fields['models'].choices = model_choices()
+        self.fields['models'].choices = [] #[] #model_choices()
 
     def get_models(self):
         """Return an alphabetical list of model classes in the index."""
@@ -346,7 +346,7 @@ class PermissionSearchForm(TokenSearchForm):
             return []
         return [f for f in self.filters if self.cleaned_data.get(f, False)]
 
-    def search(self, repeat_search=False):
+    def __search(self, repeat_search=False):
         # First, store the SearchQuerySet received from other processing.
         sqs = super(PermissionSearchForm, self).search()
         if not self.token_models:
