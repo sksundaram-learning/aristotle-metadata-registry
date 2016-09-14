@@ -24,9 +24,10 @@ DATABASES = {
             'NAME': 'test_database',
     }
 }
+
 HAYSTACK_CONNECTIONS = {
     'default': {
-        'ENGINE': 'aristotle_mdr.contrib.whoosh_backend.FixedWhooshEngine',
+        'ENGINE': 'haystack.backends.whoosh_backend.WhooshEngine',
         'PATH': os.path.join(os.path.dirname(__file__), 'aristotle_mdr/tests/whoosh_index'),
         'INCLUDE_SPELLING': True,
     },

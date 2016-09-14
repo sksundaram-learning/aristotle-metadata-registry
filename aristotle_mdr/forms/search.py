@@ -315,7 +315,7 @@ class PermissionSearchForm(TokenSearchForm):
         label="Only show items in my workgroups"
     )
     models = forms.MultipleChoiceField(
-        choices=model_choices(),
+        choices=[], #model_choices(),
         required=False, label=_('Item type'),
         widget=BootstrapDropdownSelectMultiple
     )
