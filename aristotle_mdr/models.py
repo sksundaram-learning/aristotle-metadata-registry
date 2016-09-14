@@ -16,7 +16,7 @@ from django.utils.translation import ugettext_lazy as _
 from model_utils.managers import InheritanceManager, InheritanceQuerySet
 from model_utils.models import TimeStampedModel
 from model_utils import Choices, FieldTracker
-from channels import Channel
+from aristotle_mdr.contrib.channels.utils import fire
 
 import reversion  # import revisions
 
@@ -1302,18 +1302,8 @@ def create_user_profile(sender, instance, created, **kwargs):
 post_save.connect(create_user_profile, sender=User)
 
 
-def fire(channel, obj=None, **kwargs):
-    from django.utils.module_loading import import_string
-    if hasattr(settings, 'CHANNEL_LAYERS'):
-        kwargs.update(obj_id=obj.pk)
-        c = Channel("aristotle_mdr.contrib.channels.%s" % channel).send(kwargs)
-    else:
-        message = kwargs
-        import_string("aristotle_mdr.contrib.channels.%s" % channel)(message, obj=obj)
-
-
 @receiver(post_save)
-def concept_saved(sender, instance, created, **kwargs):
+def concept_saved(sender, instance, **kwargs):
     if not issubclass(sender, _concept):
         return
     if not instance.non_cached_fields_changed:
@@ -1323,7 +1313,7 @@ def concept_saved(sender, instance, created, **kwargs):
     if kwargs.get('raw'):
         # Don't run during loaddata
         return
-    fire("concept_changes.concept_saved", obj=instance, created=created)
+    fire("concept_changes.concept_saved", obj=instance, **kwargs)
 
 
 @receiver(post_save, sender=DiscussionComment)
@@ -1348,4 +1338,4 @@ def new_post_created(sender, **kwargs):
         return
     if not kwargs['created']:
         return  # We don't need to notify a topic poster of an edit.
-    fire("concept_changes.new_post_created", obj=post)
+    fire("concept_changes.new_post_created", obj=post, **kwargs)

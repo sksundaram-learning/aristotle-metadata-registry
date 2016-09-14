@@ -3,15 +3,18 @@ from aristotle_mdr import models as MDR
 from aristotle_mdr import messages
 
 
-def safe_object(message, model, **kwargs):
-    if kwargs.get('obj', None):
-        instance = kwargs['obj']
+def safe_object(message):
+    __object__ = message['__object__']
+    if __object__.get('object', None):
+        instance = __object__['object']
     else:
-        instance = model.objects.filter(pk=message['obj_id']).first()
+        model = apps.get_model(__object__['app_label'], __object__['model_name'])
+        instance = model.objects.filter(pk=__object__['pk']).first()
+    return instance
 
 
-def concept_saved(message, **kwargs):
-    instance = safe_object(message, MDR._concept, **kwargs)
+def concept_saved(message):
+    instance = safe_object(message)
     if not instance:
         return
 
@@ -19,7 +22,7 @@ def concept_saved(message, **kwargs):
         messages.favourite_updated(recipient=p.user, obj=instance)
     if instance.workgroup:
         for user in instance.workgroup.viewers.all():
-            if created:
+            if message['created']:
                 messages.workgroup_item_new(recipient=user, obj=instance)
             else:
                 messages.workgroup_item_updated(recipient=user, obj=instance)
@@ -42,15 +45,15 @@ def concept_saved(message, **kwargs):
 
 
 def new_comment_created(message, **kwargs):
-    from aristotle_mdr.models import DiscussionComment
-    comment = safe_object(message, DiscussionComment, **kwargs)
-    messages.new_comment_created(comment)
+    comment = safe_object(message)
+    if comment:
+        messages.new_comment_created(comment)
 
 
 def new_post_created(message, **kwargs):
-    from aristotle_mdr.models import DiscussionPost
-    post = safe_object(message, DiscussionPost, kwargs)
+    post = safe_object(message)
 
-    for user in post.workgroup.members.all():
-        if user != post.author:
-            messages.new_post_created(post, user)
+    if post:
+        for user in post.workgroup.members.all():
+            if user != post.author:
+                messages.new_post_created(post, user)
