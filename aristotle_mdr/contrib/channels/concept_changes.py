@@ -42,13 +42,13 @@ def concept_saved(message, **kwargs):
 
 
 def new_comment_created(message, **kwargs):
-    from aristotle.models import DiscussionComment
+    from aristotle_mdr.models import DiscussionComment
     comment = safe_object(message, DiscussionComment, **kwargs)
     messages.new_comment_created(comment)
 
 
 def new_post_created(message, **kwargs):
-    from aristotle.models import DiscussionPost
+    from aristotle_mdr.models import DiscussionPost
     post = safe_object(message, DiscussionPost, kwargs)
 
     for user in post.workgroup.members.all():
