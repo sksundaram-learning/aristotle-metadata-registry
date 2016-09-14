@@ -566,5 +566,6 @@ class LoggedInViewPages(object):
                 self.assertEqual(*args)
                 break
             except:
+                print('failed, keep trying - %s',i)
                 sleep(i) # sleep for progressively longer, just to give it a fighting chance to finish.
         self.assertEqual(*args)
