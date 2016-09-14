@@ -9,10 +9,9 @@ services:
   - elasticsearch
 
 env:
-#  - DJANGO_VERSION='1.8,<1.9' DB=sqlitememory   SEARCH=whoosh
   - DJANGO_VERSION='1.8,<1.9' DB=sqlitefile     SEARCH=whoosh
   - DJANGO_VERSION='1.8,<1.9' DB=postgres       SEARCH=whoosh
-  - DJANGO_VERSION='1.8,<1.9' DB=sqlitefile   SEARCH=elasticsearch
+#  - DJANGO_VERSION='1.8,<1.9' DB=sqlitefile   SEARCH=elasticsearch
 #   - DJANGO_VERSION='1.10,<1.11' DB=sqlitememory
 #   - DJANGO_VERSION='1.10,<1.11' DB=sqlitefile
 #   - DJANGO_VERSION='1.10,<1.11' DB=postgres
@@ -64,7 +63,3 @@ sudo: false
 addons:
     code_climate:
         repo_token: ac63d774ebdd641ef502acf1588b36248726a28a50e4e1f4ba4295a157477f54
-
-matrix:
-  allow_failures:
-    - env: SEARCH=elasticsearch
