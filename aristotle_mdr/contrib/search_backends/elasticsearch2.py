@@ -449,7 +449,6 @@ class Elasticsearch2SearchBackend(BaseSearchBackend):
             model_choices = []
 
         if len(model_choices) > 0:
-            print(model_choices)
             filters.append({"terms": {DJANGO_CT: model_choices}})
 
         for q in narrow_queries:

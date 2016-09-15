@@ -7,7 +7,7 @@ from model_utils import Choices
 
 from haystack import connections
 from haystack.constants import DEFAULT_ALIAS
-from haystack.forms import SearchForm, FacetedSearchForm, model_choices
+from haystack.forms import SearchForm, FacetedSearchForm
 from haystack.query import EmptySearchQuerySet, SearchQuerySet, SQ
 
 from bootstrap3_datetime.widgets import DateTimePicker
@@ -143,7 +143,9 @@ class PermissionSearchQuerySet(SearchQuerySet):
             q &= SQ(is_public=True)
         if user_workgroups_only:
             q &= SQ(workgroup__in=[str(w.id) for w in user.profile.workgroups.all()])
-        sqs = sqs.filter(q)
+        
+        if q:
+            sqs = sqs.filter(q)
         return sqs
 
     def apply_registration_status_filters(self, states=[], ras=[]):
@@ -324,9 +326,10 @@ class PermissionSearchForm(TokenSearchForm):
     def __init__(self, *args, **kwargs):
         kwargs['searchqueryset'] = PermissionSearchQuerySet()
         super(PermissionSearchForm, self).__init__(*args, **kwargs)
+        from haystack.forms import SearchForm, FacetedSearchForm, model_choices
 
         self.fields['ra'].choices = [(ra.id, ra.name) for ra in MDR.RegistrationAuthority.objects.all()]
-        self.fields['models'].choices = [] #[] #model_choices()
+        self.fields['models'].choices = model_choices()
 
     def get_models(self):
         """Return an alphabetical list of model classes in the index."""
@@ -346,10 +349,10 @@ class PermissionSearchForm(TokenSearchForm):
             return []
         return [f for f in self.filters if self.cleaned_data.get(f, False)]
 
-    def __search(self, repeat_search=False):
+    def search(self, repeat_search=False):
         # First, store the SearchQuerySet received from other processing.
         sqs = super(PermissionSearchForm, self).search()
-        if not self.token_models:
+        if not self.token_models and self.get_models():
             sqs = sqs.models(*self.get_models())
         self.repeat_search = repeat_search
 
@@ -408,6 +411,7 @@ class PermissionSearchForm(TokenSearchForm):
             # Only apply sorting on the first pass through
             sqs = self.apply_sorting(sqs)
 
+        # Don't applying sorting on the facet as ElasticSearch2 doesn't like this.
         filters_to_facets = {
             'ra': 'registrationAuthorities',
             'models': 'facet_model_ct',
@@ -415,7 +419,7 @@ class PermissionSearchForm(TokenSearchForm):
         }
         for _filter, facet in filters_to_facets.items():
             if _filter not in self.applied_filters:
-                sqs = sqs.facet(facet, sort='count')
+                sqs = sqs.facet(facet) # Don't do this:, sort='count')
 
         logged_in_facets = {
             'wg': 'workgroup',
@@ -424,7 +428,7 @@ class PermissionSearchForm(TokenSearchForm):
         if self.request.user.is_active:
             for _filter, facet in logged_in_facets.items():
                 if _filter not in self.applied_filters:
-                    sqs = sqs.facet(facet, sort='count')
+                    sqs = sqs.facet(facet) # Don't do this:, sort='count')
 
         extra_facets = []
         # extra_facets_details = {}
@@ -441,7 +445,7 @@ class PermissionSearchForm(TokenSearchForm):
                             'display': getattr(field, 'display', None),
                         })
                         extra_facets_details[name]= x
-                        sqs = sqs.facet(name, sort='count')
+                        sqs = sqs.facet(name) # Don't do this:, sort='count')
 
         self.facets = sqs.facet_counts()
 

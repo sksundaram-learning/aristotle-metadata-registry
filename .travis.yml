@@ -22,6 +22,7 @@ env:
 services:
   - redis-server
   - elasticsearch
+  - mysql
 
 before_install:
   - npm install -g less@1.7.4 # Required for static-precompiler
