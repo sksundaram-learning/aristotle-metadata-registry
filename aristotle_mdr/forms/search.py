@@ -433,7 +433,7 @@ class PermissionSearchForm(TokenSearchForm):
                     sqs = sqs.facet(facet)
 
         extra_facets = []
-        # extra_facets_details = {}
+        extra_facets_details = {}
         from aristotle_mdr.search_indexes import registered_indexes
         for model_index in registered_indexes:
             for name, field in model_index.fields.items():
