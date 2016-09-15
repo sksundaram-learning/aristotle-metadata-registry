@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+# This file is unchanged from the branch below and is excluded from pep8
+# If this file is changed, then now we own it and it will have to meet pep8
 # From: https://github.com/Terr/django-haystack/blob/es2-integration-branch/haystack/backends/elasticsearch2_backend.py
 from __future__ import absolute_import, division, print_function, unicode_literals
 

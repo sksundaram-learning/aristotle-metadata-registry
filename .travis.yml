@@ -35,7 +35,7 @@ before_script:
   - if [[ $SEARCH == elasticsearch ]]; then sleep 10; fi
   - if [[ $SEARCH == elasticsearch ]]; then pip install elasticsearch; fi
   - if [[ $DB == postgres ]]; then psql -c 'create database aristotle_test_db;' -U postgres; fi
-  - pep8 --exclude=migrations,tests,example_mdr --ignore=E501,E225,E123 aristotle_mdr
+  - pep8 --exclude=migrations,tests,example_mdr,'aristotle_mdr/contrib/search_backends/elasticsearch2.py' --ignore=E501,E225,E123 aristotle_mdr
   - cd docs ; sphinx-build -nW -b html -d _build/doctrees . _build/html ; cd ..
 
 install:

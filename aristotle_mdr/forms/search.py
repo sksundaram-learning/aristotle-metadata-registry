@@ -143,7 +143,7 @@ class PermissionSearchQuerySet(SearchQuerySet):
             q &= SQ(is_public=True)
         if user_workgroups_only:
             q &= SQ(workgroup__in=[str(w.id) for w in user.profile.workgroups.all()])
-        
+
         if q:
             sqs = sqs.filter(q)
         return sqs
@@ -317,7 +317,7 @@ class PermissionSearchForm(TokenSearchForm):
         label="Only show items in my workgroups"
     )
     models = forms.MultipleChoiceField(
-        choices=[], #model_choices(),
+        choices=[],  # model_choices(),
         required=False, label=_('Item type'),
         widget=BootstrapDropdownSelectMultiple
     )
@@ -419,7 +419,8 @@ class PermissionSearchForm(TokenSearchForm):
         }
         for _filter, facet in filters_to_facets.items():
             if _filter not in self.applied_filters:
-                sqs = sqs.facet(facet) # Don't do this:, sort='count')
+                # Don't do this: sqs = sqs.facet(facet, sort='count')
+                sqs = sqs.facet(facet)
 
         logged_in_facets = {
             'wg': 'workgroup',
@@ -428,7 +429,8 @@ class PermissionSearchForm(TokenSearchForm):
         if self.request.user.is_active:
             for _filter, facet in logged_in_facets.items():
                 if _filter not in self.applied_filters:
-                    sqs = sqs.facet(facet) # Don't do this:, sort='count')
+                    # Don't do this: sqs = sqs.facet(facet, sort='count')
+                    sqs = sqs.facet(facet)
 
         extra_facets = []
         # extra_facets_details = {}
@@ -445,7 +447,8 @@ class PermissionSearchForm(TokenSearchForm):
                             'display': getattr(field, 'display', None),
                         })
                         extra_facets_details[name]= x
-                        sqs = sqs.facet(name) # Don't do this:, sort='count')
+                        # Don't do this: sqs = sqs.facet(facet, sort='count')
+                        sqs = sqs.facet(name)
 
         self.facets = sqs.facet_counts()
 
