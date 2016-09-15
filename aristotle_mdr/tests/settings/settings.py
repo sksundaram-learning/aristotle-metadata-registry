@@ -51,7 +51,7 @@ if 'TRAVIS' in os.environ:
         print("Running TRAVIS-CI test-suite with elasticsearch")
         from aristotle_mdr.tests.settings.templates.search.elasticsearch import HAYSTACK_CONNECTIONS
 
-if 'ARISTOTLE_DEV_SKIP_MIGRATIONS' in os.environ:  # pragma: no cover
+if 'ARISTOTLE_DEV_SKIP_MIGRATIONS' in os.environ or os.environ.get('DB') == 'mysql':  # pragma: no cover
     print("Skipping migrations")
     class DisableMigrations(object):
     
