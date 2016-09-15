@@ -413,11 +413,7 @@ class TestSearch(utils.LoggedInViewPages,TestCase):
             )
 
         self.login_superuser()
-        # with reversion.create_revision():
-        #     cable = models.ObjectClass.objects.create(name="cable",definition="known xman",workgroup=self.xmen_wg)
-        #     self.ra.register(cable,models.STATES.standard,self.su)
-        #     cable.save()
-        
+
         from aristotle_mdr.forms.search import PermissionSearchQuerySet
         response = self.client.get(reverse('aristotle:search')+"?q=pokemon")
         
