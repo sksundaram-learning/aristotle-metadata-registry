@@ -2,7 +2,7 @@ import os
 import sys
 from aristotle_mdr.required_settings import *
 
-BASE = os.path.dirname(os.path.dirname(__file__))
+BASE = os.path.join(os.path.dirname(os.path.dirname(__file__)),'..')
 
 sys.path.insert(1, BASE)
 sys.path.insert(1, os.path.join(BASE, "tests"))
@@ -25,36 +25,33 @@ DATABASES = {
     }
 }
 
+HAYSTACK_CONNECTIONS = {
+    'default': {
+        'ENGINE': 'aristotle_mdr.contrib.search_backends.facetted_whoosh.FixedWhooshEngine',
+        'PATH': os.path.join(os.path.dirname(__file__), 'aristotle_mdr/tests/whoosh_index'),
+        'INCLUDE_SPELLING': True,
+    },
+}
+
 if 'TRAVIS' in os.environ:
     if os.environ.get('DB') == 'sqlitefile':
         print("Running TRAVIS-CI test-suite with file-based SQLite")
-        DATABASES['default'] = {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': 'test_database',
-            'USER': '',
-            'PASSWORD': '',
-            'HOST': '',
-            'PORT': '',
-        }
+        from aristotle_mdr.tests.settings.templates.db.sqlite import DATABASES
     elif os.environ.get('DB') == 'postgres':
         print("Running TRAVIS-CI test-suite with POSTGRESQL")
-        DATABASES['default'] = {
-            'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'NAME': 'aristotle_test_db',
-            'USER': 'postgres',
-            'PASSWORD': '',
-            'HOST': 'localhost',
-            'PORT': '',
-        }
-    # elif os.eviron.get('DB') == 'mysql':
-    elif os.environ.get('DB') == 'sqlitememory':
-        print("Running TRAVIS-CI test-suite with memory-based SQLite")
-        DATABASES['default'] = {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': ':memory:',
-        }
+        from aristotle_mdr.tests.settings.templates.db.postgres import DATABASES
+    elif os.environ.get('DB') == 'mysql':
+        print("Running TRAVIS-CI test-suite with MySQL")
+        from aristotle_mdr.tests.settings.templates.db.mysql import DATABASES
 
-if 'ARISTOTLE_DEV_SKIP_MIGRATIONS' in os.environ:  # pragma: no cover
+    if os.environ.get('SEARCH') == 'whoosh':
+        print("Running TRAVIS-CI test-suite with whoosh")
+        from aristotle_mdr.tests.settings.templates.search.whoosh import HAYSTACK_CONNECTIONS
+    elif os.environ.get('SEARCH') == 'elasticsearch':
+        print("Running TRAVIS-CI test-suite with elasticsearch")
+        from aristotle_mdr.tests.settings.templates.search.elasticsearch import HAYSTACK_CONNECTIONS
+
+if 'ARISTOTLE_DEV_SKIP_MIGRATIONS' in os.environ or os.environ.get('DB') == 'mysql':  # pragma: no cover
     print("Skipping migrations")
     class DisableMigrations(object):
     
@@ -75,14 +72,6 @@ INSTALLED_APPS = (
     'text_download_test',
 ) + INSTALLED_APPS
 
-
-HAYSTACK_CONNECTIONS = {
-    'default': {
-        'ENGINE': 'aristotle_mdr.contrib.whoosh_backend.FixedWhooshEngine',
-        'PATH': os.path.join(os.path.dirname(__file__), 'aristotle_mdr/tests/whoosh_index'),
-        'INCLUDE_SPELLING': True,
-    },
-}
 
 # https://docs.djangoproject.com/en/1.6/topics/testing/overview/#speeding-up-the-tests
 # We do a lot of user log in testing, this should speed stuff up.
