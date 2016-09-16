@@ -219,7 +219,10 @@ class TokenSearchForm(FacetedSearchForm):
         if not self.cleaned_data.get('q'):
             return self.no_query_found()
 
-        sqs = self.searchqueryset.auto_query(self.query_text)
+        if self.query_text:
+            sqs = self.searchqueryset.auto_query(self.query_text)
+        else:
+            sqs = self.searchqueryset
 
         if self.token_models:
             sqs = sqs.models(*self.token_models)
