@@ -32,6 +32,14 @@ import logging
 logger = logging.getLogger(__name__)
 logger.debug("Logging started for " + __name__)
 
+"""
+This is the core modelling for Aristotle mapping ISO/IEC 11179 classes to Python classes/Django models.
+
+Docstrings are copied directly from the ISO/IEC 11179-3 documentation in their original form.
+References to the originals is kept where possible using brackets and the dotted section numbers - 
+Eg. explanatory_comment (8.1.2.2.3.4)
+"""
+
 
 # 11179 States
 # When used these MUST be used as IntegerFields to allow status comparison
@@ -61,7 +69,7 @@ class baseAristotleObject(TimeStampedModel):
     definition = RichTextField(
         _('definition'),
         help_text=_("Representation of a concept by a descriptive statement "
-                    "which serves to differentiate it from related concepts")
+                    "which serves to differentiate it from related concepts. (3.2.39)")
     )
     objects = InheritanceManager()
 
@@ -103,18 +111,6 @@ class baseAristotleObject(TimeStampedModel):
     @classmethod
     def get_verbose_name_plural(cls):
         return cls._meta.verbose_name_plural.title()
-
-    # @property
-    # def url_name(self):
-    #     s = self._meta.object_name
-    #     s = s[0].lower() + s[1:]
-    #     return s
-
-    @property
-    def url_name(self):
-        # TODO: Changed as we've altered URL handling,but will refactor calls
-        # to this away later
-        return "item"
 
     def can_edit(self, user):
         # This should always be overridden
@@ -177,8 +173,13 @@ class registryGroup(unmanagedObject):
 
 class RegistrationAuthority(registryGroup):
     """
-    A registration authority is a proxy group that describes a governance
-    process for "standardising" metadata.
+    8.1.2.5 - Registration_Authority class
+    
+    Registration_Authority is a class each instance of which models a registration authority (3.2.109),
+    an organization (3.2.90) responsible for maintaining a register (3.2.104).
+    
+    A registration authority may register many administered items (3.2.2) as shown by the Registration
+    (8.1.5.1) association class.
     """
     template = "aristotle_mdr/registrationAuthority.html"
     locked_state = models.IntegerField(
@@ -590,6 +591,11 @@ class ConceptManager(InheritanceManager):
 
 class _concept(baseAristotleObject):
     """
+    9.1.2.1 - Concept class
+    Concept is a class each instance of which models a concept (3.2.18),
+    a unit of knowledge created by a unique combination of characteristics (3.2.14).
+    A concept is independent of representation.
+    
     This is the base concrete class that ``Status`` items attach to, and to
     which collection objects refer to. It is not marked abstract in the Django
     Meta class, and **must not be inherited from**. It has relatively few
@@ -616,7 +622,7 @@ class _concept(baseAristotleObject):
         help_text="If imported, the original location of the item"
     )
     comments = RichTextField(
-        help_text="Descriptive comments about the metadata item.",
+        help_text=_("Descriptive comments about the metadata item (8.1.2.2.3.4)"),
         blank=True
     )
     submitting_organisation = models.CharField(max_length=256, blank=True)
@@ -895,17 +901,30 @@ class ReviewRequest(TimeStampedModel):
 
 
 class Status(TimeStampedModel):
+    """
+    8.1.2.6 - Registration_State class
+    A Registration_State is a collection of information about the Registration (8.1.5.1) of an Administered Item (8.1.2.2).
+    The attributes of the Registration_State class are summarized here and specified more formally in 8.1.2.6.2.
+    """
     concept = models.ForeignKey(_concept, related_name="statuses")
     registrationAuthority = models.ForeignKey(RegistrationAuthority)
     changeDetails = models.TextField(blank=True, null=True)
-    state = models.IntegerField(choices=STATES, default=STATES.incomplete)
+    state = models.IntegerField(
+        choices=STATES,
+        default=STATES.incomplete,
+        help_text=_("Designation (3.2.51) of the status in the registration life-cycle of an Administered_Item")
+    )
     # TODO: Below should be changed to 'effective_date' to match ISO IEC
     # 11179-6 (Section 8.1.2.6.2.2)
-    registrationDate = models.DateField(_('Date registration effective'))
+    registrationDate = models.DateField(
+        _('Date registration effective'),
+        help_text=_("date and time an Administered_Item became/becomes available to registry users")
+    )
     until_date = models.DateField(
         _('Date registration expires'),
         blank=True,
-        null=True
+        null=True,
+        help_text=_("date and time the Registration of an Administered_Item by a Registration_Authority in a registry is no longer effective")
     )
     tracker = FieldTracker()
 
