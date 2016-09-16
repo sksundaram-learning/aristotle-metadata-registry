@@ -66,3 +66,16 @@ def new_post_created(message, **kwargs):
         for user in post.workgroup.members.all():
             if user != post.author:
                 messages.new_post_created(post, user)
+
+def status_changed(message, **kwargs):
+    instance = safe_object(message)
+    new_status = MDR.Status.objects.get(pk=message['status_id'])
+
+    for status in instance.current_statuses().all():
+        for registrar in status.registrationAuthority.registrars.all():
+            if instance.statuses.filter(registrationAuthority=new_status.registrationAuthority).count() <= 1:
+                # 0 or 1 because the transaction may not be complete yet
+                messages.registrar_item_registered(recipient=registrar, obj=instance)
+            else:
+                messages.registrar_item_changed_status(recipient=registrar, obj=instance)
+

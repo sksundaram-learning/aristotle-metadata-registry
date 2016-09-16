@@ -19,6 +19,14 @@ def registrar_item_superseded(recipient, obj):
     notify.send(obj, recipient=recipient, verb="A item registered by your registration authority has been superseded:", target=obj)
 
 
+def registrar_item_registered(recipient, obj):
+    notify.send(obj, recipient=recipient, verb="A item has been registered by your registration authority:", target=obj)
+
+
+def registrar_item_changed_status(recipient, obj):
+    notify.send(obj, recipient=recipient, verb="A item registered by your registration authority has changed status:", target=obj)
+
+
 def workgroup_item_updated(recipient, obj):
     notify.send(obj, recipient=recipient, verb="was modified in the workgroup", target=obj.workgroup)
 

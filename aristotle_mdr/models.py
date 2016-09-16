@@ -1347,3 +1347,9 @@ def new_post_created(sender, **kwargs):
     if not kwargs['created']:
         return  # We don't need to notify a topic poster of an edit.
     fire("concept_changes.new_post_created", obj=post, **kwargs)
+
+@receiver(post_save, sender=Status)
+def states_changed(sender, instance, *args, **kwargs):
+    item = instance.concept
+    kwargs['status_id'] = instance.pk
+    fire("concept_changes.status_changed", obj=item, **kwargs)
