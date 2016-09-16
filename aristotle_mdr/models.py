@@ -1348,6 +1348,7 @@ def new_post_created(sender, **kwargs):
         return  # We don't need to notify a topic poster of an edit.
     fire("concept_changes.new_post_created", obj=post, **kwargs)
 
+
 @receiver(post_save, sender=Status)
 def states_changed(sender, instance, *args, **kwargs):
     item = instance.concept

@@ -19,14 +19,14 @@ def concept_saved(message):
         return
 
     for p in instance.favourited_by.all():
-        if sorted(message['changed_fields']) == ['modified','superseded_by_id']:
+        if sorted(message['changed_fields']) == ['modified', 'superseded_by_id']:
             messages.favourite_superseded(recipient=p.user, obj=instance)
         else:
             messages.favourite_updated(recipient=p.user, obj=instance)
 
     for status in instance.current_statuses().all():
         for registrar in status.registrationAuthority.registrars.all():
-            if sorted(message['changed_fields']) == ['modified','superseded_by_id']:
+            if sorted(message['changed_fields']) == ['modified', 'superseded_by_id']:
                 messages.registrar_item_superseded(recipient=registrar, obj=instance)
 
     if instance.workgroup:
@@ -67,6 +67,7 @@ def new_post_created(message, **kwargs):
             if user != post.author:
                 messages.new_post_created(post, user)
 
+
 def status_changed(message, **kwargs):
     instance = safe_object(message)
     new_status = MDR.Status.objects.get(pk=message['status_id'])
@@ -78,4 +79,3 @@ def status_changed(message, **kwargs):
                 messages.registrar_item_registered(recipient=registrar, obj=instance)
             else:
                 messages.registrar_item_changed_status(recipient=registrar, obj=instance)
-
