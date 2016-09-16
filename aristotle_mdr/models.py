@@ -647,6 +647,13 @@ class _concept(baseAristotleObject):
         locked_changed = changed.pop('_is_locked', False)
         return len(changed.keys()) > 0
 
+    @property
+    def changed_fields(self):
+        changed = self.tracker.changed()
+        public_changed = changed.pop('_is_public', False)
+        locked_changed = changed.pop('_is_locked', False)
+        return changed.keys()
+
     def can_edit(self, user):
         return _concept.objects.filter(pk=self.pk).editable(user).exists()
 
@@ -1313,6 +1320,7 @@ def concept_saved(sender, instance, **kwargs):
     if kwargs.get('raw'):
         # Don't run during loaddata
         return
+    kwargs['changed_fields'] = instance.changed_fields
     fire("concept_changes.concept_saved", obj=instance, **kwargs)
 
 
