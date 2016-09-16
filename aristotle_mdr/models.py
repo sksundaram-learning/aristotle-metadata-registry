@@ -653,6 +653,13 @@ class _concept(baseAristotleObject):
         locked_changed = changed.pop('_is_locked', False)
         return len(changed.keys()) > 0
 
+    @property
+    def changed_fields(self):
+        changed = self.tracker.changed()
+        public_changed = changed.pop('_is_public', False)
+        locked_changed = changed.pop('_is_locked', False)
+        return changed.keys()
+
     def can_edit(self, user):
         return _concept.objects.filter(pk=self.pk).editable(user).exists()
 
@@ -1332,6 +1339,7 @@ def concept_saved(sender, instance, **kwargs):
     if kwargs.get('raw'):
         # Don't run during loaddata
         return
+    kwargs['changed_fields'] = instance.changed_fields
     fire("concept_changes.concept_saved", obj=instance, **kwargs)
 
 
@@ -1358,3 +1366,10 @@ def new_post_created(sender, **kwargs):
     if not kwargs['created']:
         return  # We don't need to notify a topic poster of an edit.
     fire("concept_changes.new_post_created", obj=post, **kwargs)
+
+
+@receiver(post_save, sender=Status)
+def states_changed(sender, instance, *args, **kwargs):
+    item = instance.concept
+    kwargs['status_id'] = instance.pk
+    fire("concept_changes.status_changed", obj=item, **kwargs)

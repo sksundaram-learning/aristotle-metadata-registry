@@ -73,3 +73,7 @@ addons:
       - elasticsearch-2.x
     packages:
       - elasticsearch
+
+matrix:
+  allow_failures:
+    - env: DB=mysql
