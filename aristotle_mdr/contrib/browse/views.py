@@ -84,8 +84,10 @@ class BrowseConcepts(AppBrowser):
         return context
 
     def get_template_names(self):
+        app_label = self.kwargs['app']
         names = super(BrowseConcepts, self).get_template_names()
         names.append('aristotle_mdr_browse/list.html')
+        names.insert(0,'aristotle_mdr_browse/%s/%s_list.html'%(app_label,self.model._meta.model_name))
         return names
 
     def get_ordering(self):
