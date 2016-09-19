@@ -4,9 +4,10 @@ python:
 #  - "3.5" # No 3 support for notifications, yet.
 
 services:
-  - mysql
   - postgresql
+  - redis-server
   - elasticsearch
+  - mysql
 
 env:
   - DJANGO_VERSION='1.8,<1.9' DB=sqlitefile   SEARCH=whoosh
@@ -18,11 +19,6 @@ env:
 #   - DJANGO_VERSION='1.10,<1.11' DB=sqlitememory
 #   - DJANGO_VERSION='1.10,<1.11' DB=sqlitefile
 #   - DJANGO_VERSION='1.10,<1.11' DB=postgres
-
-services:
-  - redis-server
-  - elasticsearch
-  - mysql
 
 before_install:
   - npm install -g less@1.7.4 # Required for static-precompiler
@@ -76,5 +72,5 @@ addons:
 
 matrix:
   allow_failures:
-    - env: DJANGO_VERSION='1.8,<1.9'  DB=mysql  SEARCH=elasticsearch
-    - env: DJANGO_VERSION='1.8,<1.9'  DB=mysql  SEARCH=whoosh
+    - env: DJANGO_VERSION='1.8,<1.9' DB=mysql        SEARCH=whoosh
+    - env: DJANGO_VERSION='1.8,<1.9' DB=mysql        SEARCH=elasticsearch
