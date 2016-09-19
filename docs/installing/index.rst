@@ -11,3 +11,4 @@ Installing Aristotle Metadata Registry
    adding_pages.rst
    changing_styles.rst
    thirdparty.rst
+   technical_requirements.rst
