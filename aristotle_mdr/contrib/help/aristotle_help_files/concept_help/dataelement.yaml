@@ -28,3 +28,19 @@
         
         <p>Data elements may stand alone or be associated with other item types such
         as [[data element derivation|s]].</p>
+        
+        <blockquote>
+        <cite><a href="http://standards.iso.org/ittf/PubliclyAvailableStandards/index.html">
+        ISO/IEC 11179-3 Section 11.5.2.1</a></cite>
+
+        <p>Data_Element is a class each instance of which models a data element (3.2.28),
+        a unit of data (3.2.27) that is considered in context to be indivisible.
+        </p>
+        <p>A Data_Element is considered to be a basic unit of data of interest to an organization.
+        It is a unit of data for which the definition, identification, representation, 
+        and permissible values are specified by means of a set of attributes.    
+        </p>
+        <p>A Data_Element is formed when a Data_Element_Concept (11.5.2.2) is assigned a representation. 
+        One of the key components of a representation is the Value_Domain (11.5.2.3), i.e., restricted valid values.
+        </p>
+        </blockquote>

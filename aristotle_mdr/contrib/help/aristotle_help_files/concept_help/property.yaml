@@ -19,6 +19,22 @@
         [[objectclass]] creates a [[dataelementconcept]].
         The above mentioned examples create the data element concepts
         <em>Person—sex</em> and <em>Person—date of birth</em>.</p>
+        <blockquote>
+        <cite><a href="http://standards.iso.org/ittf/PubliclyAvailableStandards/index.html">
+        ISO/IEC 11179-3 Section 11.2.2.2</a></cite>
+        
+        <p>Property is a class each instance of which models a property (3.2.100), 
+        a quality common to all members of an object class (3.2.88). 
+        A property may be any feature that humans naturally use to distinguish one individual 
+        object from another. It is the human perception of a single quality of an object class 
+        in the real world. 
+        It is conceptual and thus has no particular associated means of representation by which
+        the property can be communicated.
+        </p>
+        <p>A Property may have a data_element_concept_property association (11.2.3.1) 
+        with zero or more Data_Element_Concepts (11.2.2.3).
+        </p>
+        </blockquote>
     creation_tip: >
         Properties are specific <em>attributes</em> from things we wish to collect information about.
         Good names for properties are short, descriptive nouns.

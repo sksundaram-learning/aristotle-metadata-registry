@@ -983,6 +983,14 @@ class Property(concept):
 
 
 class Measure(unmanagedObject):
+    """
+    Measure_Class is a class each instance of which models a measure class (3.2.72),
+    a set of equivalent units of measure (3.2.138) that may be shared across multiple
+    dimensionalities (3.2.58). Measure_Class allows a grouping of units of measure to
+    be specified once, and reused by multiple dimensionalities.
+    
+    NB. A measure is not defined as a concept in ISO 11179 (11.4.2.2)
+    """
     template = "aristotle_mdr/unmanaged/measure.html"
 
 
@@ -1003,7 +1011,8 @@ class UnitOfMeasure(concept):
 class DataType(concept):
     """
     set of distinct values, characterized by properties of those values and
-    by operations on those values (3.1.9)"""
+    by operations on those values (3.1.9)
+    """
     template = "aristotle_mdr/concepts/dataType.html"
 
 
@@ -1027,9 +1036,16 @@ class ConceptualDomain(concept):
 
 
 class ValueMeaning(aristotleComponent):
+    """
+    Value_Meaning is a class each instance of which models a value meaning (3.2.141),
+    which provides semantic content of a possible value (11.3.2.3.2).
+    """
     class Meta:
         ordering = ['order']
-    meaning = models.CharField(max_length=255)
+    meaning = models.CharField(
+        max_length=255, 
+        help_text=_('The semantic content of a possible value (3.2.141)')
+    )
     conceptual_domain = models.ForeignKey(ConceptualDomain)
     order = models.PositiveSmallIntegerField("Position")
     start_date = models.DateField(
@@ -1057,7 +1073,9 @@ class ValueMeaning(aristotleComponent):
 
 class ValueDomain(concept):
     """
-    set of permissible values (3.2.140)"""
+    Value_Domain is a class each instance of which models a value domain (3.2.140),
+    a set of permissible values (3.2.96) (11.3.2.5).
+    """
 
     # Implementation note: Since a Value domain "must be either one or
     # both an Enumerated Valued or a Described_Value_Domain" there is
@@ -1065,15 +1083,34 @@ class ValueDomain(concept):
 
     template = "aristotle_mdr/concepts/valueDomain.html"
 
-    data_type = models.ForeignKey(DataType, blank=True, null=True)
-    format = models.CharField(max_length=100, blank=True, null=True)
-    maximum_length = models.PositiveIntegerField(blank=True, null=True)
-    unit_of_measure = models.ForeignKey(UnitOfMeasure, blank=True, null=True)
-
+    data_type = models.ForeignKey(  # 11.3.2.5.2.1
+        DataType,
+        blank=True,
+        null=True,
+        help_text=_('Datatype used in a Value Domain')
+    )
+    format = models.CharField(  # 11.3.2.5.2.1
+        max_length=100,
+        blank=True,
+        null=True,
+        help_text=_('template for the structure of the presentation of the value(s)')
+    )
+    maximum_length = models.PositiveIntegerField(  # 11.3.2.5.2.3
+        blank=True,
+        null=True,
+        help_text=_('maximum number of characters available to represent the Data Element value')
+        )
+    unit_of_measure = models.ForeignKey(  # 11.3.2.5.2.3
+        UnitOfMeasure,
+        blank=True,
+        null=True,
+        help_text=_('Unit of Measure used in a Value Domain')
+    )
     conceptual_domain = models.ForeignKey(
         ConceptualDomain,
         blank=True,
-        null=True
+        null=True,
+        help_text=_('The Conceptual Domain that this Value Domain which provides representation.')
     )
     description = models.TextField(
         _('description'),
@@ -1104,12 +1141,27 @@ class AbstractValue(aristotleComponent):
     class Meta:
         abstract = True
         ordering = ['order']
-    value = models.CharField(max_length=32)
-    meaning = models.CharField(max_length=255)
-    value_meaning = models.ForeignKey(ValueMeaning, blank=True, null=True)
+    value = models.CharField(  # 11.3.2.7.2.1 - Renamed from permitted value for abstracts
+        max_length=32,
+        help_text=_("the actual value of the Value")
+    )
+    meaning = models.CharField(  # 11.3.2.7.1
+        max_length=255,
+        help_text=_("A textual designation of a value, where a relation to a Value meaning doesn't exist")
+    )
+    value_meaning = models.ForeignKey(  #11.3.2.7.1
+        ValueMeaning,
+        blank=True,
+        null=True,
+        help_text=_('A reference to the value meaning that this designation relates to')
+    )
     # Below will generate exactly the same related name as django, but reversion-compare
     # needs an explicit related_name for some actions.
-    valueDomain = models.ForeignKey(ValueDomain, related_name="%(class)s_set")
+    valueDomain = models.ForeignKey(
+        ValueDomain,
+        related_name="%(class)s_set",
+        help_text=_("Enumerated Value Domain that this value meaning relates to")
+    )
     order = models.PositiveSmallIntegerField("Position")
     start_date = models.DateField(
         blank=True,
@@ -1135,6 +1187,10 @@ class AbstractValue(aristotleComponent):
 
 
 class PermissibleValue(AbstractValue):
+    """
+    Permissible Value is a class each instance of which models a permissible value (3.2.96),
+    the designation (3.2.51) of a value meaning (3.2.141).
+    """
     pass
 
 
@@ -1144,18 +1200,28 @@ class SupplementaryValue(AbstractValue):
 
 class DataElementConcept(concept):
     """
+    Data Element Concept is a class each instance of which models a data element concept (3.2.29).
+    A data element concept is a specification of a concept (3.2.18) independent of any particular representation.
+    A data element concept can be represented in the form of a data element (3.2.28).
+
     Concept that is an association of a :model:`aristotle_mdr.Property`
-    with an :model:`aristotle_mdr.ObjectClass` (3.2.29)"""
+    with an :model:`aristotle_mdr.ObjectClass` (3.2.29) (11.2.2.3)
+    """
 
     # Redefine in this context as we need 'property' for the 11179 terminology.
     property_ = property
     template = "aristotle_mdr/concepts/dataElementConcept.html"
-    objectClass = models.ForeignKey(ObjectClass, blank=True, null=True)
-    property = models.ForeignKey(Property, blank=True, null=True)
-    conceptualDomain = models.ForeignKey(
-        ConceptualDomain,
-        blank=True,
-        null=True
+    objectClass = models.ForeignKey(  # 11.2.3.3
+        ObjectClass, blank=True, null=True
+        help_text=_('references an Object_Class that is part of the specification of the Data_Element_Concept')
+    )
+    property = models.ForeignKey(  # 11.2.3.1
+        Property, blank=True, null=True,
+        help_text=_('references a Property that is part of the specification of the Data_Element_Concept')
+    )
+    conceptualDomain = models.ForeignKey(  # 11.2.3.2
+        ConceptualDomain, blank=True, null=True
+        help_text=_('references a Conceptual_Domain that is part of the specification of the Data_Element_Concept')
     )
 
     @property_
