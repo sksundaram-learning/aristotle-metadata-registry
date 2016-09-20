@@ -73,6 +73,17 @@ class DataElementConceptViewPage(LoggedInViewConceptBrowsePages,TestCase):
 class DataElementViewPage(LoggedInViewConceptBrowsePages,TestCase):
     url_name='dataElement'
     itemType=models.DataElement
+    
+    def test_template_overriden(self):
+        """
+        see file tests/apps/extension_test/templates/aristotle_mdr_browse/aristotle_mdr/dataelement_list.html
+        """
+        check_text = "This is a customised browse list of data elements"
+        response = self.client.get(
+            reverse("browse_concepts",args=[self.itemType._meta.app_label,self.itemType._meta.model_name])
+        )
+        self.assertTrue(check_text in response.content)
+
 class DataElementDerivationViewPage(LoggedInViewConceptBrowsePages,TestCase):
     url_name='dataelementderivation'
     itemType=models.DataElementDerivation
