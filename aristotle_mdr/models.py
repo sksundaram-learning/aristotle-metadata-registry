@@ -1212,7 +1212,7 @@ class DataElementConcept(concept):
     property_ = property
     template = "aristotle_mdr/concepts/dataElementConcept.html"
     objectClass = models.ForeignKey(  # 11.2.3.3
-        ObjectClass, blank=True, null=True
+        ObjectClass, blank=True, null=True,
         help_text=_('references an Object_Class that is part of the specification of the Data_Element_Concept')
     )
     property = models.ForeignKey(  # 11.2.3.1
@@ -1220,7 +1220,7 @@ class DataElementConcept(concept):
         help_text=_('references a Property that is part of the specification of the Data_Element_Concept')
     )
     conceptualDomain = models.ForeignKey(  # 11.2.3.2
-        ConceptualDomain, blank=True, null=True
+        ConceptualDomain, blank=True, null=True,
         help_text=_('references a Conceptual_Domain that is part of the specification of the Data_Element_Concept')
     )
 
@@ -1247,17 +1247,19 @@ class DataElement(concept):
     Unit of data that is considered in context to be indivisible (3.2.28)"""
 
     template = "aristotle_mdr/concepts/dataElement.html"
-    dataElementConcept = models.ForeignKey(
+    dataElementConcept = models.ForeignKey(  # 11.5.3.2
         DataElementConcept,
         verbose_name="Data Element Concept",
         blank=True,
-        null=True
+        null=True,
+        help_text=_("binds with a Value_Domain that describes a set of possible values that may be recorded in an instance of the Data_Element")
     )
-    valueDomain = models.ForeignKey(
+    valueDomain = models.ForeignKey(  # 11.5.3.1
         ValueDomain,
         verbose_name="Value Domain",
         blank=True,
-        null=True
+        null=True,
+        help_text=_("binds with a Data_Element_Concept that provides the meaning for the Data_Element")
     )
 
     @property
@@ -1283,20 +1285,26 @@ class DataElementDerivation(concept):
     """
     Application of a derivation rule to one or more
     input :model:`aristotle_mdr.DataElement`\s to derive one or more
-    output :model:`aristotle_mdr.DataElement`\s (3.2.33)"""
+    output :model:`aristotle_mdr.DataElement`\s (3.2.33)
+    """
 
-    derives = models.ForeignKey(
+    derives = models.ForeignKey(  # 11.5.3.5
         DataElement,
         related_name="derived_from",
         blank=True,
-        null=True
+        null=True,
+        help_text=_("binds with one or more output Data_Elements that are the result of the application of the Data_Element_Derivation.")
     )
-    inputs = models.ManyToManyField(
+    inputs = models.ManyToManyField(  # 11.5.3.4
         DataElement,
         related_name="input_to_derivation",
-        blank=True
+        blank=True,
+        help_text=_("binds one or more input Data_Element(s) with a Data_Element_Derivation.")
     )
-    derivation_rule = models.TextField(blank=True)
+    derivation_rule = models.TextField(
+        blank=True,
+        help_text=_("text of a specification of a data element Derivation_Rule")
+    )
 
 
 # Create a 1-1 user profile so we don't need to extend user
