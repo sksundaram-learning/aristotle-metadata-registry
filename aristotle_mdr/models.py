@@ -37,7 +37,7 @@ logger.debug("Logging started for " + __name__)
 This is the core modelling for Aristotle mapping ISO/IEC 11179 classes to Python classes/Django models.
 
 Docstrings are copied directly from the ISO/IEC 11179-3 documentation in their original form.
-References to the originals is kept where possible using brackets and the dotted section numbers - 
+References to the originals is kept where possible using brackets and the dotted section numbers -
 Eg. explanatory_comment (8.1.2.2.3.4)
 """
 
@@ -175,10 +175,10 @@ class registryGroup(unmanagedObject):
 class RegistrationAuthority(registryGroup):
     """
     8.1.2.5 - Registration_Authority class
-    
+
     Registration_Authority is a class each instance of which models a registration authority (3.2.109),
     an organization (3.2.90) responsible for maintaining a register (3.2.104).
-    
+
     A registration authority may register many administered items (3.2.2) as shown by the Registration
     (8.1.5.1) association class.
     """
@@ -596,7 +596,7 @@ class _concept(baseAristotleObject):
     Concept is a class each instance of which models a concept (3.2.18),
     a unit of knowledge created by a unique combination of characteristics (3.2.14).
     A concept is independent of representation.
-    
+
     This is the base concrete class that ``Status`` items attach to, and to
     which collection objects refer to. It is not marked abstract in the Django
     Meta class, and **must not be inherited from**. It has relatively few
@@ -988,7 +988,7 @@ class Measure(unmanagedObject):
     a set of equivalent units of measure (3.2.138) that may be shared across multiple
     dimensionalities (3.2.58). Measure_Class allows a grouping of units of measure to
     be specified once, and reused by multiple dimensionalities.
-    
+
     NB. A measure is not defined as a concept in ISO 11179 (11.4.2.2)
     """
     template = "aristotle_mdr/unmanaged/measure.html"
@@ -1042,8 +1042,9 @@ class ValueMeaning(aristotleComponent):
     """
     class Meta:
         ordering = ['order']
-    meaning = models.CharField(
-        max_length=255, 
+
+    meaning = models.CharField(  # 3.2.141
+        max_length=255,
         help_text=_('The semantic content of a possible value (3.2.141)')
     )
     conceptual_domain = models.ForeignKey(ConceptualDomain)
@@ -1149,7 +1150,7 @@ class AbstractValue(aristotleComponent):
         max_length=255,
         help_text=_("A textual designation of a value, where a relation to a Value meaning doesn't exist")
     )
-    value_meaning = models.ForeignKey(  #11.3.2.7.1
+    value_meaning = models.ForeignKey(  # 11.3.2.7.1
         ValueMeaning,
         blank=True,
         null=True,
