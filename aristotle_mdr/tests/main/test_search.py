@@ -12,6 +12,9 @@ from django.test.utils import setup_test_environment
 from reversion import revisions as reversion
 setup_test_environment()
 
+from time import sleep
+
+
 class TestSearch(utils.LoggedInViewPages,TestCase):
     def tearDown(self):
         call_command('clear_index', interactive=False, verbosity=0)
@@ -206,7 +209,7 @@ class TestSearch(utils.LoggedInViewPages,TestCase):
         # Deadpool isn't an Xman yet, still no results.
         psqs = PermissionSearchQuerySet()
         psqs = psqs.auto_query('deadpool').apply_permission_checks(self.viewer)
-        self.assertEqual(len(psqs),0)
+        self.assertDelayedEqual(len(psqs),0)
 
         with reversion.create_revision():
             dp.workgroup = self.xmen_wg
@@ -216,21 +219,21 @@ class TestSearch(utils.LoggedInViewPages,TestCase):
         # Charles is a viewer, Deadpool is in X-men, should have results now.
         psqs = PermissionSearchQuerySet()
         psqs = psqs.auto_query('deadpool').apply_permission_checks(self.viewer)
-        self.assertEqual(len(psqs),1)
+        self.assertDelayedEqual(len(psqs),1)
 
         response = self.client.get(reverse('aristotle:search')+"?q=deadpool")
         self.assertTrue(perms.user_can_view(self.viewer,dp))
-        self.assertEqual(len(response.context['page'].object_list),1)
+        self.assertDelayedEqual(len(response.context['page'].object_list),1)
         self.assertEqual(response.context['page'].object_list[0].object.item,dp)
 
         # Take away Charles viewing rights and no results again.
         self.xmen_wg.removeRoleFromUser('viewer',self.viewer)
         psqs = PermissionSearchQuerySet()
         psqs = psqs.auto_query('deadpool').apply_permission_checks(self.viewer)
-        self.assertEqual(len(psqs),0)
+        self.assertDelayedEqual(len(psqs),0)
 
         response = self.client.get(reverse('aristotle:search')+"?q=deadpool")
-        self.assertEqual(len(response.context['page'].object_list),0)
+        self.assertDelayedEqual(len(response.context['page'].object_list),0)
 
     def test_workgroup_member_search_has_valid_facets(self):
         self.logout()
@@ -387,13 +390,51 @@ class TestSearch(utils.LoggedInViewPages,TestCase):
 
         response = self.client.get(reverse('aristotle:search')+"?q=pokemon")
         self.assertEqual(response.status_code,200)
-        self.assertEqual(len(response.context['page'].object_list),1)
+        self.assertDelayedEqual(len(response.context['page'].object_list),1)
 
         self.logout()
         self.login_editor()
         response = self.client.get(reverse('aristotle:search')+"?q=pokemon")
         self.assertEqual(response.status_code,200)
-        self.assertEqual(len(response.context['page'].object_list),0)
+        self.assertDelayedEqual(len(response.context['page'].object_list),0)
+
+    def test_facet_search(self):
+        self.logout()
+
+        with reversion.create_revision():
+            dec = models.DataElementConcept.objects.create(
+                name="Pokemon-CP",
+                definition="a Pokemons combat power"
+            )
+            de = models.DataElement.objects.create(
+                name="Pokemon-CP, Go",
+                definition="a Pokemons combat power as recorded in the Pokemon-Go scale",
+                dataElementConcept=dec
+            )
+
+        self.login_superuser()
+
+        from aristotle_mdr.forms.search import PermissionSearchQuerySet
+        response = self.client.get(reverse('aristotle:search')+"?q=pokemon")
+        
+        objs = response.context['page'].object_list
+        self.assertDelayedEqual(len(objs),2)
+        extra_facets = response.context['form'].extra_facet_fields
+        self.assertTrue(len(extra_facets) == 1)
+        self.assertTrue(extra_facets[0][0] == 'data_element_concept')
+
+        psqs = PermissionSearchQuerySet()
+        psqs = psqs.auto_query('pokemon').apply_permission_checks(self.su)
+
+        self.assertDelayedEqual(len(psqs),2)
+
+        response = self.client.get(reverse('aristotle:search')+"?q=pokemon&f=data_element_concept::%s"%dec.pk)
+
+        objs = response.context['page'].object_list
+        self.assertDelayedEqual(len(objs),1)
+        self.assertTrue(objs[0].object.pk,de.pk)
+
+
 
 class TestTokenSearch(TestCase):
     def tearDown(self):

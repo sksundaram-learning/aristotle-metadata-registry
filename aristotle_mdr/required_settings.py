@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+# from aristotle_mdr.contrib.channels.settings import CHANNEL_LAYERS, HAYSTACK_SIGNAL_PROCESSOR
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 TEMPLATE_DIRS = [os.path.join(BASE_DIR, 'templates')]
@@ -37,7 +38,7 @@ SITE_ID=None
 
 
 ALLOWED_HOSTS = []
-SOUTH_TESTS_MIGRATE = False
+
 MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
 
 INSTALLED_APPS = (
@@ -46,6 +47,9 @@ INSTALLED_APPS = (
     'aristotle_mdr.contrib.help',
     'aristotle_mdr.contrib.slots',
     'aristotle_mdr.contrib.browse',
+
+    'channels',
+    'haystack_channels',
 
     'dal',
     'dal_select2',
@@ -116,7 +120,6 @@ if DEBUG:
     STATIC_PRECOMPILER_CACHE_TIMEOUT = 1
     STATIC_PRECOMPILER_DISABLE_AUTO_COMPILE = False
 
-GRAPPELLI_ADMIN_TITLE = "Aristotle admin interface"
 BOOTSTRAP3 = {
     # The Bootstrap base URL
     'base_url': '/static/aristotle_mdr/bootstrap/',
@@ -174,8 +177,12 @@ HAYSTACK_SIGNAL_PROCESSOR = 'aristotle_mdr.contrib.help.signals.AristotleHelpSig
 # HAYSTACK_SEARCH_RESULTS_PER_PAGE = 10
 HAYSTACK_CONNECTIONS = {
     'default': {
-        'ENGINE': 'aristotle_mdr.contrib.whoosh_backend.FixedWhooshEngine',
+        'ENGINE': 'aristotle_mdr.contrib.search_backends.facetted_whoosh.FixedWhooshEngine',
         'PATH': os.path.join(os.path.dirname(__file__), 'whoosh_index'),
         'INCLUDE_SPELLING': True,
     },
 }
+
+# STATIC_PRECOMPILER_COMPILERS = (
+#     ('static_precompiler.compilers.LESS', {"executable": "lesscpy"}),
+# )

@@ -7,7 +7,7 @@ from model_utils import Choices
 
 from haystack import connections
 from haystack.constants import DEFAULT_ALIAS
-from haystack.forms import SearchForm, FacetedSearchForm, model_choices
+from haystack.forms import SearchForm, FacetedSearchForm
 from haystack.query import EmptySearchQuerySet, SearchQuerySet, SQ
 
 from bootstrap3_datetime.widgets import DateTimePicker
@@ -143,7 +143,9 @@ class PermissionSearchQuerySet(SearchQuerySet):
             q &= SQ(is_public=True)
         if user_workgroups_only:
             q &= SQ(workgroup__in=[str(w.id) for w in user.profile.workgroups.all()])
-        sqs = sqs.filter(q)
+
+        if q:
+            sqs = sqs.filter(q)
         return sqs
 
     def apply_registration_status_filters(self, states=[], ras=[]):
@@ -217,7 +219,10 @@ class TokenSearchForm(FacetedSearchForm):
         if not self.cleaned_data.get('q'):
             return self.no_query_found()
 
-        sqs = self.searchqueryset.auto_query(self.query_text)
+        if self.query_text:
+            sqs = self.searchqueryset.auto_query(self.query_text)
+        else:
+            sqs = self.searchqueryset
 
         if self.token_models:
             sqs = sqs.models(*self.token_models)
@@ -315,14 +320,16 @@ class PermissionSearchForm(TokenSearchForm):
         label="Only show items in my workgroups"
     )
     models = forms.MultipleChoiceField(
-        choices=model_choices(),
+        choices=[],  # model_choices(),
         required=False, label=_('Item type'),
         widget=BootstrapDropdownSelectMultiple
     )
+    # F for facet!
 
     def __init__(self, *args, **kwargs):
         kwargs['searchqueryset'] = PermissionSearchQuerySet()
         super(PermissionSearchForm, self).__init__(*args, **kwargs)
+        from haystack.forms import SearchForm, FacetedSearchForm, model_choices
 
         self.fields['ra'].choices = [(ra.id, ra.name) for ra in MDR.RegistrationAuthority.objects.all()]
         self.fields['models'].choices = model_choices()
@@ -348,7 +355,7 @@ class PermissionSearchForm(TokenSearchForm):
     def search(self, repeat_search=False):
         # First, store the SearchQuerySet received from other processing.
         sqs = super(PermissionSearchForm, self).search()
-        if not self.token_models:
+        if not self.token_models and self.get_models():
             sqs = sqs.models(*self.get_models())
         self.repeat_search = repeat_search
 
@@ -377,6 +384,14 @@ class PermissionSearchForm(TokenSearchForm):
             user_workgroups_only=self.cleaned_data['myWorkgroups_only']
         )
 
+        extra_facets_details = {}
+        for _facet in self.request.GET.getlist('f', []):
+            _facet, value = _facet.split("::", 1)
+            sqs = sqs.filter(**{_facet: value})
+            facets_details = extra_facets_details.get(_facet, {'applied': []})
+            facets_details['applied'] = facets_details['applied'] + [value]
+            extra_facets_details[_facet] = facets_details
+
         self.has_spelling_suggestions = False
         if not self.repeat_search:
 
@@ -399,6 +414,7 @@ class PermissionSearchForm(TokenSearchForm):
             # Only apply sorting on the first pass through
             sqs = self.apply_sorting(sqs)
 
+        # Don't applying sorting on the facet as ElasticSearch2 doesn't like this.
         filters_to_facets = {
             'ra': 'registrationAuthorities',
             'models': 'facet_model_ct',
@@ -406,7 +422,8 @@ class PermissionSearchForm(TokenSearchForm):
         }
         for _filter, facet in filters_to_facets.items():
             if _filter not in self.applied_filters:
-                sqs = sqs.facet(facet, sort='count')
+                # Don't do this: sqs = sqs.facet(facet, sort='count')
+                sqs = sqs.facet(facet)
 
         logged_in_facets = {
             'wg': 'workgroup',
@@ -415,13 +432,38 @@ class PermissionSearchForm(TokenSearchForm):
         if self.request.user.is_active:
             for _filter, facet in logged_in_facets.items():
                 if _filter not in self.applied_filters:
-                    sqs = sqs.facet(facet, sort='count')
+                    # Don't do this: sqs = sqs.facet(facet, sort='count')
+                    sqs = sqs.facet(facet)
+
+        extra_facets = []
+        extra_facets_details = {}
+        from aristotle_mdr.search_indexes import registered_indexes
+        for model_index in registered_indexes:
+            for name, field in model_index.fields.items():
+                if field.faceted:
+                    if name not in (filters_to_facets.values() + logged_in_facets.values()):
+                        extra_facets.append(name)
+
+                        x = extra_facets_details.get(name, {})
+                        x.update(**{
+                            'title': getattr(field, 'title', name),
+                            'display': getattr(field, 'display', None),
+                        })
+                        extra_facets_details[name]= x
+                        # Don't do this: sqs = sqs.facet(facet, sort='count')
+                        sqs = sqs.facet(name)
 
         self.facets = sqs.facet_counts()
+
         if 'fields' in self.facets:
+            self.extra_facet_fields = [
+                (k, {'values': sorted(v, key=lambda x: -x[1])[:10], 'details': extra_facets_details[k]})
+                for k, v in self.facets['fields'].items()
+                if k in extra_facets
+            ]
             for facet, counts in self.facets['fields'].items():
                 # Return the 5 top results for each facet in order of number of results.
-                self.facets['fields'][facet] = sorted(counts, key=lambda x: -x[1])[:5]
+                self.facets['fields'][facet] = sorted(counts, key=lambda x: -x[1])[:10]
 
         return sqs
 

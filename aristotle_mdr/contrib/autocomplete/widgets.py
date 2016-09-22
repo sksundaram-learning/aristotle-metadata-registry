@@ -1,5 +1,5 @@
 from dal.autocomplete import ModelSelect2Multiple, ModelSelect2
-from django.core.urlresolvers import reverse
+from django.core.urlresolvers import reverse_lazy
 
 
 class ConceptAutocompleteBase(object):
@@ -24,7 +24,7 @@ class ConceptAutocompleteBase(object):
     def __init__(self, *args, **kwargs):
         self.model = kwargs.pop('model', None)
         if self.model:
-            url = reverse(
+            url = reverse_lazy(
                 'aristotle-autocomplete:concept',
                 args=[self.model._meta.app_label, self.model._meta.model_name]
             )

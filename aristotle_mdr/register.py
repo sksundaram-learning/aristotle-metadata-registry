@@ -76,7 +76,10 @@ def register_concept_search_index(concept_class, *args, **kwargs):
     """
 
     class_name = "%s_%sSearchIndex" % (concept_class._meta.app_label, concept_class.__name__)
-    setattr(search_index, class_name, create(concept_class))
+    model_index = kwargs.get('custom_search_index', create(concept_class))
+    setattr(search_index, class_name, model_index)
+
+    search_index.registered_indexes.append(model_index)
 
     # Since we've added a new class, kill the index so it is rebuilt.
     connections[DEFAULT_ALIAS]._index = None
