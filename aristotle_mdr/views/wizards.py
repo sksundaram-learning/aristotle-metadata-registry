@@ -254,14 +254,13 @@ class MultiStepAristotleWizard(PermissionWizard):
             model = self.model
         if not hasattr(self, "similar_items"):
             self.similar_items = {}
-        cached_items = self.similar_items.get(model, None)
-        if cached_items:
-            return cached_items
+        if model in self.similar_items.keys():
+            return self.similar_items.get(model)
 
         # limit results to 20, as more than this tends to slow down everything.
         # If a user is getting more than 20 results they probably haven't named things properly
         # So instead holding everything up, lets return some of what we find and then give them an error message on the wizard template.
-        similar = PSQS().models(model).auto_query(name + " " + definition).apply_permission_checks(user=self.request.user)[:20]
+        similar = PSQS().models(model).auto_query(name + " " + definition).apply_permission_checks(user=self.request.user)[:10]
         self.similar_items[model] = similar
         return similar
 
