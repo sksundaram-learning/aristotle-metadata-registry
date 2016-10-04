@@ -33,6 +33,14 @@ import logging
 logger = logging.getLogger(__name__)
 logger.debug("Logging started for " + __name__)
 
+"""
+This is the core modelling for Aristotle mapping ISO/IEC 11179 classes to Python classes/Django models.
+
+Docstrings are copied directly from the ISO/IEC 11179-3 documentation in their original form.
+References to the originals is kept where possible using brackets and the dotted section numbers -
+Eg. explanatory_comment (8.1.2.2.3.4)
+"""
+
 
 # 11179 States
 # When used these MUST be used as IntegerFields to allow status comparison
@@ -62,7 +70,7 @@ class baseAristotleObject(TimeStampedModel):
     definition = RichTextField(
         _('definition'),
         help_text=_("Representation of a concept by a descriptive statement "
-                    "which serves to differentiate it from related concepts")
+                    "which serves to differentiate it from related concepts. (3.2.39)")
     )
     objects = InheritanceManager()
 
@@ -104,18 +112,6 @@ class baseAristotleObject(TimeStampedModel):
     @classmethod
     def get_verbose_name_plural(cls):
         return cls._meta.verbose_name_plural.title()
-
-    # @property
-    # def url_name(self):
-    #     s = self._meta.object_name
-    #     s = s[0].lower() + s[1:]
-    #     return s
-
-    @property
-    def url_name(self):
-        # TODO: Changed as we've altered URL handling,but will refactor calls
-        # to this away later
-        return "item"
 
     def can_edit(self, user):
         # This should always be overridden
@@ -178,8 +174,13 @@ class registryGroup(unmanagedObject):
 
 class RegistrationAuthority(registryGroup):
     """
-    A registration authority is a proxy group that describes a governance
-    process for "standardising" metadata.
+    8.1.2.5 - Registration_Authority class
+
+    Registration_Authority is a class each instance of which models a registration authority (3.2.109),
+    an organization (3.2.90) responsible for maintaining a register (3.2.104).
+
+    A registration authority may register many administered items (3.2.2) as shown by the Registration
+    (8.1.5.1) association class.
     """
     template = "aristotle_mdr/registrationAuthority.html"
     locked_state = models.IntegerField(
@@ -591,6 +592,11 @@ class ConceptManager(InheritanceManager):
 
 class _concept(baseAristotleObject):
     """
+    9.1.2.1 - Concept class
+    Concept is a class each instance of which models a concept (3.2.18),
+    a unit of knowledge created by a unique combination of characteristics (3.2.14).
+    A concept is independent of representation.
+
     This is the base concrete class that ``Status`` items attach to, and to
     which collection objects refer to. It is not marked abstract in the Django
     Meta class, and **must not be inherited from**. It has relatively few
@@ -617,7 +623,7 @@ class _concept(baseAristotleObject):
         help_text="If imported, the original location of the item"
     )
     comments = RichTextField(
-        help_text="Descriptive comments about the metadata item.",
+        help_text=_("Descriptive comments about the metadata item (8.1.2.2.3.4)"),
         blank=True
     )
     submitting_organisation = models.CharField(max_length=256, blank=True)
@@ -903,17 +909,30 @@ class ReviewRequest(TimeStampedModel):
 
 
 class Status(TimeStampedModel):
+    """
+    8.1.2.6 - Registration_State class
+    A Registration_State is a collection of information about the Registration (8.1.5.1) of an Administered Item (8.1.2.2).
+    The attributes of the Registration_State class are summarized here and specified more formally in 8.1.2.6.2.
+    """
     concept = models.ForeignKey(_concept, related_name="statuses")
     registrationAuthority = models.ForeignKey(RegistrationAuthority)
     changeDetails = models.TextField(blank=True, null=True)
-    state = models.IntegerField(choices=STATES, default=STATES.incomplete)
+    state = models.IntegerField(
+        choices=STATES,
+        default=STATES.incomplete,
+        help_text=_("Designation (3.2.51) of the status in the registration life-cycle of an Administered_Item")
+    )
     # TODO: Below should be changed to 'effective_date' to match ISO IEC
     # 11179-6 (Section 8.1.2.6.2.2)
-    registrationDate = models.DateField(_('Date registration effective'))
+    registrationDate = models.DateField(
+        _('Date registration effective'),
+        help_text=_("date and time an Administered_Item became/becomes available to registry users")
+    )
     until_date = models.DateField(
         _('Date registration expires'),
         blank=True,
-        null=True
+        null=True,
+        help_text=_("date and time the Registration of an Administered_Item by a Registration_Authority in a registry is no longer effective")
     )
     tracker = FieldTracker()
 
@@ -964,6 +983,14 @@ class Property(concept):
 
 
 class Measure(unmanagedObject):
+    """
+    Measure_Class is a class each instance of which models a measure class (3.2.72),
+    a set of equivalent units of measure (3.2.138) that may be shared across multiple
+    dimensionalities (3.2.58). Measure_Class allows a grouping of units of measure to
+    be specified once, and reused by multiple dimensionalities.
+
+    NB. A measure is not defined as a concept in ISO 11179 (11.4.2.2)
+    """
     template = "aristotle_mdr/unmanaged/measure.html"
 
 
@@ -984,7 +1011,8 @@ class UnitOfMeasure(concept):
 class DataType(concept):
     """
     set of distinct values, characterized by properties of those values and
-    by operations on those values (3.1.9)"""
+    by operations on those values (3.1.9)
+    """
     template = "aristotle_mdr/concepts/dataType.html"
 
 
@@ -1008,9 +1036,17 @@ class ConceptualDomain(concept):
 
 
 class ValueMeaning(aristotleComponent):
+    """
+    Value_Meaning is a class each instance of which models a value meaning (3.2.141),
+    which provides semantic content of a possible value (11.3.2.3.2).
+    """
     class Meta:
         ordering = ['order']
-    meaning = models.CharField(max_length=255)
+
+    meaning = models.CharField(  # 3.2.141
+        max_length=255,
+        help_text=_('The semantic content of a possible value (3.2.141)')
+    )
     conceptual_domain = models.ForeignKey(ConceptualDomain)
     order = models.PositiveSmallIntegerField("Position")
     start_date = models.DateField(
@@ -1038,7 +1074,9 @@ class ValueMeaning(aristotleComponent):
 
 class ValueDomain(concept):
     """
-    set of permissible values (3.2.140)"""
+    Value_Domain is a class each instance of which models a value domain (3.2.140),
+    a set of permissible values (3.2.96) (11.3.2.5).
+    """
 
     # Implementation note: Since a Value domain "must be either one or
     # both an Enumerated Valued or a Described_Value_Domain" there is
@@ -1046,15 +1084,34 @@ class ValueDomain(concept):
 
     template = "aristotle_mdr/concepts/valueDomain.html"
 
-    data_type = models.ForeignKey(DataType, blank=True, null=True)
-    format = models.CharField(max_length=100, blank=True, null=True)
-    maximum_length = models.PositiveIntegerField(blank=True, null=True)
-    unit_of_measure = models.ForeignKey(UnitOfMeasure, blank=True, null=True)
-
+    data_type = models.ForeignKey(  # 11.3.2.5.2.1
+        DataType,
+        blank=True,
+        null=True,
+        help_text=_('Datatype used in a Value Domain')
+    )
+    format = models.CharField(  # 11.3.2.5.2.1
+        max_length=100,
+        blank=True,
+        null=True,
+        help_text=_('template for the structure of the presentation of the value(s)')
+    )
+    maximum_length = models.PositiveIntegerField(  # 11.3.2.5.2.3
+        blank=True,
+        null=True,
+        help_text=_('maximum number of characters available to represent the Data Element value')
+        )
+    unit_of_measure = models.ForeignKey(  # 11.3.2.5.2.3
+        UnitOfMeasure,
+        blank=True,
+        null=True,
+        help_text=_('Unit of Measure used in a Value Domain')
+    )
     conceptual_domain = models.ForeignKey(
         ConceptualDomain,
         blank=True,
-        null=True
+        null=True,
+        help_text=_('The Conceptual Domain that this Value Domain which provides representation.')
     )
     description = models.TextField(
         _('description'),
@@ -1085,12 +1142,27 @@ class AbstractValue(aristotleComponent):
     class Meta:
         abstract = True
         ordering = ['order']
-    value = models.CharField(max_length=32)
-    meaning = models.CharField(max_length=255)
-    value_meaning = models.ForeignKey(ValueMeaning, blank=True, null=True)
+    value = models.CharField(  # 11.3.2.7.2.1 - Renamed from permitted value for abstracts
+        max_length=32,
+        help_text=_("the actual value of the Value")
+    )
+    meaning = models.CharField(  # 11.3.2.7.1
+        max_length=255,
+        help_text=_("A textual designation of a value, where a relation to a Value meaning doesn't exist")
+    )
+    value_meaning = models.ForeignKey(  # 11.3.2.7.1
+        ValueMeaning,
+        blank=True,
+        null=True,
+        help_text=_('A reference to the value meaning that this designation relates to')
+    )
     # Below will generate exactly the same related name as django, but reversion-compare
     # needs an explicit related_name for some actions.
-    valueDomain = models.ForeignKey(ValueDomain, related_name="%(class)s_set")
+    valueDomain = models.ForeignKey(
+        ValueDomain,
+        related_name="%(class)s_set",
+        help_text=_("Enumerated Value Domain that this value meaning relates to")
+    )
     order = models.PositiveSmallIntegerField("Position")
     start_date = models.DateField(
         blank=True,
@@ -1116,6 +1188,10 @@ class AbstractValue(aristotleComponent):
 
 
 class PermissibleValue(AbstractValue):
+    """
+    Permissible Value is a class each instance of which models a permissible value (3.2.96),
+    the designation (3.2.51) of a value meaning (3.2.141).
+    """
     pass
 
 
@@ -1125,18 +1201,28 @@ class SupplementaryValue(AbstractValue):
 
 class DataElementConcept(concept):
     """
+    Data Element Concept is a class each instance of which models a data element concept (3.2.29).
+    A data element concept is a specification of a concept (3.2.18) independent of any particular representation.
+    A data element concept can be represented in the form of a data element (3.2.28).
+
     Concept that is an association of a :model:`aristotle_mdr.Property`
-    with an :model:`aristotle_mdr.ObjectClass` (3.2.29)"""
+    with an :model:`aristotle_mdr.ObjectClass` (3.2.29) (11.2.2.3)
+    """
 
     # Redefine in this context as we need 'property' for the 11179 terminology.
     property_ = property
     template = "aristotle_mdr/concepts/dataElementConcept.html"
-    objectClass = models.ForeignKey(ObjectClass, blank=True, null=True)
-    property = models.ForeignKey(Property, blank=True, null=True)
-    conceptualDomain = models.ForeignKey(
-        ConceptualDomain,
-        blank=True,
-        null=True
+    objectClass = models.ForeignKey(  # 11.2.3.3
+        ObjectClass, blank=True, null=True,
+        help_text=_('references an Object_Class that is part of the specification of the Data_Element_Concept')
+    )
+    property = models.ForeignKey(  # 11.2.3.1
+        Property, blank=True, null=True,
+        help_text=_('references a Property that is part of the specification of the Data_Element_Concept')
+    )
+    conceptualDomain = models.ForeignKey(  # 11.2.3.2
+        ConceptualDomain, blank=True, null=True,
+        help_text=_('references a Conceptual_Domain that is part of the specification of the Data_Element_Concept')
     )
 
     @property_
@@ -1162,17 +1248,19 @@ class DataElement(concept):
     Unit of data that is considered in context to be indivisible (3.2.28)"""
 
     template = "aristotle_mdr/concepts/dataElement.html"
-    dataElementConcept = models.ForeignKey(
+    dataElementConcept = models.ForeignKey(  # 11.5.3.2
         DataElementConcept,
         verbose_name="Data Element Concept",
         blank=True,
-        null=True
+        null=True,
+        help_text=_("binds with a Value_Domain that describes a set of possible values that may be recorded in an instance of the Data_Element")
     )
-    valueDomain = models.ForeignKey(
+    valueDomain = models.ForeignKey(  # 11.5.3.1
         ValueDomain,
         verbose_name="Value Domain",
         blank=True,
-        null=True
+        null=True,
+        help_text=_("binds with a Data_Element_Concept that provides the meaning for the Data_Element")
     )
 
     @property
@@ -1198,20 +1286,26 @@ class DataElementDerivation(concept):
     """
     Application of a derivation rule to one or more
     input :model:`aristotle_mdr.DataElement`\s to derive one or more
-    output :model:`aristotle_mdr.DataElement`\s (3.2.33)"""
+    output :model:`aristotle_mdr.DataElement`\s (3.2.33)
+    """
 
-    derives = models.ForeignKey(
+    derives = models.ForeignKey(  # 11.5.3.5
         DataElement,
         related_name="derived_from",
         blank=True,
-        null=True
+        null=True,
+        help_text=_("binds with one or more output Data_Elements that are the result of the application of the Data_Element_Derivation.")
     )
-    inputs = models.ManyToManyField(
+    inputs = models.ManyToManyField(  # 11.5.3.4
         DataElement,
         related_name="input_to_derivation",
-        blank=True
+        blank=True,
+        help_text=_("binds one or more input Data_Element(s) with a Data_Element_Derivation.")
     )
-    derivation_rule = models.TextField(blank=True)
+    derivation_rule = models.TextField(
+        blank=True,
+        help_text=_("text of a specification of a data element Derivation_Rule")
+    )
 
 
 # Create a 1-1 user profile so we don't need to extend user
