@@ -204,7 +204,7 @@ class DataElementConceptWizardPage(ConceptWizardPage,TestCase):
         wizard = response.context['wizard']
         self.assertEqual(response.status_code, 200)
         self.assertEqual(wizard['steps'].current, 'component_results')
-        self.assertEqual(len(wizard['form'].fields.keys()),2) # we should have a match for OC and P
+        self.assertDelayedEqual(len(wizard['form'].fields.keys()),2) # we should have a match for OC and P
 
         step_2_data = {}
         step_2_data.update(step_1_data)
@@ -429,7 +429,7 @@ class DataElementWizardPage(ConceptWizardPage,TestCase):
         wizard = response.context['wizard']
         self.assertEqual(response.status_code, 200)
         self.assertEqual(wizard['steps'].current, 'component_results')
-        self.assertEqual(len(wizard['form'].fields.keys()),3) # we should have a match for OC, P and VD
+        self.assertDelayedEqual(len(wizard['form'].fields.keys()),3) # we should have a match for OC, P and VD
 
         step_2_data = {}
         step_2_data.update(step_1_data)
@@ -492,7 +492,7 @@ class DataElementWizardPage(ConceptWizardPage,TestCase):
         wizard = response.context['wizard']
         self.assertEqual(response.status_code, 200)
         self.assertEqual(wizard['steps'].current, 'component_results')
-        self.assertEqual(len(wizard['form'].fields.keys()),3) # we should have a match for OC, P and VD
+        self.assertDelayedEqual(len(wizard['form'].fields.keys()),3) # we should have a match for OC, P and VD
 
         step_2_data = {}
         step_2_data.update(step_1_data)

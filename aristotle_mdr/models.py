@@ -16,6 +16,7 @@ from django.utils.translation import ugettext_lazy as _
 from model_utils.managers import InheritanceManager, InheritanceQuerySet
 from model_utils.models import TimeStampedModel
 from model_utils import Choices, FieldTracker
+from aristotle_mdr.contrib.channels.utils import fire
 
 import reversion  # import revisions
 
@@ -645,6 +646,13 @@ class _concept(baseAristotleObject):
         public_changed = changed.pop('_is_public', False)
         locked_changed = changed.pop('_is_locked', False)
         return len(changed.keys()) > 0
+
+    @property
+    def changed_fields(self):
+        changed = self.tracker.changed()
+        public_changed = changed.pop('_is_public', False)
+        locked_changed = changed.pop('_is_locked', False)
+        return changed.keys()
 
     def can_edit(self, user):
         return _concept.objects.filter(pk=self.pk).editable(user).exists()
@@ -1301,22 +1309,8 @@ def create_user_profile(sender, instance, created, **kwargs):
 post_save.connect(create_user_profile, sender=User)
 
 
-# """
-# A collection is a user specified sharable collections of content.
-# Collection owners can add and remove other owners, editors and viewers
-#                   and add or remove content from the collection
-#            viewers can see content in the collection
-# In all cases, people can only see or add content they have permission to view
-# in the wider registry.
-# """
-# class Collection(models.Model):
-#  items = models.ManyToManyField(_concept,related_name='in_collections')
-#  owner = models.ManyToManyField(User, related_name='owned_collections')
-#  viewer = models.ManyToManyField(User, related_name='subscribed_collections')
-
-
 @receiver(post_save)
-def concept_saved(sender, instance, created, **kwargs):
+def concept_saved(sender, instance, **kwargs):
     if not issubclass(sender, _concept):
         return
     if not instance.non_cached_fields_changed:
@@ -1326,30 +1320,8 @@ def concept_saved(sender, instance, created, **kwargs):
     if kwargs.get('raw'):
         # Don't run during loaddata
         return
-    for p in instance.favourited_by.all():
-        messages.favourite_updated(recipient=p.user, obj=instance)
-    if instance.workgroup:
-        for user in instance.workgroup.viewers.all():
-            if created:
-                messages.workgroup_item_new(recipient=user, obj=instance)
-            else:
-                messages.workgroup_item_updated(recipient=user, obj=instance)
-    try:
-        # This will fail during first load, and if admins delete aristotle.
-        system = User.objects.get(username="aristotle")
-        for post in instance.relatedDiscussions.all():
-            DiscussionComment.objects.create(
-                post=post,
-                body='The item "{name}" (id:{iid}) has been changed.\n\n\
-                    <a href="{url}">View it on the main site.</a>.'.format(
-                    name=instance.name,
-                    iid=instance.id,
-                    url=reverse("aristotle:item", args=[instance.id])
-                ),
-                author=system,
-            )
-    except:
-        pass
+    kwargs['changed_fields'] = instance.changed_fields
+    fire("concept_changes.concept_saved", obj=instance, **kwargs)
 
 
 @receiver(post_save, sender=DiscussionComment)
@@ -1363,7 +1335,7 @@ def new_comment_created(sender, **kwargs):
         return  # We don't need to notify a topic poster of an edit.
     if comment.author == post.author:
         return  # We don't need to tell someone they replied to themselves
-    messages.new_comment_created(comment)
+    fire("concept_changes.new_comment_created", obj=comment)
 
 
 @receiver(post_save, sender=DiscussionPost)
@@ -1374,6 +1346,11 @@ def new_post_created(sender, **kwargs):
         return
     if not kwargs['created']:
         return  # We don't need to notify a topic poster of an edit.
-    for user in post.workgroup.members.all():
-        if user != post.author:
-            messages.new_post_created(post, user)
+    fire("concept_changes.new_post_created", obj=post, **kwargs)
+
+
+@receiver(post_save, sender=Status)
+def states_changed(sender, instance, *args, **kwargs):
+    item = instance.concept
+    kwargs['status_id'] = instance.pk
+    fire("concept_changes.status_changed", obj=item, **kwargs)

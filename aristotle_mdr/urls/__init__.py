@@ -26,4 +26,9 @@ if 'aristotle_mdr.contrib.self_publish' in settings.INSTALLED_APPS:
 if 'aristotle_mdr.contrib.slots' in settings.INSTALLED_APPS:
     urlpatterns.append(url(r'^', include('aristotle_mdr.contrib.slots.urls', app_name="aristotle_slots", namespace="aristotle_slots")))
 
+if settings.DEBUG:
+    from django.conf import settings
+    from django.conf.urls.static import static
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
 handler403 = 'aristotle_mdr.views.unauthorised'

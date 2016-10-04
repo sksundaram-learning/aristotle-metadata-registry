@@ -1,5 +1,7 @@
 # From https://github.com/aptivate/intranet-search/blob/master/whoosh_backend.py
 # This is an improved Whoosh backend that speeds up Whoosh spell checking dramatically!
+# It also provides facetting
+
 from collections import defaultdict
 from haystack.backends import whoosh_backend as original_backend
 from haystack.backends import BaseEngine
