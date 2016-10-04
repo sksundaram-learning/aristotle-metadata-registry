@@ -273,7 +273,12 @@ class CreatedItemsListView(ListView):
         return super(CreatedItemsListView, self).dispatch(*args, **kwargs)
 
     def get_queryset(self, *args, **kwargs):
-        return MDR._concept.objects.filter(submitter=self.request.user)  # ,statuses=None,review_requests=None)
+        return MDR._concept.objects.filter(
+            submitter=self.request.user,
+            statuses__isnull=True,
+            review_requests__isnull=True
+        )
+        #return MDR._concept.objects.filter(submitter=self.request.user)  # ,statuses=None,review_requests=None)
 
     def get_context_data(self, **kwargs):
         # Call the base implementation first to get a context
