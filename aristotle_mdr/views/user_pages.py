@@ -278,7 +278,6 @@ class CreatedItemsListView(ListView):
             statuses__isnull=True,
             review_requests__isnull=True
         )
-        #return MDR._concept.objects.filter(submitter=self.request.user)  # ,statuses=None,review_requests=None)
 
     def get_context_data(self, **kwargs):
         # Call the base implementation first to get a context
