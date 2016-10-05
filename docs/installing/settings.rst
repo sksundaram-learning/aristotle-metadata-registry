@@ -1,6 +1,33 @@
 Configuring the behavior of Aristotle-MDR
 =========================================
 
+Environment variables
+---------------------
+
+The default django settings file for Aristotle-MDR looks for a number of enviromnet variables for
+storing files or configuring your webapp. These are all prefixed with ``aristotlemdr:``.
+
+``BASE_DIR``
+    Defaults to the path of where Aristotle is installed. Its highly adviced this is changed.
+``SECRET_KEY``
+    Defaults to a very insecure value - you MUST change this before going into production.
+    `From Django settings documentation <https://docs.djangoproject.com/en/1.8/ref/settings/#std:setting-SECRET_KEY>`_:
+    
+        A secret key for a particular Django installation. This is used to provide cryptographic signing,
+        and should be set to a unique, unpredictable value.
+``STATIC_ROOT``
+    Defaults to the value of ``BASE_DIR + "/static"``
+    `From Django settings documentation <https://docs.djangoproject.com/en/1.8/ref/settings/#std:setting-STATIC_ROOT>`_:
+    
+        A secret key for a particular Django installation. This is used to provide cryptographic signing,
+        and should be set to a unique, unpredictable value.
+``MEDIA_ROOT``
+    Defaults to the value of ``BASE_DIR + "/media"``
+    `From Django settings documentation <https://docs.djangoproject.com/en/1.8/ref/settings/#std:setting-MEDIA_ROOT>`_:
+    
+        Absolute filesystem path to the directory that will hold user-uploaded files.
+
+
 ``ARISTOTLE_SETTINGS``
 ----------------------
 
