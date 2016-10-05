@@ -2,11 +2,13 @@
 import os
 # from aristotle_mdr.contrib.channels.settings import CHANNEL_LAYERS, HAYSTACK_SIGNAL_PROCESSOR
 
-BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+BASE_DIR = os.getenv('aristotlemdr:BASE_DIR', os.path.dirname(os.path.dirname(__file__)))
+SECRET_KEY = os.getenv('aristotlemdr:SECRET_KEY', "OVERRIDE_THIS_IN_PRODUCTION")
+STATIC_ROOT = os.getenv('aristotlemdr:STATIC_ROOT', os.path.join(BASE_DIR, "static"))
+MEDIA_ROOT = os.getenv('aristotlemdr:MEDIA_ROOT', os.path.join(BASE_DIR, "media"))
+
 TEMPLATE_DIRS = [os.path.join(BASE_DIR, 'templates')]
 FIXTURES_DIRS = [os.path.join(BASE_DIR, 'fixtures')]
-STATIC_ROOT = os.path.join(BASE_DIR, "static")
-MEDIA_ROOT =os.path.join(BASE_DIR, "media")
 
 # https://docs.djangoproject.com/en/1.6/ref/settings/#databases
 # This provides for quick easy set up, but should be changed to a production
@@ -16,7 +18,6 @@ DATABASES = {
         'NAME': os.path.join(BASE_DIR, 'pos.db3'),
     }
 }
-SECRET_KEY = "OVERRIDE_THIS_IN_PRODUCTION"
 
 CACHES = {
     'default': {
@@ -183,6 +184,6 @@ HAYSTACK_CONNECTIONS = {
     },
 }
 
-# STATIC_PRECOMPILER_COMPILERS = (
-#     ('static_precompiler.compilers.LESS', {"executable": "lesscpy"}),
-# )
+STATIC_PRECOMPILER_COMPILERS = (
+    ('static_precompiler.compilers.LESS', {"executable": "lesscpy"}),
+)

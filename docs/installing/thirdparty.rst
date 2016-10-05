@@ -50,3 +50,18 @@ Warnings about Haystack:
   **Switching this for another processor may expose private information** through search results,
   *but will not allow unauthorised users to access the complete item*.
 
+LESS Compilation:
+-----------------
+
+Aristotle-MDR includes a number of uncompiled LESS files that need to be compiled by
+django-static-precompiler. By default Aristotle-MDR uses the Python-based ``lesscpy``
+compiler for this which is approximately compatible, but slower than, to the Node ``lessc`` compiler.
+If you have complex requirements in your custom LESS files, want a faster compile time
+or wish to use another CSS precompile type, override the following setting in your ``settings.py``::
+
+    STATIC_PRECOMPILER_COMPILERS = (
+      ('static_precompiler.compilers.LESS', {"executable": "lesscpy"}),
+    )
+
+In production, its advisable to compile the LESS files *once* and cache these withother static files.
+This makes the choice of precompiler less of an issue for production environments.
