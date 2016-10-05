@@ -21,7 +21,6 @@ env:
 #   - DJANGO_VERSION='1.10,<1.11' DB=postgres
 
 before_install:
-  - npm install -g less@1.7.4 # Required for static-precompiler
   - pip install codecov
   - pip install pep8
 
