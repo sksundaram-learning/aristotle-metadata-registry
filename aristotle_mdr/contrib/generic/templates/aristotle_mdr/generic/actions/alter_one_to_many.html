@@ -1,7 +1,7 @@
 {% extends request.is_ajax|yesno:"aristotle_mdr/base_ajax.html,aristotle_mdr/base.html" %}
 {% load compile_static i18n %}
 
-{% block title %}Editing values for {{ item.name }}{% endblock %}
+{% block title %}{{ form_title}} for {{ item.name }}{% endblock %}
 {% block content %}
     {% block extra_head_scripts %}
         <script src="{{ STATIC_URL }}aristotle_mdr/jqueryui/jquery-ui.min.js"></script>
@@ -9,6 +9,7 @@
         <link rel="stylesheet" href="{{ STATIC_URL }}{% compile 'aristotle_mdr/aristotle.moveable.less' %}" />
         {% if request.is_ajax %}
             {{ form.media }}
+            {{ formset.media }}
         {% endif %}
     {% endblock %}
 
@@ -31,12 +32,15 @@
     {% csrf_token %}
     {{ formset.management_form }}
     {{ formset.non_form_errors.as_ul }}
+    <div style="overflow:auto">
     <table id="formset" class="form table  table-hover">
     {% with formset.forms.0 as form %}
       <thead><tr>
           <th></th>
         {% for field in form.visible_fields %}
-        <th>{{ field.label|capfirst }}</th>
+        <th><div>{{ field.label|capfirst }}</div>
+        <small title="{{ field.help_text }}">{{ field.help_text|truncatewords:10 }}</small>
+        </th>
         {% endfor %}
       </tr></thead>
     {% endwith %}
@@ -52,14 +56,21 @@
           {% for field in form.visible_fields %}
             <td>
             {# Include the hidden fields in the form #}
-              {{ field.errors.as_ul }}
+              {% if field.errors %}
+                  <div class="alert alert-danger">
+              {% endif %}
               {{ field }}
+              {% if field.errors %}
+                  {{ field.errors.as_ul }}
+                  </div>
+              {% endif %}
             </td>
           {% endfor %}
       </tr>
     {% endfor %}
     </tbody>
     </table>
+    </div>
     <a class="btn btn-primary" onclick="addCode()">
         <i class="fa fa-plus-circle"></i> {{ form_add_another_text }}</a>
     </div>

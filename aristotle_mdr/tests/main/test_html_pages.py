@@ -1032,11 +1032,11 @@ class ValueDomainViewPage(LoggedInViewConceptPages,TestCase):
         num_vals = getattr(self.item1,value_type+"Values").count()
         i=0
         for i,v in enumerate(getattr(self.item1,value_type+"Values").all()):
-            data.update({"form-%d-id"%i: v.pk, "form-%d-order"%i : v.order, "form-%d-value"%i : v.value, "form-%d-meaning"%i : v.meaning+" -updated"})
+            data.update({"form-%d-id"%i: v.pk, "form-%d-ORDER"%i : v.order, "form-%d-value"%i : v.value, "form-%d-meaning"%i : v.meaning+" -updated"})
         data.update({"form-%d-DELETE"%i: 'checked', "form-%d-meaning"%i : v.meaning+" - deleted"}) # delete the last one.
         # now add a new one
         i=i+1
-        data.update({"form-%d-order"%i : i, "form-%d-value"%i : 100, "form-%d-meaning"%i : "new value -updated"})
+        data.update({"form-%d-ORDER"%i : i, "form-%d-value"%i : 100, "form-%d-meaning"%i : "new value -updated"})
 
         data.update({
             "form-TOTAL_FORMS":num_vals+1, "form-INITIAL_FORMS": num_vals, "form-MAX_NUM_FORMS":1000,
@@ -1067,12 +1067,39 @@ class ValueDomainViewPage(LoggedInViewConceptPages,TestCase):
         self.assertFalse(perms.user_can_edit(self.editor,self.item1))
         self.loggedin_user_can_use_value_page(value_url,self.item1,403)
 
-
     def test_submitter_can_use_permissible_value_edit_page(self):
         self.submitter_user_can_use_value_edit_page('permissible')
 
     def test_submitter_can_use_supplementary_value_edit_page(self):
         self.submitter_user_can_use_value_edit_page('supplementary')
+
+    def submitter_user_doesnt_save_all_blank(self):
+        value_url = 'aristotle:permsissible_values_edit'
+        
+        self.login_editor()
+        self.loggedin_user_can_use_value_page(value_url,self.item1,200)
+
+        data = {}
+        num_vals = getattr(self.item1,value_type+"Values").count()
+
+        i=0
+        for i,v in enumerate(getattr(self.item1,value_type+"Values").all()):
+            data.update({"form-%d-id"%i: v.pk, "form-%d-ORDER"%i : v.order, "form-%d-value"%i : v.value, "form-%d-meaning"%i : v.meaning+" -updated"})
+
+        # now add two new values that are all blank
+        i=i+1
+        data.update({"form-%d-ORDER"%i : i, "form-%d-value"%i : '', "form-%d-meaning"%i : ""})
+        i=i+1
+        data.update({"form-%d-ORDER"%i : i, "form-%d-value"%i : '', "form-%d-meaning"%i : ""})
+
+        data.update({
+            "form-TOTAL_FORMS":num_vals+1, "form-INITIAL_FORMS": num_vals, "form-MAX_NUM_FORMS":1000,
+
+            })
+        response = self.client.post(reverse(value_url,args=[self.item1.id]),data)
+        self.item1 = models.ValueDomain.objects.get(pk=self.item1.pk)
+
+        self.assertTrue(num_vals == getattr(self.item1,value_type+"Values").count())
 
     def test_su_can_download_csv(self):
         self.login_superuser()
