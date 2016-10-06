@@ -311,7 +311,8 @@ class GenericAlterOneToManyView(GenericAlterManyToSomethingFormView):
                         # Don't immediately save, we need to attach the parent object
                         value = form.save(commit=False)
                         setattr(value, self.model_to_add_field, self.item)
-                        setattr(value, self.ordering_field, form.cleaned_data['ORDER'])
+                        if self.ordering_field:
+                            setattr(value, self.ordering_field, form.cleaned_data['ORDER'])
                         value.save()
                 for obj in formset.deleted_objects:
                     obj.delete()
