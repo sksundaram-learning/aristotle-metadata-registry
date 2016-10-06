@@ -109,14 +109,35 @@ class Migration(migrations.Migration):
         ),
         migrations.AddField(
             model_name='registrationauthority',
-            name='organization_ptr',
-            field=models.OneToOneField(parent_link=True, auto_created=True, primary_key=True, default=9999999999, serialize=False, to='aristotle_mdr.Organization'),
-            preserve_default=False,
+            name='temp_organization_ptr',
+            field=models.IntegerField(),
+        ),
+        CopyField(
+            model_name='registrationauthority',
+            field_from_name='id',
+            field_to_name='temp_organization_ptr',
         ),
 
         migrations.RemoveField(
             model_name='registrationauthority',
             name='id',
+        ),
+
+        migrations.AddField(
+            model_name='registrationauthority',
+            name='organization_ptr',
+            field=models.OneToOneField(parent_link=True, auto_created=True, primary_key=True, default=9999999999, serialize=False, to='aristotle_mdr.Organization'),
+            preserve_default=False,
+        ),
+        CopyField(
+            model_name='registrationauthority',
+            field_from_name='temp_organization_ptr',
+            field_to_name='organization_ptr',
+        ),
+
+        migrations.RemoveField(
+            model_name='registrationauthority',
+            name='temp_organization_ptr',
         ),
 
     ]
