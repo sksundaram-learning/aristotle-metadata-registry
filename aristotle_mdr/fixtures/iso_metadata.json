@@ -6,14 +6,14 @@
       "created": "2016-05-02T22:23:10.181Z",
       "modified": "2016-05-02T22:23:10.181Z",
       "managers": [
-      ],
+      ]
     },
     "model": "aristotle_mdr.organization",
     "pk": 1
   },
   {
     "fields": {
-      "organization": 1,
+      "organization_ptr": 1,
       "notprogressed": "",
       "candidate": "",
       "created": "2016-05-02T22:23:10.181Z",
