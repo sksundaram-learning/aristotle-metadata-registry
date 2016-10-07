@@ -107,7 +107,7 @@ class AdminPage(utils.LoggedInViewPages,TestCase):
         for rel in [new_user.organization_manager_in,
                     new_user.registrar_in,]:
             self.assertEqual(rel.count(),1)
-            self.assertEqual(rel.first(),self.ra)
+            self.assertEqual(rel.first(),self.ra.organization_ptr)
 
         response = self.client.post(
             reverse("admin:auth_user_add"),
