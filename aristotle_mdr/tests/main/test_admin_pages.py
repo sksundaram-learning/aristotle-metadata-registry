@@ -87,7 +87,7 @@ class AdminPage(utils.LoggedInViewPages,TestCase):
                 'profile-0-steward_in': [self.wg1.id],
                 'profile-0-submitter_in': [self.wg1.id],
                 'profile-0-viewer_in': [self.wg1.id],
-                'profile-0-registrationauthority_manager_in': [self.ra.id],
+                'profile-0-organization_manager_in': [self.ra.id],
                 'profile-0-registrar_in': [self.ra.id],
 
             }
@@ -104,7 +104,7 @@ class AdminPage(utils.LoggedInViewPages,TestCase):
                     new_user.viewer_in]:
             self.assertEqual(rel.count(),1)
             self.assertEqual(rel.first(),self.wg1)
-        for rel in [new_user.registrationauthority_manager_in,
+        for rel in [new_user.organization_manager_in,
                     new_user.registrar_in,]:
             self.assertEqual(rel.count(),1)
             self.assertEqual(rel.first(),self.ra)
@@ -125,7 +125,7 @@ class AdminPage(utils.LoggedInViewPages,TestCase):
                     new_user.submitter_in,
                     new_user.viewer_in]:
             self.assertEqual(rel.count(),0)
-        for rel in [new_user.registrationauthority_manager_in,
+        for rel in [new_user.organization_manager_in,
                     new_user.registrar_in,]:
             self.assertEqual(rel.count(),0)
 

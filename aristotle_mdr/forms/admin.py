@@ -24,7 +24,7 @@ class AristotleProfileForm(forms.ModelForm):
     viewer_in = MembershipField(MDR.Workgroup, _('workgroups'))
     workgroup_manager_in = MembershipField(MDR.Workgroup, _('workgroups'))
 
-    registrationauthority_manager_in = MembershipField(MDR.RegistrationAuthority, 'registration authorities')
+    organization_manager_in = MembershipField(MDR.Organization, 'organizations')
     registrar_in = MembershipField(MDR.RegistrationAuthority, _('registration authorities'))
 
     def __init__(self, *args, **kwargs):
@@ -35,7 +35,7 @@ class AristotleProfileForm(forms.ModelForm):
         # if self.instance and self.instance.user.count() == 1: # and self.instance.user.exists():
         try:
             self.fields['registrar_in'].initial = self.instance.user.registrar_in.all()
-            self.fields['registrationauthority_manager_in'].initial = self.instance.user.registrationauthority_manager_in.all()
+            self.fields['organization_manager_in'].initial = self.instance.user.organization_manager_in.all()
 
             self.fields['workgroup_manager_in'].initial = self.instance.user.workgroup_manager_in.all()
             self.fields['steward_in'].initial = self.instance.user.steward_in.all()
@@ -54,8 +54,8 @@ class AristotleProfileForm(forms.ModelForm):
         if "viewer_in" in self.cleaned_data.keys():
             user.viewer_in = self.cleaned_data['viewer_in']
 
-        if "registrationauthority_manager_in" in self.cleaned_data.keys():
-            user.registrationauthority_manager_in = self.cleaned_data['registrationauthority_manager_in']
+        if "organization_manager_in" in self.cleaned_data.keys():
+            user.organization_manager_in = self.cleaned_data['organization_manager_in']
         if "registrar_in" in self.cleaned_data.keys():
             user.registrar_in = self.cleaned_data['registrar_in']
 
