@@ -183,6 +183,11 @@ class Organization(registryGroup):
         help_text="uri for Organization"
     )
 
+    def promote_to_registration_authority(self):
+        ra = RegistrationAuthority(organization_ptr=self)
+        ra.save()
+        return ra
+
 
 class RegistrationAuthority(Organization):
     """

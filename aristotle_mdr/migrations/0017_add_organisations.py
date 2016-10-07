@@ -8,7 +8,7 @@ import model_utils.fields
 import ckeditor_uploader.fields
 from django.db.migrations.operations.base import Operation
 
-class CopyFields(Operation):
+class CopyFieldsBetweenTables(Operation):
 
     reversible = False
 
@@ -36,7 +36,7 @@ class CopyFields(Operation):
         return "Copies between two tables for %s" % self.name
 
 
-class CopyField(Operation):
+class CopyFieldOnSingleTable(Operation):
 
     reversible = False
 
@@ -82,7 +82,7 @@ class Migration(migrations.Migration):
                 'abstract': False,
             },
         ),
-        CopyFields(
+        CopyFieldsBetweenTables(
             model_from_name='registrationauthority',
             model_to_name='organization',
             columns=['created', 'definition', 'id', 'modified', 'name' ],
@@ -110,34 +110,42 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='registrationauthority',
             name='temp_organization_ptr',
-            field=models.IntegerField(),
+            field=models.IntegerField(null=True),
         ),
-        CopyField(
+
+        # Copy the id field, then remove it as postgres complains about having two primary keys
+        CopyFieldOnSingleTable(
             model_name='registrationauthority',
             field_from_name='id',
             field_to_name='temp_organization_ptr',
         ),
-
         migrations.RemoveField(
             model_name='registrationauthority',
             name='id',
         ),
-
         migrations.AddField(
             model_name='registrationauthority',
             name='organization_ptr',
-            field=models.OneToOneField(parent_link=True, auto_created=True, primary_key=True, default=9999999999, serialize=False, to='aristotle_mdr.Organization'),
+            field=models.OneToOneField(parent_link=True, auto_created=True, primary_key=True, null=True, serialize=False, to='aristotle_mdr.Organization'),
             preserve_default=False,
         ),
-        CopyField(
+
+        CopyFieldOnSingleTable(
             model_name='registrationauthority',
             field_from_name='temp_organization_ptr',
-            field_to_name='organization_ptr',
+            field_to_name='organization_ptr_id',
         ),
 
         migrations.RemoveField(
             model_name='registrationauthority',
             name='temp_organization_ptr',
+        ),
+
+        migrations.AlterField(
+            model_name='registrationauthority',
+            name='organization_ptr',
+            field=models.OneToOneField(parent_link=True, auto_created=True, primary_key=True, serialize=False, to='aristotle_mdr.Organization'),
+            preserve_default=False,
         ),
 
     ]
