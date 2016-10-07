@@ -203,45 +203,45 @@ class PermissibleValueInline(CodeValueInline):
 class SupplementaryValueInline(CodeValueInline):
     model = MDR.SupplementaryValue
 
-def promote_to_ra(modeladmin, request, queryset):
-    from django.contrib import messages
-    from django.contrib.admin import helpers
-    from django.contrib.admin.utils import model_ngettext
-    if request.POST.get('post'):
-        n = queryset.count()
-        if n:
-            for org in queryset.all():
-                # Create a restaurant using existing Place   
-                ra = MDR.RegistrationAuthority(organization_ptr=org)
-                ra.save()
-            modeladmin.message_user(request, _("Successfully promoted %(count)d %(items)s.") % {
-                "count": n, "items": model_ngettext(modeladmin.opts, n)
-            }, messages.SUCCESS)
-        # Return None to display the change list page again.
-        return None
-
-    context = dict(
-        modeladmin.admin_site.each_context(request),
-        title=_("Are you sure?"),
-        queryset=queryset,
-        action_checkbox_name=helpers.ACTION_CHECKBOX_NAME,
-        media=modeladmin.media,
-        opts=modeladmin.model._meta
-    )
-
-    request.current_app = modeladmin.admin_site.name
-
-    # Display the confirmation page
-    from django.template.response import TemplateResponse
-    return TemplateResponse(request, ["admin/promote_org_to_ra.html"], context)
-
-promote_to_ra.short_description = "Promote to registration authority"
 
 class OrganizationAdmin(admin.ModelAdmin):
     list_display = ['name', 'definition', 'created', 'modified']
     list_filter = ['created', 'modified']
 
-    actions = [promote_to_ra]
+    actions = ['promote_to_ra']
+
+    def promote_to_ra(self, request, queryset):
+        from django.contrib import messages
+        from django.contrib.admin import helpers
+        from django.contrib.admin.utils import model_ngettext
+        if request.POST.get('post'):
+            n = queryset.count()
+            if n:
+                for org in queryset.all():
+                    org.promote_to_registration_authority()
+                self.message_user(request, _("Successfully promoted %(count)d %(items)s.") % {
+                    "count": n, "items": model_ngettext(self.opts, n)
+                }, messages.SUCCESS)
+            # Return None to display the change list page again.
+            return None
+
+        context = dict(
+            self.admin_site.each_context(request),
+            title=_("Are you sure?"),
+            queryset=queryset,
+            action_checkbox_name=helpers.ACTION_CHECKBOX_NAME,
+            media=self.media,
+            opts=self.model._meta
+        )
+
+        request.current_app = self.admin_site.name
+
+        # Display the confirmation page
+        from django.template.response import TemplateResponse
+        return TemplateResponse(request, ["admin/promote_org_to_ra.html"], context)
+
+    promote_to_ra.short_description = "Promote to registration authority"
+
 
 class RegistrationAuthorityAdmin(admin.ModelAdmin):
     list_display = ['name', 'definition', 'created', 'modified']
