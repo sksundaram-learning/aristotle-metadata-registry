@@ -36,28 +36,6 @@ class CopyFieldsBetweenTables(Operation):
         return "Copies between two tables for %s" % self.name
 
 
-class CopyFieldOnSingleTable(Operation):
-
-    reversible = False
-
-    def __init__(self, model_name, field_from_name, field_to_name):
-        self.model_name = model_name
-        self.field_from_name = field_from_name
-        self.field_to_name = field_to_name
-
-    def state_forwards(self, app_label, state):
-        pass
-
-    def database_forwards(self, app_label, schema_editor, from_state, to_state):
-        base_query = "UPDATE %s_%s SET \"%s\" = \"%s\"" % tuple(
-            [app_label, self.model_name, self.field_to_name, self.field_from_name]
-        )
-        schema_editor.execute(base_query)
-
-    def describe(self):
-        return "Copies between two columns on a table for %s" % self.name
-
-
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -132,6 +110,11 @@ class Migration(migrations.Migration):
             options={
                 'abstract': False,
             },
+        ),
+        CopyFieldsBetweenTables(
+            model_from_name='registrationauthority',
+            model_to_name='organization',
+            columns=['created', 'definition', 'id', 'modified', 'name' ],
         ),
         migrations.RemoveField(
             model_name='registrationauthority',
