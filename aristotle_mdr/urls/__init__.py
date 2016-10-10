@@ -26,6 +26,9 @@ if 'aristotle_mdr.contrib.self_publish' in settings.INSTALLED_APPS:
 if 'aristotle_mdr.contrib.slots' in settings.INSTALLED_APPS:
     urlpatterns.append(url(r'^', include('aristotle_mdr.contrib.slots.urls', app_name="aristotle_slots", namespace="aristotle_slots")))
 
+if 'aristotle_mdr.contrib.identifiers' in settings.INSTALLED_APPS:
+    urlpatterns.append(url(r'^', include('aristotle_mdr.contrib.identifiers.urls', app_name="aristotle_mdr_identifiers", namespace="aristotle_identifiers")))
+
 if settings.DEBUG:
     from django.conf import settings
     from django.conf.urls.static import static
