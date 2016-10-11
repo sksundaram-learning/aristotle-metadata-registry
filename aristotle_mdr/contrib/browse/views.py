@@ -1,11 +1,12 @@
 from django.apps import apps
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import FieldError
+from django.db.models import Q
 from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import ListView, TemplateView
 from aristotle_mdr.utils import get_concepts_for_apps
-from django.db.models import Q
 
 
 class BrowseApps(TemplateView):
@@ -96,7 +97,7 @@ class BrowseConcepts(AppBrowser):
             try:
                 k = "%s__in" % k
                 queryset = queryset.filter(**{k: values})
-            except:
+            except FieldError:
                 pass
 
         # slot filters
@@ -114,7 +115,7 @@ class BrowseConcepts(AppBrowser):
                     slots__type__slot_name=k,
                     slots__value__in=values,
                 )
-            except:
+            except FieldError:
                 pass
 
         return queryset.visible(self.request.user)
