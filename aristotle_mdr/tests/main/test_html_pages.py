@@ -1076,8 +1076,18 @@ class ValueDomainViewPage(LoggedInViewConceptPages,TestCase):
     def test_submitter_can_use_supplementary_value_edit_page(self):
         self.submitter_user_can_use_value_edit_page('supplementary')
 
-    def test_submitter_user_doesnt_save_all_blank(self):
-        value_url = 'aristotle:permsissible_values_edit'
+
+    def test_submitter_user_doesnt_save_all_blank_permissible_value_edit_page(self):
+        self.submitter_user_doesnt_save_all_blank('permissible')
+
+    def test_submitter_user_doesnt_save_all_blank_supplementary_value_edit_page(self):
+        self.submitter_user_doesnt_save_all_blank('supplementary')
+
+    def submitter_user_doesnt_save_all_blank(self,value_type):
+        value_url = {
+            'permissible': 'aristotle:permsissible_values_edit',
+            'supplementary': 'aristotle:supplementary_values_edit'
+        }.get(value_type)
         
         self.login_editor()
         self.loggedin_user_can_use_value_page(value_url,self.item1,200)
