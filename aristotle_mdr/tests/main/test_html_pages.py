@@ -1076,7 +1076,7 @@ class ValueDomainViewPage(LoggedInViewConceptPages,TestCase):
     def test_submitter_can_use_supplementary_value_edit_page(self):
         self.submitter_user_can_use_value_edit_page('supplementary')
 
-    def submitter_user_doesnt_save_all_blank(self):
+    def test_submitter_user_doesnt_save_all_blank(self):
         value_url = 'aristotle:permsissible_values_edit'
         
         self.login_editor()

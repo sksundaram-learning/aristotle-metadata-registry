@@ -76,6 +76,13 @@ class AdminPage(utils.LoggedInViewPages,TestCase):
         response = self.client.get(reverse("admin:aristotle_mdr_dataelementconcept_change",args=[dec.pk]))
         self.assertResponseStatusCodeEqual(response,200)
 
+    def test_su_can_view_users_list(self):
+        self.login_superuser()
+        response = self.client.get(
+            reverse('admin:%s_%s_changelist' % ('auth','user')),
+        )
+        self.assertContains(response,'Last login')
+
     def test_su_can_add_new_user(self):
         self.login_superuser()
         response = self.client.post(

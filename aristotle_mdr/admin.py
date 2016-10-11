@@ -277,14 +277,15 @@ class AristotleProfileInline(admin.StackedInline):
 # Define a new User admin
 class AristotleUserAdmin(UserAdmin):
 
-    def days_since_login(self, obj):
+    def time_since_login(self, obj):
         from django.contrib.humanize.templatetags.humanize import naturaltime
         return naturaltime(obj.last_login)
 
-    days_since_login.admin_order_field = 'last_login'
+    time_since_login.admin_order_field = 'last_login'
+    time_since_login.short_description = _('Last login')
 
     inlines = [AristotleProfileInline]
-    list_display = ['username', 'first_name', 'last_name', 'days_since_login', 'date_joined']
+    list_display = ['username', 'first_name', 'last_name', 'time_since_login', 'date_joined']
 
     def save_formset(self, request, form, formset, change):
         super(AristotleUserAdmin, self).save_formset(request, form, formset, change)
