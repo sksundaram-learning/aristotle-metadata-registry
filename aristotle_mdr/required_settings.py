@@ -47,6 +47,7 @@ INSTALLED_APPS = (
     'aristotle_mdr.contrib.generic',
     'aristotle_mdr.contrib.help',
     'aristotle_mdr.contrib.slots',
+    'aristotle_mdr.contrib.identifiers',
     'aristotle_mdr.contrib.browse',
 
     'channels',

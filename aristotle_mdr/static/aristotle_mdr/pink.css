@@ -77,3 +77,18 @@ body>#content {
 body>footer.footer {
     margin-top:0px;
 }
+
+@media (max-width:600px)  {
+    #content {padding:0 25px;}
+    body .navbar-inverse .navbar-nav .open .dropdown-menu>li,
+    body .navbar-inverse .navbar-nav .open .dropdown-menu>li>* {
+        color: white;
+    }
+    body .navbar-inverse .navbar-nav .open .dropdown-menu>li>a:hover {
+        background-color: #5f8f8e;
+    }
+}
+
+body .navbar-inverse .navbar-nav a:hover {
+    background-color: #5f8f8e;
+}

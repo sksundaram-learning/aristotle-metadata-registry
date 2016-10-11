@@ -172,7 +172,24 @@ class registryGroup(unmanagedObject):
         return self._meta.model_name
 
 
-class RegistrationAuthority(registryGroup):
+class Organization(registryGroup):
+    """
+    6.3.6 - Organization is a class each instance of which models an organization (3.2.90),
+    a unique framework of authority within which individuals (3.2.65) act, or are designated to act,
+    towards some purpose.
+    """
+    uri = models.URLField(  # 6.3.6.2.5
+        blank=True, null=True,
+        help_text="uri for Organization"
+    )
+
+    def promote_to_registration_authority(self):
+        ra = RegistrationAuthority(organization_ptr=self)
+        ra.save()
+        return ra
+
+
+class RegistrationAuthority(Organization):
     """
     8.1.2.5 - Registration_Authority class
 

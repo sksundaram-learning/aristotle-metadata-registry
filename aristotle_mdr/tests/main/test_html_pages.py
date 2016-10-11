@@ -184,7 +184,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
 
         response = self.client.get(reverse('aristotle:item_history',args=[self.item1.id]))
         self.assertEqual(response.status_code,200)
-        self.assertTrue(change_comment in response.content)
+        self.assertContains(response, change_comment)
 
     def test_submitter_can_save_via_edit_page_with_slots(self):
         self.login_editor()
@@ -222,7 +222,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.assertEqual(self.item1.slots.count(),1)
 
         response = self.client.get(reverse('aristotle:edit_item',args=[self.item1.id]))
-        self.assertTrue('test slot value' in response.content)
+        self.assertContains(response, 'test slot value')
 
 
     def test_submitter_cannot_save_via_edit_page_with_slots_that_are_duplicates(self):
@@ -263,7 +263,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.assertEqual(response.status_code,200)
         self.assertEqual(self.item1.slots.count(),0)
         
-        self.assertTrue("The selected slot type &#39;%(slot_name)s&#39; is only allowed to be included once" % {'slot_name': slot_def.slot_name} in response.content)
+        self.assertContains(response, "The selected slot type &#39;%(slot_name)s&#39; is only allowed to be included once" % {'slot_name': slot_def.slot_name})
 
     def test_submitter_cannot_save_via_edit_page_with_slots_that_are_for_a_different_metadata_type(self):
         self.login_editor()
@@ -284,7 +284,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.assertEqual(response.status_code,200)
 
         self.assertEqual(self.item1.slots.count(),0)
-        self.assertTrue(slot_def.slot_name not in response.content)
+        self.assertNotContains(response, slot_def.slot_name)
         
         updated_item = utils.model_to_dict_with_change_time(response.context['item'])
         updated_name = updated_item['name'] + " updated!"
@@ -306,7 +306,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.assertEqual(response.status_code,200)
         self.assertEqual(self.item1.slots.count(),0)
         
-        self.assertTrue("Select a valid choice. That choice is not one of the available choices" in response.content)
+        self.assertContains(response, "Select a valid choice. That choice is not one of the available choices")
 
     def test_submitter_cannot_save_via_edit_page_if_other_saves_made(self):
         from datetime import timedelta
@@ -632,13 +632,15 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         response = self.client.get(reverse('aristotle:item_history',args=[self.item2.id]))
         self.assertEqual(response.status_code,403)
 
-        # Viewers shouldn't even have the link to history on items they arent in the workgroup for
-        response = self.client.get(self.item2.get_absolute_url())
-        self.assertFalse(reverse('aristotle:item_history',args=[self.item2.id]) in response.content)
+        # # Viewers shouldn't even have the link to history on items they arent in the workgroup for
+        # This check makes no sense - a user can't see the page to begin with.
+        # Keeping for posterity
+        # response = self.client.get(self.item2.get_absolute_url())
+        # self.assertNotContains(response, reverse('aristotle:item_history',args=[self.item2.id]))
 
         # Viewers will even have the link to history on items they are in the workgroup for
         response = self.client.get(self.item1.get_absolute_url())
-        self.assertTrue(reverse('aristotle:item_history',args=[self.item1.id]) in response.content)
+        self.assertContains(response, reverse('aristotle:item_history',args=[self.item1.id]))
 
     def test_editor_can_view_item_history__and__compare(self):
         self.login_editor()
@@ -677,8 +679,8 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         )
         
         self.assertEqual(response.status_code,200)
-        self.assertTrue("change 2" in response.content)
-        self.assertTrue('statuses' in response.content)
+        self.assertContains(response, "change 2")
+        self.assertContains(response, 'statuses')
         
         self.item1 = self.itemType.objects.get(pk=self.item1.pk) #decache
         self.assertTrue(self.item1.name == "change 2")
@@ -793,10 +795,11 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
             registrationDate = datetime.date(2009,4,28),
             state =  models.STATES.standard
             )
+
         # Anon users shouldn't even have the link to history *any* items
         response = self.client.get(self.item1.get_absolute_url())
         self.assertEqual(response.status_code,200)
-        self.assertFalse(reverse('aristotle:item_history',args=[self.item1.id]) in response.content)
+        self.assertNotContains(response, reverse('aristotle:item_history',args=[self.item1.id]))
 
     def test_viewer_can_favourite(self):
         self.login_viewer()
@@ -816,7 +819,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         )
         self.assertEqual(self.viewer.profile.favourites.count(),1)
         self.assertEqual(self.viewer.profile.favourites.first().item,self.item1)
-        self.assertTrue("added to favourites" in response.content)
+        self.assertContains(response, "added to favourites")
 
         response = self.client.get(
             reverse('aristotle:toggleFavourite', args=[self.item1.id]),
@@ -827,7 +830,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
             [('http://testserver'+url_slugify_concept(self.item1),302)]
         )
         self.assertEqual(self.viewer.profile.favourites.count(),0)
-        self.assertTrue("removed from favourites" in response.content)
+        self.assertContains(response, "removed from favourites")
 
         response = self.client.get(reverse('aristotle:toggleFavourite', args=[self.item2.id]))
         self.assertEqual(response.status_code,403)
@@ -1032,11 +1035,11 @@ class ValueDomainViewPage(LoggedInViewConceptPages,TestCase):
         num_vals = getattr(self.item1,value_type+"Values").count()
         i=0
         for i,v in enumerate(getattr(self.item1,value_type+"Values").all()):
-            data.update({"form-%d-id"%i: v.pk, "form-%d-order"%i : v.order, "form-%d-value"%i : v.value, "form-%d-meaning"%i : v.meaning+" -updated"})
+            data.update({"form-%d-id"%i: v.pk, "form-%d-ORDER"%i : v.order, "form-%d-value"%i : v.value, "form-%d-meaning"%i : v.meaning+" -updated"})
         data.update({"form-%d-DELETE"%i: 'checked', "form-%d-meaning"%i : v.meaning+" - deleted"}) # delete the last one.
         # now add a new one
         i=i+1
-        data.update({"form-%d-order"%i : i, "form-%d-value"%i : 100, "form-%d-meaning"%i : "new value -updated"})
+        data.update({"form-%d-ORDER"%i : i, "form-%d-value"%i : 100, "form-%d-meaning"%i : "new value -updated"})
 
         data.update({
             "form-TOTAL_FORMS":num_vals+1, "form-INITIAL_FORMS": num_vals, "form-MAX_NUM_FORMS":1000,
@@ -1067,12 +1070,49 @@ class ValueDomainViewPage(LoggedInViewConceptPages,TestCase):
         self.assertFalse(perms.user_can_edit(self.editor,self.item1))
         self.loggedin_user_can_use_value_page(value_url,self.item1,403)
 
-
     def test_submitter_can_use_permissible_value_edit_page(self):
         self.submitter_user_can_use_value_edit_page('permissible')
 
     def test_submitter_can_use_supplementary_value_edit_page(self):
         self.submitter_user_can_use_value_edit_page('supplementary')
+
+
+    def test_submitter_user_doesnt_save_all_blank_permissible_value_edit_page(self):
+        self.submitter_user_doesnt_save_all_blank('permissible')
+
+    def test_submitter_user_doesnt_save_all_blank_supplementary_value_edit_page(self):
+        self.submitter_user_doesnt_save_all_blank('supplementary')
+
+    def submitter_user_doesnt_save_all_blank(self,value_type):
+        value_url = {
+            'permissible': 'aristotle:permsissible_values_edit',
+            'supplementary': 'aristotle:supplementary_values_edit'
+        }.get(value_type)
+        
+        self.login_editor()
+        self.loggedin_user_can_use_value_page(value_url,self.item1,200)
+
+        data = {}
+        num_vals = getattr(self.item1,value_type+"Values").count()
+
+        i=0
+        for i,v in enumerate(getattr(self.item1,value_type+"Values").all()):
+            data.update({"form-%d-id"%i: v.pk, "form-%d-ORDER"%i : v.order, "form-%d-value"%i : v.value, "form-%d-meaning"%i : v.meaning+" -updated"})
+
+        # now add two new values that are all blank
+        i=i+1
+        data.update({"form-%d-ORDER"%i : i, "form-%d-value"%i : '', "form-%d-meaning"%i : ""})
+        i=i+1
+        data.update({"form-%d-ORDER"%i : i, "form-%d-value"%i : '', "form-%d-meaning"%i : ""})
+
+        data.update({
+            "form-TOTAL_FORMS":num_vals+1, "form-INITIAL_FORMS": num_vals, "form-MAX_NUM_FORMS":1000,
+
+            })
+        response = self.client.post(reverse(value_url,args=[self.item1.id]),data)
+        self.item1 = models.ValueDomain.objects.get(pk=self.item1.pk)
+
+        self.assertTrue(num_vals == getattr(self.item1,value_type+"Values").count())
 
     def test_su_can_download_csv(self):
         self.login_superuser()
@@ -1212,8 +1252,8 @@ class DataElementConceptViewPage(LoggedInViewConceptPages,TestCase):
 
         response = self.client.get(check_url)
         self.assertTrue(response.status_code,200)
-        self.assertTrue(self.item1.objectClass.name in response.content)
-        self.assertTrue(self.item1.property.name in response.content)
+        self.assertContains(response, self.item1.objectClass.name)
+        self.assertContains(response, self.item1.property.name)
         
         ra = models.RegistrationAuthority.objects.create(name="new RA")
         item = self.item1.property
@@ -1238,9 +1278,9 @@ class DataElementConceptViewPage(LoggedInViewConceptPages,TestCase):
 
         response = self.client.get(check_url)
         self.assertTrue(response.status_code,200)
-        self.assertTrue(self.item1.objectClass.name in response.content)
-        self.assertTrue(self.item1.property.name in response.content)
-        self.assertTrue('fa-times' in response.content) # The property has a different status
+        self.assertContains(response, self.item1.objectClass.name)
+        self.assertContains(response, self.item1.property.name)
+        self.assertContains(response, 'fa-times') # The property has a different status
 
 
 class DataElementViewPage(LoggedInViewConceptPages,TestCase):

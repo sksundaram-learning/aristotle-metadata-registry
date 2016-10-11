@@ -255,11 +255,11 @@ class GenericAlterOneToManyView(GenericAlterManyToSomethingFormView):
 
     def get_context_data(self, **kwargs):
         context = super(GenericAlterOneToManyView, self).get_context_data(**kwargs)
-        context['form_add_another_text'] = self.form_submit_text or _('Add another')
-
+        context['form_add_another_text'] = self.form_add_another_text or _('Add another')
+        num_items = getattr(self.item, self.model_base_field).count()
         context['formset'] = self.formset or self.get_formset()(
             queryset=getattr(self.item, self.model_base_field).all(),
-            # initial=[{'order': num_values, 'value': '', 'meaning': ''}]
+            initial=[{'ORDER': num_items + 1}]
             )
         return context
 
@@ -267,16 +267,27 @@ class GenericAlterOneToManyView(GenericAlterManyToSomethingFormView):
         return None
 
     def get_formset(self):
-        kwargs = {}
-        if self.ordering_field:
-            kwargs['widgets'] = {self.ordering_field: forms.HiddenInput()}
+        _widgets = {}
+
+        for f in self.model_to_add._meta.fields:
+            foreign_model = self.model_to_add._meta.get_field(f.name).related_model
+            if foreign_model and issubclass(foreign_model, _concept):
+                _widgets.update({
+                    f.name: widgets.ConceptAutocompleteSelect(
+                        model=foreign_model
+                    )
+                })
+
+        from aristotle_mdr.contrib.generic.forms import HiddenOrderModelFormSet
         return modelformset_factory(
             self.model_to_add,
-            can_delete=True,  # dont need can_order is we have an order field
-            exclude=[self.model_to_add_field],
+            formset=HiddenOrderModelFormSet,
+            can_order=True,  # we assign this back to the ordering field
+            can_delete=True,
+            exclude=[self.model_to_add_field, self.ordering_field],
             # fields='__all__',
-            extra=0,
-            **kwargs
+            extra=1,
+            widgets=_widgets
             )
 
     def post(self, request, *args, **kwargs):
@@ -293,10 +304,15 @@ class GenericAlterOneToManyView(GenericAlterManyToSomethingFormView):
                 self.item.save()  # do this to ensure we are saving reversion records for the value domain, not just the values
                 formset.save(commit=False)
                 for form in formset.forms:
+                    all_blank = not any(form[f].value() for f in form.fields if f is not self.ordering_field)
+                    if all_blank:
+                        continue
                     if form['id'].value() not in [deleted_record['id'].value() for deleted_record in formset.deleted_forms]:
                         # Don't immediately save, we need to attach the parent object
                         value = form.save(commit=False)
                         setattr(value, self.model_to_add_field, self.item)
+                        if self.ordering_field:
+                            setattr(value, self.ordering_field, form.cleaned_data['ORDER'])
                         value.save()
                 for obj in formset.deleted_objects:
                     obj.delete()

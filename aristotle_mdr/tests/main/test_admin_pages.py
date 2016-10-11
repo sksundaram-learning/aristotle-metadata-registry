@@ -1,3 +1,4 @@
+from django.contrib.admin import helpers
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.forms import model_to_dict
@@ -75,6 +76,13 @@ class AdminPage(utils.LoggedInViewPages,TestCase):
         response = self.client.get(reverse("admin:aristotle_mdr_dataelementconcept_change",args=[dec.pk]))
         self.assertResponseStatusCodeEqual(response,200)
 
+    def test_su_can_view_users_list(self):
+        self.login_superuser()
+        response = self.client.get(
+            reverse('admin:%s_%s_changelist' % ('auth','user')),
+        )
+        self.assertContains(response,'Last login')
+
     def test_su_can_add_new_user(self):
         self.login_superuser()
         response = self.client.post(
@@ -86,7 +94,7 @@ class AdminPage(utils.LoggedInViewPages,TestCase):
                 'profile-0-steward_in': [self.wg1.id],
                 'profile-0-submitter_in': [self.wg1.id],
                 'profile-0-viewer_in': [self.wg1.id],
-                'profile-0-registrationauthority_manager_in': [self.ra.id],
+                'profile-0-organization_manager_in': [self.ra.id],
                 'profile-0-registrar_in': [self.ra.id],
 
             }
@@ -103,10 +111,12 @@ class AdminPage(utils.LoggedInViewPages,TestCase):
                     new_user.viewer_in]:
             self.assertEqual(rel.count(),1)
             self.assertEqual(rel.first(),self.wg1)
-        for rel in [new_user.registrationauthority_manager_in,
-                    new_user.registrar_in,]:
-            self.assertEqual(rel.count(),1)
-            self.assertEqual(rel.first(),self.ra)
+
+        self.assertEqual(new_user.organization_manager_in.count(),1)
+        self.assertEqual(new_user.organization_manager_in.first(),self.ra.organization_ptr)
+
+        self.assertEqual(new_user.registrar_in.count(),1)
+        self.assertEqual(new_user.registrar_in.first(),self.ra)
 
         response = self.client.post(
             reverse("admin:auth_user_add"),
@@ -124,7 +134,7 @@ class AdminPage(utils.LoggedInViewPages,TestCase):
                     new_user.submitter_in,
                     new_user.viewer_in]:
             self.assertEqual(rel.count(),0)
-        for rel in [new_user.registrationauthority_manager_in,
+        for rel in [new_user.organization_manager_in,
                     new_user.registrar_in,]:
             self.assertEqual(rel.count(),0)
 
@@ -471,3 +481,58 @@ class DataElementDerivationAdminPage(AdminPageForConcept,TestCase):
         self.derived_de = models.DataElement.objects.get(pk=self.derived_de.pk)
         self.assertTrue(self.derived_de.is_public())
         self.create_items()
+
+
+class OrganizationAdminPage(utils.LoggedInViewPages, TestCase):
+    def test_registrar_cannot_promote_org_to_ra(self):
+        self.login_registrar()
+
+        org = models.Organization.objects.create(name="My org", definition="My new org")
+        ra_count = models.RegistrationAuthority.objects.count()
+
+        response = self.client.post(
+            reverse('admin:%s_%s_changelist' % ('aristotle_mdr','organization')),
+            {
+                'action': "promote_to_ra",
+                helpers.ACTION_CHECKBOX_NAME: [org.pk],
+                "post":"yes"
+            }
+        )
+        self.assertEqual(response.status_code, 302) # Redirects to admin login
+        self.assertTrue(ra_count == models.RegistrationAuthority.objects.count())
+
+    def test_admin_user_can_promote_org_to_ra(self):
+        self.login_superuser()
+        org = models.Organization.objects.create(name="My org", definition="My new org")
+        ra_count = models.RegistrationAuthority.objects.count()
+        org_count = models.Organization.objects.count()
+        
+        response = self.client.post(
+            reverse('admin:%s_%s_changelist' % ('aristotle_mdr','organization')),
+            {
+                'action': "promote_to_ra",
+                helpers.ACTION_CHECKBOX_NAME: [org.pk],
+            }
+        )
+        msg = "Are you sure you want to promote the selected organizations to Registration Authorities"
+
+        self.assertTrue(msg in response.content)
+        self.assertTrue(ra_count == models.RegistrationAuthority.objects.count())
+        self.assertTrue(org_count == models.Organization.objects.count())
+
+        response = self.client.post(
+            reverse('admin:%s_%s_changelist' % ('aristotle_mdr','organization')),
+            {
+                'action': "promote_to_ra",
+                helpers.ACTION_CHECKBOX_NAME: [org.pk],
+                "post":"yes"
+            }, follow=True
+        )
+
+        # We should have another registration authority
+        self.assertEqual(ra_count + 1, models.RegistrationAuthority.objects.count())
+        # BUT we should NOT have another organisation
+        self.assertTrue(org_count == models.Organization.objects.count())
+
+        msg = "Successfully promoted 1 organization."
+        self.assertTrue(msg in response.content)
