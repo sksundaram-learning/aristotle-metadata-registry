@@ -51,6 +51,38 @@ class LoggedInViewConceptBrowsePages(utils.LoggedInViewPages):
         self.assertTrue(self.item4.name in response.content)
         self.assertTrue(self.item2.name not in response.content)
 
+    def test_editor_can_view_browse_with_filters(self):
+        self.login_editor()
+        response = self.client.get(
+            reverse("browse_concepts",args=[self.itemType._meta.app_label,self.itemType._meta.model_name]),
+            {'f':'name__icontains:3'}
+            )
+        self.assertEqual(response.status_code,200)
+        self.assertTrue(self.item1.name not in response.content)
+        self.assertTrue(self.item2.name not in response.content)
+        self.assertTrue(self.item3.name in response.content)
+        self.assertTrue(self.item4.name in response.content)
+
+        response = self.client.get(
+            reverse("browse_concepts",args=[self.itemType._meta.app_label,self.itemType._meta.model_name]),
+            {'f':'a_fake_query_that_fails:3'}
+            )
+        self.assertEqual(response.status_code,200)
+        self.assertTrue(self.item1.name in response.content)
+        self.assertTrue(self.item2.name not in response.content)
+        self.assertTrue(self.item3.name in response.content)
+        self.assertTrue(self.item4.name in response.content)
+
+        response = self.client.get(
+            reverse("browse_concepts",args=[self.itemType._meta.app_label,self.itemType._meta.model_name]),
+            {'f':'another_fake_query_that_fails'}
+            )
+        self.assertEqual(response.status_code,200)
+        self.assertTrue(self.item1.name in response.content)
+        self.assertTrue(self.item2.name not in response.content)
+        self.assertTrue(self.item3.name in response.content)
+        self.assertTrue(self.item4.name in response.content)
+
 class ObjectClassViewPage(LoggedInViewConceptBrowsePages,TestCase):
     url_name='objectClass'
     itemType=models.ObjectClass

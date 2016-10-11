@@ -73,6 +73,13 @@ class BrowseConcepts(AppBrowser):
 
     def get_queryset(self, *args, **kwargs):
         queryset = super(BrowseConcepts, self).get_queryset(*args, **kwargs)
+        # if self.request.GET.getlist('f'):
+        for f in self.request.GET.getlist('f'):
+            try:
+                k,v = f.split(':', 1)
+                queryset = queryset.filter(**{k:v})
+            except:
+                pass
         return queryset.visible(self.request.user)
 
     def get_context_data(self, **kwargs):
