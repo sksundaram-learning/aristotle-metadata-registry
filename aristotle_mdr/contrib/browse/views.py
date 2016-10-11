@@ -76,8 +76,8 @@ class BrowseConcepts(AppBrowser):
         # if self.request.GET.getlist('f'):
         for f in self.request.GET.getlist('f'):
             try:
-                k,v = f.split(':', 1)
-                queryset = queryset.filter(**{k:v})
+                k, v = f.split(':', 1)
+                queryset = queryset.filter(**{k: v})
             except:
                 pass
         return queryset.visible(self.request.user)
