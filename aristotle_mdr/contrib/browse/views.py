@@ -1,6 +1,8 @@
 from django.apps import apps
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import FieldError
+from django.db.models import Q
 from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import ListView, TemplateView
@@ -73,6 +75,49 @@ class BrowseConcepts(AppBrowser):
 
     def get_queryset(self, *args, **kwargs):
         queryset = super(BrowseConcepts, self).get_queryset(*args, **kwargs)
+
+        # Regular queryset filter
+        for f in self.request.GET.getlist('f'):
+            try:
+                k, v = f.split(':', 1)
+                queryset = queryset.filter(**{k: v})
+            except:
+                pass
+
+        # Regular queryset filters
+        filters = {}
+        for f in self.request.GET.getlist('f'):
+            if ':' in f:
+                k, v = f.split(':', 1)
+                filter_vals = filters.get(k, [])
+                filter_vals.append(v)
+                filters[k] = filter_vals
+
+        for query, values in filters.items():
+            try:
+                k = "%s__in" % k
+                queryset = queryset.filter(**{k: values})
+            except FieldError:
+                pass
+
+        # slot filters
+        slots = {}
+        for sf in self.request.GET.getlist('sf'):
+            if ':' in sf:
+                k, v = sf.split(':', 1)
+                slot_vals = slots.get(k, [])
+                slot_vals.append(v)
+                slots[k] = slot_vals
+
+        for slot_name, values in slots.items():
+            try:
+                queryset = queryset.filter(
+                    slots__type__slot_name=k,
+                    slots__value__in=values,
+                )
+            except FieldError:
+                pass
+
         return queryset.visible(self.request.user)
 
     def get_context_data(self, **kwargs):
