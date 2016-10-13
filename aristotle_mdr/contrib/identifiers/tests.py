@@ -12,6 +12,31 @@ setup_test_environment()
 
 
 class TestIdentifiers(utils.LoggedInViewPages, TestCase):
+    def test_identifier_displays(self):
+        jl = MDR.Organization.objects.create(
+            name="Justice League of America",
+            definition="Fighting for Truth Justice and Liberty"
+        )
+        ns_jla = ID.Namespace.objects.create(
+            naming_authority=jl,
+            shorthand_prefix='jla',
+        )
+        meta = MDR.ObjectClass.objects.create(
+            name="Metahuman",
+            definition=(
+                "A human-like being with extranormal powers and abilities,"
+                "be they technological, alien, mutant, or magical in nature."
+            ),
+            references="https://en.wikipedia.org/wiki/Metahuman"
+        )
+        meta_jl_id = ID.ScopedIdentifier.objects.create(
+            concept=meta.concept, identifier="metahumans", namespace=ns_jla
+        )
+        self.assertEqual(
+            str(meta_jl_id),
+            "{0}:{1}:{2}".format(jl.name, meta_jl_id.identifier, meta_jl_id.version)
+        )
+
     def test_identifier_redirects(self):
         jl = MDR.Organization.objects.create(
             name="Justice League of America",
