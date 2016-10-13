@@ -40,4 +40,4 @@ class ScopedIdentifier(TimeStampedModel):
         unique_together = ("namespace", "identifier", "version")
 
     def __unicode__(self):
-        return u"{0}:{1}:{2}".format(self.namespace.name, self.identifier, self.version)
+        return u"{0}:{1}:{2}".format(self.namespace.naming_authority.name, self.identifier, self.version)
