@@ -25,7 +25,7 @@ class Migration(migrations.Migration):
                 ('created', model_utils.fields.AutoCreatedField(default=django.utils.timezone.now, verbose_name='created', editable=False)),
                 ('modified', model_utils.fields.AutoLastModifiedField(default=django.utils.timezone.now, verbose_name='modified', editable=False)),
                 ('name', models.TextField(help_text='The primary name used for human identification purposes.')),
-                ('description', ckeditor.fields.RichTextField(help_text='Representation of a concept by a descriptive statement which serves to differentiate it from related concepts', verbose_name='definition')),
+                ('definition', ckeditor.fields.RichTextField(help_text='Representation of a concept by a descriptive statement which serves to differentiate it from related concepts', verbose_name='definition')),
                 ('readyToReview', models.BooleanField(default=False)),
                 ('_is_public', models.BooleanField(default=False)),
                 ('_is_locked', models.BooleanField(default=False)),
@@ -490,11 +490,6 @@ class Migration(migrations.Migration):
         migrations.RemoveField(
             model_name='status',
             name='inDictionary',
-        ),
-        migrations.RenameField(
-            model_name='_concept',
-            old_name='description',
-            new_name='definition',
         ),
         migrations.RenameField(
             model_name='Measure',
