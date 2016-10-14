@@ -160,14 +160,7 @@ class Migration(migrations.Migration):
                 'ordering': ['-modified'],
             },
         ),
-        migrations.CreateModel(
-            name='GlossaryAdditionalDefinition',
-            fields=[
-                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('description', models.TextField()),
-                ('glossaryItem', models.ForeignKey(related_name='alternate_definitions', to='aristotle_mdr.GlossaryItem')),
-            ],
-        ),
+
         migrations.CreateModel(
             name='Measure',
             fields=[
@@ -423,15 +416,7 @@ class Migration(migrations.Migration):
             name='value_meaning',
             field=models.ForeignKey(blank=True, to='aristotle_mdr.ValueMeaning', null=True),
         ),
-        migrations.AddField(
-            model_name='glossaryadditionaldefinition',
-            name='registrationAuthority',
-            field=models.ForeignKey(to='aristotle_mdr.RegistrationAuthority'),
-        ),
-        migrations.AlterUniqueTogether(
-            name='glossaryadditionaldefinition',
-            unique_together=set([('glossaryItem', 'registrationAuthority')]),
-        ),
+
         migrations.AddField(
             model_name='discussionpost',
             name='relatedItems',
@@ -482,21 +467,7 @@ class Migration(migrations.Migration):
             name='workgroup',
             field=models.ForeignKey(related_name='items', blank=True, to='aristotle_mdr.Workgroup', null=True),
         ),
-        migrations.AlterUniqueTogether(
-            name='glossaryadditionaldefinition',
-            unique_together=set([]),
-        ),
-        migrations.RemoveField(
-            model_name='glossaryadditionaldefinition',
-            name='glossaryItem',
-        ),
-        migrations.RemoveField(
-            model_name='glossaryadditionaldefinition',
-            name='registrationAuthority',
-        ),
-        migrations.DeleteModel(
-            name='GlossaryAdditionalDefinition',
-        ),
+
         migrations.AddField(
             model_name='status',
             name='until_date',
