@@ -1359,3 +1359,18 @@ class RegistrationAuthorityViewPage(LoggedInViewUnmanagedPages,TestCase):
         self.logout()
         response = self.client.get(reverse('aristotle:allRegistrationAuthorities'))
         self.assertTrue(response.status_code,200)
+
+class OrganizationViewPage(LoggedInViewUnmanagedPages,TestCase):
+    url_name='organization'
+    itemType=models.Organization
+
+    def setUp(self):
+        super(OrganizationViewPage, self).setUp()
+
+    def get_page(self,item):
+        return item.get_absolute_url()
+
+    def test_view_all_orgs(self):
+        self.logout()
+        response = self.client.get(reverse('aristotle:all_organizations'))
+        self.assertTrue(response.status_code,200)

@@ -178,6 +178,7 @@ class Organization(registryGroup):
     a unique framework of authority within which individuals (3.2.65) act, or are designated to act,
     towards some purpose.
     """
+    template = "aristotle_mdr/organization/organization.html"
     uri = models.URLField(  # 6.3.6.2.5
         blank=True, null=True,
         help_text="uri for Organization"
@@ -199,7 +200,7 @@ class RegistrationAuthority(Organization):
     A registration authority may register many administered items (3.2.2) as shown by the Registration
     (8.1.5.1) association class.
     """
-    template = "aristotle_mdr/registrationAuthority.html"
+    template = "aristotle_mdr/organization/registrationAuthority.html"
     locked_state = models.IntegerField(
         choices=STATES,
         default=STATES.candidate

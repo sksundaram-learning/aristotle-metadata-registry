@@ -203,18 +203,28 @@ def toggleFavourite(request, iid):
 
 
 def registrationauthority(request, iid, *args, **kwargs):
-    objtype = MDR.RegistrationAuthority
     if iid is None:
-        app_name = objtype._meta.app_label
-        return redirect(reverse("%s:about" % app_name, args=["".join(objtype._meta.verbose_name.lower().split())]))
-    item = get_object_or_404(objtype, pk=iid).item
+        return redirect(reverse("aristotle_mdr:allRegistrationAuthorities"))
+    item = get_object_or_404(MDR.RegistrationAuthority, pk=iid).item
+
+    return render(request, item.template, {'item': item.item})
+
+def organization(request, iid, *args, **kwargs):
+    if iid is None:
+        return redirect(reverse("aristotle_mdr:all_organizations"))
+    item = get_object_or_404(MDR.Organization, pk=iid).item
 
     return render(request, item.template, {'item': item.item})
 
 
 def allRegistrationAuthorities(request):
     ras = MDR.RegistrationAuthority.objects.order_by('name')
-    return render(request, "aristotle_mdr/allRegistrationAuthorities.html", {'registrationAuthorities': ras})
+    return render(request, "aristotle_mdr/organization/allRegistrationAuthorities.html", {'registrationAuthorities': ras})
+
+
+def all_organizations(request):
+    orgs = MDR.Organization.objects.order_by('name')
+    return render(request, "aristotle_mdr/organization/all_organizations.html", {'organization': orgs})
 
 
 # Actions
