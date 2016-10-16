@@ -209,6 +209,7 @@ def registrationauthority(request, iid, *args, **kwargs):
 
     return render(request, item.template, {'item': item.item})
 
+
 def organization(request, iid, *args, **kwargs):
     if iid is None:
         return redirect(reverse("aristotle_mdr:all_organizations"))
