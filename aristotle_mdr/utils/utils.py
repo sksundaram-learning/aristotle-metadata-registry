@@ -67,6 +67,13 @@ def url_slugify_registration_authoritity(ra):
     )
 
 
+def url_slugify_organization(org):
+    return reverse(
+        "aristotle:organization",
+        kwargs={'iid': org.pk, 'name_slug': slugify(org.name)[:50]}
+    )
+
+
 def construct_change_message(request, form, formsets):
     """
     Construct a change message from a changed object.

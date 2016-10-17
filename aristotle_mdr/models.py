@@ -24,7 +24,12 @@ import datetime
 from ckeditor_uploader.fields import RichTextUploadingField as RichTextField
 from aristotle_mdr import perms
 from aristotle_mdr import messages
-from aristotle_mdr.utils import url_slugify_concept, url_slugify_workgroup, url_slugify_registration_authoritity
+from aristotle_mdr.utils import (
+    url_slugify_concept,
+    url_slugify_workgroup,
+    url_slugify_registration_authoritity,
+    url_slugify_organization
+)
 from aristotle_mdr import comparators
 
 from model_utils.fields import AutoLastModifiedField
@@ -188,6 +193,9 @@ class Organization(registryGroup):
         ra = RegistrationAuthority(organization_ptr=self)
         ra.save()
         return ra
+
+    def get_absolute_url(self):
+        return url_slugify_organization(self)
 
 
 class RegistrationAuthority(Organization):
