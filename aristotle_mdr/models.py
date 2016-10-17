@@ -24,7 +24,12 @@ import datetime
 from ckeditor_uploader.fields import RichTextUploadingField as RichTextField
 from aristotle_mdr import perms
 from aristotle_mdr import messages
-from aristotle_mdr.utils import url_slugify_concept, url_slugify_workgroup, url_slugify_registration_authoritity
+from aristotle_mdr.utils import (
+    url_slugify_concept,
+    url_slugify_workgroup,
+    url_slugify_registration_authoritity,
+    url_slugify_organization
+)
 from aristotle_mdr import comparators
 
 from model_utils.fields import AutoLastModifiedField
@@ -178,6 +183,7 @@ class Organization(registryGroup):
     a unique framework of authority within which individuals (3.2.65) act, or are designated to act,
     towards some purpose.
     """
+    template = "aristotle_mdr/organization/organization.html"
     uri = models.URLField(  # 6.3.6.2.5
         blank=True, null=True,
         help_text="uri for Organization"
@@ -187,6 +193,9 @@ class Organization(registryGroup):
         ra = RegistrationAuthority(organization_ptr=self)
         ra.save()
         return ra
+
+    def get_absolute_url(self):
+        return url_slugify_organization(self)
 
 
 class RegistrationAuthority(Organization):
@@ -199,7 +208,7 @@ class RegistrationAuthority(Organization):
     A registration authority may register many administered items (3.2.2) as shown by the Registration
     (8.1.5.1) association class.
     """
-    template = "aristotle_mdr/registrationAuthority.html"
+    template = "aristotle_mdr/organization/registrationAuthority.html"
     locked_state = models.IntegerField(
         choices=STATES,
         default=STATES.candidate

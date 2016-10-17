@@ -2,10 +2,10 @@
 import os
 # from aristotle_mdr.contrib.channels.settings import CHANNEL_LAYERS, HAYSTACK_SIGNAL_PROCESSOR
 
-BASE_DIR = os.getenv('aristotlemdr:BASE_DIR', os.path.dirname(os.path.dirname(__file__)))
-SECRET_KEY = os.getenv('aristotlemdr:SECRET_KEY', "OVERRIDE_THIS_IN_PRODUCTION")
-STATIC_ROOT = os.getenv('aristotlemdr:STATIC_ROOT', os.path.join(BASE_DIR, "static"))
-MEDIA_ROOT = os.getenv('aristotlemdr:MEDIA_ROOT', os.path.join(BASE_DIR, "media"))
+BASE_DIR = os.getenv('aristotlemdr__BASE_DIR', os.path.dirname(os.path.dirname(__file__)))
+SECRET_KEY = os.getenv('aristotlemdr__SECRET_KEY', "OVERRIDE_THIS_IN_PRODUCTION")
+STATIC_ROOT = os.getenv('aristotlemdr__STATIC_ROOT', os.path.join(BASE_DIR, "static"))
+MEDIA_ROOT = os.getenv('aristotlemdr__MEDIA_ROOT', os.path.join(BASE_DIR, "media"))
 
 TEMPLATE_DIRS = [os.path.join(BASE_DIR, 'templates')]
 FIXTURES_DIRS = [os.path.join(BASE_DIR, 'fixtures')]
