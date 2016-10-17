@@ -204,7 +204,7 @@ def toggleFavourite(request, iid):
 
 def registrationauthority(request, iid, *args, **kwargs):
     if iid is None:
-        return redirect(reverse("aristotle_mdr:allRegistrationAuthorities"))
+        return redirect(reverse("aristotle_mdr:all_registration_authorities"))
     item = get_object_or_404(MDR.RegistrationAuthority, pk=iid).item
 
     return render(request, item.template, {'item': item.item})
@@ -218,9 +218,9 @@ def organization(request, iid, *args, **kwargs):
     return render(request, item.template, {'item': item.item})
 
 
-def allRegistrationAuthorities(request):
+def all_registration_authorities(request):
     ras = MDR.RegistrationAuthority.objects.order_by('name')
-    return render(request, "aristotle_mdr/organization/allRegistrationAuthorities.html", {'registrationAuthorities': ras})
+    return render(request, "aristotle_mdr/organization/all_registration_authorities.html", {'registrationAuthorities': ras})
 
 
 def all_organizations(request):

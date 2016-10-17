@@ -1357,7 +1357,7 @@ class RegistrationAuthorityViewPage(LoggedInViewUnmanagedPages,TestCase):
 
     def test_view_all_ras(self):
         self.logout()
-        response = self.client.get(reverse('aristotle:allRegistrationAuthorities'))
+        response = self.client.get(reverse('aristotle:all_registration_authorities'))
         self.assertTrue(response.status_code,200)
 
 class OrganizationViewPage(LoggedInViewUnmanagedPages,TestCase):

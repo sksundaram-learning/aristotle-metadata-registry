@@ -125,7 +125,7 @@ urlpatterns = patterns(
     url(r'^organization/registrationauthority/(?P<iid>\d+)?(?:\/(?P<name_slug>.+))?/?$', views.registrationauthority, name='registrationAuthority'),
     url(r'^organization/(?P<iid>\d+)?(?:\/(?P<name_slug>.+))?/?$', views.organization, name='organization'),
     url(r'^organizations/?$', views.all_organizations, name='all_organizations'),
-    url(r'^registrationauthorities/?$', views.allRegistrationAuthorities, name='allRegistrationAuthorities'),
+    url(r'^registrationauthorities/?$', views.all_registration_authorities, name='all_registration_authorities'),
     url(r'^account/toggleFavourite/(?P<iid>\d+)/?$', views.toggleFavourite, name='toggleFavourite'),
 
     url(r'^extensions/?$', views.extensions, name='extensions'),
