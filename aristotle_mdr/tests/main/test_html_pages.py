@@ -7,7 +7,10 @@ from django.utils import timezone
 import aristotle_mdr.models as models
 import aristotle_mdr.perms as perms
 from aristotle_mdr.utils import url_slugify_concept
-from aristotle_mdr.forms.creation_wizards import WorkgroupVerificationMixin,CheckIfModifiedMixin
+from aristotle_mdr.forms.creation_wizards import (
+    WorkgroupVerificationMixin,
+    CheckIfModifiedMixin
+)
 
 setup_test_environment()
 from aristotle_mdr.tests import utils
@@ -262,7 +265,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
 
         self.assertEqual(response.status_code,200)
         self.assertEqual(self.item1.slots.count(),0)
-        
+
         self.assertContains(response, "The selected slot type &#39;%(slot_name)s&#39; is only allowed to be included once" % {'slot_name': slot_def.slot_name})
 
     def test_submitter_cannot_save_via_edit_page_with_slots_that_are_for_a_different_metadata_type(self):
@@ -285,7 +288,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
 
         self.assertEqual(self.item1.slots.count(),0)
         self.assertNotContains(response, slot_def.slot_name)
-        
+
         updated_item = utils.model_to_dict_with_change_time(response.context['item'])
         updated_name = updated_item['name'] + " updated!"
         updated_item['name'] = updated_name
@@ -305,7 +308,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
 
         self.assertEqual(response.status_code,200)
         self.assertEqual(self.item1.slots.count(),0)
-        
+
         self.assertContains(response, "Select a valid choice. That choice is not one of the available choices")
 
     def test_submitter_cannot_save_via_edit_page_if_other_saves_made(self):
@@ -531,7 +534,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         most_recent = self.itemType.objects.order_by('-created').first()
         self.assertRedirects(response,url_slugify_concept(most_recent))
         self.assertEqual(most_recent.name,updated_name)
-        
+
         # Make sure the right item was save and our original hasn't been altered.
         self.item1 = self.itemType.objects.get(id=self.item1.id) # Stupid cache
         self.assertTrue('cloned' not in self.item1.name)
@@ -578,7 +581,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.item2 = self.itemType.objects.create(name="supersede this",workgroup=self.wg1)
         self.item1.superseded_by = self.item2
         self.item1.save()
-        
+
         self.assertTrue(self.item1 in self.item2.supersedes.all().select_subclasses())
         response = self.client.post(
             reverse('aristotle:supersede',args=[self.item1.id]),{'newerItem':""})
@@ -647,7 +650,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
 
         #from reversion import revisions as reversion
         import reversion
-        
+
         with reversion.revisions.create_revision():
             self.item1.name = "change 1"
             reversion.set_comment("change 1")
@@ -677,11 +680,11 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
             'version_id2' : revisions.last().pk
             }
         )
-        
+
         self.assertEqual(response.status_code,200)
         self.assertContains(response, "change 2")
         self.assertContains(response, 'statuses')
-        
+
         self.item1 = self.itemType.objects.get(pk=self.item1.pk) #decache
         self.assertTrue(self.item1.name == "change 2")
         for s in self.item1.statuses.all():
@@ -692,7 +695,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
 
     def test_editor_can_revert_item_and_status_goes_back_too(self):
         self.login_editor()
-        
+
         # REVISION 0
         import reversion
         #from reversion import revisions as reversion
@@ -700,11 +703,11 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
             self.item1.readyToReview = True
             self.item1.save()
         original_name = self.item1.name
-        
+
         # REVISION 1
         response = self.client.get(reverse('aristotle:edit_item',args=[self.item1.id]))
         self.assertEqual(response.status_code,200)
-        
+
         updated_item = utils.model_to_dict_with_change_time(response.context['item'])
         updated_name = updated_item['name'] + " updated!"
         updated_item['name'] = updated_name
@@ -770,10 +773,10 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.assertTrue(self.item1.statuses.count() == 0)
         self.assertEqual(self.item1.name,original_name)
 
-        
+
         versions[4].revision.revert(delete=True) # Back to the latest version
         self.item1 = self.itemType.objects.get(pk=self.item1.pk) #decache
-        
+
         self.assertTrue(self.item1.statuses.count() == 2)
         self.assertTrue(self.item1.statuses.order_by('state')[0].state == models.STATES.incomplete)
         self.assertTrue(self.item1.statuses.order_by('state')[1].state == models.STATES.candidate)
@@ -1025,7 +1028,7 @@ class ValueDomainViewPage(LoggedInViewConceptPages,TestCase):
             'permissible': 'aristotle:permsissible_values_edit',
             'supplementary': 'aristotle:supplementary_values_edit'
         }.get(value_type)
-        
+
         self.login_editor()
         self.loggedin_user_can_use_value_page(value_url,self.item1,200)
         self.loggedin_user_can_use_value_page(value_url,self.item2,403)
@@ -1151,7 +1154,7 @@ class DataElementConceptViewPage(LoggedInViewConceptPages,TestCase):
     url_name='dataElementConcept'
     itemType=models.DataElementConcept
     run_cascade_tests = True
-    
+
     def setUp(self, *args, **kwargs):
         super(DataElementConceptViewPage, self).setUp(*args, **kwargs)
         self.oc = models.ObjectClass.objects.create(
@@ -1183,7 +1186,7 @@ class DataElementConceptViewPage(LoggedInViewConceptPages,TestCase):
         self.assertTrue(response.status_code,403)
         self.item1 = self.item1.__class__.objects.get(pk=self.item1.pk)
         self.assertTrue(self.item1.objectClass is not None)
-    
+
         self.login_editor()
         response = self.client.get(check_url)
         self.assertTrue(response.status_code,200)
@@ -1253,7 +1256,7 @@ class DataElementConceptViewPage(LoggedInViewConceptPages,TestCase):
         self.assertTrue(response.status_code,200)
         self.assertContains(response, self.item1.objectClass.name)
         self.assertContains(response, self.item1.property.name)
-        
+
         ra = models.RegistrationAuthority.objects.create(name="new RA")
         item = self.item1.property
         s = models.Status.objects.create(
@@ -1357,7 +1360,7 @@ class RegistrationAuthorityViewPage(LoggedInViewUnmanagedPages,TestCase):
 
     def test_view_all_ras(self):
         self.logout()
-        response = self.client.get(reverse('aristotle:allRegistrationAuthorities'))
+        response = self.client.get(reverse('aristotle:all_registration_authorities'))
         self.assertTrue(response.status_code,200)
 
 class OrganizationViewPage(LoggedInViewUnmanagedPages,TestCase):
