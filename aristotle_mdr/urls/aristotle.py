@@ -2,13 +2,15 @@ from django.conf.urls import patterns, url
 from django.views.generic import TemplateView
 from django.views.generic.base import RedirectView
 
-from haystack.query import SearchQuerySet
 from haystack.views import search_view_factory
 
 import aristotle_mdr.views as views
 import aristotle_mdr.forms as forms
 import aristotle_mdr.models as models
-from aristotle_mdr.contrib.generic.views import GenericAlterOneToManyView, generic_foreign_key_factory_view
+from aristotle_mdr.contrib.generic.views import (
+    GenericAlterOneToManyView,
+    generic_foreign_key_factory_view
+)
 from django.utils.translation import ugettext_lazy as _
 
 
@@ -125,7 +127,7 @@ urlpatterns = patterns(
     url(r'^organization/registrationauthority/(?P<iid>\d+)?(?:\/(?P<name_slug>.+))?/?$', views.registrationauthority, name='registrationAuthority'),
     url(r'^organization/(?P<iid>\d+)?(?:\/(?P<name_slug>.+))?/?$', views.organization, name='organization'),
     url(r'^organizations/?$', views.all_organizations, name='all_organizations'),
-    url(r'^registrationauthorities/?$', views.allRegistrationAuthorities, name='allRegistrationAuthorities'),
+    url(r'^registrationauthorities/?$', views.all_registration_authorities, name='all_registration_authorities'),
     url(r'^account/toggleFavourite/(?P<iid>\d+)/?$', views.toggleFavourite, name='toggleFavourite'),
 
     url(r'^extensions/?$', views.extensions, name='extensions'),
