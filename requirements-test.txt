@@ -2,5 +2,3 @@ django_tools
 coveralls
 Sphinx
 sphinx-rtd-theme
-
--e git+git://github.com/LegoStormtroopr/django-haystack-channels#egg=django-haystack-channels
