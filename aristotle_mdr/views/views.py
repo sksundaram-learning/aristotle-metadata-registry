@@ -226,7 +226,7 @@ def organization(request, iid, *args, **kwargs):
 
 def all_registration_authorities(request):
     ras = MDR.RegistrationAuthority.objects.order_by('name')
-    return render(request, "aristotle_mdr/organization/allRegistrationAuthorities.html", {'registrationAuthorities': ras})
+    return render(request, "aristotle_mdr/organization/all_registration_authorities.html", {'registrationAuthorities': ras})
 
 
 def all_organizations(request):
