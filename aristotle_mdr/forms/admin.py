@@ -1,14 +1,13 @@
-﻿import autocomplete_light
-
 from django import forms
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.utils.translation import ugettext_lazy as _
 
 import aristotle_mdr.models as MDR
 import aristotle_mdr.widgets as widgets
+from aristotle_mdr.contrib.autocomplete.widgets import ConceptAutocompleteSelectMultiple
 from aristotle_mdr.perms import user_can_edit
 from aristotle_mdr.utils import concept_to_clone_dict
-from aristotle_mdr.forms.creation_wizards import WorkgroupVerificationMixin, UserAwareForm
+from aristotle_mdr.forms.creation_wizards import WorkgroupVerificationMixin, ConceptForm
 
 
 def MembershipField(model, name):
@@ -25,7 +24,7 @@ class AristotleProfileForm(forms.ModelForm):
     viewer_in = MembershipField(MDR.Workgroup, _('workgroups'))
     workgroup_manager_in = MembershipField(MDR.Workgroup, _('workgroups'))
 
-    registrationauthority_manager_in = MembershipField(MDR.RegistrationAuthority, 'registration authorities')
+    organization_manager_in = MembershipField(MDR.Organization, 'organizations')
     registrar_in = MembershipField(MDR.RegistrationAuthority, _('registration authorities'))
 
     def __init__(self, *args, **kwargs):
@@ -36,7 +35,7 @@ class AristotleProfileForm(forms.ModelForm):
         # if self.instance and self.instance.user.count() == 1: # and self.instance.user.exists():
         try:
             self.fields['registrar_in'].initial = self.instance.user.registrar_in.all()
-            self.fields['registrationauthority_manager_in'].initial = self.instance.user.registrationauthority_manager_in.all()
+            self.fields['organization_manager_in'].initial = self.instance.user.organization_manager_in.all()
 
             self.fields['workgroup_manager_in'].initial = self.instance.user.workgroup_manager_in.all()
             self.fields['steward_in'].initial = self.instance.user.steward_in.all()
@@ -55,13 +54,13 @@ class AristotleProfileForm(forms.ModelForm):
         if "viewer_in" in self.cleaned_data.keys():
             user.viewer_in = self.cleaned_data['viewer_in']
 
-        if "registrationauthority_manager_in" in self.cleaned_data.keys():
-            user.registrationauthority_manager_in = self.cleaned_data['registrationauthority_manager_in']
+        if "organization_manager_in" in self.cleaned_data.keys():
+            user.organization_manager_in = self.cleaned_data['organization_manager_in']
         if "registrar_in" in self.cleaned_data.keys():
             user.registrar_in = self.cleaned_data['registrar_in']
 
 
-class AdminConceptForm(autocomplete_light.ModelForm, UserAwareForm, WorkgroupVerificationMixin):
+class AdminConceptForm(ConceptForm, WorkgroupVerificationMixin):
     # Thanks: http://stackoverflow.com/questions/6034047/one-to-many-inline-select-with-django-admin
     # Although concept is an abstract class, we still need this to have a reverse one-to-many edit field.
     class Meta:
@@ -87,11 +86,8 @@ class AdminConceptForm(autocomplete_light.ModelForm, UserAwareForm, WorkgroupVer
                 required=False,
                 label="Supersedes",
                 queryset=self.itemtype.objects.all(),
+                widget=ConceptAutocompleteSelectMultiple(model=self._meta.model)
             )
-            if self.instance.get_autocomplete_name() in autocomplete_light.registry.keys():
-                # if there is an autocomplete for this item, then replace it
-                # TODO: when autocomplete respects queryset these can be done automatically
-                self.fields['deprecated'].widget = autocomplete_light.MultipleChoiceWidget(self.instance.get_autocomplete_name())
             self.fields['deprecated'].initial = self.instance.supersedes.all()
 
         if name_suggest_fields:

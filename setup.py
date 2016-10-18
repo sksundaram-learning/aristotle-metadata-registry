@@ -40,26 +40,27 @@ setup(
         "Django>=1.8,<1.9",
         'pytz',
         'pyyaml',
+        'lesscpy',
 
         'django-model-utils==2.3.1',
         'django-notifications-hq>=1.0', #At least 0.8 for live notifications.
         'docutils',
 
         #Search requirements
-        'django-haystack==2.4.1',
+        'django-haystack>=2.5.0,<=2.6.0',
         'Whoosh',
 
         #Rich text editors
         'django-ckeditor>=5.0.0',
 
         # Revision control
-        "django-reversion==1.10.1",
-        'django-reversion-compare>=0.6.1,<0.7',
+        "django-reversion>=2.0,<2.1",
+        'django-reversion-compare>=0.7,<0.8',
         'diff-match-patch',
 
         # Fancy UI stuff
         'django-static-precompiler',
-        'django-autocomplete-light==2.3.3',
+        'django-autocomplete-light>=3.0.0',
         'django-bootstrap3',
         'django-bootstrap3-datetimepicker',
 
@@ -72,6 +73,10 @@ setup(
 
         # required for help, but thats required
         'django-autoslug',
+        # for more 'real-time' notifications
+        'channels',
+        'django-haystack-channels',
+        'asgi-redis',
 
     ],
 

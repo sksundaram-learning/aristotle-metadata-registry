@@ -10,7 +10,6 @@ from django.utils.translation import ugettext_lazy as _
 from django.views.generic import TemplateView
 
 import reversion
-from reversion.revisions import default_revision_manager
 
 from aristotle_mdr.utils import cache_per_item_user, concept_to_dict, construct_change_message, url_slugify_concept
 from aristotle_mdr import forms as MDRForms
@@ -47,7 +46,8 @@ def compare_concepts(request, obj_type=None):
 
         revs=[]
         for item in [item_a, item_b]:
-            versions = default_revision_manager.get_for_object(item)
+            from reversion.models import Version
+            versions = Version.objects.get_for_object(item)
             ct = ContentType.objects.get_for_model(item)
             version = reversion.models.Version.objects.filter(content_type=ct, object_id=item.pk).order_by('-revision__date_created').first()
             revs.append(version)

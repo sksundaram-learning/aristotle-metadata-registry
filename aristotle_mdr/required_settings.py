@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
 import os
+# from aristotle_mdr.contrib.channels.settings import CHANNEL_LAYERS, HAYSTACK_SIGNAL_PROCESSOR
 
-BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+BASE_DIR = os.getenv('aristotlemdr__BASE_DIR', os.path.dirname(os.path.dirname(__file__)))
+SECRET_KEY = os.getenv('aristotlemdr__SECRET_KEY', "OVERRIDE_THIS_IN_PRODUCTION")
+STATIC_ROOT = os.getenv('aristotlemdr__STATIC_ROOT', os.path.join(BASE_DIR, "static"))
+MEDIA_ROOT = os.getenv('aristotlemdr__MEDIA_ROOT', os.path.join(BASE_DIR, "media"))
+
 TEMPLATE_DIRS = [os.path.join(BASE_DIR, 'templates')]
 FIXTURES_DIRS = [os.path.join(BASE_DIR, 'fixtures')]
-STATIC_ROOT = os.path.join(BASE_DIR, "static")
-MEDIA_ROOT =os.path.join(BASE_DIR, "media")
 
 # https://docs.djangoproject.com/en/1.6/ref/settings/#databases
 # This provides for quick easy set up, but should be changed to a production
@@ -15,7 +18,6 @@ DATABASES = {
         'NAME': os.path.join(BASE_DIR, 'pos.db3'),
     }
 }
-SECRET_KEY = "OVERRIDE_THIS_IN_PRODUCTION"
 
 CACHES = {
     'default': {
@@ -37,7 +39,7 @@ SITE_ID=None
 
 
 ALLOWED_HOSTS = []
-SOUTH_TESTS_MIGRATE = False
+
 MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
 
 INSTALLED_APPS = (
@@ -45,7 +47,15 @@ INSTALLED_APPS = (
     'aristotle_mdr.contrib.generic',
     'aristotle_mdr.contrib.help',
     'aristotle_mdr.contrib.slots',
+    'aristotle_mdr.contrib.identifiers',
     'aristotle_mdr.contrib.browse',
+
+    'channels',
+    'haystack_channels',
+
+    'dal',
+    'dal_select2',
+
     'haystack',
     'django.contrib.admin',
     'django.contrib.admindocs',
@@ -64,7 +74,7 @@ INSTALLED_APPS = (
     'bootstrap3_datetime',
     'reversion',  # https://github.com/etianen/django-reversion
     'reversion_compare',  # https://github.com/jedie/django-reversion-compare
-    'autocomplete_light',
+
     'notifications',
 )
 
@@ -112,11 +122,12 @@ if DEBUG:
     STATIC_PRECOMPILER_CACHE_TIMEOUT = 1
     STATIC_PRECOMPILER_DISABLE_AUTO_COMPILE = False
 
-GRAPPELLI_ADMIN_TITLE = "Aristotle admin interface"
 BOOTSTRAP3 = {
     # The Bootstrap base URL
     'base_url': '/static/aristotle_mdr/bootstrap/',
 }
+
+ADD_REVERSION_ADMIN = True
 
 # We need this to make sure users can see all extensions.
 AUTHENTICATION_BACKENDS = ('aristotle_mdr.backends.AristotleBackend',)
@@ -160,6 +171,7 @@ CKEDITOR_CONFIGS = {
             {'name': 'insert', 'items': ['Image', 'Table', 'HorizontalRule', 'SpecialChar']},
             {'name': 'document', 'items': ['Maximize', 'Source']},
         ],
+        'width': "",
     },
 }
 
@@ -167,8 +179,12 @@ HAYSTACK_SIGNAL_PROCESSOR = 'aristotle_mdr.contrib.help.signals.AristotleHelpSig
 # HAYSTACK_SEARCH_RESULTS_PER_PAGE = 10
 HAYSTACK_CONNECTIONS = {
     'default': {
-        'ENGINE': 'aristotle_mdr.contrib.whoosh_backend.FixedWhooshEngine',
+        'ENGINE': 'aristotle_mdr.contrib.search_backends.facetted_whoosh.FixedWhooshEngine',
         'PATH': os.path.join(os.path.dirname(__file__), 'whoosh_index'),
         'INCLUDE_SPELLING': True,
     },
 }
+
+STATIC_PRECOMPILER_COMPILERS = (
+    ('static_precompiler.compilers.LESS', {"executable": "lesscpy"}),
+)

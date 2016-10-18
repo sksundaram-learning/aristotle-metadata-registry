@@ -1,10 +1,9 @@
-import autocomplete_light
-
 from django import forms
 from django.contrib.auth.models import User
 from django.utils.translation import ugettext_lazy as _
 
 import aristotle_mdr.models as MDR
+from aristotle_mdr.contrib.autocomplete import widgets
 
 
 class AddMembers(forms.Form):
@@ -15,8 +14,8 @@ class AddMembers(forms.Form):
     )
     users = forms.ModelMultipleChoiceField(
         label=_("Select users"),
-        queryset=User.objects.all(),
-        widget=autocomplete_light.MultipleChoiceWidget('Autocomplete_AristotleUser')
+        queryset=User.objects.filter(is_active=True),
+        widget=widgets.UserAutocompleteSelectMultiple()
     )
 
     def clean_roles(self):

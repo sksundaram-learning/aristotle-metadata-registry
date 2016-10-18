@@ -8,7 +8,9 @@ from django.utils.translation import ugettext_lazy as _
 import aristotle_mdr.models as MDR
 from aristotle_mdr.exceptions import NoUserGivenForUserForm
 from aristotle_mdr.perms import user_can_move_between_workgroups, user_can_move_any_workgroup, user_can_remove_from_workgroup, user_can_move_to_workgroup
-import autocomplete_light
+from aristotle_mdr.contrib.autocomplete import widgets
+
+from dal import autocomplete
 
 
 class UserAwareForm(forms.Form):
@@ -24,7 +26,7 @@ class UserAwareForm(forms.Form):
         super(UserAwareForm, self).__init__(*args, **kwargs)
 
 
-class UserAwareModelForm(UserAwareForm, autocomplete_light.ModelForm):
+class UserAwareModelForm(UserAwareForm, forms.ModelForm):  # , autocomplete_light.ModelForm):
     class Meta:
         model = MDR._concept
         exclude = ['superseded_by', '_is_public', '_is_locked', 'originURI', 'submitter']
@@ -52,7 +54,7 @@ class WorkgroupVerificationMixin(forms.ModelForm):
                 old_wg_pk = None
                 if self.instance.workgroup:
                     old_wg_pk = str(self.instance.workgroup.pk)
-                if str(self.data['workgroup']) != str(old_wg_pk):
+                if str(self.data['workgroup']) != str(old_wg_pk) and not (str(self.data['workgroup']) == "" and old_wg_pk is None):
                     if not user_can_move_any_workgroup(self.user):
                         raise forms.ValidationError(WorkgroupVerificationMixin.cant_move_any_permission_error)
                     if not user_can_remove_from_workgroup(self.user, self.instance.workgroup):
@@ -110,6 +112,16 @@ class ConceptForm(WorkgroupVerificationMixin, UserAwareModelForm):
         # TODO: Have tis throw a 'no user' error
         first_load = kwargs.pop('first_load', None)
         super(ConceptForm, self).__init__(*args, **kwargs)
+
+        for f in self.fields:
+            if hasattr(self.fields[f], 'queryset'):
+                if hasattr(self.fields[f].queryset, 'visible'):
+                    self.fields[f].queryset = self.fields[f].queryset.all().visible(self.user)
+                    self.fields[f].widget = widgets.ConceptAutocompleteSelect(
+                        model=self.fields[f].queryset.model
+                    )
+                    self.fields[f].widget.choices = self.fields[f].choices
+
         if not self.user.is_superuser:
             self.fields['workgroup'].queryset = self.user.profile.editable_workgroups
         self.fields['name'].widget = forms.widgets.TextInput()

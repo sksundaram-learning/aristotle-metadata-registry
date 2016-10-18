@@ -16,7 +16,6 @@ from django.utils import timezone
 from django.utils.decorators import method_decorator
 
 import reversion
-from reversion.revisions import default_revision_manager
 
 from aristotle_mdr.perms import user_can_view, user_can_edit, user_can_change_status
 from aristotle_mdr.utils import cache_per_item_user, concept_to_clone_dict, concept_to_dict, construct_change_message, url_slugify_concept
@@ -77,17 +76,7 @@ class EditItemView(PermissionFormView):
         form = self.get_form()
         slot_formset = None
 
-        new_wg = request.POST.get('workgroup', None)
-        old_wg = None
-        old_wg_pk = None
-        if self.item.workgroup:
-            old_wg = self.item.workgroup
-            old_wg_pk = str(self.item.workgroup.pk)
-        workgroup_changed = not(old_wg_pk == new_wg)
-
         if form.is_valid():
-            workgroup_changed = old_wg != form.cleaned_data['workgroup']
-
             with transaction.atomic(), reversion.revisions.create_revision():
                 item = form.save(commit=False)
                 slot_formset = self.get_slots_formset()(request.POST, request.FILES, item.concept)

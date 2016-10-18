@@ -134,22 +134,40 @@
   {
     "fields": {
       "definition": "Welfare Authority",
-      "notprogressed": "",
       "name": "Welfare",
-      "candidate": "",
       "created": "2016-05-02T22:23:11.550Z",
+      "modified": "2016-05-02T22:23:11.550Z",
+      "managers": [
+      ]
+    },
+    "model": "aristotle_mdr.organization",
+    "pk": 2
+  },
+  {
+    "fields": {
+      "definition": "Health Authority",
+      "name": "Health",
+      "created": "2016-05-02T22:23:11.562Z",
+      "modified": "2016-05-02T22:23:11.562Z",
+      "managers": [
+      ]
+    },
+    "model": "aristotle_mdr.organization",
+    "pk": 3
+  },
+  {
+    "fields": {
+      "organization_ptr": 2,
+      "notprogressed": "",
+      "candidate": "",
       "locked_state": 2,
       "public_state": 3,
       "superseded": "",
       "recorded": "",
-      "modified": "2016-05-02T22:23:11.550Z",
       "preferred": "",
       "standard": "",
       "qualified": "",
       "registrars": [
-        
-      ],
-      "managers": [
         
       ],
       "retired": "",
@@ -160,23 +178,17 @@
   },
   {
     "fields": {
-      "definition": "Health Authority",
+      "organization_ptr": 3,
       "notprogressed": "",
-      "name": "Health",
       "candidate": "",
-      "created": "2016-05-02T22:23:11.562Z",
       "locked_state": 2,
       "public_state": 3,
       "superseded": "",
       "recorded": "",
-      "modified": "2016-05-02T22:23:11.562Z",
       "preferred": "",
       "standard": "",
       "qualified": "",
       "registrars": [
-        
-      ],
-      "managers": [
         
       ],
       "retired": "",

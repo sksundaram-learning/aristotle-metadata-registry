@@ -38,7 +38,7 @@
                 <header class="panel panel-info">
                     <div class="panel-heading arrow">Data&nbsp;Element Concept</div>
                     <span class="panel-body name">
-                        {% include "aristotle_mdr/helpers/itemLink.html" with item=item.dataElementConcept space=True %}
+                        {% include "aristotle_mdr/generic/helpers/fk_alter_link.html" with parent_item=item item=item.dataElementConcept field='dataElementConcept' space=True %}
                     </span>
                 </header>
                 <ul class="split">
@@ -59,7 +59,9 @@
             <li style="width:40%;">
                 <header class="panel panel-info">
                 <div class="panel-heading arrow">Value Domain</div>
-                <span class="panel-body name">{% include "aristotle_mdr/helpers/itemLink.html" with item=item.valueDomain %}</span>
+                <span class="panel-body name">
+                    {% include "aristotle_mdr/generic/helpers/fk_alter_link.html" with parent_item=item item=item.valueDomain field='valueDomain' space=True %}
+                </span>
                 </header>
             </li>
         </ul>

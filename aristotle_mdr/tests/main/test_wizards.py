@@ -204,7 +204,7 @@ class DataElementConceptWizardPage(ConceptWizardPage,TestCase):
         wizard = response.context['wizard']
         self.assertEqual(response.status_code, 200)
         self.assertEqual(wizard['steps'].current, 'component_results')
-        self.assertEqual(len(wizard['form'].fields.keys()),2) # we should have a match for OC and P
+        self.assertDelayedEqual(len(wizard['form'].fields.keys()),2) # we should have a match for OC and P
 
         step_2_data = {}
         step_2_data.update(step_1_data)
@@ -402,6 +402,7 @@ class DataElementWizardPage(ConceptWizardPage,TestCase):
         pass
     def test_editor_can_make_object__has_prior_components(self):
         self.login_editor()
+
         from reversion.revisions import create_revision
         with create_revision():
             ani   = models.ObjectClass.objects.create(name="animagus",definition="",workgroup=self.wg1)
@@ -428,7 +429,7 @@ class DataElementWizardPage(ConceptWizardPage,TestCase):
         wizard = response.context['wizard']
         self.assertEqual(response.status_code, 200)
         self.assertEqual(wizard['steps'].current, 'component_results')
-        self.assertEqual(len(wizard['form'].fields.keys()),3) # we should have a match for OC, P and VD
+        self.assertDelayedEqual(len(wizard['form'].fields.keys()),3) # we should have a match for OC, P and VD
 
         step_2_data = {}
         step_2_data.update(step_1_data)
@@ -491,7 +492,7 @@ class DataElementWizardPage(ConceptWizardPage,TestCase):
         wizard = response.context['wizard']
         self.assertEqual(response.status_code, 200)
         self.assertEqual(wizard['steps'].current, 'component_results')
-        self.assertEqual(len(wizard['form'].fields.keys()),3) # we should have a match for OC, P and VD
+        self.assertDelayedEqual(len(wizard['form'].fields.keys()),3) # we should have a match for OC, P and VD
 
         step_2_data = {}
         step_2_data.update(step_1_data)

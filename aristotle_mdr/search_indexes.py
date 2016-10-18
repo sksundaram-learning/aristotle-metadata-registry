@@ -21,6 +21,8 @@ RESTRICTION.update([(k, v) for k, v in BASE_RESTRICTION.items()])
 RESTRICTION.update([(str(k), v) for k, v in BASE_RESTRICTION.items()])
 RESTRICTION.update([(v, k) for k, v in BASE_RESTRICTION.items()])
 
+registered_indexes = []
+
 
 class ConceptFallbackCharField(indexes.CharField):
     def prepare_template(self, obj):
@@ -79,6 +81,7 @@ class conceptIndex(baseObjectIndex):
     is_public = indexes.BooleanField()
     restriction = indexes.IntegerField(faceted=True)
     version = indexes.CharField(model_attr="version")
+    submitter_id = indexes.IntegerField(model_attr="submitter_id", null=True)
     facet_model_ct = indexes.IntegerField(faceted=True)
 
     template_name = "search/searchItem.html"

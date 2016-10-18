@@ -12,7 +12,7 @@
 
   an override for the main
 */
-@screen-sm-min:600px;
+@screen-sm-min:599px;
 @screen-sm-max:760px;
 @screen-md-regular:992px;
 
@@ -43,13 +43,6 @@
 
 body .navbar {
     border-radius:0px
-}
-.main.navbar .navbar-nav li.dropdown a.dropdown-toggle {
-    color:@colors_footer_text;
-}
-
-tbody.newRa {
-    border-top-width: 4px ;
 }
 
 #homeFaq {
@@ -86,6 +79,7 @@ tbody.newRa {
     &.enable {
         font-weight:bold;
     }
+    display:inline-block !important;
 }
 
 dl.quickkeys {
@@ -452,14 +446,6 @@ table.codeList {
 }
 
 
-table.dssInclusions {
-    tr>*:nth-child(4),tr>*:nth-child(5) {
-        text-align:right;
-    }
-    tbody {
-        font-size:90%;
-    }
-}
 .status_definitions {
     clear:both;
     &>dt {
@@ -482,6 +468,7 @@ table.dssInclusions {
         }
     }
 }
+
 dl.browse, dl.treble_defintions {
     dd {
         padding-left:25px;

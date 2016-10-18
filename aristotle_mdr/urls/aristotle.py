@@ -1,19 +1,17 @@
-import autocomplete_light
-
 from django.conf.urls import patterns, url
 from django.views.generic import TemplateView
 from django.views.generic.base import RedirectView
 
-from haystack.query import SearchQuerySet
 from haystack.views import search_view_factory
 
 import aristotle_mdr.views as views
 import aristotle_mdr.forms as forms
 import aristotle_mdr.models as models
-from aristotle_mdr.contrib.generic.views import GenericAlterOneToManyView
+from aristotle_mdr.contrib.generic.views import (
+    GenericAlterOneToManyView,
+    generic_foreign_key_factory_view
+)
 from django.utils.translation import ugettext_lazy as _
-
-autocomplete_light.autodiscover()
 
 
 urlpatterns = patterns(
@@ -48,6 +46,10 @@ urlpatterns = patterns(
             form_add_another_text=_('Add a code'),
             form_title=_('Change Supplementary Values')
         ), name='supplementary_values_edit'),
+
+    url(r'^item/(?P<iid>\d+)?/alter_relationship/(?P<fk_field>[A-Za-z\-_]+)/?$',
+        generic_foreign_key_factory_view,
+        name='generic_foreign_key_editor'),
 
 
     url(r'^workgroup/(?P<iid>\d+)(?:-(?P<name_slug>[A-Za-z0-9\-]+))?/?$', views.workgroups.workgroup, name='workgroup'),
@@ -122,8 +124,10 @@ urlpatterns = patterns(
     url(r'^account/registrartools/review/accept/(?P<review_id>\d+)/?$', views.actions.ReviewAcceptView.as_view(), name='userReviewAccept'),
     url(r'^account/registrartools/review/reject/(?P<review_id>\d+)/?$', views.actions.ReviewRejectView.as_view(), name='userReviewReject'),
 
-    url(r'^registrationauthority/(?P<iid>\d+)?(?:\/(?P<name_slug>.+))?/?$', views.registrationauthority, name='registrationAuthority'),
-    url(r'^registrationauthorities/?$', views.allRegistrationAuthorities, name='allRegistrationAuthorities'),
+    url(r'^organization/registrationauthority/(?P<iid>\d+)?(?:\/(?P<name_slug>.+))?/?$', views.registrationauthority, name='registrationAuthority'),
+    url(r'^organization/(?P<iid>\d+)?(?:\/(?P<name_slug>.+))?/?$', views.organization, name='organization'),
+    url(r'^organizations/?$', views.all_organizations, name='all_organizations'),
+    url(r'^registrationauthorities/?$', views.all_registration_authorities, name='all_registration_authorities'),
     url(r'^account/toggleFavourite/(?P<iid>\d+)/?$', views.toggleFavourite, name='toggleFavourite'),
 
     url(r'^extensions/?$', views.extensions, name='extensions'),

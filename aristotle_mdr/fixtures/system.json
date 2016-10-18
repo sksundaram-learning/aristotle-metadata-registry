@@ -7,7 +7,7 @@
       "is_active": false,
       "is_superuser": false,
       "is_staff": false,
-      "last_login": null,
+      "last_login": "1970-01-01",
       "groups": [
         
       ],

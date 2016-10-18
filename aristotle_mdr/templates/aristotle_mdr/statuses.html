@@ -12,14 +12,14 @@
     {% if statuses.all %}
         {% for status in statuses.all %}
         <li>
-            <a href="{% url 'aristotle:registrationAuthority' status.registrationAuthority.id %}">{{ status.registrationAuthority }}</a>
+            <a href="{% url 'aristotle:registrationAuthority' status.registrationAuthority.id status.registrationAuthority.name|slugify %}">{{ status.registrationAuthority }}</a>
             : {% trans status.state_name %} on {{ status.registrationDate }}
             </li>
         {% endfor %}
     {% else %}
         {% for status in statuses %}
         <li>
-            <a href="{% url 'aristotle:registrationAuthority' status.registrationAuthority.id %}">{{ status.registrationAuthority }}</a>
+           <a href="{% url 'aristotle:registrationAuthority' status.registrationAuthority.id status.registrationAuthority.name|slugify %}">{{ status.registrationAuthority }}</a>
             : {% trans status.state_name %} on {{ status.registrationDate }}
             </li>
         {% empty %}

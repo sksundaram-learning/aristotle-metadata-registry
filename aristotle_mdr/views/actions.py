@@ -13,7 +13,6 @@ from django.utils.safestring import mark_safe
 import datetime
 
 import reversion
-from reversion.revisions import default_revision_manager
 
 from aristotle_mdr import perms
 from aristotle_mdr.utils import cache_per_item_user, concept_to_dict, construct_change_message, url_slugify_concept

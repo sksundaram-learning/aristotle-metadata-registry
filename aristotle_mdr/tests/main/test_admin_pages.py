@@ -1,3 +1,4 @@
+from django.contrib.admin import helpers
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.forms import model_to_dict
@@ -75,6 +76,13 @@ class AdminPage(utils.LoggedInViewPages,TestCase):
         response = self.client.get(reverse("admin:aristotle_mdr_dataelementconcept_change",args=[dec.pk]))
         self.assertResponseStatusCodeEqual(response,200)
 
+    def test_su_can_view_users_list(self):
+        self.login_superuser()
+        response = self.client.get(
+            reverse('admin:%s_%s_changelist' % ('auth','user')),
+        )
+        self.assertContains(response,'Last login')
+
     def test_su_can_add_new_user(self):
         self.login_superuser()
         response = self.client.post(
@@ -86,7 +94,7 @@ class AdminPage(utils.LoggedInViewPages,TestCase):
                 'profile-0-steward_in': [self.wg1.id],
                 'profile-0-submitter_in': [self.wg1.id],
                 'profile-0-viewer_in': [self.wg1.id],
-                'profile-0-registrationauthority_manager_in': [self.ra.id],
+                'profile-0-organization_manager_in': [self.ra.id],
                 'profile-0-registrar_in': [self.ra.id],
 
             }
@@ -103,10 +111,12 @@ class AdminPage(utils.LoggedInViewPages,TestCase):
                     new_user.viewer_in]:
             self.assertEqual(rel.count(),1)
             self.assertEqual(rel.first(),self.wg1)
-        for rel in [new_user.registrationauthority_manager_in,
-                    new_user.registrar_in,]:
-            self.assertEqual(rel.count(),1)
-            self.assertEqual(rel.first(),self.ra)
+
+        self.assertEqual(new_user.organization_manager_in.count(),1)
+        self.assertEqual(new_user.organization_manager_in.first(),self.ra.organization_ptr)
+
+        self.assertEqual(new_user.registrar_in.count(),1)
+        self.assertEqual(new_user.registrar_in.first(),self.ra)
 
         response = self.client.post(
             reverse("admin:auth_user_add"),
@@ -124,7 +134,7 @@ class AdminPage(utils.LoggedInViewPages,TestCase):
                     new_user.submitter_in,
                     new_user.viewer_in]:
             self.assertEqual(rel.count(),0)
-        for rel in [new_user.registrationauthority_manager_in,
+        for rel in [new_user.organization_manager_in,
                     new_user.registrar_in,]:
             self.assertEqual(rel.count(),0)
 
@@ -326,8 +336,8 @@ class AdminPageForConcept(utils.LoggedInViewPages):
         self.assertRedirects(response,reverse("admin:%s_%s_changelist"%(self.itemType._meta.app_label,self.itemType._meta.model_name)))
 
         self.item1 = self.itemType.objects.get(pk=self.item1.pk)
-        self.assertTrue(self.item2 in self.item1.supersedes.all())
-        self.assertTrue(self.item3 in self.item1.supersedes.all())
+        self.assertTrue(self.item2 in self.item1.supersedes.all().select_subclasses())
+        self.assertTrue(self.item3 in self.item1.supersedes.all().select_subclasses())
 
     def test_superseded_by_saves(self):
         self.item2 = self.itemType.objects.create(name="admin_page_test_oc_2",definition=" ",workgroup=self.wg1,**self.create_defaults)
@@ -355,7 +365,7 @@ class AdminPageForConcept(utils.LoggedInViewPages):
         self.assertRedirects(response,reverse("admin:%s_%s_changelist"%(self.itemType._meta.app_label,self.itemType._meta.model_name)))
 
         self.item1 = self.itemType.objects.get(pk=self.item1.pk)
-        self.assertTrue(self.item2 == self.item1.superseded_by)
+        self.assertTrue(self.item2 == self.item1.superseded_by.item)
 
     def test_history_page_loads(self):
         self.login_editor()
@@ -372,7 +382,8 @@ class AdminPageForConcept(utils.LoggedInViewPages):
         with reversion.create_revision():
             self.item1.name = new_name
             self.item1.save()
-        version_list = reversion.get_for_object(self.item1)
+        from reversion.models import Version
+        version_list = Version.objects.get_for_object(self.item1)
 
         self.login_editor()
         response = self.client.get(
@@ -406,7 +417,8 @@ class AdminPageForConcept(utils.LoggedInViewPages):
             self.item1.save()
         self.assertTrue(self.item1.statuses.count() == old_count + 1)
         
-        revisions = reversion.default_revision_manager.get_for_object(self.item1)
+        from reversion.models import Version
+        revisions = Version.objects.get_for_object(self.item1)
 
         response = self.client.get(
             reverse(
@@ -458,9 +470,69 @@ class DataElementDerivationAdminPage(AdminPageForConcept,TestCase):
     itemType=models.DataElementDerivation
     def setUp(self):
         super(DataElementDerivationAdminPage, self).setUp(instant_create=False)
-        self.ded_wg = models.Workgroup.objects.create(name="Derived WG")
-        self.derived_de = models.DataElement.objects.create(name='derivedDE',definition="",workgroup=self.ded_wg)
-        self.ra.register(self.derived_de,models.STATES.standard,self.registrar)
+        from reversion import revisions as reversion
+        with reversion.create_revision():
+            self.ded_wg = models.Workgroup.objects.create(name="Derived WG")
+            self.derived_de = models.DataElement.objects.create(name='derivedDE',definition="",workgroup=self.ded_wg)
+        x=self.ra.register(self.derived_de,models.STATES.standard,self.su)
         self.create_defaults = {'derives':self.derived_de}
         self.form_defaults = {'derives':self.derived_de.id}
+        
+        self.derived_de = models.DataElement.objects.get(pk=self.derived_de.pk)
+        self.assertTrue(self.derived_de.is_public())
         self.create_items()
+
+
+class OrganizationAdminPage(utils.LoggedInViewPages, TestCase):
+    def test_registrar_cannot_promote_org_to_ra(self):
+        self.login_registrar()
+
+        org = models.Organization.objects.create(name="My org", definition="My new org")
+        ra_count = models.RegistrationAuthority.objects.count()
+
+        response = self.client.post(
+            reverse('admin:%s_%s_changelist' % ('aristotle_mdr','organization')),
+            {
+                'action': "promote_to_ra",
+                helpers.ACTION_CHECKBOX_NAME: [org.pk],
+                "post":"yes"
+            }
+        )
+        self.assertEqual(response.status_code, 302) # Redirects to admin login
+        self.assertTrue(ra_count == models.RegistrationAuthority.objects.count())
+
+    def test_admin_user_can_promote_org_to_ra(self):
+        self.login_superuser()
+        org = models.Organization.objects.create(name="My org", definition="My new org")
+        ra_count = models.RegistrationAuthority.objects.count()
+        org_count = models.Organization.objects.count()
+        
+        response = self.client.post(
+            reverse('admin:%s_%s_changelist' % ('aristotle_mdr','organization')),
+            {
+                'action': "promote_to_ra",
+                helpers.ACTION_CHECKBOX_NAME: [org.pk],
+            }
+        )
+        msg = "Are you sure you want to promote the selected organizations to Registration Authorities"
+
+        self.assertTrue(msg in response.content)
+        self.assertTrue(ra_count == models.RegistrationAuthority.objects.count())
+        self.assertTrue(org_count == models.Organization.objects.count())
+
+        response = self.client.post(
+            reverse('admin:%s_%s_changelist' % ('aristotle_mdr','organization')),
+            {
+                'action': "promote_to_ra",
+                helpers.ACTION_CHECKBOX_NAME: [org.pk],
+                "post":"yes"
+            }, follow=True
+        )
+
+        # We should have another registration authority
+        self.assertEqual(ra_count + 1, models.RegistrationAuthority.objects.count())
+        # BUT we should NOT have another organisation
+        self.assertTrue(org_count == models.Organization.objects.count())
+
+        msg = "Successfully promoted 1 organization."
+        self.assertTrue(msg in response.content)

@@ -71,8 +71,15 @@
         </p>
     {% endif %}
     <div class="row">
-        <div class="col-sm-10">
+        <div class="col-sm-12">
             {% include "aristotle_mdr/create/concept_editor.html" with form=wizard.form %}
         </div>
     </div>
+{% endblock %}
+
+{% block next_button %}
+    <button type="submit" class="btn btn-primary" value="{% trans "submit" %}">
+        {% trans "Save" %}
+        <i class="fa fa-save"></i>
+    </button>
 {% endblock %}

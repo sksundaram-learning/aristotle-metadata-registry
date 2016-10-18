@@ -4,17 +4,22 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
 from django.contrib.admin.filters import RelatedFieldListFilter
+from django.core.urlresolvers import reverse
+from django.utils.translation import ugettext_lazy as _
+
 import aristotle_mdr.models as MDR
 import aristotle_mdr.forms as MDRForms
 from aristotle_mdr import perms
-from django.core.urlresolvers import reverse
 from reversion_compare.admin import CompareVersionAdmin
+
+from aristotle_mdr.search_indexes import conceptIndex
+from haystack import indexes
 
 import reversion
 
 from aristotle_mdr.register import register_concept
 reversion.revisions.register(MDR.Status)
-reversion.revisions.register(MDR._concept, follow=['statuses', 'workgroup'])
+reversion.revisions.register(MDR._concept, follow=['statuses', 'workgroup', 'slots'])
 reversion.revisions.register(MDR.Workgroup)
 
 
@@ -199,6 +204,45 @@ class SupplementaryValueInline(CodeValueInline):
     model = MDR.SupplementaryValue
 
 
+class OrganizationAdmin(admin.ModelAdmin):
+    list_display = ['name', 'definition', 'created', 'modified']
+    list_filter = ['created', 'modified']
+
+    actions = ['promote_to_ra']
+
+    def promote_to_ra(self, request, queryset):
+        from django.contrib import messages
+        from django.contrib.admin import helpers
+        from django.contrib.admin.utils import model_ngettext
+        if request.POST.get('post'):
+            n = queryset.count()
+            if n:
+                for org in queryset.all():
+                    org.promote_to_registration_authority()
+                self.message_user(request, _("Successfully promoted %(count)d %(items)s.") % {
+                    "count": n, "items": model_ngettext(self.opts, n)
+                }, messages.SUCCESS)
+            # Return None to display the change list page again.
+            return None
+
+        context = dict(
+            self.admin_site.each_context(request),
+            title=_("Are you sure?"),
+            queryset=queryset,
+            action_checkbox_name=helpers.ACTION_CHECKBOX_NAME,
+            media=self.media,
+            opts=self.model._meta
+        )
+
+        request.current_app = self.admin_site.name
+
+        # Display the confirmation page
+        from django.template.response import TemplateResponse
+        return TemplateResponse(request, ["admin/promote_org_to_ra.html"], context)
+
+    promote_to_ra.short_description = "Promote to registration authority"
+
+
 class RegistrationAuthorityAdmin(admin.ModelAdmin):
     list_display = ['name', 'definition', 'created', 'modified']
     list_filter = ['created', 'modified']
@@ -212,6 +256,7 @@ class RegistrationAuthorityAdmin(admin.ModelAdmin):
             {'fields': ['notprogressed', 'incomplete', 'candidate', 'recorded', 'qualified', 'standard', 'preferred', 'superseded', 'retired']}),
     ]
 
+admin.site.register(MDR.Organization, OrganizationAdmin)
 admin.site.register(MDR.RegistrationAuthority, RegistrationAuthorityAdmin)
 admin.site.register(MDR.Workgroup, WorkgroupAdmin)
 
@@ -232,7 +277,15 @@ class AristotleProfileInline(admin.StackedInline):
 # Define a new User admin
 class AristotleUserAdmin(UserAdmin):
 
+    def time_since_login(self, obj):
+        from django.contrib.humanize.templatetags.humanize import naturaltime
+        return naturaltime(obj.last_login)
+
+    time_since_login.admin_order_field = 'last_login'
+    time_since_login.short_description = _('Last login')
+
     inlines = [AristotleProfileInline]
+    list_display = ['username', 'first_name', 'last_name', 'time_since_login', 'date_joined']
 
     def save_formset(self, request, form, formset, change):
         super(AristotleUserAdmin, self).save_formset(request, form, formset, change)
@@ -258,14 +311,34 @@ register_concept(
     }
 )
 
+
+# class aristotle_mdr_DataElementConceptSearchIndex(conceptIndex, indexes.Indexable):
+#     data_element_concept = indexes.IntegerField(model_attr="id", faceted=True, null=True)
+#     data_element_concept.title = 'Data element concept'
+#     data_element_concept.display = lambda i: MDR.DataElementConcept.objects.filter(pk=i).values_list('name', flat=True)[0]
+
+#     def get_model(self):
+#         return MDR.DataElementConcept
+
+
+class aristotle_mdr_DataElementSearchIndex(conceptIndex, indexes.Indexable):
+    data_element_concept = indexes.IntegerField(model_attr="dataElementConcept_id", faceted=True, null=True)
+    data_element_concept.title = 'Data element concept'
+    data_element_concept.display = lambda i: MDR.DataElementConcept.objects.filter(pk=i).values_list('name', flat=True)[0]
+
+    def get_model(self):
+        return MDR.DataElement
+
 register_concept(
     MDR.DataElementConcept,
     name_suggest_fields=['objectClass', 'property'],
     extra_fieldsets=[('Components', {'fields': ['objectClass', 'property']})],
     reversion={
         'follow': ['objectClass', 'property'],
-    }
+    },
+    # custom_search_index=aristotle_mdr_DataElementConceptSearchIndex
 )
+
 
 register_concept(
     MDR.DataElement,
@@ -273,7 +346,8 @@ register_concept(
     extra_fieldsets=[('Components', {'fields': ['dataElementConcept', 'valueDomain']})],
     reversion={
         'follow': ['dataElementConcept', 'valueDomain'],
-    }
+    },
+    custom_search_index=aristotle_mdr_DataElementSearchIndex
 )
 
 register_concept(

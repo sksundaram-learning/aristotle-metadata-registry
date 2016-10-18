@@ -144,3 +144,14 @@ class TestSelfPublishing(utils.LoggedInViewPages, TestCase):
         self.logout()
         response = self.client.get(self.item.get_absolute_url())
         self.assertTrue(response.status_code == 302)
+
+    def test_submitter_can_see_hidden_self_publish(self):
+        pub.PublicationRecord.objects.create(
+            user=self.submitting_user,
+            concept=self.item,
+            visibility=pub.PublicationRecord.VISIBILITY.active
+        )
+
+        self.assertTrue(
+            self.item.__class__.objects.all().visible(self.registrar).filter(pk=self.item.pk).exists()
+        )

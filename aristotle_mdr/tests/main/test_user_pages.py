@@ -5,6 +5,7 @@ from django.core.urlresolvers import reverse
 
 import aristotle_mdr.tests.utils as utils
 from aristotle_mdr import models
+import datetime
 
 from django.test.utils import setup_test_environment
 setup_test_environment()
@@ -48,6 +49,39 @@ class UserHomePages(utils.LoggedInViewPages, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue(self.item1.concept in response.context['page'])
         self.assertTrue(self.item2.concept not in response.context['page'])
+
+    def test_user_cannot_view_registered_published_in_sandbox(self):
+        self.login_viewer()
+        self.item1 = models._concept.objects.create(
+            name="Test Item 1 (visible to tested viewers in sandbox)",
+            definition=" ",
+            submitter=self.viewer)
+        # Should not see item2 because it has a review request
+        self.item2 = models._concept.objects.create(
+            name="Test Item 2 (not visible in sandbox, review request)",
+            definition=" ", 
+            submitter=self.viewer)
+        review = models.ReviewRequest.objects.create(
+            requester=self.su,
+            registration_authority=self.ra)
+        review.concepts.add(self.item2)
+
+        # Should not see item3 because it has a status
+        self.item3 = models._concept.objects.create(
+            name="Test Item 3 (not visible in sandbox, status)",
+            definition=" ",
+            submitter=self.viewer)
+        status = models.Status.objects.create(
+            concept=self.item3,
+            registrationAuthority=self.ra,
+            registrationDate = datetime.date(2009,4,28),
+            state =  models.STATES.standard)
+
+        response = self.client.get(reverse('aristotle:userSandbox',))
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(self.item1.concept in response.context['page'])
+        self.assertTrue(self.item2.concept not in response.context['page'])
+        self.assertTrue(self.item3.concept not in response.context['page'])
 
     def test_user_can_edit_own_details(self):
         self.login_viewer()

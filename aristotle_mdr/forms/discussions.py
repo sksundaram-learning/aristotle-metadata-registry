@@ -1,15 +1,14 @@
-import autocomplete_light
-
 from django import forms
 import aristotle_mdr.models as MDR
 from aristotle_mdr.perms import user_can_view
+from aristotle_mdr.contrib.autocomplete import widgets
 
 
 class NewPostForm(forms.ModelForm):
     relatedItems = forms.ModelMultipleChoiceField(
         queryset=MDR._concept.objects.all(),
         label="Related items", required=False,
-        widget=autocomplete_light.MultipleChoiceWidget('Autocomplete_concept')
+        widget=widgets.ConceptAutocompleteSelectMultiple()
     )
 
     class Meta:
@@ -35,7 +34,7 @@ class EditPostForm(forms.ModelForm):
     relatedItems = forms.ModelMultipleChoiceField(
         queryset=MDR._concept.objects.all(),
         label="Related items", required=False,
-        widget=autocomplete_light.MultipleChoiceWidget('Autocomplete_concept')
+        widget=widgets.ConceptAutocompleteSelectMultiple()
     )
 
     class Meta:

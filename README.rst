@@ -70,8 +70,8 @@ Quick start
 
 For a complete example of how to successfully include Aristotle, see the `tests/settings.py` settings file.
 
-**A live Aristotle-MDR instance is available for review on PythonAnywhere at:** `http://aristotle.pythonanywhere.com/ <http://aristotle.pythonanywhere.com/>`_.
-Be aware, this is an active development instance and may sporadically be unavailable.
+**An open instance of the Aristotle Metadata Registry is available at:** `http://registry.aristotlemetadata.com/>`_.
+
 
 Screenshots for users
 ---------------------
@@ -100,7 +100,7 @@ About the badges (plus some extras):
 * |docs| - Read the docs, with details on installing, configuring and extending Aristotle-MDR
 * |coveralls| - Coveralls, showing in-depth code coverage
 * |codecov| - Codecov.io, showing even greater in-depth code coverage with branch coverage
-* |demoserver| - A link to a live demo and development server
+* |demoserver| - A link to a live open-metadata registry
 * |gitter| - Gitter, a git-powered chat room for developers
 * |waffleio| - Waffle.io bugs ready to be actioned.
 * |codeclimate| - Code Climate - additional code metrics
@@ -125,10 +125,10 @@ About the badges (plus some extras):
     :scale: 100%
     :target: https://codecov.io/github/aristotle-mdr/aristotle-metadata-registry?branch=master
 
-.. |demoserver| image:: https://img.shields.io/badge/Demo_server-available-blue.svg
+.. |demoserver| image:: https://img.shields.io/badge/Open_Metadata_Registry-online-blue.svg
     :alt: visit the live demonstration server on PythonAnywhere
     :scale: 98%
-    :target: http://aristotle.pythonanywhere.com
+    :target: http://registry.aristotlemetadata.com
 
 .. |gitter| image:: https://badges.gitter.im/Join%20Chat.svg
     :alt: visit the gitter chat room for this project
@@ -154,3 +154,4 @@ About the badges (plus some extras):
 .. |aristotle-logo| image:: https://raw.githubusercontent.com/aristotle-mdr/aristotle-metadata-registry/develop/aristotle_mdr/static/aristotle_mdr/images/aristotle.png
     :alt: Aristotle-MDR Logo
     :scale: 100%
+    :target: http://www.aristotlemetadata.com

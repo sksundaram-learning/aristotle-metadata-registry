@@ -39,6 +39,9 @@
         </button>
     </div>
 </form>
-{% include 'autocomplete_light/static.html' %}
+    {% block extra_head_scripts %}
+        {{ form.media }}
+        {% include 'autocomplete_light/static.html' %}
+    {% endblock %}
 </div>
 {% endblock %}

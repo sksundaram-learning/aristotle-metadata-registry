@@ -37,7 +37,7 @@
     {% endif %}
     {% if clone %}
     <div class="message info">
-        <strong>You are cloning the {{ clone.get_verbose_name }} <a href="/{{ clone.url_name }}/{{ clone.id }}">{{ clone.name }}</a>.
+        <strong>You are cloning the {{ clone.get_verbose_name }} <a href="{{ clone.get_absolute_url }}">{{ clone.name }}</a>.
         </strong>
         <br>Reusing existing metadata makes comparing data easier.
         <br>If you want to make a new version of this item, consider <a href="/create/{{ clone.get_verbose_name }}/?supercede={{ clone.id }}">superceding this item</a> instead.

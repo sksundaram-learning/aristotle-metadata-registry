@@ -73,7 +73,7 @@ class SupersedePage(utils.LoggedInViewPages, TestCase):
             {'newerItem': self.item2.id}
         )
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(models.ObjectClass.objects.get(id=self.item1.id).superseded_by, self.item2)
+        self.assertEqual(models.ObjectClass.objects.get(id=self.item1.id).superseded_by.item, self.item2)
 
         # Item 3 is a different workgroup, and the editor cannot see it , so
         # cannot supersede, so it did not save and was served the form again.
@@ -82,7 +82,7 @@ class SupersedePage(utils.LoggedInViewPages, TestCase):
             {'newerItem': self.item3.id}
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(models.ObjectClass.objects.get(id=self.item1.id).superseded_by, self.item2)
+        self.assertEqual(models.ObjectClass.objects.get(id=self.item1.id).superseded_by.item, self.item2)
 
         # Item 4 is a different type, so cannot supersede, so it did not save
         # and was served the form again.
@@ -91,7 +91,7 @@ class SupersedePage(utils.LoggedInViewPages, TestCase):
             {'newerItem': self.item4.id}
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(models.ObjectClass.objects.get(id=self.item1.id).superseded_by, self.item2)
+        self.assertEqual(models.ObjectClass.objects.get(id=self.item1.id).superseded_by.item, self.item2)
 
 
 class DeprecatePage(utils.LoggedInViewPages, TestCase):
@@ -126,7 +126,7 @@ class DeprecatePage(utils.LoggedInViewPages, TestCase):
             reverse('aristotle:deprecate', args=[self.item1.id])
         )
         self.assertEqual(response.status_code, 200)
-        self.assertListEqual(list(self.item1.supersedes.all()), [])
+        self.assertListEqual(list(self.item1.supersedes.all().select_subclasses()), [])
 
         # An item cannot deprecate itself, so it did not save and was served the form again.
         response = self.client.post(
@@ -134,7 +134,7 @@ class DeprecatePage(utils.LoggedInViewPages, TestCase):
             {'olderItems': [self.item1.id]}
         )
         self.assertEqual(response.status_code, 200)
-        self.assertListEqual(list(self.item1.supersedes.all()), [])
+        self.assertListEqual(list(self.item1.supersedes.all().select_subclasses()), [])
 
         #  Item 3 is a different workgroup, and the editor cannot see it , so
         # cannot deprecate, so it did not save and was served the form again.
@@ -143,7 +143,7 @@ class DeprecatePage(utils.LoggedInViewPages, TestCase):
             {'olderItems': [self.item2.id, self.item3.id]}
         )
         self.assertEqual(response.status_code, 200)
-        self.assertListEqual(list(self.item1.supersedes.all()), [])
+        self.assertListEqual(list(self.item1.supersedes.all().select_subclasses()), [])
 
         # Item 2 can deprecate item 1, so this saved and redirected properly.
         response = self.client.post(
@@ -151,7 +151,7 @@ class DeprecatePage(utils.LoggedInViewPages, TestCase):
             {'olderItems': [self.item2.id]}
         )
         self.assertEqual(response.status_code, 302)
-        self.assertListEqual(list(self.item1.supersedes.all()), [self.item2])
+        self.assertListEqual(list(self.item1.supersedes.all().select_subclasses()), [self.item2])
 
         # Item 3 is a different workgroup, and the editor cannot see it , so
         # cannot deprecate, so it did not save and was served the form again.
@@ -160,7 +160,7 @@ class DeprecatePage(utils.LoggedInViewPages, TestCase):
             {'olderItems': [self.item3.id]}
         )
         self.assertEqual(response.status_code, 200)
-        self.assertListEqual(list(self.item1.supersedes.all()), [self.item2])
+        self.assertListEqual(list(self.item1.supersedes.all().select_subclasses()), [self.item2])
 
         # Item 4 is a different type, so cannot deprecate, so it did not save
         # and was served the form again.
@@ -169,4 +169,4 @@ class DeprecatePage(utils.LoggedInViewPages, TestCase):
             {'olderItems': [self.item4.id]}
         )
         self.assertEqual(response.status_code, 200)
-        self.assertListEqual(list(self.item1.supersedes.all()), [self.item2])
+        self.assertListEqual(list(self.item1.supersedes.all().select_subclasses()), [self.item2])

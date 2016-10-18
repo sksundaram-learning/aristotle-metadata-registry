@@ -1,7 +1,5 @@
 from __future__ import division
 
-import autocomplete_light
-
 from django import forms
 from django.utils.translation import ugettext_lazy as _
 from django.utils import timezone
@@ -10,6 +8,7 @@ from bootstrap3_datetime.widgets import DateTimePicker
 import aristotle_mdr.models as MDR
 from aristotle_mdr.perms import user_can_edit, user_can_view
 from aristotle_mdr.forms.creation_wizards import UserAwareForm
+from aristotle_mdr.contrib.autocomplete import widgets
 
 
 class UserSelfEditForm(forms.Form):
@@ -26,7 +25,7 @@ class DeprecateForm(forms.Form):
         queryset=MDR._concept.objects.all(),
         label="Supersede older items",
         required=False,
-        widget=autocomplete_light.MultipleChoiceWidget('Autocomplete_concept')
+        widget=widgets.ConceptAutocompleteSelectMultiple()
     )
 
     def __init__(self, *args, **kwargs):
@@ -34,18 +33,15 @@ class DeprecateForm(forms.Form):
         self.qs = kwargs.pop('qs')
         self.user = kwargs.pop('user')
         super(DeprecateForm, self).__init__(*args, **kwargs)
-        if self.item.get_autocomplete_name() in autocomplete_light.registry.keys():
-            form_widget = autocomplete_light.MultipleChoiceWidget(self.item.get_autocomplete_name())
-        else:
-            # if there is no autocomplete for this item, then just give a select
-            # TODO: when autocomplete respects queryset these can be done automatically
-            form_widget = forms.SelectMultiple
+
         self.fields['olderItems'] = forms.ModelMultipleChoiceField(
             queryset=self.qs,
             label=_("Supersede older items"),
             required=False,
             initial=self.item.supersedes.all(),
-            widget=form_widget
+            widget=widgets.ConceptAutocompleteSelectMultiple(
+                model=self.item._meta.model
+            )
         )
 
     def clean_olderItems(self):
@@ -65,7 +61,7 @@ class SupersedeForm(forms.Form):
         empty_label="None",
         label=_("Superseded by"),
         required=False,
-        widget=autocomplete_light.ChoiceWidget('Autocomplete_concept')
+        widget=widgets.ConceptAutocompleteSelect()
     )
 
     def __init__(self, *args, **kwargs):
@@ -73,19 +69,16 @@ class SupersedeForm(forms.Form):
         self.qs = kwargs.pop('qs')
         self.user = kwargs.pop('user')
         super(SupersedeForm, self).__init__(*args, **kwargs)
-        if self.item.get_autocomplete_name() in autocomplete_light.registry.keys():
-            form_widget = autocomplete_light.ChoiceWidget(self.item.get_autocomplete_name())
-        else:
-            # if there is no autocomplete for this item, then just give a select
-            # TODO: when autocomplete respects queryset these can be done automatically
-            form_widget = forms.Select
+
         self.fields['newerItem']=forms.ModelChoiceField(
             queryset=self.qs,
             empty_label="None",
             label=_("Superseded by"),
             initial=self.item.superseded_by,
             required=False,
-            widget=form_widget
+            widget=widgets.ConceptAutocompleteSelect(
+                model=self.item._meta.model
+            )
         )
 
     def clean_newerItem(self):
@@ -164,14 +157,14 @@ class CompareConceptsForm(forms.Form):
         empty_label="None",
         label=_("First item"),
         required=True,
-        widget=autocomplete_light.ChoiceWidget('Autocomplete_concept')
+        widget=widgets.ConceptAutocompleteSelect()
     )
     item_b = forms.ModelChoiceField(
         queryset=MDR._concept.objects.none(),
         empty_label="None",
         label=_("Second item"),
         required=True,
-        widget=autocomplete_light.ChoiceWidget('Autocomplete_concept')
+        widget=widgets.ConceptAutocompleteSelect()
     )
 
     def __init__(self, *args, **kwargs):
@@ -184,12 +177,12 @@ class CompareConceptsForm(forms.Form):
             empty_label="None",
             label=_("First item"),
             required=True,
-            widget=autocomplete_light.ChoiceWidget('Autocomplete_concept')
+            widget=widgets.ConceptAutocompleteSelect()
         )
         self.fields['item_b']=forms.ModelChoiceField(
             queryset=self.qs,
             empty_label="None",
             label=_("Second item"),
             required=True,
-            widget=autocomplete_light.ChoiceWidget('Autocomplete_concept')
+            widget=widgets.ConceptAutocompleteSelect()
         )

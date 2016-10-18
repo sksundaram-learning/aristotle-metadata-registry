@@ -1,5 +1,3 @@
-import autocomplete_light
-
 from django import forms
 from django.core.exceptions import PermissionDenied
 from django.db import transaction

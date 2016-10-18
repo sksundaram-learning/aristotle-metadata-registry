@@ -20,7 +20,6 @@ the `Python programming language <https://www.python.org/about/gettingstarted/>`
    ./new_metadata_types/index.rst
    downloads.rst
    bulk_actions.rst
-   templates.rst
    including_extra_content.rst
    templatetags.rst
    using_permissions.rst

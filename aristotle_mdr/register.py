@@ -13,12 +13,12 @@ used within the admin site and search, but should be considered internal methods
 and future releases of Aristotle-MDR may break code that uses these methods.
 """
 from __future__ import absolute_import
-import autocomplete_light
+# import autocomplete_light
 
 from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
 
-from aristotle_mdr import autocomplete_light_registry as reg
+# from aristotle_mdr import autocomplete_light_registry as reg
 from aristotle_mdr.search_indexes import conceptIndex
 
 import aristotle_mdr.search_indexes as search_index
@@ -49,7 +49,6 @@ def register_concept(concept_class, *args, **kwargs):
 
     register_concept_reversions(concept_class, *args, **kwargs)  # must come before admin
     register_concept_admin(concept_class, *args, **kwargs)
-    register_concept_autocomplete(concept_class, *args, **kwargs)
     register_concept_search_index(concept_class, *args, **kwargs)
 
 
@@ -58,8 +57,6 @@ def register_concept_reversions(concept_class, *args, **kwargs):
     follows = kwargs.get('reversion', {}).get('follow', [])
     follows += [
         '_concept_ptr',
-        'statuses',
-        'workgroup',
     ]
     follow_classes = kwargs.get('reversion', {}).get('follow_classes', [])
 
@@ -67,18 +64,6 @@ def register_concept_reversions(concept_class, *args, **kwargs):
 
     for cls in follow_classes:
         reversion.register(cls)
-
-
-def register_concept_autocomplete(concept_class, *args, **kwargs):
-    """ Registers the given ``concept`` with ``autocomplete_light`` based on the
-    in-built ``aristotle_mdr.autocomplete_light_registry.PermissionsAutocomplete``.
-    This ensures the autocomplete for the registered conforms to Aristotle permissions.
-
-    :param concept concept_class: The model that is to be registered
-    """
-    x = reg.autocompleteTemplate.copy()
-    x['name'] = 'Autocomplete' + concept_class.__name__
-    autocomplete_light.register(concept_class, reg.PermissionsAutocomplete, **x)
 
 
 def register_concept_search_index(concept_class, *args, **kwargs):
@@ -91,7 +76,10 @@ def register_concept_search_index(concept_class, *args, **kwargs):
     """
 
     class_name = "%s_%sSearchIndex" % (concept_class._meta.app_label, concept_class.__name__)
-    setattr(search_index, class_name, create(concept_class))
+    model_index = kwargs.get('custom_search_index', create(concept_class))
+    setattr(search_index, class_name, model_index)
+
+    search_index.registered_indexes.append(model_index)
 
     # Since we've added a new class, kill the index so it is rebuilt.
     connections[DEFAULT_ALIAS]._index = None

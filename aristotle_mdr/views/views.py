@@ -2,35 +2,33 @@ from django.apps import apps
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
-from django.core.exceptions import PermissionDenied, ImproperlyConfigured
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.core.exceptions import PermissionDenied
 from django.core.urlresolvers import reverse
 from django.db import transaction
-from django.forms.models import modelformset_factory
-from django.http import HttpResponse, Http404, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect, get_object_or_404
-from django.template import RequestContext, TemplateDoesNotExist
+from django.template import RequestContext
 from django.template.defaultfilters import slugify
 from django.template.loader import select_template
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import TemplateView
-from django.utils import timezone
 from django.utils.decorators import method_decorator
-import datetime
 
 import reversion
-from reversion.revisions import default_revision_manager
 from reversion_compare.views import HistoryCompareDetailView
 
-from aristotle_mdr.perms import user_can_view, user_can_edit, user_can_change_status
+from aristotle_mdr.perms import (
+    user_can_view, user_can_edit,
+    user_can_change_status
+)
 from aristotle_mdr import perms
-from aristotle_mdr.utils import cache_per_item_user, concept_to_dict, construct_change_message, url_slugify_concept
+from aristotle_mdr.utils import cache_per_item_user, url_slugify_concept
 from aristotle_mdr import forms as MDRForms
 from aristotle_mdr import models as MDR
-from aristotle_mdr.utils import concept_to_clone_dict, get_concepts_for_apps
+from aristotle_mdr.utils import get_concepts_for_apps
 from aristotle_mdr.views.utils import generate_visibility_matrix
 
-from haystack.views import SearchView, FacetedSearchView
+from haystack.views import FacetedSearchView
 
 import logging
 
@@ -72,13 +70,17 @@ def get_if_user_can_view(objtype, user, iid):
 
 def render_if_user_can_view(item_type, request, *args, **kwargs):
     # request = kwargs.pop('request')
-    return render_if_condition_met(request, user_can_view, item_type, *args, **kwargs)
+    return render_if_condition_met(
+        request, user_can_view, item_type, *args, **kwargs
+    )
 
 
 @login_required
 def render_if_user_can_edit(item_type, request, *args, **kwargs):
     request = kwargs.pop('request')
-    return render_if_condition_met(request, user_can_edit, item_type, *args, **kwargs)
+    return render_if_condition_met(
+        request, user_can_edit, item_type, *args, **kwargs
+    )
 
 
 def concept(*args, **kwargs):
@@ -109,17 +111,17 @@ def render_if_condition_met(request, condition, objtype, iid, model_slug=None, n
         return redirect(url_slugify_concept(item))
     if not condition(request.user, item):
         if request.user.is_anonymous():
-            return redirect(reverse('friendly_login') + '?next=%s' % request.path)
+            return redirect(
+                reverse('friendly_login') + '?next=%s' % request.path
+            )
         else:
             raise PermissionDenied
 
-    # We add a user_can_edit flag in addition to others as we have odd rules around who can edit objects.
+    # We add a user_can_edit flag in addition
+    # to others as we have odd rules around who can edit objects.
     isFavourite = request.user.is_authenticated() and request.user.profile.is_favourite(item)
-
-    last_edit = default_revision_manager.get_for_object_reference(
-        item.__class__,
-        item.pk,
-    ).first()
+    from reversion.models import Version
+    last_edit = Version.objects.get_for_object(item).first()
 
     default_template = "%s/concepts/%s.html" % (item.__class__._meta.app_label, item.__class__._meta.model_name)
     template = select_template([default_template, item.template])
@@ -207,18 +209,29 @@ def toggleFavourite(request, iid):
 
 
 def registrationauthority(request, iid, *args, **kwargs):
-    objtype = MDR.RegistrationAuthority
     if iid is None:
-        app_name = objtype._meta.app_label
-        return redirect(reverse("%s:about" % app_name, args=["".join(objtype._meta.verbose_name.lower().split())]))
-    item = get_object_or_404(objtype, pk=iid).item
+        return redirect(reverse("aristotle_mdr:all_registration_authorities"))
+    item = get_object_or_404(MDR.RegistrationAuthority, pk=iid).item
 
     return render(request, item.template, {'item': item.item})
 
 
-def allRegistrationAuthorities(request):
+def organization(request, iid, *args, **kwargs):
+    if iid is None:
+        return redirect(reverse("aristotle_mdr:all_organizations"))
+    item = get_object_or_404(MDR.Organization, pk=iid).item
+
+    return render(request, item.template, {'item': item.item})
+
+
+def all_registration_authorities(request):
     ras = MDR.RegistrationAuthority.objects.order_by('name')
-    return render(request, "aristotle_mdr/allRegistrationAuthorities.html", {'registrationAuthorities': ras})
+    return render(request, "aristotle_mdr/organization/all_registration_authorities.html", {'registrationAuthorities': ras})
+
+
+def all_organizations(request):
+    orgs = MDR.Organization.objects.order_by('name')
+    return render(request, "aristotle_mdr/organization/all_organizations.html", {'organization': orgs})
 
 
 # Actions
