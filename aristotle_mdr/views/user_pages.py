@@ -85,7 +85,7 @@ def admin_tools(request):
     model_stats = {}
 
     for m in models:
-        if issubclass(m.model_class(), MDR._concept) and not m.model.startswith("_"):
+        if m.model_class() and issubclass(m.model_class(), MDR._concept) and not m.model.startswith("_"):
             # Only output subclasses of 11179 concept
             app_models = model_stats.get(m.app_label, {'app': None, 'models': []})
             if app_models['app'] is None:
@@ -126,7 +126,7 @@ def admin_stats(request):
 
     use_cache = True  # We still cache but its much, much shorter
     for m in models:
-        if issubclass(m.model_class(), MDR._concept) and not m.model.startswith("_"):
+        if m.model_class() and issubclass(m.model_class(), MDR._concept) and not m.model.startswith("_"):
             # Only output subclasses of 11179 concept
             app_models = model_stats.get(m.app_label, {'app': None, 'models': []})
             if app_models['app'] is None:
