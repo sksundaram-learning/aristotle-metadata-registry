@@ -218,7 +218,7 @@ def unique_recent(recent):
     seen = []
     out = []
     for item in recent:
-        if item.object and item.object.id not in seen:
+        if item._model and item.object and item.object.id not in seen:
             seen.append(item.object.id)
             out.append(item)
     return out
