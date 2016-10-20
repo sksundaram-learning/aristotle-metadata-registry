@@ -116,10 +116,12 @@ class ConceptForm(WorkgroupVerificationMixin, UserAwareModelForm):
         for f in self.fields:
             if hasattr(self.fields[f], 'queryset'):
                 if hasattr(self.fields[f].queryset, 'visible'):
+                    if f in [m2m.name for m2m in self._meta.model._meta.many_to_many]:
+                        field_widget = widgets.ConceptAutocompleteSelectMultiple
+                    else:
+                        field_widget = widgets.ConceptAutocompleteSelect
                     self.fields[f].queryset = self.fields[f].queryset.all().visible(self.user)
-                    self.fields[f].widget = widgets.ConceptAutocompleteSelect(
-                        model=self.fields[f].queryset.model
-                    )
+                    self.fields[f].widget = field_widget(model=self.fields[f].queryset.model)
                     self.fields[f].widget.choices = self.fields[f].choices
 
         if not self.user.is_superuser:
