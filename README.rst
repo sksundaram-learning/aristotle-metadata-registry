@@ -70,7 +70,7 @@ Quick start
 
 For a complete example of how to successfully include Aristotle, see the `tests/settings.py` settings file.
 
-**An open instance of the Aristotle Metadata Registry is available at:** `http://registry.aristotlemetadata.com/>`_.
+**An open instance of the Aristotle Metadata Registry is available at:** `registry.aristotlemetadata.com <http://registry.aristotlemetadata.com/>`_.
 
 
 Screenshots for users
