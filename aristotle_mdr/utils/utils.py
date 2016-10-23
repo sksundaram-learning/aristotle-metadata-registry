@@ -47,30 +47,42 @@ def get_download_template_path_for_item(item, download_type, subpath=''):
 
 def url_slugify_concept(item):
     item = item.item
+    slug = slugify(item.name)[:50]
+    if not slug:
+        slug = "--"
     return reverse(
         "aristotle:item",
-        kwargs={'iid': item.pk, 'model_slug': item._meta.model_name, 'name_slug': slugify(item.name)[:50]}
+        kwargs={'iid': item.pk, 'model_slug': item._meta.model_name, 'name_slug': slug}
     )
 
 
 def url_slugify_workgroup(workgroup):
+    slug = slugify(workgroup.name)[:50]
+    if not slug:
+        slug = "--"
     return reverse(
         "aristotle:workgroup",
-        kwargs={'iid': workgroup.pk, 'name_slug': slugify(workgroup.name)[:50]}
+        kwargs={'iid': workgroup.pk, 'name_slug': slug}
     )
 
 
 def url_slugify_registration_authoritity(ra):
+    slug = slugify(ra.name)[:50]
+    if not slug:
+        slug = "--"
     return reverse(
         "aristotle:registrationAuthority",
-        kwargs={'iid': ra.pk, 'name_slug': slugify(ra.name)[:50]}
+        kwargs={'iid': ra.pk, 'name_slug': slug}
     )
 
 
 def url_slugify_organization(org):
+    slug = slugify(org.name)[:50]
+    if not slug:
+        slug = "--"
     return reverse(
         "aristotle:organization",
-        kwargs={'iid': org.pk, 'name_slug': slugify(org.name)[:50]}
+        kwargs={'iid': org.pk, 'name_slug': slug}
     )
 
 
