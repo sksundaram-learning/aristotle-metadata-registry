@@ -16,7 +16,7 @@ import datetime
 
 class LoggedInViewConceptBrowsePages(utils.LoggedInViewPages):
     defaults = {}
-    
+
     def setUp(self):
         super(LoggedInViewConceptBrowsePages, self).setUp()
 
@@ -40,6 +40,18 @@ class LoggedInViewConceptBrowsePages(utils.LoggedInViewPages):
         self.assertEqual(response.status_code,200)
         self.assertTrue(self.item4.name in response.content)
         self.assertTrue(self.item2.name not in response.content)
+
+    def test_zero_item_should_not_show(self):
+        self.logout()
+        response = self.client.get(
+            reverse("browse_concepts",args=[self.itemType._meta.app_label,self.itemType._meta.model_name])
+            )
+
+        self.assertEqual(response.status_code, 200)
+        if(self.itemType.objects.all().count() == 0):
+            self.assertTrue(self.itemType._meta.model_name not in response.content)
+        else:
+            self.assertTrue(self.itemType._meta.model_name in response.content)
 
     def test_editor_can_view_browse(self):
         self.login_editor()
@@ -157,7 +169,7 @@ class DataElementConceptViewPage(LoggedInViewConceptBrowsePages,TestCase):
 class DataElementViewPage(LoggedInViewConceptBrowsePages,TestCase):
     url_name='dataElement'
     itemType=models.DataElement
-    
+
     def test_template_overriden(self):
         """
         see file tests/apps/extension_test/templates/aristotle_mdr_browse/aristotle_mdr/dataelement_list.html
