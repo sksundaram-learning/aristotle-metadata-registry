@@ -1,4 +1,4 @@
-django_tools
+django-tools==0.30.4
 coveralls==1.1
 Sphinx==1.4.8
 sphinx-rtd-theme==0.1.9
