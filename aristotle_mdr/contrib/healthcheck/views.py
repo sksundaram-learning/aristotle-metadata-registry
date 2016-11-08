@@ -31,7 +31,6 @@ def check_web():
 def check_db():
     try:
         obj = _concept.objects.all().first()
-        print obj
         return {
             'status': 'ok',
         }
