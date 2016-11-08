@@ -13,11 +13,11 @@ setup_test_environment()
 cursor_wrapper = mock.Mock()
 cursor_wrapper.side_effect = DatabaseError
 
+
 class TestChaosMonkey(TestCase):
     def setUp(self):
         # Every test needs a client.
         self.client = Client()
-
 
     def test_its_all_ok(self):
         # Test with no value
@@ -30,7 +30,7 @@ class TestChaosMonkey(TestCase):
     #     response = self.client.get(reverse('aristotle_mdr_hb:health'))
     #     print response.content
     #     details = json.loads(response.content)
-        
+
     #     self.assertEqual(response.status_code, 500)
     #     self.assertEqual(details['status_code'], 500)
     #     self.assertEqual(details['database']['status'], "notok")
@@ -40,7 +40,7 @@ class TestChaosMonkey(TestCase):
     def test_dead_cache(self):
         response = self.client.get(reverse('aristotle_mdr_hb:health'))
         details = json.loads(response.content)
-        
+
         self.assertEqual(response.status_code, 500)
         self.assertEqual(details['status_code'], 500)
         self.assertEqual(details['cache']['status'], "notok")
