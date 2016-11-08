@@ -21,10 +21,13 @@ CKEDITOR_UPLOAD_PATH = 'uploads/'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': 'test_database',
+        'NAME': 'test_database',
+        'USER': '',
+        'PASSWORD': '',
+        'HOST': '',
+        'PORT': '',
     }
 }
-
 HAYSTACK_CONNECTIONS = {
     'default': {
         'ENGINE': 'aristotle_mdr.contrib.search_backends.facetted_whoosh.FixedWhooshEngine',
