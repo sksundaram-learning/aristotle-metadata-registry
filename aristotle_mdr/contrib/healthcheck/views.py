@@ -14,9 +14,9 @@ def heartbeat(request):
         # "channels":check_channels()
     }
     if any(True for v in service_status.values() if 'error' in v.keys()):
-        status_code=500
+        status_code = 500
     else:
-        status_code=200
+        status_code = 200
     service_status.update(status_code=status_code)
     return JsonResponse(service_status, status=status_code)
 
