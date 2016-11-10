@@ -196,6 +196,29 @@ class LoggedInViewConceptBrowsePages(utils.LoggedInViewPages):
         self.assertTrue(self.item3.name not in response.content)
         self.assertTrue(self.item4.name not in response.content)
 
+    def test_itemtypes_with_no_items_dont_show_up(self):
+        self.login_editor()
+
+        response = self.client.get(reverse('browse_models', args=['aristotle_mdr']))
+        self.assertEqual(response.status_code, 200)
+
+        self.assertContains(response, self.itemType.get_verbose_name_plural())
+        self.assertContains(response, 
+            reverse("browse_concepts",args=[self.itemType._meta.app_label,self.itemType._meta.model_name]),
+        )
+
+        self.item1.delete() #/browse/aristotle_mdr/objectclass
+        self.item3.delete()
+        self.item4.delete()
+
+        response = self.client.get(reverse('browse_models', args=['aristotle_mdr']))
+        self.assertEqual(response.status_code, 200)
+
+        self.assertNotContains(response, self.itemType.get_verbose_name_plural())
+        self.assertNotContains(response, 
+            reverse("browse_concepts",args=[self.itemType._meta.app_label,self.itemType._meta.model_name]),
+        )
+
 
 class ObjectClassViewPage(LoggedInViewConceptBrowsePages,TestCase):
     url_name='objectClass'
