@@ -525,6 +525,8 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
 
     def test_submitter_can_save_via_clone_page(self):
         self.login_editor()
+        import time
+        time.sleep(2) # delays so there is a definite time difference between the first item and the clone on very fast test machines
         response = self.client.get(reverse('aristotle:clone_item',args=[self.item1.id]))
         self.assertEqual(response.status_code,200)
         updated_item = utils.model_to_dict(response.context['item'])
@@ -532,6 +534,7 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         updated_item['name'] = updated_name
         response = self.client.post(reverse('aristotle:clone_item',args=[self.item1.id]), updated_item)
         most_recent = self.itemType.objects.order_by('-created').first()
+
         self.assertRedirects(response,url_slugify_concept(most_recent))
         self.assertEqual(most_recent.name,updated_name)
 

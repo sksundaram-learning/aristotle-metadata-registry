@@ -18,37 +18,38 @@ MEDIA_ROOT = os.path.join(BASE, "media")
 MEDIA_URL = '/media/'
 CKEDITOR_UPLOAD_PATH = 'uploads/'
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'test_database',
-        'USER': '',
-        'PASSWORD': '',
-        'HOST': '',
-        'PORT': '',
-    }
-}
-HAYSTACK_CONNECTIONS = {
-    'default': {
-        'ENGINE': 'aristotle_mdr.contrib.search_backends.facetted_whoosh.FixedWhooshEngine',
-        'PATH': os.path.join(os.path.dirname(__file__), 'aristotle_mdr/tests/whoosh_index'),
-        'INCLUDE_SPELLING': True,
-    },
-}
+DATABASES = None
+HAYSTACK_CONNECTIONS = None
 
+ci_runner = ""
 if 'TRAVIS' in os.environ:
+    ci_runner = "Travis-CI"
+elif 'APPVEYOR' in os.environ:
+    ci_runner = "Appveyor"
+
+skip_migrations = (
+    "ARISTOTLE_DEV_SKIP_MIGRATIONS" in os.environ or
+    os.environ.get('DB') in ['mysql', 'mssql']
+)
+
+if 'TRAVIS' in os.environ or 'APPVEYOR' in os.environ:
     if os.environ.get('DB') == 'sqlitefile':
-        print("Running TRAVIS-CI test-suite with file-based SQLite")
+        print("Running %s test-suite with file-based SQLite" % ci_runner)
         from aristotle_mdr.tests.settings.templates.db.sqlite import DATABASES
     elif os.environ.get('DB') == 'postgres':
-        print("Running TRAVIS-CI test-suite with POSTGRESQL")
+        print("Running %s test-suite with POSTGRESQL" % ci_runner)
         from aristotle_mdr.tests.settings.templates.db.postgres import DATABASES
     elif os.environ.get('DB') == 'mysql':
-        print("Running TRAVIS-CI test-suite with MySQL")
+        print("Running %s test-suite with MySQL" % ci_runner)
+        skip_migrations = True
         from aristotle_mdr.tests.settings.templates.db.mysql import DATABASES
+    elif os.environ.get('DB') == 'mssql':
+        print("Running %s test-suite with MSSQL" % ci_runner)
+        skip_migrations = True  # Sadly, this may not be possible until after migration 0018
+        from aristotle_mdr.tests.settings.templates.db.mssql import DATABASES
 
     if os.environ.get('SEARCH') == 'whoosh':
-        print("Running TRAVIS-CI test-suite with whoosh")
+        print("Running %s test-suite with whoosh" % ci_runner)
         if os.environ.get('VARIANT') == 'haystack':
             print("Vanilla haystack variant")
             from aristotle_mdr.tests.settings.templates.search.haystack_whoosh import HAYSTACK_CONNECTIONS
@@ -56,7 +57,7 @@ if 'TRAVIS' in os.environ:
             print("Aristotle specific variant")
             from aristotle_mdr.tests.settings.templates.search.whoosh import HAYSTACK_CONNECTIONS
     elif os.environ.get('SEARCH') == 'elasticsearch':
-        print("Running TRAVIS-CI test-suite with elasticsearch")
+        print("Running %s test-suite with elasticsearch" % ci_runner)
         if os.environ.get('VARIANT') == 'haystack':
             print("Vanilla haystack variant")
             from aristotle_mdr.tests.settings.templates.search.haystack_elasticsearch import HAYSTACK_CONNECTIONS
@@ -64,7 +65,7 @@ if 'TRAVIS' in os.environ:
             print("Aristotle specific variant")
             from aristotle_mdr.tests.settings.templates.search.elasticsearch import HAYSTACK_CONNECTIONS
 
-if 'ARISTOTLE_DEV_SKIP_MIGRATIONS' in os.environ or os.environ.get('DB') == 'mysql':  # pragma: no cover
+if skip_migrations:  # pragma: no cover
     print("Skipping migrations")
     class DisableMigrations(object):
     
@@ -84,6 +85,13 @@ INSTALLED_APPS = (
     'extension_test',
     'text_download_test',
 ) + INSTALLED_APPS
+
+if os.environ.get('DB') == 'mysql':
+    if 'aristotle_mdr.contrib.slots' in INSTALLED_APPS:
+        # Mysql has issues with 
+        INSTALLED_APPS = list(INSTALLED_APPS)
+        INSTALLED_APPS.pop('aristotle_mdr.contrib.slots')
+        INSTALLED_APPS = tuple(INSTALLED_APPS)
 
 
 # https://docs.djangoproject.com/en/1.6/topics/testing/overview/#speeding-up-the-tests

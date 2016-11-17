@@ -446,10 +446,17 @@ class ViewDiscussionPostPage(utils.LoggedInViewPages,TestCase):
 
         response = self.client.get(reverse('aristotle:discussionsWorkgroup',args=[self.wg1.id]))
         self.assertEqual(len(response.context['discussions']),2)
-        self.assertListEqual(list(response.context['discussions'].all()),[p2,p1])
+        
+        self.assertTrue(p1 in response.context['discussions'].all())
+        self.assertTrue(p2 in response.context['discussions'].all())
+        self.assertTrue(p3 not in response.context['discussions'].all())
+        
         response = self.client.get(reverse('aristotle:discussions'))
         self.assertEqual(len(response.context['discussions']),3)
-        self.assertListEqual(list(response.context['discussions']),[p3,p2,p1])
+
+        self.assertTrue(p1 in response.context['discussions'].all())
+        self.assertTrue(p2 in response.context['discussions'].all())
+        self.assertTrue(p3 in response.context['discussions'].all())
 
     def test_nonmember_cannot_see_posts(self):
         self.login_viewer()
