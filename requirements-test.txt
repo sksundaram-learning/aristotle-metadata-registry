@@ -2,4 +2,4 @@ django_tools
 coveralls
 Sphinx
 sphinx-rtd-theme
-mock
+mock==2.0.0
