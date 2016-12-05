@@ -5,6 +5,8 @@ import aristotle_mdr.models as models
 import aristotle_mdr.perms as perms
 import aristotle_mdr.tests.utils as utils
 
+import datetime
+
 from django.test.utils import setup_test_environment
 setup_test_environment()
 
@@ -181,7 +183,11 @@ class BulkWorkgroupActionsPage(BulkActionsTest, TestCase):
 
     def test_bulk_status_change_on_permitted_items(self):
         self.login_registrar()
-        review = models.ReviewRequest.objects.create(requester=self.su,registration_authority=self.ra)
+        review = models.ReviewRequest.objects.create(
+            requester=self.su,registration_authority=self.ra,
+            state=self.ra.locked_state,
+            registration_date=datetime.date(2013,4,2)
+        )
         review.concepts.add(self.item1)
         review.concepts.add(self.item2)
 
@@ -189,13 +195,16 @@ class BulkWorkgroupActionsPage(BulkActionsTest, TestCase):
         self.assertTrue(perms.user_can_change_status(self.registrar, self.item2))
         self.assertFalse(self.item1.is_registered)
         self.assertFalse(self.item2.is_registered)
+        
+        reg_date = datetime.date(2014,10,27)
+        new_state = self.ra.locked_state
         response = self.client.post(
             reverse('aristotle:bulk_action'),
             {
                 'bulkaction': 'change_state',
-                'state': 1,
+                'state': new_state,
                 'items': [self.item1.id, self.item2.id],
-                'registrationDate': "2014-10-27",
+                'registrationDate': reg_date,
                 'cascadeRegistration': 0,
                 'registrationAuthorities': [self.ra.id],
                 'confirmed': 'confirmed',
@@ -204,9 +213,20 @@ class BulkWorkgroupActionsPage(BulkActionsTest, TestCase):
         self.assertTrue(self.item1.is_registered)
         self.assertTrue(self.item2.is_registered)
 
+        self.assertTrue(self.item1.current_statuses().first().registrationDate == reg_date)
+        self.assertTrue(self.item2.current_statuses().first().registrationDate == reg_date)
+        self.assertTrue(self.item1.current_statuses().first().state == new_state)
+        self.assertTrue(self.item2.current_statuses().first().state == new_state)
+        self.assertTrue(self.item1.current_statuses().first().registrationAuthority == self.ra)
+        self.assertTrue(self.item2.current_statuses().first().registrationAuthority == self.ra)
+
     def test_bulk_status_change_on_forbidden_items(self):
         self.login_registrar()
-        review = models.ReviewRequest.objects.create(requester=self.su,registration_authority=self.ra)
+        review = models.ReviewRequest.objects.create(
+            requester=self.su,registration_authority=self.ra,
+            registration_date=datetime.date(2010,1,1),
+            state=self.ra.locked_state
+        )
         review.concepts.add(self.item1)
         # review.concepts.add(self.item4)
 
@@ -215,13 +235,16 @@ class BulkWorkgroupActionsPage(BulkActionsTest, TestCase):
         self.assertFalse(self.item1.is_registered)
         self.assertFalse(self.item2.is_registered)
         self.assertFalse(self.item4.is_registered)
+        
+        reg_date = datetime.date(2014,10,27)
+        new_state = self.ra.locked_state
         response = self.client.post(
             reverse('aristotle:bulk_action'),
             {
                 'bulkaction': 'change_state',
-                'state': 1,
+                'state': new_state,
                 'items': [self.item1.id, self.item2.id, self.item4.id],
-                'registrationDate': "2014-10-27",
+                'registrationDate': reg_date,
                 'cascadeRegistration': 0,
                 'registrationAuthorities': [self.ra.id],
                 'confirmed': 'confirmed',
@@ -232,6 +255,10 @@ class BulkWorkgroupActionsPage(BulkActionsTest, TestCase):
         self.assertTrue(self.item1.is_registered)
         self.assertFalse(self.item2.is_registered)
         self.assertFalse(self.item4.is_registered)
+
+        self.assertTrue(self.item1.current_statuses().first().registrationDate == reg_date)
+        self.assertTrue(self.item1.current_statuses().first().state == new_state)
+        self.assertTrue(self.item1.current_statuses().first().registrationAuthority == self.ra)
 
         from django.utils.html import escape
         err1 = "Some items failed"
@@ -311,6 +338,8 @@ class BulkWorkgroupActionsPage(BulkActionsTest, TestCase):
                 'state': 1,
                 'items': [self.item1.id, self.item2.id],
                 'registration_authority': self.ra.id,
+                "registration_date": "2010-01-01",
+                "cascade_registration": 0,
                 "message": "review these plz",
                 'confirmed': 'confirmed',
             }
@@ -338,6 +367,9 @@ class BulkWorkgroupActionsPage(BulkActionsTest, TestCase):
                 'state': 1,
                 'items': [self.item1.id, self.item4.id],
                 'registration_authority': self.ra.id,
+                'registration_date': datetime.date(2016,1,1),
+                "registration_date": "2010-01-01",
+                "cascade_registration": 0,
                 "message": "review these plz",
                 'confirmed': 'confirmed',
             }

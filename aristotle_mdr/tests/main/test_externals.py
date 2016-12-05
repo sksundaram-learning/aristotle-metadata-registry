@@ -66,7 +66,11 @@ class AristotleAutocompletes(utils.LoggedInViewPages, TestCase):
         
         self.item1.save()
 
-        review = models.ReviewRequest.objects.create(requester=self.su,registration_authority=self.ra)
+        review = models.ReviewRequest.objects.create(
+            requester=self.su,registration_authority=self.ra,
+            state=self.ra.public_state,
+            registration_date=datetime.date(2010,1,1)
+        )
         review.concepts.add(self.item1)
 
         registered = self.ra.register(self.item1,models.STATES.standard,self.registrar,
@@ -109,7 +113,11 @@ class AristotleAutocompletes(utils.LoggedInViewPages, TestCase):
                 definition="not really an xman, no matter how much he tries",
                 workgroup=self.wg1)
 
-        review = models.ReviewRequest.objects.create(requester=self.su,registration_authority=self.ra)
+        review = models.ReviewRequest.objects.create(
+            requester=self.su,registration_authority=self.ra,
+            state=self.ra.public_state,
+            registration_date=datetime.date(2010,1,1)
+        )
         review.concepts.add(dp)
 
         dp = models.ObjectClass.objects.get(pk=dp.pk) # Un-cache

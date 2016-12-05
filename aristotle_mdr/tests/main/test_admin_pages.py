@@ -5,6 +5,8 @@ from django.forms import model_to_dict
 from django.test import TestCase
 from django.test.utils import setup_test_environment
 
+import datetime
+
 import aristotle_mdr.models as models
 import aristotle_mdr.perms as perms
 import aristotle_mdr.tests.utils as utils
@@ -239,7 +241,11 @@ class AdminPageForConcept(utils.LoggedInViewPages):
         self.assertEqual(self.wg1.items.count(),1)
         before_count = self.wg1.items.count()
 
-        review = models.ReviewRequest.objects.create(requester=self.su,registration_authority=self.ra)
+        review = models.ReviewRequest.objects.create(
+            requester=self.su,registration_authority=self.ra,
+            state=self.ra.public_state,
+            registration_date=datetime.date(2010,1,1)
+        )
         review.concepts.add(self.item1)
         old_count = self.item1.statuses.count()
         self.ra.register(self.item1,models.STATES.standard,self.registrar)
@@ -404,7 +410,11 @@ class AdminPageForConcept(utils.LoggedInViewPages):
             self.item1.save()
 
         old_count = self.item1.statuses.count()
-        review = models.ReviewRequest.objects.create(requester=self.su,registration_authority=self.ra)
+        review = models.ReviewRequest.objects.create(
+            requester=self.su,registration_authority=self.ra,
+            state=self.ra.public_state,
+            registration_date=datetime.date(2010,1,1)
+        )
         review.concepts.add(self.item1)
         with reversion.create_revision():
             self.item1.name = "change 2"

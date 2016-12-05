@@ -2,6 +2,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied, ImproperlyConfigured
 from django.core.urlresolvers import reverse
+from django.db import transaction
 from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.shortcuts import render, redirect, get_object_or_404
 from django.template import RequestContext, TemplateDoesNotExist
@@ -171,16 +172,76 @@ class ReviewAcceptView(ReviewActionMixin, FormView):
         review = self.get_review()
 
         if form.is_valid():
+
+            message = self.register_items(form)
+
             review.reviewer = request.user
             review.response = form.cleaned_data['response']
             review.status = MDR.REVIEW_STATES.accepted
             review.save()
-            message = form.make_changes(items=review.concepts.all())
-            # message = _("Review accepted")
+
             messages.add_message(request, messages.INFO, message)
             return HttpResponseRedirect(reverse('aristotle_mdr:userReadyForReview'))
         else:
             return self.form_invalid(form)
+
+    def register_items(self, form):
+        review = self.get_review()
+        ras = [review.registration_authority]  # Make into an iterable, as this may change in future
+        state = review.state
+        regDate = review.registration_date
+        cascade = review.cascade_registration
+        changeDetails = review.message
+
+        items = review.concepts.all()
+        with transaction.atomic(), reversion.revisions.create_revision():
+            reversion.revisions.set_user(self.request.user)
+            success = []
+            failed = []
+            if regDate is None:
+                regDate = timezone.now().date()
+            for item in items:
+
+                for ra in ras:
+                    if cascade:
+                        register_method = ra.cascaded_register
+                    else:
+                        register_method = ra.register
+
+                    r = register_method(
+                        item,
+                        state,
+                        self.request.user,
+                        changeDetails=changeDetails,
+                        registrationDate=regDate,
+                    )
+                    for f in r['failed']:
+                        failed.append(f)
+                    for s in r['success']:
+                        success.append(s)
+            failed = list(set(failed))
+            success = list(set(success))
+            bad_items = sorted([str(i.id) for i in failed])
+            if failed:
+                message = _(
+                    "%(num_items)s items registered in %(num_ra)s registration authorities. \n"
+                    "%(num_faileds)s items failed, they had the id's: %(bad_ids)s"
+                ) % {
+                    'num_items': len(items),
+                    'num_ra': len(ras),
+                    'num_faileds': len(failed),
+                    'bad_ids': ",".join(bad_items)
+                }
+            else:
+                message = _(
+                    "%(num_items)s items registered in %(num_ra)s registration authorities. \n"
+                ) % {
+                    'num_items': len(items),
+                    'num_ra': len(ras),
+                }
+
+            reversion.revisions.set_comment(message)
+            return message
 
 
 class CheckCascadedStates(ItemSubpageView, DetailView):

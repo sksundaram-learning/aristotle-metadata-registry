@@ -7,6 +7,8 @@ from django.utils import timezone
 from django.utils.html import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
+from bootstrap3_datetime.widgets import DateTimePicker
+
 import aristotle_mdr.models as MDR
 from aristotle_mdr.forms import ChangeStatusForm
 from aristotle_mdr.perms import (
@@ -214,7 +216,18 @@ class ChangeStateForm(ChangeStatusForm, BulkActionForm):
                 regDate = timezone.now().date()
             for item in items:
                 for ra in ras:
-                    r = ra.register(item, state, self.user, regDate, cascade, changeDetails)
+                    if cascade:
+                        register_method = ra.cascaded_register
+                    else:
+                        register_method = ra.register
+
+                    r = register_method(
+                        item,
+                        state,
+                        self.request.user,
+                        changeDetails=changeDetails,
+                        registrationDate=regDate,
+                    )
                     for f in r['failed']:
                         failed.append(f)
                     for s in r['success']:
@@ -248,7 +261,17 @@ class RequestReviewForm(LoggedInBulkActionForm):
         label="Registration Authority",
         queryset=MDR.RegistrationAuthority.objects.all(),
     )
+    registration_date = forms.DateField(
+        required=False,
+        label=_("Registration date"),
+        widget=DateTimePicker(options={"format": "YYYY-MM-DD"}),
+        initial=timezone.now()
+    )
     state = forms.ChoiceField(choices=MDR.STATES, widget=forms.RadioSelect)
+    cascade_registration = forms.ChoiceField(
+        choices=[(0, _('No')), (1, _('Yes'))],
+        help_text=_("Update the registration of associated items")
+    )
     message = forms.CharField(
         required=False,
         label=_("Message for the reviewing registrar"),
@@ -263,7 +286,8 @@ class RequestReviewForm(LoggedInBulkActionForm):
         ra = self.cleaned_data['registration_authority']
         state = self.cleaned_data['state']
         items = self.items_to_change
-        # cascade = self.cleaned_data['cascadeRegistration']
+        cascade = self.cleaned_data['cascade_registration']
+        registration_date = self.cleaned_data['registration_date']
         message = self.cleaned_data['message']
 
         with transaction.atomic(), reversion.revisions.create_revision():
@@ -272,8 +296,10 @@ class RequestReviewForm(LoggedInBulkActionForm):
             review = MDR.ReviewRequest.objects.create(
                 requester=self.user,
                 registration_authority=ra,
+                registration_date=registration_date,
                 message=message,
-                state=state
+                state=state,
+                cascade_registration=cascade
             )
             failed = []
             success = []

@@ -659,7 +659,12 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
             reversion.set_comment("change 1")
             self.item1.save()
 
-        review = models.ReviewRequest.objects.create(requester=self.su,registration_authority=self.ra)
+        review = models.ReviewRequest.objects.create(
+            requester=self.su,registration_authority=self.ra,
+            state=self.ra.public_state,
+            registration_date=datetime.date(2010,1,1)
+        )
+
         review.concepts.add(self.item1)
         with reversion.revisions.create_revision():
             self.item1.name = "change 2"
@@ -722,7 +727,12 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.item1 = self.itemType.objects.get(pk=self.item1.pk)
         self.assertEqual(self.item1.name,updated_name)
 
-        review = models.ReviewRequest.objects.create(requester=self.su,registration_authority=self.ra)
+        review = models.ReviewRequest.objects.create(
+            requester=self.su,registration_authority=self.ra,
+            state=self.ra.public_state,
+            registration_date=datetime.date(2010,1,1)
+        )
+
         review.concepts.add(self.item1)
         r = self.ra.register(
             item=self.item1,
@@ -855,7 +865,12 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.item1.save()
         self.item1 = self.itemType.objects.get(pk=self.item1.pk)
 
-        review = models.ReviewRequest.objects.create(requester=self.su,registration_authority=self.ra)
+        review = models.ReviewRequest.objects.create(
+            requester=self.su,registration_authority=self.ra,
+            state=self.ra.public_state,
+            registration_date=datetime.date(2010,1,1)
+        )
+
         review.concepts.add(self.item1)
 
         self.assertTrue(perms.user_can_view(self.registrar,self.item1))
@@ -890,7 +905,12 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.item1.save()
         self.item1 = self.itemType.objects.get(pk=self.item1.pk)
 
-        review = models.ReviewRequest.objects.create(requester=self.su,registration_authority=self.ra)
+        review = models.ReviewRequest.objects.create(
+            requester=self.su,registration_authority=self.ra,
+            state=self.ra.public_state,
+            registration_date=datetime.date(2010,1,1)
+        )
+
         review.concepts.add(self.item1)
 
         self.assertTrue(perms.user_can_view(self.registrar,self.item1))
@@ -934,7 +954,12 @@ class LoggedInViewConceptPages(utils.LoggedInViewPages):
         self.item1.save()
         self.item1 = self.itemType.objects.get(pk=self.item1.pk)
 
-        review = models.ReviewRequest.objects.create(requester=self.su,registration_authority=self.ra)
+        review = models.ReviewRequest.objects.create(
+            requester=self.su,registration_authority=self.ra,
+            state=self.ra.public_state,
+            registration_date=datetime.date(2010,1,1)
+        )
+
         review.concepts.add(self.item1)
 
         self.assertTrue(perms.user_can_view(self.registrar,self.item1))

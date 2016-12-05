@@ -13,6 +13,8 @@ from reversion import revisions as reversion
 setup_test_environment()
 
 from time import sleep
+import datetime
+from django.utils import timezone
 
 
 class TestSearch(utils.LoggedInViewPages,TestCase):
@@ -155,13 +157,21 @@ class TestSearch(utils.LoggedInViewPages,TestCase):
 
         steve_rogers = models.ObjectClass.objects.get(name="captainAmerica")
         self.assertFalse(perms.user_can_view(self.registrar,steve_rogers))
-        review = models.ReviewRequest.objects.create(requester=self.su,registration_authority=self.ra)
+        review = models.ReviewRequest.objects.create(
+            requester=self.su,registration_authority=self.ra,
+            state=self.ra.public_state,
+            registration_date=datetime.date(2010,1,1)
+        )
         review.concepts.add(steve_rogers)
 
         with reversion.create_revision():
             steve_rogers.save()
 
-        review = models.ReviewRequest.objects.create(requester=self.su,registration_authority=self.ra)
+        review = models.ReviewRequest.objects.create(
+            requester=self.su,registration_authority=self.ra,
+            state=self.ra.public_state,
+            registration_date=datetime.date(2010,1,1)
+        )
         review.concepts.add(steve_rogers)
 
         self.assertTrue(perms.user_can_view(self.registrar,steve_rogers))
@@ -287,15 +297,16 @@ class TestSearch(utils.LoggedInViewPages,TestCase):
                     definition="not really an xman, no matter how much he tries",
                     workgroup=self.xmen_wg)
 
-        review = models.ReviewRequest.objects.create(requester=self.su,registration_authority=self.ra)
+        review = models.ReviewRequest.objects.create(
+            requester=self.su,registration_authority=self.ra,
+            state=self.ra.public_state,
+            registration_date=datetime.date(2010,1,1)
+        )
         review.concepts.add(dp)
 
         dp = models.ObjectClass.objects.get(pk=dp.pk) # Un-cache
         self.assertTrue(perms.user_can_view(self.registrar,dp))
         self.assertFalse(dp.is_public())
-
-        from django.utils import timezone
-        import datetime
 
         self.ra.register(dp,models.STATES.incomplete,self.registrar,
             registrationDate=timezone.now()+datetime.timedelta(days=-7)
@@ -331,15 +342,16 @@ class TestSearch(utils.LoggedInViewPages,TestCase):
                     definition="not really an xman, no matter how much he tries",
                     workgroup=self.xmen_wg)
 
-        review = models.ReviewRequest.objects.create(requester=self.su,registration_authority=self.ra)
+        review = models.ReviewRequest.objects.create(
+            requester=self.su,registration_authority=self.ra,
+            state=self.ra.public_state,
+            registration_date=datetime.date(2010,1,1)
+        )
         review.concepts.add(dp)
 
         dp = models.ObjectClass.objects.get(pk=dp.pk) # Un-cache
         self.assertTrue(perms.user_can_view(self.registrar,dp))
         self.assertFalse(dp.is_public())
-
-        from django.utils import timezone
-        import datetime
 
         self.ra.register(dp,models.STATES.candidate,self.registrar,
             registrationDate=timezone.now()+datetime.timedelta(days=-7)

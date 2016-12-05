@@ -308,7 +308,7 @@ class PermissionSearchForm(TokenSearchForm):
     state = forms.MultipleChoiceField(
         required=False,
         label=_("Registration status"),
-        choices=MDR.STATES,
+        choices=MDR.STATES + [-99],  # Allow unregistered as a selection
         widget=BootstrapDropdownSelectMultiple
     )
     public_only = forms.BooleanField(
@@ -369,8 +369,8 @@ class PermissionSearchForm(TokenSearchForm):
             self.filter_search = True
             self.attempted_filter_search = True
 
-        states = self.cleaned_data['state']
-        ras = self.cleaned_data['ra']
+        states = self.cleaned_data.get('state', None)
+        ras = self.cleaned_data.get('ra', None)
         restriction = self.cleaned_data['res']
         sqs = sqs.apply_registration_status_filters(states, ras)
 

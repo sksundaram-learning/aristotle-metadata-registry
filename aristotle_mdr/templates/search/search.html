@@ -276,10 +276,6 @@
                                 {{ ra.name }}</a>
                             ({{ f.1 }})
                         {% else %}
-                        {# the user wants unregistered content, show that #}
-                            <a href="{{ request.get_full_path }}&amp;state=-99">
-                                {% trans 'Not registered' %}</a>
-                            ({{ f.1 }})
                         {% endif %}
                         {% endwith %}
                     </dd>
@@ -318,7 +314,7 @@
                 {% endif %}
 
                 {% for field,details in form.extra_facet_fields %}
-                    {% if details.values %}
+                    {% if details.values|length > 1 %}
                     <dt>{{details.details.title}}</dt>
                     {% if details.details.applied %}
                     <dd>

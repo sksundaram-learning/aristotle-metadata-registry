@@ -63,7 +63,10 @@ class UserHomePages(utils.LoggedInViewPages, TestCase):
             submitter=self.viewer)
         review = models.ReviewRequest.objects.create(
             requester=self.su,
-            registration_authority=self.ra)
+            registration_authority=self.ra,
+            state=self.ra.public_state,
+            registration_date=datetime.date(2010,1,1)
+        )
         review.concepts.add(self.item2)
 
         # Should not see item3 because it has a status
