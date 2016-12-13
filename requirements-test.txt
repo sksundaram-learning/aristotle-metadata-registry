@@ -1,5 +1,5 @@
 django_tools
 coveralls
-Sphinx
+Sphinx==1.5.1
 sphinx-rtd-theme
 mock
